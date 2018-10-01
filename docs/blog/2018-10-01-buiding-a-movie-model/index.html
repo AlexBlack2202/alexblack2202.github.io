@@ -1,0 +1,813 @@
+<!DOCTYPE HTML>
+
+<html>
+    <head>
+        <script type="application/ld+json">
+    {
+        "@context" : "http://schema.org",
+        "@type" : "BlogPosting",
+        "mainEntityOfPage": {
+             "@type": "WebPage",
+             "@id": "/blog"
+        },
+        "articleSection" : "blog",
+        "name" : "Xây dựng chương trình gợi ý phim dựa vào tập dữ liệu movie len",
+        "headline" : "Xây dựng chương trình gợi ý phim dựa vào tập dữ liệu movie len",
+        "description" : "Ở bài viết này, tôi sẽ tập trung vào vào sử dụng implement Alternating Least Saqures của Collaborative Filtering trong thư viện Spark MLlib trên tập dữ liệu movieLens.",
+        "inLanguage" : "en",
+        "author" : "",
+        "creator" : "",
+        "publisher": "",
+        "accountablePerson" : "",
+        "copyrightHolder" : "",
+        "copyrightYear" : "2018",
+        "datePublished": "2018-10-01 00:19:00 &#43;0300 &#43;0300",
+        "dateModified" : "2018-10-01 00:19:00 &#43;0300 &#43;0300",
+        "url" : "/blog/blog/2018-10-01-buiding-a-movie-model/",
+        "wordCount" : "1117",
+        "keywords" : [ "Machine learning","Deeplearning","Spark","Blog" ]
+    }
+    </script>
+        
+            
+                <title>Xây dựng chương trình gợi ý phim dựa vào tập dữ liệu movie len</title>
+            
+        
+
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="generator" content="Hugo 0.41" />
+        
+
+
+        
+        
+            <meta name="description" content="Ở bài viết này, tôi sẽ tập trung vào vào sử dụng implement Alternating Least Saqures của Collaborative Filtering trong thư viện Spark MLlib trên tập dữ liệu movieLens.">
+        
+
+        <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Xây dựng chương trình gợi ý phim dựa vào tập dữ liệu movie len"/>
+<meta name="twitter:description" content="Ở bài viết này, tôi sẽ tập trung vào vào sử dụng implement Alternating Least Saqures của Collaborative Filtering trong thư viện Spark MLlib trên tập dữ liệu movieLens."/>
+<meta name="twitter:site" content="@example"/>
+
+        <meta property="og:title" content="Xây dựng chương trình gợi ý phim dựa vào tập dữ liệu movie len" />
+<meta property="og:description" content="Ở bài viết này, tôi sẽ tập trung vào vào sử dụng implement Alternating Least Saqures của Collaborative Filtering trong thư viện Spark MLlib trên tập dữ liệu movieLens." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="/blog/blog/2018-10-01-buiding-a-movie-model/" />
+
+
+
+<meta property="article:published_time" content="2018-10-01T00:19:00&#43;03:00"/>
+
+<meta property="article:modified_time" content="2018-10-01T00:19:00&#43;03:00"/>
+
+
+
+
+
+
+
+
+
+
+
+        <meta property="og:image" content="/blog/images/logo.png">
+        <meta property="og:image:type" content="image/png">
+        <meta property="og:image:width" content="512">
+        <meta property="og:image:height" content="512">
+        
+<meta itemprop="name" content="Xây dựng chương trình gợi ý phim dựa vào tập dữ liệu movie len">
+<meta itemprop="description" content="Ở bài viết này, tôi sẽ tập trung vào vào sử dụng implement Alternating Least Saqures của Collaborative Filtering trong thư viện Spark MLlib trên tập dữ liệu movieLens.">
+
+
+<meta itemprop="datePublished" content="2018-10-01T00:19:00&#43;03:00" />
+<meta itemprop="dateModified" content="2018-10-01T00:19:00&#43;03:00" />
+<meta itemprop="wordCount" content="1117">
+
+
+
+<meta itemprop="keywords" content="Machine learning,Deeplearning,Spark," />
+
+        
+
+        
+            
+        
+
+        
+        
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css">
+            <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway:400,800,900|Source+Sans+Pro:400,700">
+            <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.1.25/jquery.fancybox.min.css">
+            <link rel="stylesheet" href="/blog/css/main.css">
+            <link rel="stylesheet" href="/blog/css/add-on.css">
+            <link rel="stylesheet" href="/blog/css/academicons.min.css">
+        
+
+        
+            
+                
+            
+        
+
+
+  
+    
+    <link href='//cdn.bootcss.com/highlight.js/9.11.0/styles/github.min.css' rel='stylesheet' type='text/css' />
+  
+
+
+      
+    </head>
+    <body>
+
+      
+      <div id="wrapper">
+
+    
+    
+<header id="header">
+    
+      <h1><a href="/blog/">blog</a></h1>
+    
+
+    <nav class="links">
+        <ul>
+            
+                <li>
+                    <a href="/blog/blog/">
+                            <i class="fa fa-home">&nbsp;</i>Home
+                    </a>
+                </li>
+            
+                <li>
+                    <a href="/blog/about/">
+                            <i class="fa fa-id-card-o">&nbsp;</i>About
+                    </a>
+                </li>
+            
+                <li>
+                    <a href="/blog/itemized/">
+                            <i class="fa fa-list">&nbsp;</i>Itemized
+                    </a>
+                </li>
+            
+                <li>
+                    <a href="/blog/categories/">
+                            <i class="fa fa-sitemap">&nbsp;</i>Categories
+                    </a>
+                </li>
+            
+                <li>
+                    <a href="/blog/contact/">
+                            <i class="fa fa-envelope-o">&nbsp;</i>Contact
+                    </a>
+                </li>
+            
+        </ul>
+    </nav>
+    <nav class="main">
+        <ul>
+            
+            <li id="share-nav" class="share-menu" style="display:none;">
+                <a class="fa-share-alt" href="#share-menu">Share</a>
+            </li>
+            
+            <li class="search">
+                <a class="fa-search" href="#search">Search</a>
+                <form id="search" method="get" action="//google.com/search">
+                    <input type="text" name="q" placeholder="Search" />
+                    <input type="hidden" name="as_sitesearch" value="/blog">
+                </form>
+            </li>
+            <li class="menu">
+                <a class="fa-bars" href="#menu">Menu</a>
+            </li>
+        </ul>
+    </nav>
+</header>
+
+
+<section id="menu">
+
+    
+        <section>
+            <form class="search" method="get" action="//google.com/search">
+                <input type="text" name="q" placeholder="Search" />
+                <input type="hidden" name="as_sitesearch" value="/blog">
+            </form>
+        </section>
+
+    
+        <section>
+            <ul class="links">
+                
+                    <li>
+                        <a href="/blog/blog/">
+                            <h3>
+                                <i class="fa fa-home">&nbsp;</i>Home
+                            </h3>
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a href="/blog/about/">
+                            <h3>
+                                <i class="fa fa-id-card-o">&nbsp;</i>About
+                            </h3>
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a href="/blog/itemized/">
+                            <h3>
+                                <i class="fa fa-list">&nbsp;</i>Itemized
+                            </h3>
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a href="/blog/categories/">
+                            <h3>
+                                <i class="fa fa-sitemap">&nbsp;</i>Categories
+                            </h3>
+                        </a>
+                    </li>
+                
+                    <li>
+                        <a href="/blog/contact/">
+                            <h3>
+                                <i class="fa fa-envelope-o">&nbsp;</i>Contact
+                            </h3>
+                        </a>
+                    </li>
+                
+            </ul>
+        </section>
+
+    
+        <section class="recent-posts">
+            <div class="mini-posts">
+                <header>
+                    <h3>Recent Posts</h3>
+                </header>
+                
+
+                
+                    
+                
+
+                
+                        <article class="mini-post">
+                            <header>
+                                <h3><a href="/blog/blog/2018-10-01-buiding-a-movie-model/">Xây dựng chương trình gợi ý phim dựa vào tập dữ liệu movie len</a></h3>
+                                
+                                <time class="published" datetime=
+                                    '2018-10-01'>
+                                    October 1, 2018</time>
+                            </header>
+                            
+
+                        </article>
+                
+                        <article class="mini-post">
+                            <header>
+                                <h3><a href="/blog/blog/2018-06-15-understanding-alexnet/">Tìm hiểu về mạng neural network AlexNet</a></h3>
+                                
+                                <time class="published" datetime=
+                                    '2018-06-15'>
+                                    June 15, 2018</time>
+                            </header>
+                            
+
+                        </article>
+                
+
+                
+            </div>
+        </section>
+
+    
+        
+</section>
+
+    <section id="share-menu">
+    <section id="social-share-nav">
+        <ul class="links">
+            <header>
+                <h3>Share this post <i class="fa fa-smile-o"></i></h3>
+            </header>
+            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        </ul>
+    </section>
+</section>
+
+    
+    <div id="main">
+        
+        
+        <article class="post">
+  <header>
+    <div class="title">
+        
+            <h1><a href="/blog/blog/2018-10-01-buiding-a-movie-model/">Xây dựng chương trình gợi ý phim dựa vào tập dữ liệu movie len</a></h1>
+            
+        
+        
+            <p>Ở bài viết này, tôi sẽ tập trung vào vào sử dụng implement Alternating Least Saqures của Collaborative Filtering trong thư viện Spark MLlib trên tập dữ liệu movieLens.</p>
+        
+    </div>
+    <div class="meta">
+        
+
+        <time class="published"
+            datetime='2018-10-01'>
+            October 1, 2018</time>
+        <span class="author"></span>
+        
+            <p>6 minute read</p>
+        
+        
+    </div>
+</header>
+
+
+  
+
+  
+
+  <div id="content">
+    
+
+<h3 id="lời-mở-đầu">Lời mở đầu</h3>
+
+<p>MovieLens là một tập dữ liệu được sử dụng rộng rãi cách đây nhiều năm. Hôm nay, tôi sẽ sử dụng tập dữ liệu này và mô hình ALS để xây dựng chương trình dự đoán phim cho người dùng.</p>
+
+<h3 id="chuẩn-bị-dữ-liệu">Chuẩn bị dữ liệu</h3>
+
+<p>Các bạn có thể download tập dữ liệu MovieLens ở link <a href="https://grouplens.org/datasets/movielens/">https://grouplens.org/datasets/movielens/</a>. Các bạn có thể download trực tiếp 2 file nén ở link <a href="http://files.grouplens.org/datasets/movielens/ml-latest-small.zip">http://files.grouplens.org/datasets/movielens/ml-latest-small.zip</a> và link  <a href="http://files.grouplens.org/datasets/movielens/ml-latest.zip">http://files.grouplens.org/datasets/movielens/ml-latest.zip</a>.</p>
+
+<p>Ở trên bao gồm 2 tập dữ liệu. Trong python, chúng ta tạo thư mục datasets và download rồi bỏ chúng vào trong thư mục đấy.</p>
+
+<pre><code class="language-python">complete_dataset_url = 'http://files.grouplens.org/datasets/movielens/ml-latest.zip'
+small_dataset_url = 'http://files.grouplens.org/datasets/movielens/ml-latest-small.zip'
+
+import os
+
+datasets_path = 'datasets'
+if not os.path.exists(datasets_path):
+    os.makedirs(datasets_path))
+
+complete_dataset_path = os.path.join(datasets_path, 'ml-latest.zip')
+small_dataset_path = os.path.join(datasets_path, 'ml-latest-small.zip')
+
+import urllib
+import zipfile
+
+if not os.path.exists(small_dataset_url):
+    small_f = urllib.urlretrieve (small_dataset_url, small_dataset_path)#Download
+    with zipfile.ZipFile(small_dataset_path, &quot;r&quot;) as z:#Giải nén
+        z.extractall(datasets_path)
+if not os.path.exists(small_dataset_url):
+    complete_f = urllib.urlretrieve (complete_dataset_url, complete_dataset_path)#Download
+    with zipfile.ZipFile(complete_dataset_path, &quot;r&quot;) as z:#Giải nén
+        z.extractall(datasets_path)
+
+</code></pre>
+
+<p>Trong thư mục giải nén, chúng ta sẽ có các file ratings.csv, movies.csv, tags.csv, links.csv, README.txt.</p>
+
+<h3 id="loading-và-parsing-dữ-liệu">Loading và parsing dữ liệu.</h3>
+
+<p>Mỗi dòng trong tập ratings.csv có định dạng <code>&quot;userId,movieId,rating,timestamp&quot;</code>.</p>
+
+<p>Mỗi dòng trong tập movies.csv có định dạng <code>&quot;movieId,title,genres&quot;</code>.</p>
+
+<p>Mỗi dòng trong tập tags.csv có định dạng <code>&quot;userId,movieId,tag,timestamp&quot;</code>.</p>
+
+<p>Mỗi dòng trong tập links.csv có định dạng <code>&quot;movieId,imdbId,tmdbId&quot;</code>.</p>
+
+<p>Tóm lại, các trường dữ liệu trong các file csv đều ngăn cách nhau bởi dấu phẩy (,). Trong python, ta có thể dùng hàm split để cắt chúng ra. Sau đó sẽ load toàn bộ dữ liệu lên RDDs.</p>
+
+<p>Lưu ý nhỏ:</p>
+
+<ul>
+<li>Ở tập dữ liệu ratings, chúng ta chỉ giữ lại các trường <code>(UserID, MovieID, Rating)</code> bỏ đi trường timestamp vì không cần thiết.</li>
+<li>Ở tập dữ liệu movies  chúng ta giữ lại trường <code>(MovieID, Title)</code> và bỏ đi trường genres vì lý do tương tự.</li>
+</ul>
+
+<pre><code class="language-python">small_ratings_file = os.path.join(datasets_path, 'ml-latest-small', 'ratings.csv')
+small_ratings_raw_data = sc.textFile(small_ratings_file)
+small_ratings_raw_data_header = small_ratings_raw_data.take(1)[0]
+small_ratings_data = small_ratings_raw_data.filter(lambda line: line!=small_ratings_raw_data_header).map(lambda line: line.split(&quot;,&quot;)).map(lambda tokens: (tokens[0],tokens[1],tokens[2])).cache()
+print(small_ratings_data.take(3)) #Hiện thị top 3 ratting đầu tiên
+
+small_movies_file = os.path.join(datasets_path, 'ml-latest-small', 'movies.csv')
+
+small_movies_raw_data = sc.textFile(small_movies_file)
+small_movies_raw_data_header = small_movies_raw_data.take(1)[0]
+
+small_movies_data = small_movies_raw_data.filter(lambda line: line!=small_movies_raw_data_header)\
+    .map(lambda line: line.split(&quot;,&quot;)).map(lambda tokens: (tokens[0],tokens[1])).cache()
+    
+small_movies_data.take(3) #Hiện thị top 3 movie đầu tiên
+</code></pre>
+
+<p>Phần tiếp theo, chúng ta sẽ tìm hiểu lọc cộng tác (Collaborative Filtering) và cách sử dụng Spark MLlib để xây dựng mô hình dự báo.</p>
+
+<h3 id="collaborative-filtering">Collaborative Filtering</h3>
+
+<p>Ở đây, tôi sẽ không đề cập đến lọc cộng tác là gì, các bạn có nhu cầu tìm hiểu có thể xem ở bài post khác hoặc tham khảo trên wiki. Chúng ta sẽ tập trung vào tìm hiểu cách sử dụng ALS trong thư viện MLlib của Spark. Các tham số của thuật toán này bao gồm:</p>
+
+<ul>
+<li><p>numBlocks: số lượng block được sử dụng trong tính toán song song (-1 với ý nghĩa là auto configure).</p></li>
+
+<li><p>rank: số lượng nhân tố ẩn (latent factor) trong mô hình.</p></li>
+
+<li><p>iterations: số lần lặp.</p></li>
+
+<li><p>lambda: tham số của chuẩn hoá(regularization ) trong ALS.</p></li>
+
+<li><p>implicitPrefs specifies whether to use the explicit feedback ALS variant or one adapted for implicit feedback data.</p></li>
+
+<li><p>alpha is a parameter applicable to the implicit feedback variant of ALS that governs the baseline confidence in preference observations.</p></li>
+</ul>
+
+<h3 id="chọn-các-tham-số-cho-als">Chọn các tham số cho ALS</h3>
+
+<p>Để chọn được các tham số tốt nhất cho mô hình ALS, chúng ta sẽ sử dụng tập small để grid search. Đầu tiên, chúng ta chia tập dữ liệu thành 3 phần là tập train, tập vali và  tập test. Sau đó tiến hành huấn luyện trên tập train và predict trên tập valid để tìm được tham số tốt nhất. Cuối cùng đánh giá kết quả đạt được trên tập test.</p>
+
+<pre><code class="language-python">training_RDD, validation_RDD, test_RDD = small_ratings_data.randomSplit([6, 2, 2], seed=0)
+validation_for_predict_RDD = validation_RDD.map(lambda x: (x[0], x[1]))
+test_for_predict_RDD = test_RDD.map(lambda x: (x[0], x[1]))
+
+from pyspark.mllib.recommendation import ALS
+import math
+
+seed = 5L
+iterations = 10
+regularization_parameter = 0.1
+ranks = [4, 8, 12]
+errors = [0, 0, 0]
+err = 0
+tolerance = 0.02
+
+min_error = float('inf')
+best_rank = -1
+best_iteration = -1
+for rank in ranks:
+    model = ALS.train(training_RDD, rank, seed=seed, iterations=iterations,
+                      lambda_=regularization_parameter)
+    predictions = model.predictAll(validation_for_predict_RDD).map(lambda r: ((r[0], r[1]), r[2]))
+    rates_and_preds = validation_RDD.map(lambda r: ((int(r[0]), int(r[1])), float(r[2]))).join(predictions)
+    error = math.sqrt(rates_and_preds.map(lambda r: (r[1][0] - r[1][1])**2).mean())
+    errors[err] = error
+    err += 1
+    print('For rank %s the RMSE is %s' % (rank, error))
+    if error &lt; min_error:
+        min_error = error
+        best_rank = rank
+
+print('The best model was trained with rank %s' % best_rank)
+</code></pre>
+
+<p>Kết quả sau khi thực hiện đoạn code trên là:</p>
+
+<pre><code class="language-python">For rank 4 the RMSE is 0.963681878574
+For rank 8 the RMSE is 0.96250475933
+For rank 12 the RMSE is 0.971647563632
+The best model was trained with rank 8
+</code></pre>
+
+<p>Tiến hành thực hiện test</p>
+
+<pre><code class="language-python">model_test = ALS.train(training_RDD, best_rank, seed=seed, iterations=iterations,
+                      lambda_=regularization_parameter)
+predictions = model_test.predictAll(test_for_predict_RDD).map(lambda r: ((r[0], r[1]), r[2]))
+rates_and_preds = test_RDD.map(lambda r: ((int(r[0]), int(r[1])), float(r[2]))).join(predictions)
+error = math.sqrt(rates_and_preds.map(lambda r: (r[1][0] - r[1][1])**2).mean())
+    
+print('For testing data the RMSE is %s' % (error))
+</code></pre>
+
+<pre><code class="language-python">For testing data the RMSE is 0.972342381898
+</code></pre>
+
+<p>Xem kỹ hơn một chút về dữ liệu mà spark trả về cho chúng ta. Với predictions và rates_and_preds, ta có:</p>
+
+<pre><code class="language-python">print(predictions.take(3))
+</code></pre>
+
+<pre><code class="language-python">[((32, 4018), 3.280114696166238),
+ ((375, 4018), 2.7365714977314086),
+ ((674, 4018), 2.510684514310653)]
+</code></pre>
+
+<p>Tập dữ liệu trả về bao gồm cặp <code>(UserID, MovieID)</code> và <code>Rating</code> (tương ứng với colum 0, column 1 và column 2 ở trên),được hiểu ở đây là với người dùng UserID và phim MovieID thì mô hình sẽ dự đoán người dùng sẽ rating kết quả Rating.</p>
+
+<p>Sau đó chúng ta sẽ nối(join) chúng với tập valid tương ứng theo cặp <code>(UserID, MovieID)</code>, kết quả đạt được là:</p>
+
+<pre><code class="language-python">rates_and_preds.take(3)
+</code></pre>
+
+<pre><code class="language-python">[((558, 788), (3.0, 3.0419325487471403)),
+ ((176, 3550), (4.5, 3.3214065001580986)),
+ ((302, 3908), (1.0, 2.4728711204440765))]
+</code></pre>
+
+<p>Việc còn lại là chúng ta sẽ tính trung bình độ lỗi bằng hàm <code>mean()</code> và <code>sqlt()</code></p>
+
+<h3 id="xây-dựng-mô-hình-với-tập-dữ-liệu-large">Xây dựng mô hình với tập dữ liệu large</h3>
+
+<p>Tiếp theo, chúng ta sẽ sử dụng tập dự liệu bự hơn để xây dựng mô hình. Cách thực hiện y chang như tập dữ liệu nhỏ đã được trình bày ở trên, nên tôi sẽ bỏ qua một số giải thích không cần thiết để tránh lặp lại.</p>
+
+<pre><code class="language-python"># Load the complete dataset file
+complete_ratings_file = os.path.join(datasets_path, 'ml-latest', 'ratings.csv')
+complete_ratings_raw_data = sc.textFile(complete_ratings_file)
+complete_ratings_raw_data_header = complete_ratings_raw_data.take(1)[0]
+
+# Parse
+complete_ratings_data = complete_ratings_raw_data.filter(lambda line: line!=complete_ratings_raw_data_header)\
+    .map(lambda line: line.split(&quot;,&quot;)).map(lambda tokens: (int(tokens[0]),int(tokens[1]),float(tokens[2]))).cache()
+    
+print(&quot;There are %s recommendations in the complete dataset&quot; % (complete_ratings_data.count()))
+</code></pre>
+
+<pre><code class="language-python">There are 21063128 recommendations in the complete dataset
+</code></pre>
+
+<p>Tiến hành train và test.</p>
+
+<pre><code class="language-python">training_RDD, test_RDD = complete_ratings_data.randomSplit([7, 3], seed=0)
+
+complete_model = ALS.train(training_RDD, best_rank, seed=seed,iterations=iterations, lambda_=regularization_parameter)
+
+test_for_predict_RDD = test_RDD.map(lambda x: (x[0], x[1]))
+
+predictions = complete_model.predictAll(test_for_predict_RDD).map(lambda r: ((r[0], r[1]), r[2]))
+rates_and_preds = test_RDD.map(lambda r: ((int(r[0]), int(r[1])), float(r[2]))).join(predictions)
+error = math.sqrt(rates_and_preds.map(lambda r: (r[1][0] - r[1][1])**2).mean())
+    
+print('For testing data the RMSE is %s' % (error))
+</code></pre>
+
+<pre><code class="language-python">For testing data the RMSE is 0.82183583368
+</code></pre>
+
+  </div>
+
+  <footer>
+    <ul class="stats">
+  <li class="categories">
+    <ul>
+        
+    </ul>
+  </li>
+  <li class="tags">
+    <ul>
+        
+            
+            
+                <i class="fa fa-tags"></i>
+                
+                
+                <li><a class="article-category-link" href="/blog/blog/tags/machine-learning">Machine learning</a></li>
+                
+                
+                <li><a class="article-category-link" href="/blog/blog/tags/deeplearning">Deeplearning</a></li>
+                
+                
+                <li><a class="article-category-link" href="/blog/blog/tags/spark">Spark</a></li>
+                
+            
+        
+    </ul>
+  </li>
+</ul>
+
+  </footer>
+
+</article>
+
+    <article class="post">
+        <div id="disqus_thread"></div>
+<script>
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "shortname" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    </article>
+
+
+<ul class="actions pagination">
+    
+        <li><a href="/blog/blog/2018-06-15-understanding-alexnet/"
+                class="button big previous">Tìm hiểu về mạng neural network AlexNet</a></li>
+    
+
+    
+</ul>
+
+
+    </div>
+    
+<section id="sidebar">
+
+  
+  <section id="intro">
+    
+    
+      
+        <a href='/blog/'><img src="https://scontent.fsgn3-1.fna.fbcdn.net/v/t1.0-1/c186.26.328.328/s160x160/228272_495052530516916_281440713_n.jpg?_nc_cat=109&amp;oh=acf17dec50e15a8efd8aeff3b7deb73f&amp;oe=5C18C624" class="intro-circle" width="" alt="Phạm Duy Tùng" /></a>
+      
+    
+    
+      <header>
+        <h2>Phạm Duy Tùng ML Blog</h2>
+        <p>BIO</p>
+      </header>
+    
+    
+  </section>
+
+  
+  <section class="recent-posts">
+    <div class="mini-posts">
+      <header>
+        <h3>Recent Posts</h3>
+      </header>
+      <div class="posts-container">
+        
+
+        
+          
+        
+
+        
+          <article class="mini-post">
+            <header>
+              <h3>
+                <a href="/blog/blog/2018-10-01-buiding-a-movie-model/">Xây dựng chương trình gợi ý phim dựa vào tập dữ liệu movie len</a>
+              </h3>
+              
+              <time class="published" datetime='2018-10-01'>
+                October 1, 2018
+              </time>
+            </header>
+            
+
+          </article>
+        
+          <article class="mini-post">
+            <header>
+              <h3>
+                <a href="/blog/blog/2018-06-15-understanding-alexnet/">Tìm hiểu về mạng neural network AlexNet</a>
+              </h3>
+              
+              <time class="published" datetime='2018-06-15'>
+                June 15, 2018
+              </time>
+            </header>
+            
+
+          </article>
+        
+      </div>
+
+      
+    </div>
+  </section>
+
+  
+  
+  
+  
+  
+    <section id="categories">
+      <header>
+        <h3>
+          <a href="/blog/categories/">Categories</a>
+        </h3>
+      </header>
+        
+          
+        
+
+        
+    </section>
+  
+  
+
+  
+  
+    <section id="mini-bio">
+      <h3>About</h3>
+      <p>MWG</p>
+      <a href="/blog/about/" class="button">Learn More</a>
+    </section>
+  
+
+  
+  <section id="footer">
+    
+    <p class="copyright">
+      
+        &copy; 2018
+        
+          Phạm Duy Tùng blog
+        
+      .
+      Powered by <a href="//gohugo.io" target="_blank">Hugo</a>
+    </p>
+  </section>
+</section>
+
+    </div>
+    <a id="back-to-top" href="#" class="fa fa-arrow-up fa-border fa-2x"></a>
+    
+
+    
+      
+    
+
+    
+      
+      
+      
+        <script src="//cdn.bootcss.com/highlight.js/9.11.0/highlight.min.js"></script>
+        
+        
+        
+        <script src="//cdn.bootcss.com/highlight.js/9.11.0/languages/r.min.js"></script>
+        <script src="//cdn.bootcss.com/highlight.js/9.11.0/languages/yaml.min.js"></script>
+        <script src="//cdn.bootcss.com/highlight.js/9.11.0/languages/css.min.js"></script>
+        <script>hljs.configure({languages: []}); hljs.initHighlightingOnLoad();</script>
+      
+    
+    
+    
+      <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/skel/3.0.1/skel.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.1.25/jquery.fancybox.min.js"></script>
+      <script src="/blog/js/util.js"></script>
+      <script src="/blog/js/main.js"></script>
+      <script src="/blog/js/backToTop.js"></script>
+    
+
+    
+      
+        
+      
+    
+
+    
+    <script>hljs.initHighlightingOnLoad();</script>
+      <script src="//yihui.name/js/math-code.js"></script>
+<script async
+src="//cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+  </body>
+</html>
+
