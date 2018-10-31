@@ -24,7 +24,7 @@
         "datePublished": "2018-10-29 00:19:00 &#43;0300 &#43;0300",
         "dateModified" : "2018-10-29 00:19:00 &#43;0300 &#43;0300",
         "url" : "/blog/2018-10-29-phan-loai-cho-meo/",
-        "wordCount" : "870",
+        "wordCount" : "1252",
         "keywords" : [ "Machine learning","Deeplearning","Spark","Blog" ]
     }
     </script>
@@ -82,7 +82,7 @@
 
 <meta itemprop="datePublished" content="2018-10-29T00:19:00&#43;03:00" />
 <meta itemprop="dateModified" content="2018-10-29T00:19:00&#43;03:00" />
-<meta itemprop="wordCount" content="870">
+<meta itemprop="wordCount" content="1252">
 
 
 
@@ -406,7 +406,7 @@ if (!doNotTrack) {
             October 29, 2018</time>
         <span class="author"></span>
         
-            <p>5 minute read</p>
+            <p>6 minute read</p>
         
         
     </div>
@@ -621,6 +621,87 @@ model.fit_generator(datagen.flow(X_train, Y_train, batch_size=batch_size, shuffl
 
 
 net.save(model, tags, model_file_prefix)
+</code></pre>
+
+<p>Độ chính xác trên tập train</p>
+
+<pre><code class="language-python">Y_pred = model.predict(X_test, batch_size=batch_size)
+y_pred = np.argmax(Y_pred, axis=1)
+
+accuracy = float(np.sum(y_test==y_pred)) / len(y_test)
+print(&quot;accuracy: &quot;, accuracy)
+
+confusion = np.zeros((nb_classes, nb_classes), dtype=np.int32)
+for (predicted_index, actual_index, image) in zip(y_pred, y_test, X_test):
+    confusion[predicted_index, actual_index] += 1
+
+print(&quot;rows are predicted classes, columns are actual classes&quot;)
+for predicted_index, predicted_tag in enumerate(tags):
+    print(predicted_tag[:7], end='', flush=True)
+    for actual_index, actual_tag in enumerate(tags):
+        print(&quot;\t%d&quot; % confusion[predicted_index, actual_index], end='')
+    print(&quot;&quot;, flush=True)
+</code></pre>
+
+<pre><code class="language-python">accuracy:  0.9907213167661771
+rows are predicted classes, columns are actual classes
+cat     12238   106
+dog     124     12320
+</code></pre>
+
+<p>Kết quả đạt 0.99 trên tập train, khá tốt phải không các bạn.</p>
+
+<p>Các bạn có thể download mô hình tôi đã huấn luyện ở <a href="https://drive.google.com/open?id=1qQo8gj3KA6c1rPmJMVS_FZkVDcDmRgSf">https://drive.google.com/open?id=1qQo8gj3KA6c1rPmJMVS_FZkVDcDmRgSf</a></p>
+
+<p>Thử show ra kết quả trên tập test xem như thế nào.</p>
+
+<pre><code class="language-python">Y_pred = model.predict(X_test, batch_size=batch_size)
+y_pred = np.argmax(Y_pred, axis=1)
+
+lst_img = []
+
+columns = 5
+rows = 5
+# fig,= plt.figure(rows)
+for idx, val in enumerate(X_test):
+    pred =y_pred[idx]
+    label = &quot;{}: {:.2f}%&quot;.format(tags[pred], Y_pred[idx][pred] * 100)
+    image = dataset.reverse_preprocess_input(val)
+    image = cv2.cvtColor(image,cv2.COLOR_BGR2RGB)
+    cv2.putText(image,label , (10, 25),  cv2.FONT_HERSHEY_SIMPLEX,0.7, (255, 000, 0), 2)
+
+    plt.subplot(rows,rows,idx+1)
+    plt.imshow(image)
+    plt.title(label)
+    plt.axis('off')
+
+plt.show()
+</code></pre>
+
+<p><img src="/post_image/nhan_dang_cho_meo1.png" alt="Hình ảnh kết quả nhận dạng chó mèo" /></p>
+
+<p>Kết quả có một số hình mèo bị nhận nhầm là chó, và một số hình không phải mèo, không phải chó. Nhìn chung kết quả cũng không đến nỗi nào quá tệ.</p>
+
+<h3 id="quậy-phá-mô-hình">Quậy phá mô hình</h3>
+
+<p>Mô hình InceptionV3 chúng ta đang xài có tổng cộng 311 lớp, chúng ta sẽ tiến hành một số pha quậy phá mô hình xem kết quả như trả ra như thế nào</p>
+
+<h4 id="quậy-phá-1-mở-đóng-băng-một-số-lớp-cuối-và-train-trên-chúng">Quậy phá 1: Mở đóng băng một số lớp cuối và train trên chúng.</h4>
+
+<p>Nếu các bạn để ý kỹ, trong đoạn mã nguồn của mình có đoạn</p>
+
+<pre><code class="language-python"># first: train only the top layers (which were randomly initialized)
+    # i.e. freeze all convolutional InceptionV3 layers
+    for layer in base_model.layers:
+        layer.trainable = False
+</code></pre>
+
+<p>Nghĩa là mình đóng băng toàn bộ 311 lớp, không cho nó train mà chỉ lấy kết quả của nó train lớp softmax cuối cùng. Bây giờ mình sẽ thí nghiệm Mình sẽ thử nghiệm với việc là để 299 lớp ban đầu vẫn đóng băng, và train lại toàn bộ các lớp còn lại (Các bạn đừng thắc mắc vì sao lại là 299 nha, do mình thích thôi).</p>
+
+<pre><code class="language-python">for layer in model.layers[:299]:
+    layer.trainable = False
+for layer in model.layers[299:]:
+    layer.trainable = True
 </code></pre>
 
 <p>Cảm ơn các bạn đã theo dõi. Hẹn gặp bạn ở các bài viết tiếp theo.</p>
