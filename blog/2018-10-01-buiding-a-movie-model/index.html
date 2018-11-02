@@ -274,6 +274,18 @@ if (!doNotTrack) {
                 
                         <article class="mini-post">
                             <header>
+                                <h3><a href="/blog/2018-11-01-overview-of-gradient-descent-optimization-algorithm/">Overview of gradient descent optimization algorithm</a></h3>
+                                
+                                <time class="published" datetime=
+                                    '2018-10-29'>
+                                    October 29, 2018</time>
+                            </header>
+                            
+
+                        </article>
+                
+                        <article class="mini-post">
+                            <header>
                                 <h3><a href="/blog/2018-10-29-phan-loai-cho-meo/">Phân loại chó mèo sử dụng pretrain model</a></h3>
                                 
                                 <time class="published" datetime=
@@ -315,18 +327,6 @@ if (!doNotTrack) {
                                 <time class="published" datetime=
                                     '2018-10-04'>
                                     October 4, 2018</time>
-                            </header>
-                            
-
-                        </article>
-                
-                        <article class="mini-post">
-                            <header>
-                                <h3><a href="/blog/2018-10-02-understanding-epoch-batchsize-iterations/">Phân biệt Epoch - Batch size và Iterations</a></h3>
-                                
-                                <time class="published" datetime=
-                                    '2018-10-02'>
-                                    October 2, 2018</time>
                             </header>
                             
 
@@ -420,15 +420,15 @@ if (!doNotTrack) {
   <div id="content">
     
 
-<h3 id="lời-mở-đầu">Lời mở đầu</h3>
+<h2 id="lời-mở-đầu">Lời mở đầu</h2>
 
-<p>MovieLens là một tập dữ liệu được sử dụng rộng rãi cách đây nhiều năm. Hôm nay, tôi sẽ sử dụng tập dữ liệu này và mô hình ALS để xây dựng chương trình dự đoán phim cho người dùng.</p>
+<p>MovieLens là một tập dữ liệu được sử dụng rộng rãi cách đây nhiều năm. Hôm nay, mình sẽ sử dụng tập dữ liệu này và mô hình ALS của spark để xây dựng chương trình dự đoán phim cho người dùng.</p>
 
-<h3 id="chuẩn-bị-dữ-liệu">Chuẩn bị dữ liệu</h3>
+<h2 id="chuẩn-bị-dữ-liệu">Chuẩn bị dữ liệu</h2>
 
 <p>Các bạn có thể download tập dữ liệu MovieLens ở link <a href="https://grouplens.org/datasets/movielens/">https://grouplens.org/datasets/movielens/</a>. Các bạn có thể download trực tiếp 2 file nén ở link <a href="http://files.grouplens.org/datasets/movielens/ml-latest-small.zip">http://files.grouplens.org/datasets/movielens/ml-latest-small.zip</a> và link  <a href="http://files.grouplens.org/datasets/movielens/ml-latest.zip">http://files.grouplens.org/datasets/movielens/ml-latest.zip</a>.</p>
 
-<p>Ở trên bao gồm 2 tập dữ liệu. Trong python, chúng ta tạo thư mục datasets và download rồi bỏ chúng vào trong thư mục đấy.</p>
+<p>Ở trên bao gồm 2 tập dữ liệu. chúng ta tạo thư mục datasets và download rồi bỏ chúng vào trong thư mục đấy.</p>
 
 <pre><code class="language-python">complete_dataset_url = 'http://files.grouplens.org/datasets/movielens/ml-latest.zip'
 small_dataset_url = 'http://files.grouplens.org/datasets/movielens/ml-latest-small.zip'
@@ -458,7 +458,7 @@ if not os.path.exists(small_dataset_url):
 
 <p>Trong thư mục giải nén, chúng ta sẽ có các file ratings.csv, movies.csv, tags.csv, links.csv, README.txt.</p>
 
-<h3 id="loading-và-parsing-dữ-liệu">Loading và parsing dữ liệu.</h3>
+<h2 id="loading-và-parsing-dữ-liệu">Loading và parsing dữ liệu.</h2>
 
 <p>Mỗi dòng trong tập ratings.csv có định dạng <code>&quot;userId,movieId,rating,timestamp&quot;</code>.</p>
 
@@ -496,7 +496,7 @@ small_movies_data.take(3) #Hiện thị top 3 movie đầu tiên
 
 <p>Phần tiếp theo, chúng ta sẽ tìm hiểu lọc cộng tác (Collaborative Filtering) và cách sử dụng Spark MLlib để xây dựng mô hình dự báo.</p>
 
-<h3 id="collaborative-filtering">Collaborative Filtering</h3>
+<h2 id="collaborative-filtering">Collaborative Filtering</h2>
 
 <p>Ở đây, tôi sẽ không đề cập đến lọc cộng tác là gì, các bạn có nhu cầu tìm hiểu có thể xem ở bài post khác hoặc tham khảo trên wiki. Chúng ta sẽ tập trung vào tìm hiểu cách sử dụng ALS trong thư viện MLlib của Spark. Các tham số của thuật toán này bao gồm:</p>
 
@@ -514,7 +514,7 @@ small_movies_data.take(3) #Hiện thị top 3 movie đầu tiên
 <li><p>alpha is a parameter applicable to the implicit feedback variant of ALS that governs the baseline confidence in preference observations.</p></li>
 </ul>
 
-<h3 id="chọn-các-tham-số-cho-als">Chọn các tham số cho ALS</h3>
+<h2 id="chọn-các-tham-số-cho-als">Chọn các tham số cho ALS</h2>
 
 <p>Để chọn được các tham số tốt nhất cho mô hình ALS, chúng ta sẽ sử dụng tập small để grid search. Đầu tiên, chúng ta chia tập dữ liệu thành 3 phần là tập train, tập vali và  tập test. Sau đó tiến hành huấn luyện trên tập train và predict trên tập valid để tìm được tham số tốt nhất. Cuối cùng đánh giá kết quả đạt được trên tập test.</p>
 
@@ -560,7 +560,7 @@ For rank 12 the RMSE is 0.971647563632
 The best model was trained with rank 8
 </code></pre>
 
-<p>Tiến hành thực hiện test</p>
+<p>Tiến hành thực hiện test.</p>
 
 <pre><code class="language-python">model_test = ALS.train(training_RDD, best_rank, seed=seed, iterations=iterations,
                       lambda_=regularization_parameter)
@@ -596,9 +596,9 @@ print('For testing data the RMSE is %s' % (error))
  ((302, 3908), (1.0, 2.4728711204440765))]
 </code></pre>
 
-<p>Việc còn lại là chúng ta sẽ tính trung bình độ lỗi bằng hàm <code>mean()</code> và <code>sqlt()</code></p>
+<p>Việc còn lại là chúng ta sẽ tính trung bình độ lỗi bằng hàm <code>mean()</code> và <code>sqlt()</code>.</p>
 
-<h3 id="xây-dựng-mô-hình-với-tập-dữ-liệu-large">Xây dựng mô hình với tập dữ liệu large</h3>
+<h2 id="xây-dựng-mô-hình-với-tập-dữ-liệu-large">Xây dựng mô hình với tập dữ liệu large</h2>
 
 <p>Tiếp theo, chúng ta sẽ sử dụng tập dự liệu bự hơn để xây dựng mô hình. Cách thực hiện y chang như tập dữ liệu nhỏ đã được trình bày ở trên, nên tôi sẽ bỏ qua một số giải thích không cần thiết để tránh lặp lại.</p>
 
@@ -662,7 +662,7 @@ movie_ID_with_avg_ratings_RDD = movie_ID_with_ratings_RDD.map(get_counts_and_ave
 movie_rating_counts_RDD = movie_ID_with_avg_ratings_RDD.map(lambda x: (x[0], x[1][0]))
 </code></pre>
 
-<p>Giả sử chúng ta có 1 người dùng mới, với các ratting như sau</p>
+<p>Giả sử chúng ta có 1 người dùng mới, với các ratting như sau:</p>
 
 <pre><code class="language-python">new_user_ID = 0
 
@@ -686,7 +686,7 @@ print('New user ratings: %s' % new_user_ratings_RDD.take(10))
 <pre><code class="language-python">New user ratings: [(0, 260, 9), (0, 1, 8), (0, 16, 7), (0, 25, 8), (0, 32, 9), (0, 335, 4), (0, 379, 3), (0, 296, 7), (0, 858, 10), (0, 50, 8)]
 </code></pre>
 
-<p>Chúng ta tiến hành huấn luyện lại mô hình khi có thêm người mới</p>
+<p>Chúng ta tiến hành huấn luyện lại mô hình khi có thêm người mới:</p>
 
 <pre><code class="language-python">complete_data_with_new_ratings_RDD = complete_ratings_data.union(new_user_ratings_RDD)
 
@@ -704,7 +704,7 @@ print(&quot;New model trained in %s seconds&quot; % round(tt,3))
 <pre><code class="language-python">New model trained in 56.61 seconds
 </code></pre>
 
-<p>Tiến hành dự đoán ratting của người dùng mới cho toàn bộ các phim người dùng đó chưa xem</p>
+<p>Tiến hành dự đoán ratting của người dùng mới cho toàn bộ các phim người dùng đó chưa xem.</p>
 
 <pre><code class="language-python">new_user_ratings_ids = map(lambda x: x[1], new_user_ratings) # get just movie IDs
 # keep just those not on the ID list (thanks Lei Li for spotting the error!)
@@ -723,7 +723,7 @@ new_user_recommendations_rating_title_and_count_RDD = \
 new_user_recommendations_rating_title_and_count_RDD.take(3)
 </code></pre>
 
-<p>Hiển thị top recommend (Ở đây sẽ flat dữ liệu hiển thị thành dàng <code>((Title, Rating, Ratings Count))</code> ra cho dễ nhìn)</p>
+<p>Hiển thị top recommend (Ở đây sẽ flat dữ liệu hiển thị thành dàng <code>((Title, Rating, Ratings Count))</code> ra cho dễ nhìn).</p>
 
 <pre><code class="language-python">new_user_recommendations_rating_title_and_count_RDD = new_user_recommendations_rating_title_and_count_RDD.map(lambda r: (r[1][0][1], r[1][0][0], r[1][1]))
 
@@ -762,7 +762,7 @@ print ('TOP recommended movies (with more than 25 reviews):\n%s' %
     (u'Chinatown (1974)', 7.978673289692703, 16195)
 </code></pre>
 
-<h3 id="dự-đoán-rating-của-1-cá-nhân">Dự đoán rating của 1 cá nhân</h3>
+<h2 id="dự-đoán-rating-của-1-cá-nhân">Dự đoán rating của 1 cá nhân</h2>
 
 <p>Một trường hợp khác là chúng ta cần dự đoán giá trị ratting của 1 người dùng với 1 bộ phim cụ thể nào đó.</p>
 
@@ -774,7 +774,7 @@ individual_movie_rating_RDD.take(1)
 <pre><code class="language-python">[Rating(user=0, product=122880, rating=4.955831875971526)]
 </code></pre>
 
-<h3 id="lưu-trữ-mô-hình">Lưu trữ mô hình</h3>
+<h2 id="lưu-trữ-mô-hình">Lưu trữ mô hình</h2>
 
 <p>Sau khi có được mô hình. Chúng ta cần phải lưu trữ chúng lại để sau này dùng.</p>
 
@@ -898,6 +898,20 @@ same_model = MatrixFactorizationModel.load(sc, model_path)
           <article class="mini-post">
             <header>
               <h3>
+                <a href="/blog/2018-11-01-overview-of-gradient-descent-optimization-algorithm/">Overview of gradient descent optimization algorithm</a>
+              </h3>
+              
+              <time class="published" datetime='2018-10-29'>
+                October 29, 2018
+              </time>
+            </header>
+            
+
+          </article>
+        
+          <article class="mini-post">
+            <header>
+              <h3>
                 <a href="/blog/2018-10-29-phan-loai-cho-meo/">Phân loại chó mèo sử dụng pretrain model</a>
               </h3>
               
@@ -945,20 +959,6 @@ same_model = MatrixFactorizationModel.load(sc, model_path)
               
               <time class="published" datetime='2018-10-04'>
                 October 4, 2018
-              </time>
-            </header>
-            
-
-          </article>
-        
-          <article class="mini-post">
-            <header>
-              <h3>
-                <a href="/blog/2018-10-02-understanding-epoch-batchsize-iterations/">Phân biệt Epoch - Batch size và Iterations</a>
-              </h3>
-              
-              <time class="published" datetime='2018-10-02'>
-                October 2, 2018
               </time>
             </header>
             
