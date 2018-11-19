@@ -24,7 +24,7 @@
         "datePublished": "2018-11-13 00:19:00 &#43;0300 &#43;0300",
         "dateModified" : "2018-11-13 00:19:00 &#43;0300 &#43;0300",
         "url" : "/blog/2018-11-13-instacart-market-basket-analysis/",
-        "wordCount" : "1777",
+        "wordCount" : "2046",
         "keywords" : [ "Machine learning","Deeplearning","instacart","Giỏ hàng","Đơn hàng","Blog" ]
     }
     </script>
@@ -82,7 +82,7 @@
 
 <meta itemprop="datePublished" content="2018-11-13T00:19:00&#43;03:00" />
 <meta itemprop="dateModified" content="2018-11-13T00:19:00&#43;03:00" />
-<meta itemprop="wordCount" content="1777">
+<meta itemprop="wordCount" content="2046">
 
 
 
@@ -406,7 +406,7 @@ if (!doNotTrack) {
             November 13, 2018</time>
         <span class="author"></span>
         
-            <p>9 minute read</p>
+            <p>10 minute read</p>
         
         
     </div>
@@ -843,7 +843,132 @@ cv_f1_scores_10fit: 0.3899595078917494
 F1 store all: 0.3808374055616213
 </code></pre>
 
-<h1 id="https-github-com-vlazovskiy-predicting-instacart-purchases-blob-master-logistic-regression-models-ipynb"><a href="https://github.com/vlazovskiy/predicting-instacart-purchases/blob/master/logistic_regression_models.ipynb">https://github.com/vlazovskiy/predicting-instacart-purchases/blob/master/logistic_regression_models.ipynb</a></h1>
+<p>Thử in ra hệ số của hàm hồi quy</p>
+
+<pre><code class="language-python">coefficients = pd.DataFrame(lr_10x.coef_, columns = X_tr.columns)
+coefficients = np.exp(coefficients)
+print(coefficients.T)
+</code></pre>
+
+<pre><code class="language-python">user_product_total_orders                     1.160475
+product_total_orders                          1.077254
+product_avg_add_to_cart_order                 0.915343
+user_total_orders                             0.983272
+user_avg_cartsize                             1.059655
+user_total_products                           0.993839
+user_avg_days_since_prior_order               0.993513
+user_product_avg_add_to_cart_order            0.950418
+user_product_order_freq                       1.051246
+product_avg_order_dow                         0.994744
+product_avg_order_hour_of_day                 1.010971
+product_avg_days_since_prior_order            0.994498
+user_avg_order_dow                            0.997298
+user_avg_order_hour_of_day                    1.012958
+user_product_avg_days_since_prior_order       1.003382
+user_product_avg_order_dow                    0.994477
+user_product_avg_order_hour_of_day            1.003457
+product_total_orders_delta_per_user           0.928288
+product_avg_add_to_cart_order_delta_per_user  0.963095
+product_avg_order_dow_per_user                1.000268
+product_avg_order_hour_of_day_per_user        1.007489
+product_avg_days_since_prior_order_per_user   0.991147
+alcohol                                       0.998866
+babies                                        1.000313
+bakery                                        1.003098
+beverages                                     1.007733
+breakfast                                     1.000117
+bulk                                          0.999980
+canned goods                                  0.995017
+dairy eggs                                    1.018069
+deli                                          1.002720
+dry goods pasta                               0.997379
+frozen                                        1.000752
+household                                     0.992164
+international                                 0.996822
+meat seafood                                  1.000340
+missing                                       1.001953
+other                                         0.999607
+pantry                                        0.972038
+personal care                                 0.992072
+pets                                          1.000466
+produce                                       1.017809
+snacks                                        1.004893
+</code></pre>
+
+<p>Thử show confusion matrix của dữ liệu:</p>
+
+<pre><code class="language-python">from sklearn.metrics import confusion_matrix
+import seaborn as sns
+import matplotlib.pyplot as plt
+%matplotlib inline
+plt.style.use('fivethirtyeight')
+
+def plot_confusion_matrix(cm,title='Confusion matrix', cmap=plt.cm.Reds):
+    plt.imshow(cm, interpolation='nearest',cmap=cmap)
+    plt.title(title)
+    plt.colorbar()
+    plt.tight_layout()
+    plt.ylabel('True label')
+    plt.xlabel('Predicted label')
+
+#y_tr=np.ravel(y_tr)
+
+train_acc=lr_10x.score(X_tr, y_tr)
+test_acc=lr_10x.score(X_te, y_te)
+print(&quot;Training Data Accuracy: %0.2f&quot; %(train_acc))
+print(&quot;Test Data Accuracy:     %0.2f&quot; %(test_acc))
+    
+y_true = y_te
+y_pred = lr_10x.predict(X_te)
+
+
+conf = confusion_matrix(y_true, y_pred)
+print(conf)
+
+print ('\n')
+print (&quot;Precision:              %0.2f&quot; %(conf[1, 1] / (conf[1, 1] + conf[0, 1])))
+print (&quot;Recall:                 %0.2f&quot;% (conf[1, 1] / (conf[1, 1] + conf[1, 0])))
+    
+cm=confusion_matrix(y_true, y_pred, labels=[0, 1])
+    
+plt.figure()
+plot_confusion_matrix(cm)
+</code></pre>
+
+<p>````python
+Training Data Accuracy: 0.83
+Test Data Accuracy:     0.83
+[[1236979  190126]
+ [  78107   82493]]</p>
+
+<p>Precision:              0.30
+Recall:                 0.51</p>
+
+<pre><code>
+![Hình ảnh](/post_image/instartcart_plot_confusion_matrix.png)
+
+
+Show đường cong ROC của dữ liệu 
+
+```python
+
+from sklearn.metrics import roc_curve, auc
+
+y_score = lr_10x.predict_proba(X_te)[:,1]
+
+fpr, tpr,_ = roc_curve(y_te, y_score)
+roc_auc = auc(fpr, tpr)
+
+plt.figure()
+# Plotting our Baseline..
+plt.plot([0,1],[0,1], linestyle='--', color = 'black')
+plt.plot(fpr, tpr, color = 'green')
+plt.xlabel('False Positive Rate')
+plt.ylabel('True Positive Rate')
+plt.gca().set_aspect('equal', adjustable='box')
+</code></pre>
+
+<p><img src="/post_image/instartcart_roc.png" alt="Hình ảnh" /></p>
 
 <p>Cảm ơn các bạn đã theo dõi. Hẹn gặp bạn ở các bài viết tiếp theo.</p>
 
