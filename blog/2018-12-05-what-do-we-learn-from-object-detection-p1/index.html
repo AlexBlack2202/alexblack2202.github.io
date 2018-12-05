@@ -24,7 +24,7 @@
         "datePublished": "2018-12-05 00:19:00 &#43;0300 &#43;0300",
         "dateModified" : "2018-12-05 00:19:00 &#43;0300 &#43;0300",
         "url" : "/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/",
-        "wordCount" : "2246",
+        "wordCount" : "2264",
         "keywords" : [ "Machine learning","Deeplearning","object detector","region base","Blog" ]
     }
     </script>
@@ -99,7 +99,7 @@
 
 <meta itemprop="datePublished" content="2018-12-05T00:19:00&#43;03:00" />
 <meta itemprop="dateModified" content="2018-12-05T00:19:00&#43;03:00" />
-<meta itemprop="wordCount" content="2246">
+<meta itemprop="wordCount" content="2264">
 
 
 
@@ -379,13 +379,13 @@ for ROI in ROIs
 
 <h2 id="region-based-fully-convolutional-networks">Region-based Fully Convolutional Networks</h2>
 
-<p>Giả sử chúng ta chỉ có toạ độ của mắt phải trong khuôn mặt, chúng ta có thể nội suy ra được vị trí của khuôn mặt. Vì ta biết rằng mắt phải nằm ở vị trí trái trne trong bức hình, và ta từ đó suy va vị trí của các phần còn lại (xem hình).</p>
+<p>Giả sử chúng ta chỉ có toạ độ của mắt phải trong khuôn mặt, chúng ta có thể nội suy ra được vị trí của khuôn mặt. Vì ta biết rằng mắt phải nằm ở vị trí trái trái trong bức hình, và ta từ đó suy ra vị trí của các phần còn lại (xem hình).</p>
 
 <p><img src="/post_image/f-rcnn-image1.jpg" alt="Hình ảnh" /></p>
 
 <p>Nếu chúng ta có thêm thông tin khác, ví như toạ độ của mắt trái, mũi, miệng, &hellip; thì chúng ta có thể kết hợp chúng để tăng độ chính xác của phân vùng khuôn mặt.</p>
 
-<p>Trong Faster R-CNN, chúng ta phải tìm proposal sử dụng một mô hình CNN, với khoảng 2000 ROI, chúng ta sẽ tiêu tốn một khoảng thời gian lớn để tìm chúng.</p>
+<p>Trong Faster R-CNN, chúng ta phải tìm proposal sử dụng một mô hình CNN, với khoảng 2000 ROI, chúng ta sẽ tiêu tốn một khoảng thời gian khá lớn để tìm chúng.</p>
 
 <pre><code class="language-python">feature_maps = process(image)
 ROIs = region_proposal(feature_maps)
@@ -395,7 +395,7 @@ for ROI in ROIs
     class_probabilities = softmax(class_scores)
 </code></pre>
 
-<p>Trong khi đó, với Fast R-CNN, chúng ta chỉ cần phải tính max hoặc average, nên Fast R-CNN nhanh hơn Faster R-CNN</p>
+<p>Trong khi đó, với Fast R-CNN, chúng ta chỉ cần phải tính max hoặc average, nên Fast R-CNN nhanh hơn Faster R-CNN ở đây.</p>
 
 <pre><code class="language-python">feature_maps = process(image)
 ROIs = region_proposal(feature_maps)         
@@ -406,17 +406,17 @@ for ROI in ROIs
     class_probabilities = softmax(class_scores)
 </code></pre>
 
-<p>Xét feature map M có kích thước 5x5, trong đó có chưa một hình vuông màu xanh</p>
+<p>Xét feature map M có kích thước 5x5, trong đó có chứa một hình vuông màu xanh, hình vuông xanh là đối tượng thực tế ta cần tìm.</p>
 
 <p><img src="/post_image/region-proposals-r-cnn-example1.jpg" alt="Hình ảnh" /></p>
 
-<p>Ta chia hình vuông thành các phân vùng có kích thước 3x3 (hình 1). Sau đó, chúng ta tạo một feature mới từ M để tìm ra góc trái trên của hình vuông (chỉ tìm góc trái trên) (hình 2). Feature map mới giống hình thứ 3, chỉ có ô tô màu vàng ở vị trí [2,2] được bật.</p>
+<p>Ta chia hình vuông thành phân vùng có kích thước 3x3 (hình 2). Sau đó, chúng ta tạo một feature mới để từ M để tìm ra góc trái trên của hình vuông (chỉ tìm góc trái trên) (hình 3). Feature map mới giống hình thứ 3, chỉ có ô được tô màu vàng ở vị trí [2,2] được bật.</p>
 
-<p>Với mỗi 9 phần của hình vuông, chúng ta có 9 feature map cho mỗi phần nhận dạng 9 vùng tương ứng cho một đối tượng. Những feature map này được gọi là position sensitive score map, bởi vì chúng detect ra điểm (score) và sub region của một đối tượng (Xem hình bên dưới).</p>
+<p>Với mỗi 9 phần của hình vuông, chúng ta có 9 feature map cho mỗi phần, nhận dạng 9 vùng tương ứng cho một đối tượng. Những feature map này được gọi là position sensitive score map, bởi vì chúng detect ra điểm (score) và sub region của một đối tượng (Xem hình bên dưới).</p>
 
 <p><img src="/post_image/region-proposals-r-cnn-example2.jpg" alt="Hình ảnh" /></p>
 
-<p>Xét ảnh bên dưới, giả sử vùng được tô gạch đỏ là proposal (hình 1). Chúng ta cũng chia nó thành những phân vùng con có kích thước 3x3 (hình 2). Và tìm xem mức độ giống nhau của mỗi vùng con của proposal và vùng con của feature map. Kết quả sẽ được lưu vào một ma trận 3x3 như hình số 3.</p>
+<p>Xét ảnh bên dưới, giả sử vùng được tô gạch đỏ là proposal (hình 1). Chúng ta cũng chia nó thành những phân vùng con có kích thước 3x3 (hình 2). Và tìm xem mức độ giống nhau của mỗi vùng con của proposal và vùng con của feature map như thế nào. Kết quả sẽ được lưu vào một ma trận 3x3 như hình số 3.</p>
 
 <p><img src="/post_image/region-proposals-r-cnn-example3.jpg" alt="Hình ảnh" /></p>
 
@@ -424,7 +424,7 @@ for ROI in ROIs
 
 <p><img src="/post_image/region-proposals-r-cnn-example4.png" alt="Hình ảnh" /></p>
 
-<p>Sau khi tính toán hết các giá trị của position-sensitive ROI pool, chúng ta sẽ tính trung bình của vote_array để lấy điểm của lớp (class score)</p>
+<p>Sau khi tính toán hết các giá trị của position-sensitive ROI pool, chúng ta sẽ tính trung bình của vote_array để lấy điểm của lớp (class score).</p>
 
 <p><img src="/post_image/region-proposals-r-cnn-example5.png" alt="Hình ảnh" /></p>
 
