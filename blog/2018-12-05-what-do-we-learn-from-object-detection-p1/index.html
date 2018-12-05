@@ -1,0 +1,610 @@
+<!DOCTYPE HTML>
+
+<html>
+    <head>
+        <script type="application/ld+json">
+    {
+        "@context" : "http://schema.org",
+        "@type" : "BlogPosting",
+        "mainEntityOfPage": {
+             "@type": "WebPage",
+             "@id": "/"
+        },
+        "articleSection" : "blog",
+        "name" : "Tìm hiểu region based object detectors",
+        "headline" : "Tìm hiểu region based object detectors",
+        "description" : "Ở bài viết này, chúng ta sẽ tìm hiểu khái niệm region based object detectors và ứng dụng của nó trên các thuật toán Faster R-CNN, R-FCN, FPN.",
+        "inLanguage" : "en",
+        "author" : "",
+        "creator" : "",
+        "publisher": "",
+        "accountablePerson" : "",
+        "copyrightHolder" : "",
+        "copyrightYear" : "2018",
+        "datePublished": "2018-11-13 00:19:00 &#43;0300 &#43;0300",
+        "dateModified" : "2018-11-13 00:19:00 &#43;0300 &#43;0300",
+        "url" : "/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/",
+        "wordCount" : "2255",
+        "keywords" : [ "Machine learning","Deeplearning","object detector","region base","Blog" ]
+    }
+    </script>
+        
+            
+                <title>Tìm hiểu region based object detectors</title>
+            
+        
+
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="generator" content="Hugo 0.41" />
+        
+  
+    
+  
+
+  
+
+  <link rel="apple-touch-icon-precomposed" href='/favicon/apple-touch-icon-precomposed.png'>
+  <link rel="icon" href='/favicon.ico'>
+  
+  <meta name="msapplication-TileColor" content="#da532c">
+  <meta name="msapplication-TileImage" content='/favicon/mstile.png'>
+  <meta name="application-name" content="Phạm Duy Tùng blog">
+  <meta name="msapplication-tooltip" content="Blog ML của Phạm Duy Tùng">
+  <meta name="msapplication-config" content='/favicon/ieconfig.xml'>
+
+
+
+        
+            <meta name="author" content="Phạm Duy Tùng">
+        
+        
+            <meta name="description" content="Ở bài viết này, chúng ta sẽ tìm hiểu khái niệm region based object detectors và ứng dụng của nó trên các thuật toán Faster R-CNN, R-FCN, FPN.">
+        
+
+        <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Tìm hiểu region based object detectors"/>
+<meta name="twitter:description" content="Ở bài viết này, chúng ta sẽ tìm hiểu khái niệm region based object detectors và ứng dụng của nó trên các thuật toán Faster R-CNN, R-FCN, FPN."/>
+<meta name="twitter:site" content="@example"/>
+
+        <meta property="og:title" content="Tìm hiểu region based object detectors" />
+<meta property="og:description" content="Ở bài viết này, chúng ta sẽ tìm hiểu khái niệm region based object detectors và ứng dụng của nó trên các thuật toán Faster R-CNN, R-FCN, FPN." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/" />
+
+
+
+<meta property="article:published_time" content="2018-11-13T00:19:00&#43;03:00"/>
+
+<meta property="article:modified_time" content="2018-11-13T00:19:00&#43;03:00"/>
+
+
+
+
+
+
+
+
+
+
+
+        <meta property="og:image" content="//images/logo.png">
+        <meta property="og:image:type" content="image/png">
+        <meta property="og:image:width" content="512">
+        <meta property="og:image:height" content="512">
+        
+<meta itemprop="name" content="Tìm hiểu region based object detectors">
+<meta itemprop="description" content="Ở bài viết này, chúng ta sẽ tìm hiểu khái niệm region based object detectors và ứng dụng của nó trên các thuật toán Faster R-CNN, R-FCN, FPN.">
+
+
+<meta itemprop="datePublished" content="2018-11-13T00:19:00&#43;03:00" />
+<meta itemprop="dateModified" content="2018-11-13T00:19:00&#43;03:00" />
+<meta itemprop="wordCount" content="2255">
+
+
+
+<meta itemprop="keywords" content="Machine learning,Deeplearning,object detector,region base," />
+
+        
+
+        
+            
+        
+
+        
+        
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css">
+            <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway:400,800,900|Source+Sans+Pro:400,700">
+            <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.1.25/jquery.fancybox.min.css">
+			<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+            <link rel="stylesheet" href="/css/main.css">
+            <link rel="stylesheet" href="/css/add-on.css">
+            <link rel="stylesheet" href="/css/academicons.min.css">
+        
+
+        
+            
+                
+            
+        
+
+
+  
+    
+    <link href='//cdn.bootcss.com/highlight.js/9.11.0/styles/github.min.css' rel='stylesheet' type='text/css' />
+  
+
+
+      
+<script>
+var doNotTrack = false;
+if (!doNotTrack) {
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+	ga('create', 'UA-114911596-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+
+    </head>
+    <body>
+
+      
+      
+
+    
+    
+<header id="header">
+
+    <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark" style="padding-left:89px">
+	<a href="/" class="navbar-brand">
+	<img src="https://scontent.fsgn3-1.fna.fbcdn.net/v/t1.0-1/c186.26.328.328/s160x160/228272_495052530516916_281440713_n.jpg?_nc_cat=109&amp;oh=acf17dec50e15a8efd8aeff3b7deb73f&amp;oe=5C18C624" class="rounded-circle" alt="Cinque Terre" style="width:36px;"></a>
+        <ul class="navbar-nav mr-auto">
+            
+                <li class="nav-item">
+                    <a class='nav-link' href="/">
+                            <i class="fa fa-home">&nbsp;</i>Home
+                    </a>
+                </li>
+            
+                <li class="nav-item">
+                    <a class='nav-link' href="/news/">
+                            <i class="fa fa-list">&nbsp;</i>News
+                    </a>
+                </li>
+            
+        </ul>
+    </nav>
+    
+</header>
+
+
+   
+    
+	<div class="container">
+	<div class="adv" style="height:100px;"></div>
+	<div class="row">
+    <main role="main" class="col-md-9 bg-white" style="margin:0; padding:0;" >
+	
+        
+        
+        <article class="post">
+  
+
+
+        
+		<div class="thumbnail text-center">
+		 <img class="img-fluid single-content-img" src="../post_image/sliding-window.gif" style="width:100%">
+		  <div class="caption  text-white">
+            <h3 class="title">Tìm hiểu region based object detectors</h3>
+			
+			<p class="title-caption">
+			 
+			  <time class="published"
+            datetime='2018-11-13'>
+            13/11/2018</time>
+		 - 
+			   <span class="author">Phạm Duy Tùng</span>
+			   </p>
+			</div>
+			</div>
+            
+        
+       
+
+
+
+  
+
+  
+
+  <div id="content">
+    
+
+<h2 id="sliding-window-detectors">Sliding-window detectors</h2>
+
+<p>Bắt đầu từ năm 2012, sau khi mạng AlexNet giành giải nhất cuộc thi 2012 ILSVRC, mọi nghiên cứu về phân lớp dữ liệu đều sử dụng mạng CNN. Kể từ đó đến đây, CNN được coi như là thuật toán thống trị trên mọi publish paper về các bài toán phân lớp đối tượng. Trong khi đó, để nhận dạng 1 đối tượng trong ảnh, các đơn giản nhất là thiết lập một cửa sổ trượt có kích thước là window size trượt từ trái qua phải, từ trên xuống dưới, quét qua toàn bộ bức ảnh. Để phát hiện các đối tượng khác nhau ở các góc nhìn khác nhau, chúng ta sẽ sử dụng cửa sổ trượt có kích thước thay đổi  và ảnh đầu vào có kích thước thay đổi.</p>
+
+<p><img src="/post_image/sliding-window.gif" alt="Hình ảnh" /></p>
+
+<p><img src="/post_image/region-base-various-windowsize.png" alt="Hình ảnh" /></p>
+
+<p><img src="/post_image/region-base-various-windowsize1.jpg" alt="Hình ảnh" /></p>
+
+<p>Dựa vào windowsize, chúng ta có thể cắt tấm hình bự thành các tấm hình nhỏ, sau đó sẽ rescale các phần nhỏ của bức ảnh thành các bức ảnh có kích thước cố định.</p>
+
+<p><img src="/post_image/fixed-size-image.jpg" alt="Hình ảnh" /></p>
+
+<p>Các phần của bức ảnh sau đó sẽ được đem qua bộ phân lớp CNN để rút trích các đặc trưng, sau đó sử dụng một hàm phân lớp (như svm, logictic regression) để xác định lớp của bức hình và sử dụng linear regressor để tìm bao đóng của đối tượng.</p>
+
+<p><img src="/post_image/sliding-window-detector.png" alt="Hình ảnh" /></p>
+
+<p>Mã giả của mô hình</p>
+
+<pre><code class="language-python">for window in windows
+    patch = get_patch(image, window)
+    results = detector(patch)
+</code></pre>
+
+<p>Cách dễ dàng nhất để cải tiến hiệu năng của phương pháp này là giảm số lượng tấm hình nhỏ xuống (ví dụ tăng kích thước window size). Cách này còn được giang hồ gọi là  brute force.</p>
+
+<p>## Selective Search</p>
+
+<p>Thay vì hướng tiếp cận brute force ở trên, chúng ta sử dụng phương pháp region proposal để tạo các region of interest (ROIs) để phát hiện đối tượng. Selective search là một phương pháp nằm trong nhóm region proposal. Trong phương pháp selective search(SS), chúng ta bắt đầu bằng cách xem các pixel là mỗi nhóm, các lần lặp tiếp theo, chúng ta sẽ tính khoảng cách ngữ nghĩa (ví dụ như là màu sắc, cường độ ánh sáng) giữa các nhóm và gom các nhóm có khoảng cách gần nhau về chung 1 nhóm để tìm ra phân vùng có khả năng cao nhất chứa đối tượng (ưu tiên gom những nhóm nhỏ trước). Như hình bên dưới, dòng đầu tiên, bức ảnh đâu tiên là ta có một vài nhóm nhỏ ở thời điểm X nào đó, ở hình thứ 2 là thực hiện gom nhớm theo cường độ màu sắc của hình số 1, và ở bước cuối cùng, ta thu được hình số 3. Những hình chữ nhật màu xanh ở dòng thứ 2 là những ROIS mô phỏng quá trình gom nhóm để tìm phân vùng có khả năng chứa đối tượng.</p>
+
+<p><img src="/post_image/selectivesearch.jpg" alt="Hình ảnh" />
+ <em>selective search</em></p>
+
+<p>## Mạng R-CNN</p>
+
+<p>Mạng R-CNN sử dụng phương pháp region proposal để tạo ra khoảng 2000 ROIs. Các vùng sau đó sẽ được rescale theo một kích thước cố định nào đó và được đưa vào mô hình CNN có lớp cuối cùng kà một full conected layer để phân lớp đối tượng và để lọc ra boundary box (bao đóng) của đối tượng.</p>
+
+<p><img src="/post_image/region-proposals-cnn.jpg" alt="Hình ảnh" />
+ <em>Mô phỏng việc sử dụng region proposal</em></p>
+
+<p><img src="/post_image/region-proposals-r-cnn.png" alt="Hình ảnh" />
+ <em>Mô phỏng việc sử dụng region proposal của RCNN</em></p>
+
+<p>Mã giả của mô hình</p>
+
+<pre><code class="language-python"> ROIs = region_proposal(image)
+for ROI in ROIs
+    patch = get_patch(image, ROI)
+    results = detector(patch)
+</code></pre>
+
+<p>Với việc sử dụng ít tấm ảnh nhỏ hơn, và chất lượng của mỗi tấm ảnh nhỏ tốt hơn, Mạng R-CNN chạy nhanh hơn và có độ chính xác cao hơn so với mô hình sử dụng cửa sổ trượt.</p>
+
+<p>## Mạng Fast R-CNN</p>
+
+<p>Trong thực tế, các phân vùng của mạng R-CNN bị chồng lấp một phần / toàn bộ với các phân vùng khác. Do đó, việc huấn luyện và thực thi ( inference ) mạng R-CNN diễn ra khá chậm. Nếu chúng ta có 2000 proposal của mạng R-CNN, chúng ta phải thực hiện 2000 lần việc rút trích đặc trưng, một con số khác lớn.</p>
+
+<p>Thay vì phải rút trích đặc trưng của mỗi proposal, chúng ta có thể dùng CNN rút trích đặc trưng của toàn bộ bức ảnh trước (được feature map), đồng thời rút trích các proposal, lấy các proposal tương ứng trên feature map, rescale và cuối cùng là phân lớp và tìm vị trí của object. Với việc không phải lặp lại 2000 lần việc rút trích đặc trưng, Fast R-CNN giảm thời gian xử lý một cách đáng kể.</p>
+
+<p><img src="/post_image/region-proposals-fast-r-cnn.jpg" alt="Hình ảnh" />
+ <em>Mô phỏngviệc sử dụng propoxal trên feature map và các bước tiếp theo của Fast R-CNN</em></p>
+
+<p><img src="/post_image/region-proposals-fast-r-cnn-network-model.jpg" alt="Hình ảnh" />
+ <em>Đồ hình của Fast R-CNN</em></p>
+
+<p>Mã giả của mô hình</p>
+
+<pre><code class="language-python"> feature_maps = process(image)
+ROIs = region_proposal(image)
+for ROI in ROIs
+    patch = roi_pooling(feature_maps, ROI)
+    results = detector2(patch)
+</code></pre>
+
+<p>Với việc không phải lặp đi lặp lại quá trình tìm ra các proposal, tốc độ của thuật toán tăng lên kha khá. Trong thực nghiệm, mô hình Fast R-CNN chạy nhanh hơn gấp 10 lần so với R-CNN trong quá trình huấn luyện. Và nhanh hơn 150 lần trong inferencing.</p>
+
+<p>Một khác biệt lớn nhất của Fast R-CNN là toàn bộ network (feature extractior, classifier, boundary box regressor) có thể huấn luyện end-to end (nghĩa là từ đầu đến cuối) với 2 hàm độ lỗi (loss funtion) khác nhau cùng lúc (classification loss và localization loss). Điều này làm tăng độ chính xác của mô hình.</p>
+
+<p>## ROI Pooling</p>
+
+<p>Vì Fast R-CNN sử dụng full connected layter ở lớp cuối, nên đòi hỏi input của chúng phải có kích thước cố định, nên ta phải resize lại feature về 1 kích thước cố định (do 2000 proposal có kích thước không cố định). Ở đây, các tác giả sử dụng ROI pooling để resize. Thuật toán ở đây được sử dụng như sau:</p>
+
+<p>Giả sử đơn giản là chúng ta có một proposal có kích thước 5x7, và chúng ta cần resize về hình dạng 2x2. Chúng ta xem kỹ hình bên dưới.</p>
+
+<p><img src="/post_image/roi-pooling-example.png" alt="Hình ảnh" />
+ <em>Hình ảnh mô phỏng ROI pooling</em></p>
+
+<p>Hình ở bên trái là feature map của chúng ta.</p>
+
+<p>Hình số 2, vùng hình chữ nhật xanh là vùng proposal 5x7.</p>
+
+<p>Vì chúng ta cần resize về vùng có kích thước 2x2 (4 phần), nên ta chia vùng proposal 5x7 thành 4 phần (<sup>5</sup>&frasl;<sub>2</sub> =2 dư 3, vậy có 1 phần là 2, 1 phần là 3. Tương tự <sup>7</sup>&frasl;<sub>2</sub> = 3 dư 4, vậy có 1 phần 3, một phần 4. Cuối cùng ta có 4 hình chữ nhật có kích thước tương ứng là 2x3, 2x4, 3x3, 3x4) (Hình số 3).</p>
+
+<p>Hình số 4, từ 4 phần của vùng số 3, ta sẽ lấy giá trị lớn nhất của mỗi vùng.</p>
+
+<p>Vậy là ta thu được feature proposal có kích thước 2x2 rồi.</p>
+
+<p>## Faster R-CNN</p>
+
+<p>Nhìn kỹ lại vào thuật toán F-CNN, chúng ta cần phải rút rích 2000 ROIs, và nó là nguyên nhân lớn gây nên sự chậm trể của mô hình</p>
+
+<pre><code class="language-python"> feature_maps = process(image)
+ROIs = region_proposal(image)         # Expensive, slow
+for ROI in ROIs
+    patch = roi_pooling(feature_maps, ROI)
+    results = detector2(patch)
+</code></pre>
+
+<p>Thuật toán Faster R-CNN sử dụng mô hình gần như tương tự Fast R-CNN, ngoài việc sử dụng thuật toán interal deep network thay cho selective search để tìm region proposal. Thuật toán mới chạy hiệu quả hơn khi tìm tất cả các ROIs trên mỗi bức ảnh với tốc độ 10ms/</p>
+
+<p><img src="/post_image/region-proposals-fater-r-cnn.png" alt="Hình ảnh" />
+ <em>Mô hình của Faster R-CNN</em></p>
+
+<p><img src="/post_image/region-proposals-fater-r-cnn-model.jpg" alt="Hình ảnh" />
+ <em>Đồ hình của Faster R-CNN</em></p>
+
+<p>## Region proposal network</p>
+
+<p>Mạng region proposal sử dụng feature map làm input đầu vào (như hình trên đã mô phỏng). Mạng sử dụng 1 bộ lọc 3x3, sau đó là một mô hình CNN như ZF hoặc VGG hoặc ResNet ( mô hình càng phức tạp thì độ chính xác cao, nhưng bù lại thời gian tìm kiếm sẽ lâu hơn) để dự đoán boundary box và object score (để xét xem trong bodary box trên có chứa đối tượng hay không. Trong thực tế, mạng Faster R-CNN trả về 2 lớp, lớp thứ nhất là có chứa object, lớp thứ 2 là không chứa object ( ví dụ lớp màu nền - background, lớp abc gì gì đó)) .</p>
+
+<p><img src="/post_image/region-proposals-r-cnn-example.jpg" alt="Hình ảnh" /></p>
+
+<pre><code>![Hình ảnh](/post_image/region-proposal-network-1.jpg )
+</code></pre>
+
+<p><em>Mô hình Region proposal network sử dụng ZF network</em></p>
+
+<p>Giả sử tại 1 điểm nào đó trên feature map, RPN có k dự đoán, vậy là chúng ta có tổng cộng 4xk toạ độ điểm và 2xk điểm cho điểm đó. Nhìn ví dụ ở hình bên dưới.</p>
+
+<p>Hình 1: ta có feature map với kích thước 8x8, vùng hình vuông được tô là filter đang xét có kích thước 3x3.
+ Hình 2: Giả sử xét điểm có chấm xanh. Tại điểm đó, ta có k=3 sau khi chạy RPN, và ta được 3 hình chữ nhật như hình.</p>
+
+<p>Tuy nhiên, tại mỗi điểm, ta chỉ cần 1 boundary box tốt nhất. Cách đơn giản nhất là chọn ngẫu nhiên 1 cái. Nhưng như vậy thì ngay từ đầu ta chọn k=1 luôn cho khoẻ, mắc công gì phải chọn k=3. Trong thực tế, Faster R-CNN không sử dụng phương pháp random select. Thay vào đó, thuật toán một reference boxs hay còn được gọi với tên là anchors và tìm mức độ liên quan của k boundary box với k reference boxs và chọn ra boundary box có độ liên quan lớn nhất.</p>
+
+<pre><code> ![Hình ảnh](/post_image/anchors-box.png )
+</code></pre>
+
+<p><em>Ví dụ anchors box</em></p>
+
+<p>Các anchors này được lựa chọn trước đó và được xem là config của mô hình. Faster R-CNN sử dụng 9 anchor boxs (tương ứng với k =3) với 3 box đầu tiên có tỷ lệ width, height khác nhau (ví dụ 2x3, 3x3, 3x2), tiếp đó sẽ scale các box trên với các tỷ lệ khác khau (ví dụ 1.5,3,7) để đạt được 9 anchor boxs.</p>
+
+<p>Vì mỗi điểm sử dụng 9 anchors, nên ta có tổng cộng 2x9 score và 4x9 location (toạ độ)</p>
+
+<p><img src="/post_image/anchorsbox_feature_map.png" alt="Hình ảnh" /></p>
+
+<p>Anchor box có thể được goijlaf priors hoặc default boundary boxes trong mỗi bài báo khác nhau.</p>
+
+<p>## Hiệu năng của mô hình R-CNN</p>
+
+<p>Hình bên dưới mô tả benchmark của các mô hình dẫn xuất từ R-CNN, ta thấy Faster R-CNN có tốc độ tốt nhất.</p>
+
+<p><img src="/post_image/f-rcnn-performance.jpg" alt="Hình ảnh" /></p>
+
+<p>## Region-based Fully Convolutional Networks</p>
+
+<p>Giả sử chúng ta chỉ có toạ độ của mắt phải trong khuôn mặt, chúng ta có thể nội suy ra được vị trí của khuôn mặt. Vì ta biết rằng mắt phải nằm ở vị trí trái trne trong bức hình, và ta từ đó suy va vị trí của các phần còn lại (xem hình).</p>
+
+<p><img src="/post_image/f-rcnn-image1.jpg" alt="Hình ảnh" /></p>
+
+<p>Nếu chúng ta có thêm thông tin khác, ví như toạ độ của mắt trái, mũi, miệng, &hellip; thì chúng ta có thể kết hợp chúng để tăng độ chính xác của phân vùng khuôn mặt.</p>
+
+<p>Trong Faster R-CNN, chúng ta phải tìm proposal sử dụng một mô hình CNN, với khoảng 2000 ROI, chúng ta sẽ tiêu tốn một khoảng thời gian lớn để tìm chúng.</p>
+
+<pre><code class="language-python">feature_maps = process(image)
+ROIs = region_proposal(feature_maps)
+for ROI in ROIs
+    patch = roi_pooling(feature_maps, ROI)
+    class_scores, box = detector(patch)         # Expensive, slow
+    class_probabilities = softmax(class_scores)
+</code></pre>
+
+<p>Trong khi đó, với Fast R-CNN, chúng ta chỉ cần phải tính max hoặc average, nên Fast R-CNN nhanh hơn Faster R-CNN</p>
+
+<pre><code class="language-python">feature_maps = process(image)
+ROIs = region_proposal(feature_maps)         
+score_maps = compute_score_map(feature_maps)
+for ROI in ROIs
+    V = region_roi_pool(score_maps, ROI)     
+    class_scores, box = average(V)                   # Much simpler, faster.
+    class_probabilities = softmax(class_scores)
+</code></pre>
+
+<p>Xét feature map M có kích thước 5x5, trong đó có chưa một hình vuông màu xanh</p>
+
+<p><img src="/post_image/region-proposals-r-cnn-example1.jpg" alt="Hình ảnh" /></p>
+
+<p>Ta chia hình vuông thành các phân vùng có kích thước 3x3 (hình 1). Sau đó, chúng ta tạo một feature mới từ M để tìm ra góc trái trên của hình vuông (chỉ tìm góc trái trên) (hình 2). Feature map mới giống hình thứ 3, chỉ có ô tô màu vàng ở vị trí [2,2] được bật.</p>
+
+<p>Với mỗi 9 phần của hình vuông, chúng ta có 9 feature map cho mỗi phần nhận dạng 9 vùng tương ứng cho một đối tượng. Những feature map này được gọi là position sensitive score map, bởi vì chúng detect ra điểm (score) và sub region của một đối tượng (Xem hình bên dưới).</p>
+
+<p><img src="/post_image/region-proposals-r-cnn-example2.jpg" alt="Hình ảnh" /></p>
+
+<p>Xét ảnh bên dưới, giả sử vùng được tô gạch đỏ là proposal (hình 1). Chúng ta cũng chia nó thành những phân vùng con có kích thước 3x3 (hình 2). Và tìm xem mức độ giống nhau của mỗi vùng con của proposal và vùng con của feature map. Kết quả sẽ được lưu vào một ma trận 3x3 như hình số 3.</p>
+
+<p><img src="/post_image/region-proposals-r-cnn-example3.jpg" alt="Hình ảnh" /></p>
+
+<p>Quá trình ánh xạ điểm từ score maps và ROIS vào mảng vote_array được gọi là position sensitive ROI pool.</p>
+
+<p><img src="/post_image/region-proposals-r-cnn-example4.png" alt="Hình ảnh" /></p>
+
+<p>Sau khi tính toán hết các giá trị của position-sensitive ROI pool, chúng ta sẽ tính trung bình của vote_array để lấy điểm của lớp (class score)</p>
+
+<p><img src="/post_image/region-proposals-r-cnn-example5.png" alt="Hình ảnh" /></p>
+
+<p>Giả sử mô hình chúng ta phải nhận dạng k lớp, do có thêm lớp background nên chúng ta có tổng cộng k+1 lớp. Với mỗi lớp chúng ta có 3x3 score map, suy ra chúng ta có tổng cộng là (k+1))3x3 score maps, (k+1) điểm, và dùng softmax ta sẽ thu được xác suất của mỗi lớp.</p>
+
+<p>Luồng dữ liệu của mô hình</p>
+
+<p><img src="/post_image/region-proposals-r-cnn-data-flow.png" alt="Hình ảnh" /></p>
+
+<p>Cảm ơn các bạn đã theo dõi. Hẹn gặp bạn ở các bài viết tiếp theo.</p>
+
+<p>Bài viết được lược dịch và tham khảo từ nguồn <a href="https://medium.com/@jonathan_hui/what-do-we-learn-from-region-based-object-detectors-faster-r-cnn-r-fcn-fpn-7e354377a7c9">https://medium.com/@jonathan_hui/what-do-we-learn-from-region-based-object-detectors-faster-r-cnn-r-fcn-fpn-7e354377a7c9</a></p>
+
+  </div>
+
+  <footer>
+    <ul class="stats list-unstyled">
+ 
+    
+  <li class="tags">
+    <ul class="list-inline">
+       
+            
+            
+                <i class="fa fa-tags"></i>
+                
+                
+                <li class="list-inline-item"><a class="article-category-link" href="/tags/machine-learning">Machine learning</a></li>
+                
+                
+                <li class="list-inline-item"><a class="article-category-link" href="/tags/deeplearning">Deeplearning</a></li>
+                
+                
+                <li class="list-inline-item"><a class="article-category-link" href="/tags/object-detector">object detector</a></li>
+                
+                
+                <li class="list-inline-item"><a class="article-category-link" href="/tags/region-base">region base</a></li>
+                
+            
+        
+    </ul>
+  </li>
+  
+</ul>
+
+  </footer>
+
+</article>
+<div class="col-md-12">
+<div class="card-header">Bài viết khác</div>
+<ul class="">
+    
+        <li class="page-item"><a href="/blog/2018-11-10-stock-prediction_v1/"
+                class="button big previous">Dự đoán giá chứng khoáng SP500 sử dụng lstm</a></li>
+    
+
+    
+        <li class="page-item"><a href="/blog/2018-11-13-instacart-market-basket-analysis/"
+                class="button big next">Phân tích giỏ hàng của website instacart</a></li>
+    
+</ul>
+</div>
+
+
+    <article class="post">
+        <div id="disqus_thread"></div>
+<script>
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "phamduytung" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    </article>
+
+
+
+
+		
+    </main>
+    
+<section id="sidebar" class="col-md-3">
+
+
+
+  
+   
+  
+  
+  
+  
+  
+  
+  
+  
+ 
+
+</section>
+
+	</div>
+	</div>
+    
+	<hr>
+  <footer class="footer">
+  <div class="container">
+    
+    <p class="copyright">
+      
+        &copy; 2018
+        
+          Phạm Duy Tùng blog
+        
+      .
+     
+    </p>
+	</div>
+  </footer>
+    
+    
+
+    
+      
+    
+
+    
+      
+      
+      
+        <script src="//cdn.bootcss.com/highlight.js/9.11.0/highlight.min.js"></script>
+        
+        
+        
+        <script src="//cdn.bootcss.com/highlight.js/9.11.0/languages/r.min.js"></script>
+        <script src="//cdn.bootcss.com/highlight.js/9.11.0/languages/yaml.min.js"></script>
+        <script src="//cdn.bootcss.com/highlight.js/9.11.0/languages/css.min.js"></script>
+        <script>hljs.configure({languages: []}); hljs.initHighlightingOnLoad();</script>
+      
+    
+    
+    
+      <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/skel/3.0.1/skel.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.1.25/jquery.fancybox.min.js"></script>
+	  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+      <script src="/js/util.js"></script>
+      <script src="/js/main.js"></script>
+     
+    
+
+    
+      
+        
+      
+    
+	
+    
+    <script>hljs.initHighlightingOnLoad();</script>
+      <script src="//yihui.name/js/math-code.js"></script>
+<script async
+src="//cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+  </body>
+</html>
+
