@@ -24,7 +24,7 @@
         "datePublished": "2018-12-06 00:19:00 &#43;0300 &#43;0300",
         "dateModified" : "2018-12-06 00:19:00 &#43;0300 &#43;0300",
         "url" : "/blog/2018-12-06-what-do-we-learn-from-single-shot-object-detection/",
-        "wordCount" : "2015",
+        "wordCount" : "2387",
         "keywords" : [ "Machine learning","Deeplearning","object detector","single shot","Blog" ]
     }
     </script>
@@ -99,7 +99,7 @@
 
 <meta itemprop="datePublished" content="2018-12-06T00:19:00&#43;03:00" />
 <meta itemprop="dateModified" content="2018-12-06T00:19:00&#43;03:00" />
-<meta itemprop="wordCount" content="2015">
+<meta itemprop="wordCount" content="2387">
 
 
 
@@ -356,11 +356,54 @@ results = detector3(feature_maps) # Không cần tìm ROI
 \begin{equation}
   CE(p,y) =
     \begin{cases}
-      -log(p) &amp; \text{if y=1}<br />
-      -log(1-p) &amp; \text{otherwise}<br />
+      -\log(p) &amp; \text{if y=1} <br />
+      -\log(1-p) &amp; \text{otherwise}
     \end{cases}<br />
 \end{equation}
 $$</p>
+
+<p>Trong hàm trên thì y nhận giá trị 1 hoặc -1. Giá trị xác xuất nằm trong khoảng (0,1) là xác suất dự đoán cho lớp có y=1.</p>
+
+<p>Để rõ ràng hơn, ta có thể viết lại hàm trên như sau:</p>
+
+<p>$$
+\begin{equation}
+  p_t =
+    \begin{cases}
+      p &amp; \text{if y=1} <br />
+      1-p &amp; \text{otherwise},
+    \end{cases}</p>
+
+<pre><code>CE(p,y) = CE(p_t) = -\log(p_t)
+</code></pre>
+
+<p>\end{equation}</p>
+
+<p>$$</p>
+
+<p>Ta có nhận xét rằng đối với các trường hợp được phân loại tốt (có xác suất lớn hơn 0.6) thì hàm loss nhận gái trị với độ lớn lớn hơn 0. Và trong trường hợp dữ liệu có tỷ lệ lệch cao thì tổng các giá trị này sẽ cho ra kết quả loss với một con số rất lớn so với loss của các trường hợp khó phâm loại. Và nó ảnh hưởng đến quá trình huấn luyện.</p>
+
+<p><img src="/post_image/focal-lost.jpg" alt="Hình ảnh" /></p>
+
+<p>Ý tưởng chính của focal-lost là đối với các trường hợp được phân loại tốt ( xác suất lớn hơn 0.5) thì focal lost sẽ làm giảm giá trị cross-entropy của nó xuống nhỏ hơn so với thông thường. Do đó, ta sẽ thêm trọng số cho hàm cross-entropy để biến thành hàm focal lost.</p>
+
+<p>$$
+FL(p_t) = -(1-p_t)^\gamma\log(p_t). \gamma&gt;=0
+$$</p>
+
+<p>Với nhân tử được thêm vào được gọi là modulating factor, gamma lớn hơn hoặc bằng 0 được gọi là tham số focusing.</p>
+
+<p>Nhìn hình ở trên, ta thấy rằng khi gamma = 0 thì hàm focal lost chính là cross-entropy.</p>
+
+<p>Đặc điểm của hàm lost trên như sau:</p>
+
+<p>Khi mẫu bị phân loại sai, pt nhỏ, nhân tố modulating factor gần với 1 và hàm lost ít bị ảnh hưởng. Khi pt tiến gần tới 1 (mẫu phân loại tốt), moduling factor sẽ tiến gần tới 0 và hàm loss trong trường hợp này sẽ bị giảm trọng số xuống.</p>
+
+<p>Tham số focusing sẽ điều chỉnh tỷ lệ các trường hợp được phân loại tốt được giảm trọng số. Khi gamma càng tăng thì ảnh hưởng của modulating factor cũng tăng. Trong các thí nghiệm cho thấy với gamma = 2 hì kết quả đạt được sẽ tốt nhất.</p>
+
+<p>Hình bên dưới là đồ hình của RetinaNet được xây dựng dựa trên FPN và ResNet sử dung Focal loss.</p>
+
+<p><img src="/post_image/retina-net-fpn-resnet.jpg" alt="Hình ảnh" /></p>
 
 <p>Cảm ơn các bạn đã theo dõi. Hẹn gặp bạn ở các bài viết tiếp theo.</p>
 
