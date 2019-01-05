@@ -24,7 +24,7 @@
         "datePublished": "2018-12-11 00:19:00 &#43;0300 &#43;0300",
         "dateModified" : "2018-12-11 00:19:00 &#43;0300 &#43;0300",
         "url" : "/blog/2019-01-03-donor-project-matching-with-recommender-systems/",
-        "wordCount" : "1978",
+        "wordCount" : "839",
         "keywords" : [ "Machine learning","Deeplearning","recommender system","Blog" ]
     }
     </script>
@@ -99,7 +99,7 @@
 
 <meta itemprop="datePublished" content="2018-12-11T00:19:00&#43;03:00" />
 <meta itemprop="dateModified" content="2018-12-11T00:19:00&#43;03:00" />
-<meta itemprop="wordCount" content="1978">
+<meta itemprop="wordCount" content="839">
 
 
 
@@ -199,7 +199,7 @@ if (!doNotTrack) {
 
         
 		<div class="thumbnail text-center">
-		 <img class="img-fluid single-content-img" src="/post_image/post_image" style="width:100%">
+		 <img class="img-fluid single-content-img" src="/post_image/Donors-can-follow-these-general-steps-to-secure-matching-gift-donations.jpg" style="width:100%">
 		  <div class="caption  text-white">
             <h3 class="title">Hệ thống gợi ý khoá học cho website DonorChoose.org</h3>
 			
@@ -242,85 +242,29 @@ if (!doNotTrack) {
 <li>File Donations.csv.  Với mỗi dự án (Project ID), sẽ có 1 hoặc nhiều nhà quyên góp (Donor ID) mỗi cặp (dự án - nhà quyên góp sẽ định dang bằng 1 mã chung (Donation ID) và có các cột thông tin liên quan đến việc quyên góp đó). File có xấp xỉ 4.67 triệu dòng (chính xác là 4687844 dòng) và 7 cột. (Project ID - Định danh dự án, Donation ID - Định danh khoảng đóng góp (tưởng tượng như khoá tự tăng của bảng này đó các bạn), Donor ID - Mã định danh người đóng góp, Donation Included Option - hỗ trợ website donoschoose 15% giá trị quyên góp, Donation Amount - Số tiền quyên góp, Donor Cart Sequence - Thứ tự của dự án trọng bảng danh sách quyên góp,Donation Received Date - Ngày giờ quyên góp).</li>
 </ul>
 
-<p>File Donors.csv</p>
+<p>File Donors.csv. File định danh người quyên góp. Chứa tổng cộng hơn 2 triệu dòng( chính xác là 2122640 dòng)
+File có kích thước 2122640 x 5 với các thông tin cột là Donor ID (khoá chính, không trùng), Donor City (tên thành phố nhà đầu tư đang sinh sống), Donor State (tiểu bang mà người quyên góp đang sống), Donor is teacher, Donor Zip (3 ký tự đầu của mã bưu điện nhà từ thiện).</p>
 
-<ol>
-<li><p>Thực chất, chúng ta phải hiểu rõ kỹ chúng ta đang có những gì trong tay, thì chúng ta mới dạy cho máy học đủ và đúng được. Các bạn hãy kiểm tra thật kỹ để đảm bảo rằng tập nhãn được gán chính xác, bouding box của đối tượng được vẽ không quá dư thừa, không có missing value, v.v. Một ví dụ nhỏ là tập MNIST, có nhiều hình bị nhập nhằng giữa những con số, chúng ta không thể phân biệt được chính xác hình đó là con số nào bằng mắt thường.</p></li>
+<p>File Teacher.csv. File có tổng cộng 402900 dòng với các cột TeachId, Teacher Prefix (Mr, Mrs, Ms), Teacher First Project Posted Date.</p>
 
-<li><p>Tiếp theo, các bạn hãy quyết định xem rằng mình có nên sử dụng các pre-train model hay không.</p></li>
-</ol>
+<p>File Schools.csv. File có tổng cộng 72994 dòng với các cột là SchoolID, SchoolName (tên trường có thể trùng nhau), School Metro Type ( phân loại trường thuộc 1 trong 5 nhóm : suburnban - ngoại ô, rural - nông thôn, uban - thành thị, town - thị trấn, unknow), School Percentage Free Lunch ( Số nguyên, mô tả tỷ lệ phần trăm số học sinh đủ điều kiện ăn trưa miễn phí hoặc ăn trưa giảm phí. Dữ liệu thu được cung cấp bởi một đối tác thống kê độc lập là NCES. Nếu trường nào không có giá trị do NCES cung cấp, chúng ta sẽ lấy số phần trăm này là trung bình phần trăm của các trường cùng huyện), School State (Trường đang toạ lạc ở bang nào (vd cali, Florida, Virginia, &hellip;)), School Zip (mã bưu chính), School City, School County</p>
+
+<p>File Resources.csv. Với mỗi dự án, chúng ta cần các loại tài nguyên khác nhau. Các cột là Project ID (mã dự án), Resource Item Name (tên tài nguyên cần cho dự án đó vd project 000009891526c0ade7180f8423792063 cần &lsquo;chair move and store cart&rsquo;), Resource Quantity (số lượng tài nguyên cần, vd cần 1 cái ghế, 2 cái bảng v.v),
+Resource Unit Price (đơn giá cho 1 đơn vị tài nguyên, vd cái ghế giá 7 ngàn, cái bảng giá 10 ngàn, nếu 1 unit là ghế + bảng thì là 17 ngàn), Resource Vendor Name(nhà cung cấp, vd: Amazon Business, Woodwind and Brasswind).</p>
+
+<p>File Projects.csv</p>
+
+<h3 id="xây-dựng-chiến-lược">Xây dựng chiến lược.</h3>
+
+<p>Hãy xem đây như là bài toán gợi ý. Và Donors chính là hệ thống cung cấp các sản phẩm. Ví dụ đơn giản là bạn có website nghe nhạc mp3.zing.vn, alice vào nghe một hoặc một vài bài nhạc. Chúng ta sẽ xây dựng một hệ gợi ý những bài nhạc tiếp theo alice nên nghe dựa vào những bài nhạc đã nghe trước đó của alice. Tương tự vậy, hệ thống Donor như là website mp3.zing, bài nhạc tương tự như các project đang có, người dùng tương tự như các nhà tự thiện. Một khi một nhà từ thiện đã quyên góp cho 1 hoặc 1 nhón các dự án, chúng ta sẽ lên kế hoạch và gợi ý cho khác hàng dự án tiếp theo khách hàng nên tìm hiểu kỹ để xét xem có nên donate hay không.</p>
+
+<p>Dựa vào các chiến lược trên, chúng ta có 3 cách có thể tiếp cận vấn đề:</p>
 
 <ul>
-<li><p>Nếu tập dữ liệu của bạn gần giống với tập dữ liệu ImageNet, hãy dùng pre-train model. Có các mô hình đã được huấn luyện sẵn là VGG net, ResNet, DenseNet, Xception. Với các kiến trúc khác nhau như VGG(16 và 19 layer), ResNet (50, 101, 152 layer), DenseNet(201,169,121 layer). Ban đầu, đừng sử dụng các kiến trúc có số lượng nhiều (ResNet152, DenseNet201) bởi vì nó rất tốn chi phí tính toán. Chúng ta nên bắt đầu bởi các mô hình nhỏ như VGG16, ResNet50. Hãy chọn một mô hình mà bạn nghĩ là sẽ có kết quả tốt. Sau khi huấn luyện, nếu kết quả không được như ý muốn, hãy tăng số lớp lên (ví dụ ban đầu chọn Resnet50, sau đó nâng lên Resnet101, &hellip;).</p></li>
-
-<li><p>Nếu bạn có ít dữ liệu, bạn nãy &ldquo;đóng băng&rdquo; lại trọng số của pre-train model, chỉ huấn luyện phần phân lớp. Bạn cũng có thể thêm phần Dropout để tránh overfit.</p></li>
-
-<li><p>Nếu tập dữ liệu của bạn không giống một tí nào so với taapk ImageNet, không nên dùng pre-train model.</p></li>
+<li>Content-based filltering.</li>
+<li>Collaborative Filtering</li>
+<li>Hybrid methods:</li>
 </ul>
-
-<ol>
-<li><p>Luôn luôn sử dụng lớp chuẩn hoá trong mô hình. Nếu bạn huấn luyện mô hình với batch-size lớn ( ví dụ lớn hơn 10), hãy sử dụng BatchNormalization Layer trong keras. Nếu bạn sử dụng batch-size nhỏ (ví dụ 1), thì hãy sử dụng InstanceNormalization. Hai layer này đã có sẵn trong Keras, trong các framework khác thì mình không rõ lắm. Có nhiều tác giả đã chỉ ra rằng sử dụng BatchNormalization  sẽ cho kết quả tốt hơn nếu tăng batch-size và hiệu năng sẽ giảm khi batch-size nhỏ, và trong trường hợp batch-size nhỏ thì kết quả sẽ tốt hơn một tí khi sử dụng InstanceNormalization thay cho BatchNormalization. Ngoài ra, các bạn cũng có thể sử dụng GroupNormalization (mình chưa kiểm chứng GroupNormalization có làm tăng độ chính xác hay không).</p></li>
-
-<li><p>Nếu bạn sử dụng concatenation layer để kết hợp các feature từ nhiều convolution layers (Li), và những Li  trên rút trích thông tin từ cùng một input (F), thì bạn jay sử dụng SpatialDropout ngay sau concatenation layer trên (Xem hình bên dưới). Khi các convolution layer rút trích thông tin từ cùng một nguồn, các đặc trưng của chúng thường sẽ có mức tương quan với nhau rất lớn. SpatialDropout sẽ loại bỏ những đặc trưng có mức độ liên quan cao này và giúp bạn chống lại hiện tượng overfiting. Thông thường người ta chỉ sử dụng SpatialDropout ở các lớp gần input layer, và không sử dụng chúng ở các lớp cao bên trên.</p></li>
-</ol>
-
-<p><img src="/post_image/spatialdropoutusecase.png" alt="Hình ảnh" /></p>
-
-<ol>
-<li><p>Theo andrej Karpathy, để xác định khả năng lưu trữ thông tin của mô hình, hãy rút một phần nhỏ dữ liệu trong tập train của bạn đem đi huấn luyện. Nếu mô hình không overfit, chúng ta tăng số lượng node/layer lên. Nếu mô hình bị overfit, sử dụng các kỹ thuật như L1, L2, Dropout hoăc các kỹ thuật khác để chống lại việc overfit.</p></li>
-
-<li><p>Các kỹ thuật chuẩn hoá thường sẽ ràng buộc hoặc tinh gọn các trọng số của mô hình. Nó cũng đồng thời giúp chúng ta chống lại việc gradient explosion (gradient mang giá trị lớn khi tính backpropagation) (lý do là các trọng số sẽ bị giới hạn trong đoạn nào đó, ví dụ L2 giới hạn căn bậc 2 tổng bình phương các trọng số =1 chẳng hạn). Ví dụ dưới sử dụng kares và giới hạn max của L2 là 2.</p></li>
-</ol>
-
-<pre><code class="language-python">from keras.constraints import max_norm
-# add to Dense layers
-model.add(Dense(64, kernel_constraint=max_norm(2.)))
-# or add to Conv layers
-model.add(Conv2D(64, kernel_constraint=max_norm(2.)))
-</code></pre>
-
-<ol>
-<li><p>Việc sử dụng mean subtraction đôi khi cho kết quả khá tệ, đặc biệt là khi sử dụng trong ảnh xám (grayscale image), hoặc các bài toán phân đoạn ảnh.</p></li>
-
-<li><p>Luôn nhớ đến việc xáo trộn dữ liệu (nếu bạn có thể). Nếu được, hãy thực hiện xáo trộn dữ liệu trong quá trình huấn luyện. Việc xáo trộn ảnh sẽ giúp bạn cải thiện độ chính xác.</p></li>
-
-<li><p>Nếu bài toán của bạn thuộc nhóm dense prediction (ví dụ phân đoạn ngữ nghĩa - semantic segmentation). Hãy sử dụng pre-train model là Dilated Residual Networks. Mô hình trên cực kỳ hiệu quả cho bài toán này.</p></li>
-
-<li><p>Để xác định thông tin ngữ cảnh xung quanh các đối tượng, hãy sử dụng module multi-scale feature pooling. Module này sẽ giúp bạn tăng độ chính xác và thường được sử dụng trong bài toán phân đoạn ngữ nghĩa (semantic segmentation) hoặc bài toán phân đoạn nền (foreground segmentation).</p></li>
-
-<li><p>Khi bạn tính độ lỗi hoặc độ chính xác, nếu có vùng nào không trả về nhãn, hoặc nhãn trả về không chắc chắn, hãy bỏ qua việc tính toán chúng đi. Hành động này sẽ giúp mô hình của bạn chắc chắn hơn khi đưa ra quyết định.</p></li>
-
-<li><p>Sử dụng trọng số cho từng class trong quá trình training nếu dữ liệu của bạn có tính bất cân bằng cao. Hãy đặt trọng số lớn cho những lớp có ít dữ liệu, và trọng số nhỏ cho những lớp có nhiều dữ liệu. Trọng số của các lớp có thể được tính toán một cách dễ dàng bằng các sử dụng thư viện skearn trong python. Ngoài ra, bạn có thể sử dụng các kỹ thuật như OverSampling hoặc UnderSampling đối với tập dữ liệu nhỏ.</p></li>
-
-<li><p>Chọn đúng hàm tối ưu. Có rất nhiều hàm tối ưu như Adam, Adagrad, Adadellta, RMSprop, &hellip; Trong các paper người ta thường sử dụng tổ hợp SGD + momentun. Có hai vấn đề cần được xem xét ở đây: Một là nếu bạn muốn mô hình có độ hội tụ nhanh, hãy dùng Adam ( và có khả năng cao là mô hình sẽ bị kẹt ở điểm cực tiểu cục bộ -&gt; không có tính tổng quát hoá cao). Hai là sử dujg SGD + momentun để tìm cực tiểu toàn cục, mô hình này phụ thuộc rất nhiều vào giá trị khởi tạo ban đầu và mô hình thường sẽ hội tụ rất chậm. (Xem hình bên dưới)</p></li>
-</ol>
-
-<p><img src="/post_image/optimal.png" alt="Hình ảnh" /></p>
-
-<ol>
-<li><p>Thông thường, chúng ta sẽ chọn learning-rate là (1e-1, 1e-3, 1e-6). Nếu bạn sử dụng pre-train model, hãy sử dụng learning rate nhỏ hơn 1e-3 (ví dụ 1e-4). Nếu bạn không sử dụng pre-train model, hãy sử dụng learning-rate lớn hơn 1e-3. Bạn có thể grid search giá trị learning-rate và chọn ra mô hình cho kết quả tốt nhất. Bạn có thể sử dụng Learing Rate Schedulers giảm giá trịn learning rate trong quá trình huấn luyện mô hình.</p></li>
-
-<li><p>Bên cạnh việc sử dụng Learing Rate Schedulers để giảm giá trị learning rate, bạn có thể sử dụng một kỹ thuật khác để giảm giá trị learning-rate. Ví dụ sau 5 epochs, độ lỗi trên tập validation không thay đổi, bạn giảm learning-rate đi 10 lần (vd từ 1e-3 thành 1e-4). Trong keras, bạn có thể dễ dàng implement công thức trên bằng việc sử dụng callbacs ReduceLROnPlateau.</p></li>
-</ol>
-
-<pre><code class="language-python">reduce = keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=5, mode='auto')
-early = keras.callbacks.EarlyStopping(monitor='val_loss', min_delta=1e-4, patience=10, mode='auto')
-model.fit(X, Y, callbacks=[reduce, early])
-</code></pre>
-
-<p>Ví dụ trên, chúng ta sẽ giảm learning-rate đi 10 lần khi độ lỗi trên tập validation không thay đổi qua 5 lần lặp liên tiếp, và sẽ dừng việc huấn luyện khi độ lỗi không giảm qua 10 lần lặp liên tiếp.</p>
-
-<ol>
-<li><p>Nếu bài toán của bạn thuộc nhóm dense prediction như phân đoạn ảnh, phân đoạn ngữ nghĩa, bạn nên sử dụng skip connection để chống lại việc các biên của đối tượng hoặc các thông tin đặc trưng hữu ích của đối tượng bị mất trong max-pooling hoặc strided convolution. Skip connection cũng giúp mô hình học features map từ feature space và image space dễ dàng hơn, và nó cũng giúp cho bạn giảm bị vanish gradient ( giá trị gradient nhỏ dần và gần xấp xỉ bằng 0, nên trọng số không thay đổi nhiều, dẫn đến không hội tụ).</p></li>
-
-<li><p>Nên sử dụng data augmentation, như là horizontally flipping, rotating, zoom-croping&hellip; để tăng dữ liệu của bạn lên. Việc có nhiều dữ liệu sẽ giúp mô hình có mức tổng quát hoá cao hơn.</p></li>
-
-<li><p>Sử dụng Max-pooling trước Relu để giảm thiểu mức độ tính toán thay vì làm ngược lại. chúng ta biết rằng ReLU trả ra giá trị có ngưỡng cực tiểu là 0 do f(x)=max(0,x), và max-pooling tính max cho các đặc trưng f(x) = max(x1,x2,&hellip;,xi). Nếu ta sử dụng <em>Conv &gt; ReLU &gt; Max-pooling</em>, ta sẽ tốn i lần tính ReLu, và 1 lần tính max. Nếu ta sử dụng <em>Conv -&gt; max-pooling &gt; ReLU</em>, ta tốn 1 lần tính max, 1 lần tính ReLU.</p></li>
-
-<li><p>Nếu có thể, hãy thử sử dụng Depthwise Separable Convolution. Nó giúp mô hình giảm số lượng tham số so với các convolution khác, ngoài ra nó giúp mô hình chạy nhanh hơn.</p></li>
-
-<li><p>Điều cuối cùng là đừng bao giờ từ bỏ. Hãy tin tưởng rằng bạn có thể làm được. Nếu bạn vẫn không thể đạt được độ chính xác như mong đợi, hãy điều chỉnh lại các tham số, kiến trúc mô hình, tập dữ liệu huấn luyện đến khi bạn đạt được mô hình với độ chính xác như bạn đề ra.</p></li>
-</ol>
 
 <p>Cảm ơn các bạn đã theo dõi. Hẹn gặp bạn ở các bài viết tiếp theo. Cố lên.</p>
 
