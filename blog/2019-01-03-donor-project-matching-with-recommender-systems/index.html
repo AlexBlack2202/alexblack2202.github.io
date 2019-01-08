@@ -24,7 +24,7 @@
         "datePublished": "2018-12-11 00:19:00 &#43;0300 &#43;0300",
         "dateModified" : "2018-12-11 00:19:00 &#43;0300 &#43;0300",
         "url" : "/blog/2019-01-03-donor-project-matching-with-recommender-systems/",
-        "wordCount" : "839",
+        "wordCount" : "3757",
         "keywords" : [ "Machine learning","Deeplearning","recommender system","Blog" ]
     }
     </script>
@@ -99,7 +99,7 @@
 
 <meta itemprop="datePublished" content="2018-12-11T00:19:00&#43;03:00" />
 <meta itemprop="dateModified" content="2018-12-11T00:19:00&#43;03:00" />
-<meta itemprop="wordCount" content="839">
+<meta itemprop="wordCount" content="3757">
 
 
 
@@ -238,9 +238,7 @@ if (!doNotTrack) {
 
 <p>Chúng ta có các file sau:</p>
 
-<ul>
-<li>File Donations.csv.  Với mỗi dự án (Project ID), sẽ có 1 hoặc nhiều nhà quyên góp (Donor ID) mỗi cặp (dự án - nhà quyên góp sẽ định dang bằng 1 mã chung (Donation ID) và có các cột thông tin liên quan đến việc quyên góp đó). File có xấp xỉ 4.67 triệu dòng (chính xác là 4687844 dòng) và 7 cột. (Project ID - Định danh dự án, Donation ID - Định danh khoảng đóng góp (tưởng tượng như khoá tự tăng của bảng này đó các bạn), Donor ID - Mã định danh người đóng góp, Donation Included Option - hỗ trợ website donoschoose 15% giá trị quyên góp, Donation Amount - Số tiền quyên góp, Donor Cart Sequence - Thứ tự của dự án trọng bảng danh sách quyên góp,Donation Received Date - Ngày giờ quyên góp).</li>
-</ul>
+<p>File Donations.csv.  Với mỗi dự án (Project ID), sẽ có 1 hoặc nhiều nhà quyên góp (Donor ID) mỗi cặp (dự án - nhà quyên góp sẽ định dang bằng 1 mã chung (Donation ID) và có các cột thông tin liên quan đến việc quyên góp đó). File có xấp xỉ 4.67 triệu dòng (chính xác là 4687844 dòng) và 7 cột. (Project ID - Định danh dự án, Donation ID - Định danh khoảng đóng góp (tưởng tượng như khoá tự tăng của bảng này đó các bạn), Donor ID - Mã định danh người đóng góp, Donation Included Option - hỗ trợ website donoschoose 15% giá trị quyên góp, Donation Amount - Số tiền quyên góp, Donor Cart Sequence - Thứ tự của dự án trọng bảng danh sách quyên góp,Donation Received Date - Ngày giờ quyên góp).</p>
 
 <p>File Donors.csv. File định danh người quyên góp. Chứa tổng cộng hơn 2 triệu dòng( chính xác là 2122640 dòng)
 File có kích thước 2122640 x 5 với các thông tin cột là Donor ID (khoá chính, không trùng), Donor City (tên thành phố nhà đầu tư đang sinh sống), Donor State (tiểu bang mà người quyên góp đang sống), Donor is teacher, Donor Zip (3 ký tự đầu của mã bưu điện nhà từ thiện).</p>
@@ -254,7 +252,7 @@ Resource Unit Price (đơn giá cho 1 đơn vị tài nguyên, vd cái ghế gi�
 
 <p>File Projects.csv</p>
 
-<h3 id="xây-dựng-chiến-lược">Xây dựng chiến lược.</h3>
+<h3 id="xây-dựng-chiến-lược-tiếp-cận-bài-toán">Xây dựng chiến lược tiếp cận bài toán</h3>
 
 <p>Hãy xem đây như là bài toán gợi ý. Và Donors chính là hệ thống cung cấp các sản phẩm. Ví dụ đơn giản là bạn có website nghe nhạc mp3.zing.vn, alice vào nghe một hoặc một vài bài nhạc. Chúng ta sẽ xây dựng một hệ gợi ý những bài nhạc tiếp theo alice nên nghe dựa vào những bài nhạc đã nghe trước đó của alice. Tương tự vậy, hệ thống Donor như là website mp3.zing, bài nhạc tương tự như các project đang có, người dùng tương tự như các nhà tự thiện. Một khi một nhà từ thiện đã quyên góp cho 1 hoặc 1 nhón các dự án, chúng ta sẽ lên kế hoạch và gợi ý cho khác hàng dự án tiếp theo khách hàng nên tìm hiểu kỹ để xét xem có nên donate hay không.</p>
 
@@ -263,8 +261,527 @@ Resource Unit Price (đơn giá cho 1 đơn vị tài nguyên, vd cái ghế gi�
 <ul>
 <li>Content-based filltering.</li>
 <li>Collaborative Filtering</li>
-<li>Hybrid methods:</li>
+<li>Hybrid methods</li>
 </ul>
+
+<h4 id="1-tiền-xử-lý-dữ-liệu">1. Tiền xử lý dữ liệu</h4>
+
+<p>Trước khi bắt đầu xây dựng chương trình gợi ý, chúng ta cần phải load dữ liệu lên bộ nhớ chính và làm sạch dữ liệu.</p>
+
+<p>Trước tiên, chúng ta sẽ import các thư viện cần thiết. Nếu thiếu các thư viện nào, các bạn cứ pip install tên thư viện trong cmd/terminal là được</p>
+
+<pre><code class="language-python">
+import numpy as np
+import scipy
+import pandas as pd
+import math
+import random
+import sklearn
+from nltk.corpus import stopwords
+from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+from scipy.sparse.linalg import svds
+import matplotlib.pyplot as plt
+import os
+</code></pre>
+
+<p>Tiếp theo, chúng ta sẽ load 3 file Projects.csv, Donations.csv, Donors.csv lên và merge donations với donors.</p>
+
+<pre><code class="language-python"># Set up test mode to save some time
+test_mode = True
+
+# Read datasets
+projects = pd.read_csv('../input/Projects.csv')
+donations = pd.read_csv('../input/Donations.csv')
+donors = pd.read_csv('../input/Donors.csv')
+
+#this piece of code converts Project_ID which is a 32-bit Hex int digits 10-1010
+# create column &quot;project_id&quot; with sequential integers
+f=len(projects)
+projects['project_id'] = np.nan
+g = list(range(10,f+10))
+g = pd.Series(g)
+projects['project_id'] = g.values
+
+# Merge datasets
+donations = donations.merge(donors, on=&quot;Donor ID&quot;, how=&quot;left&quot;)
+df = donations.merge(projects,on=&quot;Project ID&quot;, how=&quot;left&quot;)
+
+# only load a few lines in test mode
+if test_mode:
+    df = df.head(10000)
+
+donations_df = df
+</code></pre>
+
+<p>Ở giai đoạn xây dựng code và debug, mình chỉ load 10000 dữ liệu lên để test thử  (để đảm bảo rằng mình code đúng - bằng cách set test_mode = True). Khi chạy thật mình sẽ set lại test_mode = False.</p>
+
+<p>Thực hiện một vài bước phân tích kỹ thuật đơn giản để nắm rõ hơn về dữ liệu.</p>
+
+<p>Thử đo mối quan hệ giữa các dự án và các &ldquo;mạnh thường quân&rdquo;</p>
+
+<pre><code class="language-python"># Deal with missing values
+donations[&quot;Donation Amount&quot;] = donations[&quot;Donation Amount&quot;].fillna(0)
+
+# Define event strength as the donated amount to a certain project
+donations_df['eventStrength'] = donations_df['Donation Amount']
+
+def smooth_donor_preference(x):
+    return math.log(1+x, 2)
+    
+donations_full_df = donations_df \
+                    .groupby(['Donor ID', 'Project ID'])['eventStrength'].sum() \
+                    .apply(smooth_donor_preference).reset_index()
+        
+# Update projects dataset
+project_cols = projects.columns
+projects = df[project_cols].drop_duplicates()
+
+print('# of projects: %d' % len(projects))
+print('# of unique user/project donations: %d' % len(donations_full_df))
+</code></pre>
+
+<pre><code class="language-python"># of projects: 1889
+# of unique user/project donations: 8648
+</code></pre>
+
+<p>Dựa vào kết quả trên tập test, chúng ta có thể đưa ra một vài nhận xét như sau:</p>
+
+<ul>
+<li>Hầu hết các mạnh thường quân chỉ donate cho 1 project (tỷ lệ 86,48%)</li>
+<li>Sẽ có trường hợp 1 mạnh thường quân sẽ donate cho nhiều dự án, và cũng có trường hợp 1 mạnh thường quân donate nhiều lần cho 1 dự án. Trường hợp này chiếm phần ít.</li>
+</ul>
+
+<p>Để đánh giá mô hình, chúng ta sẽ chia tập dữ liệu thành 2 phần là train và test. Ở đây, chúng ta sẽ set tỷ lệ train/test là 20%.</p>
+
+<h4 id="2-xây-dựng-mô-hình-content-based-filtering">2. Xây dựng mô hình Content-Based Filtering</h4>
+
+<p>Cách tiếp cận đầu tiên, chúng ta sẽ tìm những project gần giống với những project mà donor đã donated. Đơn giản nhất là với mỗi project, chúng ta sẽ định nghĩa các vector đặc trưng của chúng và đo độ giống nhau giữa hai vector đó. Vector đặc trưng chúng ta có thể xây dựng trên các thuộc tính như project type, project catefory, grade level, resource category, cost, school zip code, &hellip; hoặc các bạn có thể từ các vector cơ bản do tập dữ liệu cung cấp bổ sung thêm các vector cấp cao hơn, ví dụ như là rút trích các feature từ tên project hoặc mô tả của project, loại bỏ stopwords &hellip;</p>
+
+<p>Ở đây, chúng ta sẽ sử dụng kỹ thuật TF-IDF để rút trích thông tin đặc trưng của dự án dựa trên project tittle và description. Về TF-IDF, các bạn có thể đọc ở một bài viết nào đó của google, mình không tiện nhắc đến nó chi tiết ở bài viết này.</p>
+
+<h5 id="a-xây-dựng-tập-đặc-trưng">a. Xây dựng tập đặc trưng</h5>
+
+<pre><code class="language-python">
+# Preprocessing of text data
+textfeats = [&quot;Project Title&quot;,&quot;Project Essay&quot;]
+for cols in textfeats:
+    projects[cols] = projects[cols].astype(str) 
+    projects[cols] = projects[cols].astype(str).fillna('') # FILL NA
+    projects[cols] = projects[cols].str.lower() # Lowercase all text, so that capitalized words dont get treated differently
+ 
+text = projects[&quot;Project Title&quot;] + ' ' + projects[&quot;Project Essay&quot;]
+vectorizer = TfidfVectorizer(strip_accents='unicode',
+                             analyzer='word',
+                             lowercase=True, # Convert all uppercase to lowercase
+                             stop_words='english', # Remove commonly found english words ('it', 'a', 'the') which do not typically contain much signal
+                             max_df = 0.9, # Only consider words that appear in fewer than max_df percent of all documents
+                             # max_features=5000 # Maximum features to be extracted                    
+                            )                        
+project_ids = projects['Project ID'].tolist()
+tfidf_matrix = vectorizer.fit_transform(text)
+tfidf_feature_names = vectorizer.get_feature_names()
+
+
+## build profile
+
+def get_project_profile(project_id):
+    idx = project_ids.index(project_id)
+    project_profile = tfidf_matrix[idx:idx+1]
+    return project_profile
+
+def get_project_profiles(ids):
+    project_profiles_list = [get_project_profile(x) for x in np.ravel([ids])]
+    project_profiles = scipy.sparse.vstack(project_profiles_list)
+    return project_profiles
+
+def build_donors_profile(donor_id, donations_indexed_df):
+    donations_donor_df = donations_indexed_df.loc[donor_id]
+    donor_project_profiles = get_project_profiles(donations_donor_df['Project ID'])
+    donor_project_strengths = np.array(donations_donor_df['eventStrength']).reshape(-1,1)
+    #Weighted average of project profiles by the donations strength
+    donor_project_strengths_weighted_avg = np.sum(donor_project_profiles.multiply(donor_project_strengths), axis=0) / (np.sum(donor_project_strengths)+1)
+    donor_profile_norm = sklearn.preprocessing.normalize(donor_project_strengths_weighted_avg)
+    return donor_profile_norm
+
+from tqdm import tqdm
+
+def build_donors_profiles(): 
+    donations_indexed_df = donations_full_df[donations_full_df['Project ID'].isin(projects['Project ID'])].set_index('Donor ID')
+    donor_profiles = {}
+    for donor_id in tqdm(donations_indexed_df.index.unique()):
+        donor_profiles[donor_id] = build_donors_profile(donor_id, donations_indexed_df)
+    return donor_profiles
+
+donor_profiles = build_donors_profiles()
+print(&quot;# of donors with profiles: %d&quot; % len(donor_profiles))
+
+mydonor1 = &quot;6d5b22d39e68c656071a842732c63a0c&quot;
+mydonor2 = &quot;0016b23800f7ea46424b3254f016007a&quot;
+mydonor1_profile = pd.DataFrame(sorted(zip(tfidf_feature_names, 
+                        donor_profiles[mydonor1].flatten().tolist()), 
+                        key=lambda x: -x[1])[:10],
+                        columns=['token', 'relevance'])
+mydonor2_profile = pd.DataFrame(sorted(zip(tfidf_feature_names, 
+                        donor_profiles[mydonor2].flatten().tolist()), 
+                        key=lambda x: -x[1])[:10],
+                        columns=['token', 'relevance'])
+
+print('feature of user ' + str(mydonor1))
+print(mydonor1_profile)
+
+print('feature of user ' + str(mydonor2))
+print(mydonor2_profile)
+
+</code></pre>
+
+<p>Mã nguồn ở trên cũng có chú thích đầy đủ, và đọc cũng dễ hiểu, nên mình không nói thêm gì nhiều. Mình tóm gọn một chút là chúng ta sẽ convert toàn bộ project tittle và description về dạng chữ thường, tách từ dựa vào khoảng trắng, loại bỏ những english stopwords. Sau đó xây dựng profile cho từng donor.</p>
+
+<p>Kết quả</p>
+
+<pre><code class="language-python">feature of  user 6d5b22d39e68c656071a842732c63a0c
+        token  relevance
+0       music   0.450057
+1  auditorium   0.355256
+2        cart   0.272809
+3       chair   0.223861
+4   equipment   0.211338
+5   musicians   0.179244
+6        time   0.172908
+7      moving   0.137749
+8        ohms   0.134065
+9     prepare   0.131274
+feature of  user 0016b23800f7ea46424b3254f016007a
+         token  relevance
+0  pollinators   0.670222
+1       plants   0.305398
+2       module   0.223407
+3  pollination   0.211870
+4        seeds   0.180609
+5      writing   0.166816
+6        books   0.137455
+7      reading   0.115003
+8       weaved   0.111704
+9         bees   0.101842
+</code></pre>
+
+<p>Nhìn kết quả trên, ta thấy rằng donor 1 có vẻ thích những thứ liên quan đến âm nhạc (music, auditorim), trong khi đó donor 2 thích những thứ liên quan đến trồng trọt (pollinators - thụ phấn, plants - cây cối)</p>
+
+<h5 id="b-xây-dựng-mô-hình">b. Xây dựng mô hình</h5>
+
+<p>Việc xây dựng mô hình đến đây là khá đơn giản. Chúng ta chỉ việc tính khoảng cách cosin giữa vector cần dự đoán và toàn bộ vector có trong tập train rồi show top K prject có liên quan cao nhất</p>
+
+<pre><code class="language-python">
+
+class ContentBasedRecommender:
+    
+    MODEL_NAME = 'Content-Based'
+    
+    def __init__(self, projects_df=None):
+        self.project_ids = project_ids
+        self.projects_df = projects_df
+        
+    def get_model_name(self):
+        return self.MODEL_NAME
+        
+    def _get_similar_projects_to_donor_profile(self, donor_id, topn=1000):
+        #Computes the cosine similarity between the donor profile and all project profiles
+        cosine_similarities = cosine_similarity(donor_profiles[donor_id], tfidf_matrix)
+        #Gets the top similar projects
+        similar_indices = cosine_similarities.argsort().flatten()[-topn:]
+        #Sort the similar projects by similarity
+        similar_projects = sorted([(project_ids[i], cosine_similarities[0,i]) for i in similar_indices], key=lambda x: -x[1])
+        return similar_projects
+        
+    def recommend_projects(self, donor_id, projects_to_ignore=[], topn=10, verbose=False):
+        similar_projects = self._get_similar_projects_to_donor_profile(donor_id)
+        #Ignores projects the donor has already donated
+        similar_projects_filtered = list(filter(lambda x: x[0] not in projects_to_ignore, similar_projects))
+        
+        recommendations_df = pd.DataFrame(similar_projects_filtered, columns=['Project ID', 'recStrength']).head(topn)
+
+        recommendations_df = recommendations_df.merge(self.projects_df, how = 'left', 
+                                                    left_on = 'Project ID', 
+                                                    right_on = 'Project ID')[['recStrength', 'Project ID', 'Project Title', 'Project Essay']]
+
+
+        return recommendations_df
+
+
+cbr_model = ContentBasedRecommender(projects)
+
+
+print('recommend for user ' + str(mydonor1))
+print(cbr_model.recommend_projects(mydonor1))
+
+print('recommend for user ' + str(mydonor2))
+print(cbr_model.recommend_projects(mydonor2))
+</code></pre>
+
+<p>Kết quả</p>
+
+<pre><code class="language-python">recommend for user 6d5b22d39e68c656071a842732c63a0c
+   recStrength                        ...                                                              Project Essay
+0     1.000000                        ...                          the music students in our classes perform freq...
+1     0.390997                        ...                          i have spent 12 years as an educator rebuildin...
+2     0.338676                        ...                          &quot;music is what feelings sound like.&quot; -g. cates...
+3     0.331034                        ...                          true music is created not by the teacher but b...
+4     0.324355                        ...                          every morning my first grade students come to ...
+5     0.322923                        ...                          in today's fast paced environment, students ne...
+6     0.315910                        ...                          &quot;music is a moral law.  it gives soul to the u...
+7     0.314845                        ...                          i walk in the door so excited to get the stude...
+8     0.310103                        ...                          some students have never put their hands on a ...
+9     0.297516                        ...                          my students do not have money, but they do hav...
+
+[10 rows x 4 columns]
+recommend for user 0016b23800f7ea46424b3254f016007a
+   recStrength                        ...                                                              Project Essay
+0     1.000000                        ...                          my students are creative, curious, and excited...
+1     0.211962                        ...                          our school is a title 1 school.  100% of stude...
+2     0.189111                        ...                          my students are active and eager learners who ...
+3     0.188095                        ...                          being a small rural school we do a lot of trad...
+4     0.173520                        ...                          &quot;science is a way of life...science is the pro...
+5     0.159015                        ...                          my second grade students love to come to schoo...
+6     0.158071                        ...                          i teach 28 fourth graders in a neighborhood sc...
+7     0.150389                        ...                          in my classroom we are working hard to become ...
+8     0.144724                        ...                          as a teacher in a diverse, low-income, high-po...
+9     0.139937                        ...                          have you ever been told you need to read, but ...
+
+[10 rows x 4 columns]
+</code></pre>
+
+<p>Mình dùng cmd nên bị giới hạn kết quả, các bạn có thể write log vào file hoặc dùng jupiter để show kết quả rõ hơn.</p>
+
+<p>Ở đây, chúng ta nhận thấy rằng các recommend cho donor 1 thường là những project liên quan tới âm nhạc (nhìn tập feature ta cũng có thể đoán được). Và recommend cho donor 2 là những thứ liên quan đến chủ đề làm vườn và reading.</p>
+
+<h4 id="3-collaborative-filtering-model">3. Collaborative Filtering Model</h4>
+
+<p>Lý thuyết về Collaborative Filtering Model các bạn có thể xem ở các bài viết khác của mình hoặc tham khảo thêm trên mạng. Ở đây, mình sẽ sử dụng Singular Value Decomposition (SVD) để xây dựng ma trận đặc trưng.</p>
+
+<h5 id="a-xây-dựng-ma-trận-donor-project">a. Xây dựng ma trận donor - project</h5>
+
+<p>Đầu tiên, chúng ta sẽ xây dựng ma trận mối quan hệ giữa donor và project. Nếu donor i có donated cho 1 project j thì dòng i cột j của ma trận sẽ được đánh dấu là 1, ngược lại là 0.</p>
+
+<pre><code class="language-python">#### create matrix
+#Creating a sparse pivot table with donors in rows and projects in columns
+donors_projects_pivot_matrix_df = donations_full_df.pivot(index='Donor ID', 
+                                                          columns='Project ID', 
+                                                          values='eventStrength').fillna(0)
+
+# Transform the donor-project dataframe into a matrix
+donors_projects_pivot_matrix = donors_projects_pivot_matrix_df.as_matrix()
+
+# Get donor ids
+donors_ids = list(donors_projects_pivot_matrix_df.index)
+
+print(donors_projects_pivot_matrix[:5]) # print first 5 row
+</code></pre>
+
+<pre><code class="language-python">
+array([[ 0.,  0.,  0., ...,  0.,  0.,  0.],
+       [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+       [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+       [ 0.,  0.,  0., ...,  0.,  0.,  0.],
+       [ 0.,  0.,  0., ...,  0.,  0.,  0.]])
+</code></pre>
+
+<h5 id="b-singular-value-decomposition">b. Singular Value Decomposition</h5>
+
+<p>Sau khi có ma trận trên, ta có một nhận xét rằng nó rất thưa, số lượng 0 thì nhiều mà 1 thì ít. Sau khi áp dụng SVD, ma trận kết quả sẽ ít thưa hơn (có thể đạt được đến mức không còn thưa nữa).</p>
+
+<pre><code class="language-python"># Performs matrix factorization of the original donor-project matrix
+# Here we set k = 20, which is the number of factors we are going to get
+# In the definition of SVD, an original matrix A is approxmated as a product A ≈ UΣV 
+# where U and V have orthonormal columns, and Σ is non-negative diagonal.
+U, sigma, Vt = svds(donors_projects_pivot_matrix, k = 20)
+sigma = np.diag(sigma)
+
+# Reconstruct the matrix by multiplying its factors
+all_donor_predicted_ratings = np.dot(np.dot(U, sigma), Vt) 
+
+#Converting the reconstructed matrix back to a Pandas dataframe
+cf_preds_df = pd.DataFrame(all_donor_predicted_ratings, 
+                           columns = donors_projects_pivot_matrix_df.columns, 
+                           index=donors_ids).transpose()
+                           
+print(cf_preds_df.head())
+
+</code></pre>
+
+<pre><code class="language-python">                                  0003aba06ccf49f8c44fc2dd3b582411                ...                 ffff088c35d3455779a30898d1327b76
+Project ID                                                                        ...
+
+000009891526c0ade7180f8423792063                     -3.423182e-34                ...-4.577244e-34
+00000ce845c00cbf0686c992fc369df4                     -3.061322e-36                ...-6.492305e-36
+00002d44003ed46b066607c5455a999a                      1.368936e-33                ...-2.239156e-32
+00002eb25d60a09c318efbd0797bffb5                      1.784576e-33                ...1.163684e-32
+0000300773fe015f870914b42528541b                      4.314216e-34                ...-4.666110e-34
+
+[5 rows x 8015 columns]
+</code></pre>
+
+<h5 id="c-xây-dựng-collaborative-filtering-model">c. Xây dựng Collaborative Filtering Model</h5>
+
+<pre><code class="language-python">
+
+class CFRecommender:
+    
+    MODEL_NAME = 'Collaborative Filtering'
+    
+    def __init__(self, cf_predictions_df, projects_df=None):
+        self.cf_predictions_df = cf_predictions_df
+        self.projects_df = projects_df
+        
+    def get_model_name(self):
+        return self.MODEL_NAME
+        
+    def recommend_projects(self, donor_id, projects_to_ignore=[], topn=10):
+        # Get and sort the donor's predictions
+        sorted_donor_predictions = self.cf_predictions_df[donor_id].sort_values(ascending=False) \
+                                    .reset_index().rename(columns={donor_id: 'recStrength'})
+
+        # Recommend the highest predicted projects that the donor hasn't donated to
+        recommendations_df = sorted_donor_predictions[~sorted_donor_predictions['Project ID'].isin(projects_to_ignore)] \
+                               .sort_values('recStrength', ascending = False) \
+                               .head(topn)
+
+ 
+        recommendations_df = recommendations_df.merge(self.projects_df, how = 'left', 
+                                                          left_on = 'Project ID', 
+                                                          right_on = 'Project ID')[['recStrength', 'Project ID', 'Project Title', 'Project Essay']]
+
+
+        return recommendations_df
+
+cfr_model = CFRecommender(cf_preds_df, projects)
+print(cfr_model.recommend_projects(mydonor1))
+
+print(cfr_model.recommend_projects(mydonor2))
+
+</code></pre>
+
+<pre><code class="language-python">[5 rows x 8015 columns]
+    recStrength                        ...                                                              Project Essay
+0  3.015461e-17                        ...                          Our students are some of the hardest working k...
+1  2.237275e-17                        ...                          As Service Learning Coordinators at our elemen...
+2  2.188501e-17                        ...                          We are trying to engage more students in scien...
+3  1.768711e-17                        ...                          We are a brand new charter school that has onl...
+4  1.344489e-17                        ...                          Sitting at a desk for a sustained period of ti...
+5  9.957278e-18                        ...                          Our students come from a Title I school in Jer...
+6  6.932330e-18                        ...                          In my school 50% of the students are socioecon...
+7  8.589640e-19                        ...                          Have you ever been told you need to read, but ...
+8  6.698040e-19                        ...                          &quot;I cannot say good-bye to those whom I have gr...
+9  5.733941e-19                        ...                          I have students in class who are squinting and...
+
+[10 rows x 4 columns]
+    recStrength                        ...                                                              Project Essay
+0  3.015461e-17                        ...                          Our students are some of the hardest working k...
+1  2.237275e-17                        ...                          As Service Learning Coordinators at our elemen...
+2  2.188501e-17                        ...                          We are trying to engage more students in scien...
+3  1.768711e-17                        ...                          We are a brand new charter school that has onl...
+4  1.344489e-17                        ...                          Sitting at a desk for a sustained period of ti...
+5  9.957278e-18                        ...                          Our students come from a Title I school in Jer...
+6  6.932330e-18                        ...                          In my school 50% of the students are socioecon...
+7  8.589640e-19                        ...                          Have you ever been told you need to read, but ...
+8  6.698040e-19                        ...                          &quot;I cannot say good-bye to those whom I have gr...
+9  5.733941e-19                        ...                          I have students in class who are squinting and...
+</code></pre>
+
+<p>Kết quả trả về có vẻ không được đẹp như ở phương pháp trên. Ở đây, thuật toán dựa vào hành vi donated của những người khác có điểm tương đồng với user donor 1 và 2. Bởi vậy gợi ý những project sẽ khác những gợi ý ở phương pháp 1.</p>
+
+<h4 id="4-hybrid-method">4. Hybrid Method</h4>
+
+<p>Phương pháp lai này kết hợp cả 2 hướng tiếp cận của hai phương pháp ở trên. Ở đây, chúng ta sẽ xây dựng một mô hình nhỏ, nhân điểm của content based và collaborative filtering lại với nhau, sau đó xếp hạng để được điểm hybrid. Đây là 1 cách đơn giản, các bạn có thể tìm đọc nhiều cách tiếp cận khác và ứng dụng vào bài toán.</p>
+
+<pre><code class="language-python">class HybridRecommender:
+    
+    MODEL_NAME = 'Hybrid'
+    
+    def __init__(self, cb_rec_model, cf_rec_model, projects_df):
+        self.cb_rec_model = cb_rec_model
+        self.cf_rec_model = cf_rec_model
+        self.projects_df = projects_df
+        
+    def get_model_name(self):
+        return self.MODEL_NAME
+        
+    def recommend_projects(self, donor_id, projects_to_ignore=[], topn=10):
+        #Getting the top-1000 Content-based filtering recommendations
+        cb_recs_df = self.cb_rec_model.recommend_projects(donor_id, projects_to_ignore=projects_to_ignore, 
+                                                           topn=1000).rename(columns={'recStrength': 'recStrengthCB'})
+        
+        #Getting the top-1000 Collaborative filtering recommendations
+        cf_recs_df = self.cf_rec_model.recommend_projects(donor_id, projects_to_ignore=projects_to_ignore,  
+                                                           topn=1000).rename(columns={'recStrength': 'recStrengthCF'})
+        
+        #Combining the results by Project ID
+        recs_df = cb_recs_df.merge(cf_recs_df,
+                                   how = 'inner', 
+                                   left_on = 'Project ID', 
+                                   right_on = 'Project ID')
+        
+        #Computing a hybrid recommendation score based on CF and CB scores
+        recs_df['recStrengthHybrid'] = recs_df['recStrengthCB'] * recs_df['recStrengthCF']
+        
+        #Sorting recommendations by hybrid score
+        recommendations_df = recs_df.sort_values('recStrengthHybrid', ascending=False).head(topn)
+
+        recommendations_df = recommendations_df.merge(self.projects_df, how = 'left', 
+                                                    left_on = 'Project ID', 
+                                                    right_on = 'Project ID')[['recStrengthHybrid', 
+                                                                              'Project ID', 'Project Title', 
+                                                                              'Project Essay']]
+
+
+        return recommendations_df
+    
+hybrid_model = HybridRecommender(cbr_model, cfr_model, projects)
+
+
+print(hybrid_model.recommend_projects(mydonor1))
+
+print(hybrid_model.recommend_projects(mydonor2))
+
+</code></pre>
+
+<pre><code class="language-python">   recStrengthHybrid                        ...                                                              Project Essay
+0       1.574375e-18                        ...                          we are trying to engage more students in scien...
+1       1.221807e-18                        ...                          in my school 50% of the students are socioecon...
+2       1.214293e-18                        ...                          our students are some of the hardest working k...
+3       4.037232e-19                        ...                          sitting at a desk for a sustained period of ti...
+4       6.661794e-20                        ...                          “music expresses that which cannot be put into...
+5       4.872264e-20                        ...                          i walk in the door so excited to get the stude...
+6       4.410098e-20                        ...                          i have spent 12 years as an educator rebuildin...
+7       2.907349e-20                        ...                          &quot;music is what feelings sound like.&quot; -g. cates...
+8       2.121616e-20                        ...                          &quot;i cannot say good-bye to those whom i have gr...
+9       1.353927e-20                        ...                          our band program is one of the largest in our ...
+
+[10 rows x 4 columns]
+   recStrengthHybrid                        ...                                                              Project Essay
+0       2.811124e-18                        ...                          in this modern, digital age, i would like to u...
+1       1.249967e-18                        ...                          we are a brand new charter school that has onl...
+2       6.055628e-19                        ...                          my students are african american and hispanic....
+3       5.912367e-19                        ...                          the a. community and its students are a very s...
+4       2.541749e-19                        ...                          do you want to go on an adventure and learn ab...
+5       2.494812e-19                        ...                          the average day in my class involves students ...
+6       2.323313e-19                        ...                          i teach ela (reading component) to self-contai...
+7       1.271629e-19                        ...                          hi there! do you want to help to instill a lif...
+8       1.044990e-19                        ...                          having writing utensils is essential for stude...
+9       1.004780e-19                        ...                          there's no such thing as a kid who hates readi...
+
+[10 rows x 4 columns]
+</code></pre>
+
+<p>Kết quả trả ra tốt hơn nhiều so với cách 2, donor1 có music, donor2 có cây trồng và sách.</p>
+
+<h4 id="5-đánh-giá-mô-hình">5. Đánh giá mô hình</h4>
+
+<p>Có rất nhiều cách khác nhau để đánh giá mô hình recommend system. Một trong các cách mình sử dụng ở đây là sử dụng độ đo top K accuracy. Độ đo này được tính như sau:</p>
+
+<p>Với mỗi user:
+    Với mỗi item user đã pick trong test set
+        Lấy mẫu 1000 item khác mà người dùng chưa bao giờ pick</p>
 
 <p>Cảm ơn các bạn đã theo dõi. Hẹn gặp bạn ở các bài viết tiếp theo. Cố lên.</p>
 
