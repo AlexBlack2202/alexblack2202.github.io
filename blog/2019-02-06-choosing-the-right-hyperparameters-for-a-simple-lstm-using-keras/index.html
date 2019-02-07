@@ -24,7 +24,7 @@
         "datePublished": "2019-02-06 00:20:00 &#43;0300 &#43;0300",
         "dateModified" : "2019-02-06 00:20:00 &#43;0300 &#43;0300",
         "url" : "/blog/2019-02-06-choosing-the-right-hyperparameters-for-a-simple-lstm-using-keras/",
-        "wordCount" : "159",
+        "wordCount" : "2516",
         "keywords" : [ "Machine learning","Deeplearning","python","Blog" ]
     }
     </script>
@@ -99,7 +99,7 @@
 
 <meta itemprop="datePublished" content="2019-02-06T00:20:00&#43;03:00" />
 <meta itemprop="dateModified" content="2019-02-06T00:20:00&#43;03:00" />
-<meta itemprop="wordCount" content="159">
+<meta itemprop="wordCount" content="2516">
 
 
 
@@ -228,6 +228,286 @@ if (!doNotTrack) {
 <h2 id="mở-đầu">Mở đầu</h2>
 
 <p>Việc xây dựng một mô hình machine learning chưa bao giờ thật sự dễ dàng. Rất nhiều bài báo chỉ &ldquo;show hàng&rdquo; những thứ cao siêu, những thứ chỉ nằm trong sự tưởng tượng của chính các nhà báo. Còn khi đọc các bài báo khoa học về machine learning, tác giả công bố cho chúng ta những mô hình rất tốt, giải quyết một domain nhỏ vấn đề của họ. Tuy nhiên, có một thứ họ không/ chưa công bố. Đó là cách thức họ lựa chọn số lượng note ẩn, số lượng layer trong mô hình neural network. Trong bài viết này, chúng ta sẽ xây dựng mô hình LSTM đơn giản để dự đoán giới tính khi biết tên một người, và thử tìm xem công thức để chọn ra tham số &ldquo;đủ tốt&rdquo; là như thế nào.</p>
+
+<h2 id="chẩn-bị-dữ-liệu">Chẩn bị dữ liệu</h2>
+
+<p>Tập dữ liệu ở đây có khoảng 500000 tên kèm giới tính. Đầu tiên mình sẽ làm sạch dữ liệu bằng cách chỉ lấy giới tính là &rsquo;m&rsquo; và &lsquo;f&rsquo;, loại bỏ những tên quá ngắn (có ít hơn 3 ký tự)</p>
+
+<pre><code class="language-python">filepath = 'firstnames.csv'
+max_rows = 500000 # Reduction due to memory limitations
+
+df = (pd.read_csv(filepath, usecols=['name', 'gender'],sep=&quot;;&quot;)
+        .dropna(subset=['name', 'gender'])
+        .assign(name = lambda x: x.name.str.strip())
+        .assign(gender = lambda x: x.gender.str.lower())
+        .head(max_rows))
+
+df= df[df.gender.isin(['m','f'])]
+
+# In the case of a middle name, we will simply use the first name only
+df['name'] = df['name'].apply(lambda x: str(x).split(' ', 1)[0])
+
+# Sometimes people only but the first letter of their name into the field, so we drop all name where len &lt;3
+df.drop(df[df['name'].str.len() &lt; 3].index, inplace=True)
+
+</code></pre>
+
+<p>Tiếp theo, chúng ta sử dụng một kỹ thuật khá cũ trong NLP là one-hot encoding. Mỗi ký tự được biểu diễn bởi một vector nhị phân. Ví dụ có 26 ký tự trong bảng chữ cái tiếng anh, vector đại diện cho chữ a là [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], ký tự b được biểu diễn là [0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], &hellip; tương tự cho đến z.</p>
+
+<p>Một từ được encode là một tập các vector. Ví dụ chữ hello được biểu diễn là</p>
+
+<pre><code class="language-python">[[0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] #h,
+ [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] #e,
+ [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] #l,
+ [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] #l,
+ [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] #o]
+
+</code></pre>
+
+<p>Đọc đến đây, chắc các bạn đã mườn tượng ra rằng một từ sẽ được encode như thế nào rồi phải không. Tiếp theo, chúng ta sẽ xây dựng hàm encode cho tập dữ liệu</p>
+
+<pre><code class="language-python"> # Define a mapping of chars to integers
+char_to_int = dict((c, i) for i, c in enumerate(accepted_chars))
+int_to_char = dict((i, c) for i, c in enumerate(accepted_chars))
+
+# Removes all non accepted characters
+def normalize(line):
+    return [c.lower() for c in line if c.lower() in accepted_chars]
+
+# Returns a list of n lists with n = word_vec_length
+def name_encoding(name):
+
+    # Encode input data to int, e.g. a-&gt;1, z-&gt;26
+    integer_encoded = [char_to_int[char] for i, char in enumerate(name) if i &lt; word_vec_length]
+    
+    # Start one-hot-encoding
+    onehot_encoded = list()
+    
+    for value in integer_encoded:
+        # create a list of n zeros, where n is equal to the number of accepted characters
+        letter = [0 for _ in range(char_vec_length)]
+        letter[value] = 1
+        onehot_encoded.append(letter)
+        
+    # Fill up list to the max length. Lists need do have equal length to be able to convert it into an array
+    for _ in range(word_vec_length - len(name)):
+        onehot_encoded.append([0 for _ in range(char_vec_length)])
+        
+    return onehot_encoded
+
+# Encode the output labels
+def lable_encoding(gender_series):
+    labels = np.empty((0, 2))
+    for i in gender_series:
+        if i == 'm':
+            labels = np.append(labels, [[1,0]], axis=0)
+        else:
+            labels = np.append(labels, [[0,1]], axis=0)
+    return labels
+</code></pre>
+
+<p>Và tiến hành chia tập dữ liệu thành train, val, và test set</p>
+
+<pre><code class="language-python"> 
+# Split dataset in 60% train, 20% test and 20% validation
+train, validate, test = np.split(df.sample(frac=1), [int(.6*len(df)), int(.8*len(df))])
+
+# Convert both the input names as well as the output lables into the discussed machine readable vector format
+train_x =  np.asarray([np.asarray(name_encoding(normalize(name))) for name in train[predictor_col]])
+train_y = lable_encoding(train.gender)
+
+validate_x = np.asarray([name_encoding(normalize(name)) for name in validate[predictor_col]])
+validate_y = lable_encoding(validate.gender)
+
+test_x = np.asarray([name_encoding(normalize(name)) for name in test[predictor_col]])
+test_y = lable_encoding(test.gender)
+</code></pre>
+
+<p>Vậy là chúng ta đã có chuẩn bị xong dữ liệu đầy đủ rồi đó. Bây giờ chúng ta xây dựng mô hình thôi.</p>
+
+<p>## Xây dựng mô hình</p>
+
+<p>Có rất nhiều cách để chọn tham số cho mô hình, ví dụ như ở <a href="https://stats.stackexchange.com/questions/95495/guideline-to-select-the-hyperparameters-in-deep-learning">https://stats.stackexchange.com/questions/95495/guideline-to-select-the-hyperparameters-in-deep-learning</a>
+ liệt kê ra 4 cách là Manual Search, Grid Search, Random Search, Bayesian Optimization. Tuy nhiên,  những cách trên đều khá tốn thời gian và đòi hỏi người kỹ sư phải có am hiểu nhất định.</p>
+
+<p>Ở đây, chúng ta sử dụng một công thức được đưa ra trong link <a href="https://stats.stackexchange.com/questions/181/how-to-choose-the-number-of-hidden-layers-and-nodes-in-a-feedforward-neural-netw/136542#136542">https://stats.stackexchange.com/questions/181/how-to-choose-the-number-of-hidden-layers-and-nodes-in-a-feedforward-neural-netw/136542#136542</a>, cụ thể</p>
+
+<p>$$ N_h = \frac{N_s}{(\alpha * (N_i + N_o))}$$</p>
+
+<p>Trong đó Ni là số lượng input neural, No là số lượng output neural, Ns là số lượng element trong tập dữ liệu train. alpha là một con số trade-off đại diện cho tỷ lệ thuộc đoạn [2-10].</p>
+
+<p>Một lưu ý ở đây là bạn có thể dựa vào công thức và số alpha mà ước lượng xem rằng bạn đã có đủ dữ liệu mẫu hay chưa. Một ví dụ đơn giản là giả sử bạn có 10,000 mẫu dữ liệu, input số từ 0 đến 9, output là 64, chọn alpha ở mức nhỏ nhất là 2, vậy theo công thức số neural ẩn là 10000/(2*64*10) = 7.8 ~ 8. Nếu bạn tăng số alpha lên thì số hidden layer còn ít nữa. Điều trên chứng tỏ rằng số lượng mẫu của bạn chưa đủ, còn thiếu quá nhiều.  Nếu bạn tăng gấp 100 lần số dữ liệu mẫu, thì con số có vẻ hợp lý hơn.</p>
+
+<p>Trong tập dữ liệu, mình có:</p>
+
+<pre><code class="language-python">The input vector will have the shape  {17} x {82}
+Train len:  (21883, 17, 82) 36473
+
+</code></pre>
+
+<p>Tổng cộng N_s là 21883, Ni là 17, No là 82, chọn alpha là 2 thì mình có 21883/(2*17*82) = 7.8 ~ 8. Một con số khá nhỏ, chứng tỏ dữ liệu của mình còn quá ít.</p>
+
+<p>Đối với tập dữ liệu nhỏ như thế này, mình thường sẽ áp dụng công thức sau:</p>
+
+<p>$$ N_h= \beta* (N_i + N_o) $$</p>
+
+<p>Với beta là một con số thực thuộc nửa đoạn (0,1]. Thông thường sẽ là <sup>2</sup>&frasl;<sub>3</sub>. Kết quả là số lượng neural của mình khoảng 929.333 node. Thông thường, mình sẽ chọn số neural là một con số là bội số của 2, ở đây 929 gần với 2^10 nhất, nên mình chọn số neural là 2^10.</p>
+
+<p>Tóm lại, mình sẽ theo quy tắc</p>
+
+<p>Nếu dữ liệu nhiều:</p>
+
+<p>$$ N_h = \frac{N_s}{(\alpha * (N_i + N_o))}$$</p>
+
+<p>Nếu dữ liệu ít</p>
+
+<p>$$ N_h= \frac{2}{3}* (N_i + N_o) $$</p>
+
+<p>Làm tròn lên bằng với bội số của 2 mũ gần nhất.</p>
+
+<p>Một lưu ý nhỏ là số lượng node càng nhiều thì tỷ lệ overfit càng cao, và thời gian huấn luyện càng lâu. Do đó, bạn nên trang bị máy có cấu hình kha khá một chút, tốt hơn hết là nên có GPU đi kèm. Ngoài ra, bạn nên chuẩn bị càng nhiều dữ liệu càng tốt. Một kinh nghiệm của mình rút ra trong quá trình làm Machine Learning là nếu không có nhiều dữ liệu, thì đừng cố thử áp dụng các phương pháp ML trên nó.</p>
+
+<p>Mô hình mình xây dựng như sau:</p>
+
+<pre><code class="language-python"> 
+hidden_nodes = 1024
+
+
+# Build the model
+print('Build model...')
+model = Sequential()
+model.add(LSTM(hidden_nodes, return_sequences=False, input_shape=(word_vec_length, char_vec_length)))
+model.add(Dropout(0.2))
+model.add(Dense(units=output_labels))
+model.add(Activation('softmax'))
+model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['acc'])
+
+batch_size=1000
+model.fit(train_x, train_y, batch_size=batch_size, epochs=50, validation_data=(validate_x, validate_y))
+
+</code></pre>
+
+<p>Do bài viết chỉ tập trung vào vấn đề lựa chọn số lượng node, nên mình sẽ bỏ qua những phần phụ như là early stoping, save each epochs &hellip;, Các vấn đề trên ít nhiều mình đã đề cập ở các bài viết trước.</p>
+
+<p>Kết quả của việc huấn luyện mô hình</p>
+
+<pre><code class="language-python"> 21883/21883 [==============================] - 34s 2ms/step - loss: 0.6602 - acc: 0.6171 - val_loss: 0.6276 - val_acc: 0.7199
+Epoch 2/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.5836 - acc: 0.7056 - val_loss: 0.5625 - val_acc: 0.7193
+Epoch 3/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.5531 - acc: 0.7353 - val_loss: 0.5506 - val_acc: 0.7389
+Epoch 4/50
+21883/21883 [==============================] - 31s 1ms/step - loss: 0.5480 - acc: 0.7446 - val_loss: 0.5664 - val_acc: 0.7313
+Epoch 5/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.5406 - acc: 0.7420 - val_loss: 0.5247 - val_acc: 0.7613
+Epoch 6/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.5077 - acc: 0.7686 - val_loss: 0.4918 - val_acc: 0.7790
+Epoch 7/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.4825 - acc: 0.7837 - val_loss: 0.4939 - val_acc: 0.7740
+Epoch 8/50
+21883/21883 [==============================] - 31s 1ms/step - loss: 0.4611 - acc: 0.7887 - val_loss: 0.4407 - val_acc: 0.8037
+Epoch 9/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.4421 - acc: 0.7987 - val_loss: 0.4657 - val_acc: 0.8005
+Epoch 10/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.4293 - acc: 0.8055 - val_loss: 0.4183 - val_acc: 0.8141
+Epoch 11/50
+21883/21883 [==============================] - 31s 1ms/step - loss: 0.4129 - acc: 0.8128 - val_loss: 0.4171 - val_acc: 0.8212
+Epoch 12/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.4153 - acc: 0.8141 - val_loss: 0.4031 - val_acc: 0.8188
+Epoch 13/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.3978 - acc: 0.8191 - val_loss: 0.3918 - val_acc: 0.8280
+Epoch 14/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.3910 - acc: 0.8268 - val_loss: 0.3831 - val_acc: 0.8276
+Epoch 15/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.3848 - acc: 0.8272 - val_loss: 0.3772 - val_acc: 0.8314
+Epoch 16/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.3751 - acc: 0.8354 - val_loss: 0.3737 - val_acc: 0.8363
+Epoch 17/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.3708 - acc: 0.8345 - val_loss: 0.3717 - val_acc: 0.8374
+Epoch 18/50
+21883/21883 [==============================] - 31s 1ms/step - loss: 0.3688 - acc: 0.8375 - val_loss: 0.3768 - val_acc: 0.8330
+Epoch 19/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.3704 - acc: 0.8375 - val_loss: 0.3621 - val_acc: 0.8392
+Epoch 20/50
+21883/21883 [==============================] - 31s 1ms/step - loss: 0.3608 - acc: 0.8444 - val_loss: 0.3656 - val_acc: 0.8422
+Epoch 21/50
+21883/21883 [==============================] - 31s 1ms/step - loss: 0.3548 - acc: 0.8459 - val_loss: 0.3670 - val_acc: 0.8417
+Epoch 22/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.3521 - acc: 0.8452 - val_loss: 0.3555 - val_acc: 0.8462
+Epoch 23/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.3432 - acc: 0.8504 - val_loss: 0.3591 - val_acc: 0.8402
+Epoch 24/50
+21883/21883 [==============================] - 31s 1ms/step - loss: 0.3415 - acc: 0.8524 - val_loss: 0.3471 - val_acc: 0.8470
+Epoch 25/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.3355 - acc: 0.8555 - val_loss: 0.3577 - val_acc: 0.8436
+Epoch 26/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.3320 - acc: 0.8552 - val_loss: 0.3602 - val_acc: 0.8430
+Epoch 27/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.3294 - acc: 0.8578 - val_loss: 0.3565 - val_acc: 0.8485
+Epoch 28/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.3235 - acc: 0.8602 - val_loss: 0.3427 - val_acc: 0.8514
+Epoch 29/50
+21883/21883 [==============================] - 31s 1ms/step - loss: 0.3138 - acc: 0.8651 - val_loss: 0.3523 - val_acc: 0.8470
+Epoch 30/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.3095 - acc: 0.8683 - val_loss: 0.3457 - val_acc: 0.8487
+Epoch 31/50
+21883/21883 [==============================] - 31s 1ms/step - loss: 0.3064 - acc: 0.8701 - val_loss: 0.3538 - val_acc: 0.8531
+Epoch 32/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.2985 - acc: 0.8717 - val_loss: 0.3555 - val_acc: 0.8455
+Epoch 33/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.2930 - acc: 0.8741 - val_loss: 0.3430 - val_acc: 0.8525
+Epoch 34/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.2901 - acc: 0.8786 - val_loss: 0.3457 - val_acc: 0.8503
+Epoch 35/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.2852 - acc: 0.8776 - val_loss: 0.3458 - val_acc: 0.8510
+Epoch 36/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.2817 - acc: 0.8811 - val_loss: 0.3445 - val_acc: 0.8568
+Epoch 37/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.2780 - acc: 0.8816 - val_loss: 0.3356 - val_acc: 0.8540
+Epoch 38/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.2734 - acc: 0.8852 - val_loss: 0.3442 - val_acc: 0.8559
+Epoch 39/50
+21883/21883 [==============================] - 31s 1ms/step - loss: 0.2579 - acc: 0.8904 - val_loss: 0.3552 - val_acc: 0.8540
+Epoch 40/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.2551 - acc: 0.8927 - val_loss: 0.3677 - val_acc: 0.8532
+Epoch 41/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.2558 - acc: 0.8921 - val_loss: 0.3496 - val_acc: 0.8588
+Epoch 42/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.2472 - acc: 0.8963 - val_loss: 0.3534 - val_acc: 0.8587
+Epoch 43/50
+21883/21883 [==============================] - 31s 1ms/step - loss: 0.2486 - acc: 0.8948 - val_loss: 0.3490 - val_acc: 0.8537
+Epoch 44/50
+21883/21883 [==============================] - 31s 1ms/step - loss: 0.2503 - acc: 0.8965 - val_loss: 0.3594 - val_acc: 0.8552
+Epoch 45/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.2391 - acc: 0.8993 - val_loss: 0.3793 - val_acc: 0.8566
+Epoch 46/50
+21883/21883 [==============================] - 31s 1ms/step - loss: 0.2244 - acc: 0.9048 - val_loss: 0.3815 - val_acc: 0.8543
+Epoch 47/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.2203 - acc: 0.9095 - val_loss: 0.3848 - val_acc: 0.8554
+Epoch 48/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.2221 - acc: 0.9051 - val_loss: 0.3892 - val_acc: 0.8558
+Epoch 49/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.2117 - acc: 0.9124 - val_loss: 0.3654 - val_acc: 0.8544
+Epoch 50/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.2141 - acc: 0.9118 - val_loss: 0.3726 - val_acc: 0.8547
+
+
+</code></pre>
+
+<p>Độ chính xác trên tập train là hơn 90%, trên tập val là hơn 85%. Nhìn kỹ hơn vào những từ sai ta thấy rằng</p>
+
+<pre><code class="language-python">             name gender predicted_gender
+6750       Chiaki      f                m
+28599      Naheed      f                m
+11448  Espiridión      m                f
+895       Akmaral      f                m
+33778         Ros      f                m
+
+</code></pre>
+
+<p>Có một sự nhập nhằng ở ngôn ngữ giữa tên nam và tên nữ ở những từ này. Có lẽ một tập dữ liệu với đầy đủ họ và tên sẽ cho ra một kết quả có độ chính xác cao hơn. Ví dụ, ở Việt Nam, tên Ngọc thì có thể đặt được cho cả Nam lẫn Nữ.</p>
+
+<p>Mình sẽ cố gắng kiếm một bộ dataset tên tiếng việt và thực hiện việc xây dựng mô hình xác định giới tính thông qua tên người dựa vào mô hình LSTM.</p>
 
 <p>Cảm ơn các bạn đã theo dõi. Hẹn gặp bạn ở các bài viết tiếp theo.</p>
 
