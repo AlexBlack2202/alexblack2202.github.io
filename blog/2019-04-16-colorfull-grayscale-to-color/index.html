@@ -1,0 +1,489 @@
+<!DOCTYPE HTML>
+
+<html>
+    <head>
+        <script type="application/ld+json">
+    {
+        "@context" : "http://schema.org",
+        "@type" : "BlogPosting",
+        "mainEntityOfPage": {
+             "@type": "WebPage",
+             "@id": "/"
+        },
+        "articleSection" : "blog",
+        "name" : "Thử làm ứng dụng tô màu ảnh xám thành ảnh màu sử dụng tensorflow",
+        "headline" : "Thử làm ứng dụng tô màu ảnh xám thành ảnh màu sử dụng tensorflow",
+        "description" : "Tại sự kiện I/O đang diễn ra tại Mountain View, California (Mỹ), Google đã công bố nhiều thay đổi quan trọng cho Google Photos. Một trong những tính năng gây ấn tượng tại sự kiện là biến ảnh đen trắng (như các tấm hình cũ, đã chụp từ lâu) thành ảnh màu. Chúng ta cùng implement lại tính năng này sử dụng keras và tensorflow nhé",
+        "inLanguage" : "en",
+        "author" : "",
+        "creator" : "",
+        "publisher": "",
+        "accountablePerson" : "",
+        "copyrightHolder" : "",
+        "copyrightYear" : "2019",
+        "datePublished": "2019-04-14 00:13:00 &#43;0300 &#43;0300",
+        "dateModified" : "2019-04-14 00:13:00 &#43;0300 &#43;0300",
+        "url" : "/blog/2019-04-16-colorfull-grayscale-to-color/",
+        "wordCount" : "484",
+        "keywords" : [ "machine learning","deep learning","neural network","amazone","thế giới di động","mwg","Blog" ]
+    }
+    </script>
+        
+            
+                <title>Thử làm ứng dụng tô màu ảnh xám thành ảnh màu sử dụng tensorflow</title>
+            
+        
+
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="generator" content="Hugo 0.41" />
+        
+  
+    
+  
+
+  
+
+  <link rel="apple-touch-icon-precomposed" href='/favicon/apple-touch-icon-precomposed.png'>
+  <link rel="icon" href='/favicon.ico'>
+  
+  <meta name="msapplication-TileColor" content="#da532c">
+  <meta name="msapplication-TileImage" content='/favicon/mstile.png'>
+  <meta name="application-name" content="Phạm Duy Tùng Blog">
+  <meta name="msapplication-tooltip" content="Blog ML của Phạm Duy Tùng">
+  <meta name="msapplication-config" content='/favicon/ieconfig.xml'>
+
+
+
+        
+            <meta name="author" content="Phạm Duy Tùng">
+        
+        
+            <meta name="description" content="Tại sự kiện I/O đang diễn ra tại Mountain View, California (Mỹ), Google đã công bố nhiều thay đổi quan trọng cho Google Photos. Một trong những tính năng gây ấn tượng tại sự kiện là biến ảnh đen trắng (như các tấm hình cũ, đã chụp từ lâu) thành ảnh màu. Chúng ta cùng implement lại tính năng này sử dụng keras và tensorflow nhé">
+        
+
+        <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Thử làm ứng dụng tô màu ảnh xám thành ảnh màu sử dụng tensorflow"/>
+<meta name="twitter:description" content="Tại sự kiện I/O đang diễn ra tại Mountain View, California (Mỹ), Google đã công bố nhiều thay đổi quan trọng cho Google Photos. Một trong những tính năng gây ấn tượng tại sự kiện là biến ảnh đen trắng (như các tấm hình cũ, đã chụp từ lâu) thành ảnh màu. Chúng ta cùng implement lại tính năng này sử dụng keras và tensorflow nhé"/>
+<meta name="twitter:site" content="@example"/>
+
+        <meta property="og:title" content="Thử làm ứng dụng tô màu ảnh xám thành ảnh màu sử dụng tensorflow" />
+<meta property="og:description" content="Tại sự kiện I/O đang diễn ra tại Mountain View, California (Mỹ), Google đã công bố nhiều thay đổi quan trọng cho Google Photos. Một trong những tính năng gây ấn tượng tại sự kiện là biến ảnh đen trắng (như các tấm hình cũ, đã chụp từ lâu) thành ảnh màu. Chúng ta cùng implement lại tính năng này sử dụng keras và tensorflow nhé" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="/blog/2019-04-16-colorfull-grayscale-to-color/" />
+
+
+
+<meta property="article:published_time" content="2019-04-14T00:13:00&#43;03:00"/>
+
+<meta property="article:modified_time" content="2019-04-14T00:13:00&#43;03:00"/>
+
+
+
+
+
+
+
+
+
+
+
+        <meta property="og:image" content="//images/logo.png">
+        <meta property="og:image:type" content="image/png">
+        <meta property="og:image:width" content="512">
+        <meta property="og:image:height" content="512">
+        
+<meta itemprop="name" content="Thử làm ứng dụng tô màu ảnh xám thành ảnh màu sử dụng tensorflow">
+<meta itemprop="description" content="Tại sự kiện I/O đang diễn ra tại Mountain View, California (Mỹ), Google đã công bố nhiều thay đổi quan trọng cho Google Photos. Một trong những tính năng gây ấn tượng tại sự kiện là biến ảnh đen trắng (như các tấm hình cũ, đã chụp từ lâu) thành ảnh màu. Chúng ta cùng implement lại tính năng này sử dụng keras và tensorflow nhé">
+
+
+<meta itemprop="datePublished" content="2019-04-14T00:13:00&#43;03:00" />
+<meta itemprop="dateModified" content="2019-04-14T00:13:00&#43;03:00" />
+<meta itemprop="wordCount" content="484">
+
+
+
+<meta itemprop="keywords" content="machine learning,deep learning,neural network,amazone,thế giới di động,mwg," />
+
+        
+
+        
+            
+        
+
+        
+        
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css">
+            <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway:400,800,900|Source+Sans+Pro:400,700">
+            <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+			<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+            <link rel="stylesheet" href="/css/main.css">
+            <link rel="stylesheet" href="/css/add-on.css">
+            <link rel="stylesheet" href="/css/academicons.min.css">
+        
+
+        
+            
+                
+            
+        
+
+
+  
+    
+    <link href='//cdn.bootcss.com/highlight.js/9.11.0/styles/github.min.css' rel='stylesheet' type='text/css' />
+  
+
+
+      
+<script>
+var doNotTrack = false;
+if (!doNotTrack) {
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+	ga('create', 'UA-114911596-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+
+    </head>
+    <body>
+
+      
+      
+
+    
+    
+<header id="header">
+
+    <nav class="navbar navbar-expand-md navbar-dark" style="background: #790014; color: hsla(0,0%,100%,1);">
+	<a href="#" class="navbar-brand">
+	<img src="/post_image/avata.jpg" class="rounded-circle" alt="PDT" style="width:36px;"></a>
+	<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav mr-auto">
+            
+                <li class="nav-item">
+                    <a class='nav-link' href="/">
+                            <i class="fa fa-home active">&nbsp;</i>Home
+                    </a>
+                </li>
+            
+                <li class="nav-item">
+                    <a class='nav-link' href="/news/">
+                            <i class="fa fa-list">&nbsp;</i>News
+                    </a>
+                </li>
+            
+                <li class="nav-item">
+                    <a class='nav-link' href="/xem-truyen/">
+                            <i class="fa fa-id-card-o">&nbsp;</i>Truyện
+                    </a>
+                </li>
+            
+        </ul>
+    </nav>
+    </div>
+</header>
+
+
+   
+    
+	<div class="container">
+	<div class="adv" style="height:100px;"></div>
+	<div class="row">
+    <main role="main" class="col-md-9 bg-white" style="margin:0; padding:0;" >
+	
+        
+        
+        <article class="post">
+  
+
+
+        
+		<div class="thumbnail text-center">
+		 <img class="img-fluid single-content-img lazy" src="/post_image/colorful-grayscale.jpg" style="width:100%">
+		  <div class="caption  text-white">
+            <h3 class="title">Thử làm ứng dụng tô màu ảnh xám thành ảnh màu sử dụng tensorflow</h3>
+			
+			<p class="title-caption">
+			 
+			  <time class="published"
+            datetime='2019-04-14'>
+            14/04/2019</time>
+		 - 
+			   <span class="author">Phạm Duy Tùng</span>
+			   </p>
+			</div>
+			</div>
+            
+        
+       
+
+
+
+  
+
+  
+
+  <div id="content">
+    
+
+<h2 id="thực-hiện">Thực hiện</h2>
+
+<p>Đây là một bài toán tiếp cận bằng Deep Learning, nên việc thu thập nhiều dữ liệu có ý nghĩa rất quang trọng trong việc đóng góp vào độ chính xác của mô hình. Ở đây, chúng ta sẽ download tập dữ liệu ảnh của <a href="http://places2.csail.mit.edu/download.html">http://places2.csail.mit.edu/download.html</a> và sử dụng mạng UNet để huấn luyện mô hình.</p>
+
+<h2 id="thu-thập-hình-ảnh-và-tiền-xử-lý">Thu thập hình ảnh và tiền xử lý</h2>
+
+<p>Dữ liệu sẽ được download tại địa chỉ <a href="http://data.csail.mit.edu/places/places365/train_256_places365challenge.tar">http://data.csail.mit.edu/places/places365/train_256_places365challenge.tar</a>. Tập trên có kích thước 108 GB. Đây là tập ảnh thuộc hệ màu RGB. Chúng ta sẽ chuyển tập ảnh trên về hệ màu grayscale làm ảnh gốc cho quá trình huấn luyện. Có một mẹo nhỏ cho chúng ta rút ngắn quá trình huấn luyện nhưng vẫn đảm bảo được độ chính xác của mô hình là ngoài kênh màu RGB mà chúng ta hay xài, trên thế giới còn có kênh màu HSV, trong đó nếu chúng ta chuyển một ảnh ở kênh màu RGB về hệ màu HSV, và bỏ đi các giá trị H, S, chỉ giữ lại giá trị V, thì chất lượng ảnh xám của nó gần như là tương đương với ảnh grayscale sử dụng công thức &ldquo;thần thánh&rdquo; mà chúng ta được học ở môn xử lý ảnh grayscale =0.30*R + 0.59*G + 0.11*B</p>
+
+<p>Vì vậy, thay vì việc input là giá trị xám của ảnh, output là giá trị của các kênh màu RGB, chúng ta sẽ chuyển đổi bài toán lại là input là giá trị xám, output là giá trị H và S.</p>
+
+<p>Mô hình mạng Unet</p>
+
+<p><img src="/post_image/unet.PNG" alt="Hình ảnh" /></p>
+
+<p>Mạng UNet là một mạng neural network được dùng khá phổ biến trong các cuộc thi phân đoạn ảnh, độ chính xác của nó so với các thuật toán khác là vượt trội hoàn toàn. Ở đây, chúng ta có 2 hướng tiếp cận, một là build một mạng Unet và random init weight rồi huấn luyện nó, cách thứ hai là build mạng unet sử dụng pretrain model rồi huấn luyện. Bởi vì đặc trưng của các pretrain model hoạt động khá tốt và được huấn luyện trên tập dataset lớn, nên mình sẻ sử dụng nó ở bài viết này. Song song đó, mình sẽ cung cấp một giải pháp kèm theo sử để sử dụng mạng mà không dùng pretrain model.</p>
+
+<p>Ú tưởng chính của mạng UNet tựa tựa như auto-encoder, từ ảnh gốc ban đầu, chúng sẽ được nén thông tin lại qua các phép biến đổi Conv2D (như các chú thích màu sắc của mũi tên trong hình trên), sau đó sẽ được &ldquo;giải nén&rdquo; về lại ảnh gốc ban đầu. Việc huấn luyện coi như là hoàn tất 100% nếu ảnh gốc với ảnh giải nén là là giống nhau hoàn toàn.</p>
+
+<p>Bài viết sẽ được cập nhật</p>
+
+<p>Cảm ơn các bạn đã theo dõi. Hẹn gặp bạn ở các bài viết tiếp theo.</p>
+
+  </div>
+
+  <footer>
+    <ul class="stats list-unstyled">
+ 
+    
+  <li class="tags">
+    <ul class="list-inline">
+       
+            
+            
+                <i class="fa fa-tags"></i>
+                
+                
+                <li class="list-inline-item"><a class="article-category-link" href="/tags/machine-learning">machine learning</a></li>
+                
+                
+                <li class="list-inline-item"><a class="article-category-link" href="/tags/deep-learning">deep learning</a></li>
+                
+                
+                <li class="list-inline-item"><a class="article-category-link" href="/tags/neural-network">neural network</a></li>
+                
+                
+                <li class="list-inline-item"><a class="article-category-link" href="/tags/amazone">amazone</a></li>
+                
+                
+                <li class="list-inline-item"><a class="article-category-link" href="/tags/th%E1%BA%BF-gi%E1%BB%9Bi-di-%C4%91%E1%BB%99ng">thế giới di động</a></li>
+                
+                
+                <li class="list-inline-item"><a class="article-category-link" href="/tags/mwg">mwg</a></li>
+                
+            
+        
+    </ul>
+  </li>
+  
+</ul>
+
+  </footer>
+
+</article>
+<div class="col-md-12">
+<div class="card-header">Bài viết khác</div>
+<ul class="">
+    
+        <li class="page-item"><a href="/blog/2019-04-04-predicting-stock-prices-with-echo-state-networks---copy/"
+                class="button big previous">Dự đoán giá cổ phiếu bằng mô hình mạng Echo State Networks</a></li>
+    
+
+    
+        <li class="page-item"><a href="/blog/2019-04-17-walmart-store-sales-forecasting/"
+                class="button big next">Dụ đoán doanh số bán của các cửa hàng walmart</a></li>
+    
+</ul>
+</div>
+
+
+    <article class="post">
+        <div id="disqus_thread"></div>
+<script>
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "phamduytung" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    </article>
+
+
+
+
+		
+    </main>
+    
+<section id="sidebar" class="col-md-3">
+
+<div>
+        <div class="bg-danger text-center text-white mb-2 p-4">TIN MỚI</div>
+		<ul class="list-group" id="news-contents"></ul>
+    <div class>
+	</div>
+    </div>
+
+  
+   
+  
+  
+  
+  
+  
+  
+  
+  
+ 
+
+</section>
+
+	</div>
+	</div>
+    
+	<hr>
+  <footer class="footer">
+  <div class="container text-center">
+    
+    <p class="copyright">
+      
+        &copy; 2019
+        
+          Phạm Duy Tùng Blog
+        
+      
+     
+    </p>
+	</div>
+  </footer>
+    
+    
+
+    
+      
+    
+
+    
+      
+      
+      
+        <script src="//cdn.bootcss.com/highlight.js/9.11.0/highlight.min.js"></script>
+        
+        
+        
+        <script src="//cdn.bootcss.com/highlight.js/9.11.0/languages/r.min.js"></script>
+        <script src="//cdn.bootcss.com/highlight.js/9.11.0/languages/yaml.min.js"></script>
+        <script src="//cdn.bootcss.com/highlight.js/9.11.0/languages/css.min.js"></script>
+        <script>hljs.configure({languages: []}); hljs.initHighlightingOnLoad();</script>
+      
+    
+    
+    
+      <script src="https://code.jquery.com/jquery-3.3.1.min.js" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/skel/3.0.1/skel.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+      <script src="/js/util.js"></script>
+      <script src="/js/main.js"></script>
+     
+    
+
+    
+      
+        
+      
+    
+	
+    
+    <script>hljs.initHighlightingOnLoad();</script>
+      <script src="//yihui.name/js/math-code.js"></script>
+<script async
+src="//cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+	  
+	  
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-114911596-1"  data-cfasync="false"></script>
+<script  data-cfasync="false">
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-114911596-1');
+</script>
+	   <script  type="text/javascript"  data-cfasync="false">
+
+(function(w, d){
+    var b = d.getElementsByTagName('body')[0];
+    var s = d.createElement("script"); 
+    var v = !("IntersectionObserver" in w) ? "8.17.0" : "10.19.1";
+    s.async = true; 
+    s.src = "https://cdn.jsdelivr.net/npm/vanilla-lazyload@" + v + "/dist/lazyload.min.js";
+    w.lazyLoadOptions = { };
+    b.appendChild(s);
+}(window, document));
+
+  function getcontent(){
+ if( $('#news-contents').length<=0)         
+{
+     return;
+}
+       file_name = "trangchu.json";
+	   cur_index = 1;
+
+                file_name = cur_index+"_"+file_name;
+                $.getJSON("/news/news_data/"+file_name, function(data) {
+                    if(cur_index<=1){
+                    $("#news-contents").html('');
+                    }
+                    $.each(data.items, function(i, f) {
+                        let head = f.head;
+                        let img = f.img;
+                        let desc= f.desc;
+                        let times = f.times;
+                        let links = f.links;
+                       var tblRow = "<li class='news-item list-group-item'> <a target='_blank' href='"+links+"' class='text-und'> <div class='row'>  <img class='img-news lazy img-reponsive' alt='' data-src='"+img+"' data-holder-rendered='true' style='width:100%; max-height:150px;'/> </div> <h5 class='news-tittle'> "+head+" </h5><div class='news-times'>"+times+"</div></div><div class='clearfix'></div></div></a> </li>";
+                        $(tblRow).appendTo("#news-contents");
+                  });
+             var myLazyLoad = new LazyLoad({
+    elements_selector: ".lazy"
+});
+                });
+            }
+			
+			$(document).ready(function(){
+			getcontent();
+			});
+</script>
+  </body>
+</html>
+
