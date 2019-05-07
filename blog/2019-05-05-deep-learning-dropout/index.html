@@ -24,7 +24,7 @@
         "datePublished": "2019-05-05 00:12:00 &#43;0300 &#43;0300",
         "dateModified" : "2019-05-05 00:12:00 &#43;0300 &#43;0300",
         "url" : "/blog/2019-05-05-deep-learning-dropout/",
-        "wordCount" : "867",
+        "wordCount" : "1635",
         "keywords" : [ "machine learning","deep learning","dropout","deep net","Blog" ]
     }
     </script>
@@ -99,7 +99,7 @@
 
 <meta itemprop="datePublished" content="2019-05-05T00:12:00&#43;03:00" />
 <meta itemprop="dateModified" content="2019-05-05T00:12:00&#43;03:00" />
-<meta itemprop="wordCount" content="867">
+<meta itemprop="wordCount" content="1635">
 
 
 
@@ -265,7 +265,7 @@ if (!doNotTrack) {
 
 <p><strong>Trong pha test</strong>: Sử dụng toàn bộ activations, nhưng giảm chúng với tỷ lệ p (do chúng ta bị miss p% hàm activation trong quá trình train).</p>
 
-<p><img src="/post_image/drop_out.png.jpg" alt="Hình ảnh" />
+<p><img src="/post_image/drop_out.png" alt="Hình ảnh" />
 <strong>Mô tả về kiến trúc mạng có và không có dropout</strong></p>
 
 <h1 id="4-một-số-đặc-điểm-rút-ra-được-khi-huấn-luyện-nhiều-mô-hình-khác-nhau-sử-dụng-dropout">4. Một số đặc điểm rút ra được khi huấn luyện nhiều mô hình khác nhau sử dụng dropout</h1>
@@ -284,7 +284,235 @@ if (!doNotTrack) {
 
 <h1 id="5-thực-nghiệm-trong-keras">5. Thực nghiệm trong keras</h1>
 
-<p>Cảm ơn các bạn đã theo dõi. Hẹn gặp bạn ở những bài viết tiếp theo.</p>
+<p>Những vấn đề nói ở trên chỉ là lý thuyết. Bây giờ chúng ta sẽ bắt tay vào làm thực tế. Để xem thử dropout hoạt động như thế nào, chúng ta sẽ xây dựng mô hình deep net sử dụng keras và sử dụng tập dữ liệu cifar-10. Mô hình chúng ta xây dựng có 3 hidden layer với kích thước lần lượt là 64, 128, 256 và 1 full connected layer có kích thước 512 và output layer có kích thước 10 (do mình có 10 lớp).</p>
+
+<p>Chúng ta sử dụng hàm kích hoạt là ReLU trên các hidden layer và sử dụng hàm sigmoid trên output layer. Sử dụng hàm lỗi categorical cross-entropy.</p>
+
+<p>Trong trường hợp mô hình có sử dụng dropout, chúng ta sẽ set dropout ở tất cả các layer và thay đổi tỷ lệ dropout nằm trong khoảng từ 0.0 đến 0.9 với bước nhảy là 0.1.</p>
+
+<p>Mô hình setup với số epochs là 20. Bắt đầu xem nào.</p>
+
+<p>Đầu tiên, chúng ta sẽ load một vài thư viện cần thiết</p>
+
+<pre><code class="language-python">import numpy as np
+import os
+
+import keras
+
+from keras.datasets import cifar10
+from keras.models  import Sequential
+from keras.layers import Dense, Dropout, Activation, Flatten
+from keras.layers import Convolution2D, MaxPooling2D
+from keras.optimizers import SGD
+from keras.utils import np_utils
+from keras.preprocessing.image import ImageDataGenerator
+import matplotlib.pyplot as plt
+
+from pylab import rcParams
+rcParams['figure.figsize'] = 20, 20
+
+from keras.datasets import cifar10
+
+(X_train, y_train), (X_test, y_test) = cifar10.load_data()
+
+
+print(&quot;Training data:&quot;)
+print(&quot;Number of examples: &quot;, X_train.shape[0])
+print(&quot;Number of channels:&quot;,X_train.shape[3]) 
+print(&quot;Image size:&quot;,X_train.shape[1], X_train.shape[2], X_train.shape[3])
+
+print(&quot;Test data:&quot;)
+print(&quot;Number of examples:&quot;, X_test.shape[0])
+print(&quot;Number of channels:&quot;, X_test.shape[3])
+print(&quot;Image size:&quot;,X_test.shape[1], X_test.shape[2], X_test.shape[3])
+</code></pre>
+
+<p>Kết quả</p>
+
+<pre><code>Training data:
+Number of examples:  50000
+Number of channels: 3
+Image size: 32 32 3
+Test data:
+Number of examples: 10000
+Number of channels: 3
+Image size: 32 32 3
+</code></pre>
+
+<p>Chúng ta có 50000 hình train, và 10000 hình test. Mỗi hình là một ảnh RGB có kích thước 33x32x3 pixel.</p>
+
+<p><img src="/post_image/cifar-10-overview.jpg" alt="Hình ảnh" />
+<strong>dataset cifar 10</strong></p>
+
+<p>Tiếp theo, chúng ta sẽ chuẩn hoá dữ liệu. Đây là 1 bước quan trọng trước khi huấn luyện mô hình</p>
+
+<pre><code class="language-python">print( &quot;mean before normalization:&quot;, np.mean(X_train)) 
+print( &quot;std before normalization:&quot;, np.std(X_train))
+
+mean=[0,0,0]
+std=[0,0,0]
+newX_train = np.ones(X_train.shape)
+newX_test = np.ones(X_test.shape)
+for i in range(3):
+    mean[i] = np.mean(X_train[:,i,:,:])
+    std[i] = np.std(X_train[:,i,:,:])
+    
+for i in range(3):
+    newX_train[:,i,:,:] = X_train[:,i,:,:] - mean[i]
+    newX_train[:,i,:,:] = newX_train[:,i,:,:] / std[i]
+    newX_test[:,i,:,:] = X_test[:,i,:,:] - mean[i]
+    newX_test[:,i,:,:] = newX_test[:,i,:,:] / std[i]
+        
+    
+X_train = newX_train
+X_test = newX_test
+
+print(&quot;mean after normalization:&quot;, np.mean(X_train))
+print(&quot;std after normalization:&quot;, np.std(X_train))
+
+
+</code></pre>
+
+<pre><code>mean before normalization: 120.70756512369792
+std before normalization: 64.1500758911213
+mean after normalization: 0.9062499999999979
+std after normalization: 0.4227421643271468
+
+</code></pre>
+
+<p>Full code đoạn huấn luyện</p>
+
+<pre><code class="language-python">
+
+# In[3]:Specify Training Parameters
+
+batchSize = 512                   #-- Training Batch Size
+num_classes = 10                  #-- Number of classes in CIFAR-10 dataset
+num_epochs = 100                   #-- Number of epochs for training   
+learningRate= 0.001               #-- Learning rate for the network
+lr_weight_decay = 0.95            #-- Learning weight decay. Reduce the learn rate by 0.95 after epoch
+
+
+img_rows, img_cols = 32, 32       #-- input image dimensions
+
+Y_train = np_utils.to_categorical(y_train, num_classes)
+Y_test = np_utils.to_categorical(y_test, num_classes)
+
+
+
+batchSize = 512                   #-- Training Batch Size
+num_classes = 10                  #-- Number of classes in CIFAR-10 dataset
+num_epochs = 100                   #-- Number of epochs for training   
+learningRate= 0.001               #-- Learning rate for the network
+lr_weight_decay = 0.95            #-- Learning weight decay. Reduce the learn rate by 0.95 after epoch
+
+
+img_rows, img_cols = 32, 32       #-- input image dimensions
+
+Y_train = np_utils.to_categorical(y_train, num_classes)
+Y_test = np_utils.to_categorical(y_test, num_classes)
+
+
+# In[4]:VGGnet-10
+
+
+from keras.layers import Conv2D
+import copy
+result = {}
+y = {}
+loss = []
+acc = []
+dropouts = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+for dropout in dropouts:
+    print(&quot;Dropout: &quot;, (dropout))
+    model = Sequential()                                               
+
+    #-- layer 1
+    model.add(Conv2D(64, (3, 3),                                    
+                            border_mode='valid',
+                            input_shape=( img_rows, img_cols,3))) 
+    model.add(Dropout(dropout))  
+    model.add(Conv2D(64, (3, 3)))
+    model.add(Dropout(dropout))
+    model.add(Activation('relu'))                                       
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+
+    ##--layer 2                        
+    model.add(Conv2D(128, (3, 3)))
+    model.add(Dropout(dropout)) 
+    model.add(Activation('relu'))                                       
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+
+    ##--layer 3                         
+    model.add(Conv2D(256, (3, 3)))
+    model.add(Dropout(dropout)) 
+    model.add(Activation('relu'))                                       
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+
+    ##-- layer 4
+    model.add(Flatten())                                                
+    model.add(Dense(512))                                               
+    model.add(Activation('relu'))                                                                           
+
+    #-- layer 5
+    model.add(Dense(num_classes))                                       
+
+    #-- loss
+    model.add(Activation('softmax'))
+    
+    sgd = SGD(lr=learningRate, decay = lr_weight_decay)
+    model.compile(loss='categorical_crossentropy',
+                  optimizer='sgd',
+                  metrics=['accuracy'])
+    
+    model_cce = model.fit(X_train, Y_train, batch_size=batchSize, epochs=20, verbose=1, shuffle=True, validation_data=(X_test, Y_test))
+    score = model.evaluate(X_test, Y_test, verbose=0)
+    y[dropout] = model.predict(X_test)
+    print('Test score:', score[0])
+    print('Test accuracy:', score[1])
+    result[dropout] = copy.deepcopy(model_cce.history)   
+    loss.append(score[0])
+    acc.append(score[1])
+
+
+
+# In[5]: plot dropout 
+import numpy as np                                                               
+import matplotlib.pyplot as plt
+
+width = 0.1
+
+plt.bar(dropouts, acc, width, align='center')
+
+plt.tick_params(axis='both', which='major', labelsize=35)
+plt.tick_params(axis='both', which='minor', labelsize=35)
+
+plt.ylabel('Accuracy',size = 30)
+plt.xlabel('Dropout', size = 30)
+plt.show()
+
+
+# In[6]: plot non drop out
+
+import numpy as np                                                               
+import matplotlib.pyplot as plt
+
+width = 0.1
+
+plt.bar(dropouts, loss, width, align='center',color = 'green')
+
+plt.tick_params(axis='both', which='major', labelsize=35)
+plt.tick_params(axis='both', which='minor', labelsize=35)
+
+plt.ylabel('Loss',size = 30)
+plt.xlabel('Dropout', size = 30)
+plt.show()
+
+</code></pre>
+
+<p><img src="/post_image/drop_out_result.png" alt="Hình ảnh" />
+<strong>Kết quả</strong>
+Cảm ơn các bạn đã theo dõi. Hẹn gặp bạn ở những bài viết tiếp theo.</p>
 
   </div>
 
