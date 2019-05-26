@@ -1,0 +1,535 @@
+<!DOCTYPE HTML>
+
+<html>
+    <head>
+        <script type="application/ld+json">
+    {
+        "@context" : "http://schema.org",
+        "@type" : "BlogPosting",
+        "mainEntityOfPage": {
+             "@type": "WebPage",
+             "@id": "/"
+        },
+        "articleSection" : "blog",
+        "name" : "Contour",
+        "headline" : "Contour",
+        "description" : "Mình dang làm một số đề tài về xử lý ảnh, và đang muốn áp dụng các thuật toán xử lý ảnh cổ điển (không dùng đến deep learning và machine learning) để giải quyết bài toán của mình. Bài viết này nằm trong seria bài viết của mình về đề tài xử lý ảnh sử dụng các kỹ thuật cơ bản. Bài đầu tiên là giới thiệu về contours và sử dụng opencv để rút ra các contour .",
+        "inLanguage" : "en",
+        "author" : "",
+        "creator" : "",
+        "publisher": "",
+        "accountablePerson" : "",
+        "copyrightHolder" : "",
+        "copyrightYear" : "2019",
+        "datePublished": "2019-05-03 00:12:00 &#43;0300 &#43;0300",
+        "dateModified" : "2019-05-03 00:12:00 &#43;0300 &#43;0300",
+        "url" : "/blog/2019-05-26-contours/",
+        "wordCount" : "723",
+        "keywords" : [ "machine learning","deep learning","opencv","xủ lý ảnh","Blog" ]
+    }
+    </script>
+        
+            
+                <title>Contour</title>
+            
+        
+
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="generator" content="Hugo 0.41" />
+        
+  
+    
+  
+
+  
+
+  <link rel="apple-touch-icon-precomposed" href='/favicon/apple-touch-icon-precomposed.png'>
+  <link rel="icon" href='/favicon.ico'>
+  
+  <meta name="msapplication-TileColor" content="#da532c">
+  <meta name="msapplication-TileImage" content='/favicon/mstile.png'>
+  <meta name="application-name" content="Phạm Duy Tùng Machine Learning Blog">
+  <meta name="msapplication-tooltip" content="Blog ML của Phạm Duy Tùng">
+  <meta name="msapplication-config" content='/favicon/ieconfig.xml'>
+
+
+
+        
+            <meta name="author" content="Phạm Duy Tùng">
+        
+        
+            <meta name="description" content="Mình dang làm một số đề tài về xử lý ảnh, và đang muốn áp dụng các thuật toán xử lý ảnh cổ điển (không dùng đến deep learning và machine learning) để giải quyết bài toán của mình. Bài viết này nằm trong seria bài viết của mình về đề tài xử lý ảnh sử dụng các kỹ thuật cơ bản. Bài đầu tiên là giới thiệu về contours và sử dụng opencv để rút ra các contour .">
+        
+
+        <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Contour"/>
+<meta name="twitter:description" content="Mình dang làm một số đề tài về xử lý ảnh, và đang muốn áp dụng các thuật toán xử lý ảnh cổ điển (không dùng đến deep learning và machine learning) để giải quyết bài toán của mình. Bài viết này nằm trong seria bài viết của mình về đề tài xử lý ảnh sử dụng các kỹ thuật cơ bản. Bài đầu tiên là giới thiệu về contours và sử dụng opencv để rút ra các contour ."/>
+<meta name="twitter:site" content="@example"/>
+
+        <meta property="og:title" content="Contour" />
+<meta property="og:description" content="Mình dang làm một số đề tài về xử lý ảnh, và đang muốn áp dụng các thuật toán xử lý ảnh cổ điển (không dùng đến deep learning và machine learning) để giải quyết bài toán của mình. Bài viết này nằm trong seria bài viết của mình về đề tài xử lý ảnh sử dụng các kỹ thuật cơ bản. Bài đầu tiên là giới thiệu về contours và sử dụng opencv để rút ra các contour ." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="/blog/2019-05-26-contours/" />
+
+
+
+<meta property="article:published_time" content="2019-05-03T00:12:00&#43;03:00"/>
+
+<meta property="article:modified_time" content="2019-05-03T00:12:00&#43;03:00"/>
+
+
+
+
+
+
+
+
+
+
+
+        <meta property="og:image" content="//images/logo.png">
+        <meta property="og:image:type" content="image/png">
+        <meta property="og:image:width" content="512">
+        <meta property="og:image:height" content="512">
+        
+<meta itemprop="name" content="Contour">
+<meta itemprop="description" content="Mình dang làm một số đề tài về xử lý ảnh, và đang muốn áp dụng các thuật toán xử lý ảnh cổ điển (không dùng đến deep learning và machine learning) để giải quyết bài toán của mình. Bài viết này nằm trong seria bài viết của mình về đề tài xử lý ảnh sử dụng các kỹ thuật cơ bản. Bài đầu tiên là giới thiệu về contours và sử dụng opencv để rút ra các contour .">
+
+
+<meta itemprop="datePublished" content="2019-05-03T00:12:00&#43;03:00" />
+<meta itemprop="dateModified" content="2019-05-03T00:12:00&#43;03:00" />
+<meta itemprop="wordCount" content="723">
+
+
+
+<meta itemprop="keywords" content="machine learning,deep learning,opencv,xủ lý ảnh," />
+
+        
+
+        
+            
+        
+
+        
+        
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css">
+            <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway:400,800,900|Source+Sans+Pro:400,700">
+            <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+			<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+            <link rel="stylesheet" href="/css/main.css">
+            <link rel="stylesheet" href="/css/add-on.css">
+            <link rel="stylesheet" href="/css/academicons.min.css">
+        
+
+        
+            
+                
+            
+        
+
+
+  
+    
+    <link href='//cdn.bootcss.com/highlight.js/9.11.0/styles/github.min.css' rel='stylesheet' type='text/css' />
+  
+
+
+      
+<script>
+var doNotTrack = false;
+if (!doNotTrack) {
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+	ga('create', 'UA-114911596-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+
+    </head>
+    <body>
+
+      
+      
+
+    
+    
+<header id="header">
+
+    <nav class="navbar navbar-expand-md navbar-dark" style="background: #790014; color: hsla(0,0%,100%,1);">
+	<a href="#" class="navbar-brand">
+	<img src="/post_image/avata.jpg" class="rounded-circle" alt="PDT" style="width:36px;"></a>
+	<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav mr-auto">
+            
+                <li class="nav-item">
+                    <a class='nav-link' href="/blog">
+                            <i class="fa fa-home active">&nbsp;</i>Home
+                    </a>
+                </li>
+            
+                <li class="nav-item">
+                    <a class='nav-link' href="/news/">
+                            <i class="fa fa-list">&nbsp;</i>News
+                    </a>
+                </li>
+            
+                <li class="nav-item">
+                    <a class='nav-link' href="/xem-truyen/">
+                            <i class="fa fa-id-card-o">&nbsp;</i>Truyện
+                    </a>
+                </li>
+            
+        </ul>
+    </nav>
+    </div>
+</header>
+
+
+   
+    
+	<div class="container">
+	<div class="adv"></div>
+	<div class="row">
+    <main role="main" class="col-md-10 bg-white" style="margin:0; padding:0; box-shadow: 1px 1px 10px rgba(0,0,0,0.1);" >
+	
+        
+        
+        <article class="post">
+  
+
+
+        
+		<div class="thumbnail text-center">
+		 <img class="img-fluid single-content-img lazy" src="/post_image/Contours-and-relief.jpg" style="width:100%">
+		  <div class="caption  text-white">
+            <h3 class="title">Contour</h3>
+			
+			<p class="title-caption">
+			 
+			  <time class="published"
+            datetime='2019-05-03'>
+            03/05/2019</time>
+		 - 
+			   <span class="author-inline">Phạm Duy Tùng</span>
+			   </p>
+			</div>
+			</div>
+            
+        
+       
+
+
+
+  
+
+  
+
+  <div id="content">
+    
+
+<h1 id="contour-là-gì">Contour là gì</h1>
+
+<p>Các bạn có thể hiểu contour là &ldquo;tập các điểm-liên-tục tạo thành một đường cong (curve) (boundary), và không có khoảng hở trong đường cong đó, đặc điểm chung trong một contour là các các điểm có cùng /gần xấu xỉ một giá trị màu, hoặc cùng mật độ. Contour là một công cụ hữu ích được dùng để phân tích hình dạng đối tượng, phát hiện đối tượng và nhận dạng đối tượng&rdquo;.</p>
+
+<p>Để tìm contour chính xác, chúng ta cần phải nhị phân hóa bức ảnh (nhớ là ảnh nhị phân nha các bạn, không phải ảnh grayscale đâu). Các kỹ thuật nhị phân hóa ảnh ở xử lý ảnh cơ bản có thể liệt kê đến là đặt ngưỡng, hoặc candy edge detection. Chúng ta sẽ không bàn kỹ về các cách đặt ngưỡng ( mặc dù có khá nhiều cách đặt ngưỡng, và trong opencv cũng có implement một vài phương pháp, nhưng nó không phải là mục tiêu của bài này, nên mình không đề cập ở đây) hoặc edge detection ở bài viết này, mà chúng ta sẽ đi vào các tìm contours bằng các sử dụng opencv luôn.</p>
+
+<p>Trong opencv, việc tìm một contour là việc tìm một đối tượng có màu trắng trên nền đen. Cho nên, các bạn hãy nhớ rằng hãy set đối tượng thành màu trắng và để nền là màu đen, đừng làm ngược lại nha.</p>
+
+<p>Một lưu ý nhỏ là tại thời điểm mình viết bài viết này, mình sử dụng phiên bản opencv3.6. Các bạn có thể sử dụng phiên bản opencv mới hơn, nhưng có thể những sample code mình để bên dưới sẽ không work, do không tương thích.</p>
+
+<h1 id="sử-dụng-contour-trong-opencv">Sử dụng contour trong opencv</h1>
+
+<p>Opencv hỗ trợ cho chúng ta hàm để tìm contour của một bức ảnh</p>
+
+<pre><code class="language-python">modifiedImage, contours, hierarchy = cv2.findContours(binaryImage, typeofContour, methodofContour)
+</code></pre>
+
+<p>Trong đó:</p>
+
+<ul>
+<li><p>contours: Danh sách các contour có trong bức ảnh nhị phân. Mỗi một contour được lưu trữ dưới dạng vector các điểm</p></li>
+
+<li><p>hierarchy: Danh sách các vector, chứa mối quan hệ giữa các contour.</p></li>
+
+<li><p>modifiedImage: Ảnh sau khi sử dụng contour, thường chúng ta không xài đối số này</p></li>
+
+<li><p>binaryImage: Ảnh nhị phân gốc. Một chú ý quan trọng ở đây là sau khi sử dụng hàm findContours thì giá trị của binaryImage cũng thay đổi theo, nên khi sử dụng bạn có thể áp dụng binaryImage.copy() để không làm thay đổi giá trị của binaryImage</p></li>
+
+<li><p>typeofContour: có các dạng sau: RETR_EXTERNAL, RETR_LIST, RETR_CCOMP, RETR_TREE, RETR_FLOODFILL.</p></li>
+
+<li><p>methodofContour: Có các phương thức sau: CHAIN_APPROX_NONE, CHAIN_APPROX_SIMPLE, CHAIN_APPROX_TC89_L1, CHAIN_APPROX_TC89_KCOS.</p></li>
+</ul>
+
+<p>Ví dụ về các sử dụng hàm</p>
+
+<pre><code class="language-python">
+import numpy as np
+import cv2
+
+im = cv2.imread('test.jpg') # đọc ảnh màu
+imgray = cv2.cvtColor(im,cv2.COLOR_BGR2GRAY)  # chuyển ảnh màu sang dạng grayscale
+ret,thresh = cv2.threshold(imgray,127,255,0) # nhị phân hóa bức ảnh bằng cách đặt ngưỡng, với giá trị của ngưỡng là 127
+im2, contours, hierarchy = cv2.findContours(thresh,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE) # tìm contour
+
+</code></pre>
+
+<p>Opencv hỗ trợ chúng ta hàm để vẽ contor lên bức ảnh, giúp chúng ta nhìn rõ ràng hơn</p>
+
+<pre><code class="language-python">cv2.drawContours(image, contours, contourIndex, colorCode, thickness)
+
+</code></pre>
+
+<p>Với:</p>
+
+<ul>
+<li><p>imgage: ảnh, có thể là ảnh grayscale hoặc ảnh màu.</p></li>
+
+<li><p>contours: danh sách các contour, là vector, nếu bạn muốn vẽ một contour, thì bạn phải cho nó vào trong một list.</p></li>
+
+<li><p>contourIndex Vị trí của contor, thông thường chúng ta để -1</p></li>
+
+<li><p>colorCode: Giá trị màu của contour chúng ta muốn vẽ, ở dạng BGR, nếu bạn muốn vẽ contour màu xanh lá cây thì set là (0,255,0).</p></li>
+
+<li><p>thickness : độ dày của đường contour cần vẽ, giá trị thickness càng lớn thì đường contor vẽ càng bự</p></li>
+</ul>
+
+<h1 id="ví-dụ-đếm-số-lượng-quả-bóng-bay-trong-hình">Ví dụ: Đếm số lượng quả bóng bay trong hình</h1>
+
+<p>Giả sử chúng ta có bức ảnh
+<img src="/post_image/colorfull_ballon.jpg" alt="Hình ảnh" />
+<strong>Bong bóng bay</strong></p>
+
+<p>Chúng ta thực hiện tìm contour của ảnh trên bằng cách</p>
+
+<pre><code class="language-python">
+import numpy as np
+import cv2
+
+im = cv2.imread('colorfull_ballon.jpg')
+imgray = cv2.cvtColor(im,cv2.COLOR_BGR2GRAY) # chuyển ảnh xám thành ảnh grayscale
+thresh = cv2.Canny(imgray, 127, 255) # nhị phân hóa ảnh
+_, contours, _ = cv2.findContours(thresh,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+
+cv2.drawContours(im, contours, -1, (0, 255, 0), 2) # vẽ lại ảnh contour vào ảnh gốc
+
+# show ảnh lên
+cv2.imshow(&quot;ballons&quot;, im)
+cv2.waitKey(0)
+</code></pre>
+
+<p>Kết quả:</p>
+
+<p><img src="/post_image/vietnam_coins_set_contours.jpg" alt="Hình ảnh" />
+<strong>Contour màu xanh là đường curve bao quanh dữ liệu được rút trích được</strong></p>
+
+<p>Cảm ơn các bạn đã theo dõi. Hẹn gặp bạn ở những bài viết tiếp theo.</p>
+
+  </div>
+
+  <footer>
+    <ul class="stats list-unstyled">
+ 
+    
+  <li class="tags">
+    <ul class="list-inline">
+       
+            
+            
+                <i class="fa fa-tags"></i>
+                
+                
+                <li class="list-inline-item"><a class="article-category-link" href="/tags/machine-learning">machine learning</a></li>
+                
+                
+                <li class="list-inline-item"><a class="article-category-link" href="/tags/deep-learning">deep learning</a></li>
+                
+                
+                <li class="list-inline-item"><a class="article-category-link" href="/tags/opencv">opencv</a></li>
+                
+                
+                <li class="list-inline-item"><a class="article-category-link" href="/tags/x%E1%BB%A7-l%C3%BD-%E1%BA%A3nh">xủ lý ảnh</a></li>
+                
+            
+        
+    </ul>
+  </li>
+  
+</ul>
+
+  </footer>
+
+</article>
+<div class="col-md-12">
+<div class="card-header">Bài viết khác</div>
+<ul class="">
+    
+        <li class="page-item"><a href="/blog/2019-05-04-setup-predictio/"
+                class="button big previous">PredictionIO Phần 1 - Hướng dẫn cài đặt</a></li>
+    
+
+    
+        <li class="page-item"><a href="/blog/2019-05-04-sampling-method/"
+                class="button big next">Các kỹ thuật lấy mẫu</a></li>
+    
+</ul>
+</div>
+
+
+    <article class="post">
+        <div id="disqus_thread"></div>
+<script>
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "phamduytung" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    </article>
+
+
+
+
+		
+    </main>
+    
+	</div>
+	</div>
+    
+	<hr>
+  <footer class="footer">
+  <div class="container text-center">
+    
+    <p class="copyright">
+      
+        &copy; 2019
+        
+          Phạm Duy Tùng Machine Learning Blog
+        
+      
+     
+    </p>
+	</div>
+  </footer>
+    
+    
+
+    
+      
+    
+
+    
+      
+      
+      
+        <script src="//cdn.bootcss.com/highlight.js/9.11.0/highlight.min.js"></script>
+        
+        
+        
+        <script src="//cdn.bootcss.com/highlight.js/9.11.0/languages/r.min.js"></script>
+        <script src="//cdn.bootcss.com/highlight.js/9.11.0/languages/yaml.min.js"></script>
+        <script src="//cdn.bootcss.com/highlight.js/9.11.0/languages/css.min.js"></script>
+        <script>hljs.configure({languages: []}); hljs.initHighlightingOnLoad();</script>
+      
+    
+    
+    
+      <script src="https://code.jquery.com/jquery-3.3.1.min.js" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/skel/3.0.1/skel.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+      <script src="/js/util.js"></script>
+      <script src="/js/main.js"></script>
+     
+    
+
+    
+      
+        
+      
+    
+	
+    
+    <script>hljs.initHighlightingOnLoad();</script>
+      <script src="//yihui.name/js/math-code.js"></script>
+<script async
+src="//cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+	  
+	  
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-114911596-1"  data-cfasync="false"></script>
+<script  data-cfasync="false">
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-114911596-1');
+</script>
+	   <script  type="text/javascript"  data-cfasync="false">
+
+(function(w, d){
+    var b = d.getElementsByTagName('body')[0];
+    var s = d.createElement("script"); 
+    var v = !("IntersectionObserver" in w) ? "8.17.0" : "10.19.1";
+    s.async = true; 
+    s.src = "https://cdn.jsdelivr.net/npm/vanilla-lazyload@" + v + "/dist/lazyload.min.js";
+    w.lazyLoadOptions = { };
+    b.appendChild(s);
+}(window, document));
+
+  function getcontent(){
+ if( $('#news-contents').length<=0)         
+{
+     return;
+}
+      file_name = "trangchu.json";
+	   cur_index = 1;
+
+                file_name = cur_index+"_"+file_name;
+                $.getJSON("/news/news_data/"+file_name, function(data) {
+                    if(cur_index<=1){
+                    $("#news-contents").html('');
+                    }
+                    $.each(data.items, function(i, f) {
+                        let head = f.head;
+                        let img = f.img;
+                        let desc= f.desc;
+                        let times = f.times;
+                        let links = f.links;
+                       var tblRow = "<li class='news-item list-group-item'> <a target='_blank' href='"+links+"' class='text-und'> <div class='row'>  <img class='img-news lazy img-reponsive' alt='' data-src='"+img+"' data-holder-rendered='true' style='width:100%; max-height:150px;'/> </div> <h5 class='news-tittle'> "+head+" </h5><div class='news-times'>"+times+"</div></div><div class='clearfix'></div></div></a> </li>";
+                        $(tblRow).appendTo("#news-contents");
+                  });
+             var myLazyLoad = new LazyLoad({
+    elements_selector: ".lazy"
+});
+                });
+            }
+			
+			$(document).ready(function(){
+		
+			}); 
+</script>
+  </body>
+</html>
+
