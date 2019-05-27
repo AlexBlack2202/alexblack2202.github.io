@@ -1,0 +1,599 @@
+<!DOCTYPE HTML>
+
+<html>
+    <head>
+        <script type="application/ld+json">
+    {
+        "@context" : "http://schema.org",
+        "@type" : "BlogPosting",
+        "mainEntityOfPage": {
+             "@type": "WebPage",
+             "@id": "/"
+        },
+        "articleSection" : "blog",
+        "name" : "Tìm hiểu mạng MobileNetV1",
+        "headline" : "Tìm hiểu mạng MobileNetV1",
+        "description" : "Trong bài viết này, chúng ta sẽ tìm hiểu mô hình MobileNetV1 của nhóm tác giả Andrew G. Howard, Menglong Zhu, Bo Chen, Dmitry Kalenichenko, Weijun Wang, Tobias Weyand, Marco Andreetto, Hartwig Adam - Google Inc từ bài báo MobileNets Efficient Convolutional Neural Networks for Mobile Vision Applications đăng năm 2017. Mục tiêu của mô hình này là xây dựng một mô hình mạnh mẽ nhưng nhỏ gọn, có thể chạy deep neural network trên các thiết bị di động như điện thoại, máy tính bảng hoặc các thiết bị nhúng.",
+        "inLanguage" : "en",
+        "author" : "",
+        "creator" : "",
+        "publisher": "",
+        "accountablePerson" : "",
+        "copyrightHolder" : "",
+        "copyrightYear" : "2019",
+        "datePublished": "2019-05-25 00:12:00 &#43;0300 &#43;0300",
+        "dateModified" : "2019-05-25 00:12:00 &#43;0300 &#43;0300",
+        "url" : "/blog/2019-05-26-mobilenetv1/",
+        "wordCount" : "1471",
+        "keywords" : [ "machine learning","deep learning","MobileNetV1","Depthwise Separable Convolution","Light Weight Model","Width Multiplier","Resolution Multiplier","Blog" ]
+    }
+    </script>
+        
+            
+                <title>Tìm hiểu mạng MobileNetV1</title>
+            
+        
+
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="generator" content="Hugo 0.41" />
+        
+  
+    
+  
+
+  
+
+  <link rel="apple-touch-icon-precomposed" href='/favicon/apple-touch-icon-precomposed.png'>
+  <link rel="icon" href='/favicon.ico'>
+  
+  <meta name="msapplication-TileColor" content="#da532c">
+  <meta name="msapplication-TileImage" content='/favicon/mstile.png'>
+  <meta name="application-name" content="Phạm Duy Tùng Machine Learning Blog">
+  <meta name="msapplication-tooltip" content="Blog ML của Phạm Duy Tùng">
+  <meta name="msapplication-config" content='/favicon/ieconfig.xml'>
+
+
+
+        
+            <meta name="author" content="Phạm Duy Tùng">
+        
+        
+            <meta name="description" content="Trong bài viết này, chúng ta sẽ tìm hiểu mô hình MobileNetV1 của nhóm tác giả Andrew G. Howard, Menglong Zhu, Bo Chen, Dmitry Kalenichenko, Weijun Wang, Tobias Weyand, Marco Andreetto, Hartwig Adam - Google Inc từ bài báo MobileNets Efficient Convolutional Neural Networks for Mobile Vision Applications đăng năm 2017. Mục tiêu của mô hình này là xây dựng một mô hình mạnh mẽ nhưng nhỏ gọn, có thể chạy deep neural network trên các thiết bị di động như điện thoại, máy tính bảng hoặc các thiết bị nhúng.">
+        
+
+        <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Tìm hiểu mạng MobileNetV1"/>
+<meta name="twitter:description" content="Trong bài viết này, chúng ta sẽ tìm hiểu mô hình MobileNetV1 của nhóm tác giả Andrew G. Howard, Menglong Zhu, Bo Chen, Dmitry Kalenichenko, Weijun Wang, Tobias Weyand, Marco Andreetto, Hartwig Adam - Google Inc từ bài báo MobileNets Efficient Convolutional Neural Networks for Mobile Vision Applications đăng năm 2017. Mục tiêu của mô hình này là xây dựng một mô hình mạnh mẽ nhưng nhỏ gọn, có thể chạy deep neural network trên các thiết bị di động như điện thoại, máy tính bảng hoặc các thiết bị nhúng."/>
+<meta name="twitter:site" content="@example"/>
+
+        <meta property="og:title" content="Tìm hiểu mạng MobileNetV1" />
+<meta property="og:description" content="Trong bài viết này, chúng ta sẽ tìm hiểu mô hình MobileNetV1 của nhóm tác giả Andrew G. Howard, Menglong Zhu, Bo Chen, Dmitry Kalenichenko, Weijun Wang, Tobias Weyand, Marco Andreetto, Hartwig Adam - Google Inc từ bài báo MobileNets Efficient Convolutional Neural Networks for Mobile Vision Applications đăng năm 2017. Mục tiêu của mô hình này là xây dựng một mô hình mạnh mẽ nhưng nhỏ gọn, có thể chạy deep neural network trên các thiết bị di động như điện thoại, máy tính bảng hoặc các thiết bị nhúng." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="/blog/2019-05-26-mobilenetv1/" />
+
+
+
+<meta property="article:published_time" content="2019-05-25T00:12:00&#43;03:00"/>
+
+<meta property="article:modified_time" content="2019-05-25T00:12:00&#43;03:00"/>
+
+
+
+
+
+
+
+
+
+
+
+        <meta property="og:image" content="//images/logo.png">
+        <meta property="og:image:type" content="image/png">
+        <meta property="og:image:width" content="512">
+        <meta property="og:image:height" content="512">
+        
+<meta itemprop="name" content="Tìm hiểu mạng MobileNetV1">
+<meta itemprop="description" content="Trong bài viết này, chúng ta sẽ tìm hiểu mô hình MobileNetV1 của nhóm tác giả Andrew G. Howard, Menglong Zhu, Bo Chen, Dmitry Kalenichenko, Weijun Wang, Tobias Weyand, Marco Andreetto, Hartwig Adam - Google Inc từ bài báo MobileNets Efficient Convolutional Neural Networks for Mobile Vision Applications đăng năm 2017. Mục tiêu của mô hình này là xây dựng một mô hình mạnh mẽ nhưng nhỏ gọn, có thể chạy deep neural network trên các thiết bị di động như điện thoại, máy tính bảng hoặc các thiết bị nhúng.">
+
+
+<meta itemprop="datePublished" content="2019-05-25T00:12:00&#43;03:00" />
+<meta itemprop="dateModified" content="2019-05-25T00:12:00&#43;03:00" />
+<meta itemprop="wordCount" content="1471">
+
+
+
+<meta itemprop="keywords" content="machine learning,deep learning,MobileNetV1,Depthwise Separable Convolution,Light Weight Model,Width Multiplier,Resolution Multiplier," />
+
+        
+
+        
+            
+        
+
+        
+        
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css">
+            <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway:400,800,900|Source+Sans+Pro:400,700">
+            <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+			<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+            <link rel="stylesheet" href="/css/main.css">
+            <link rel="stylesheet" href="/css/add-on.css">
+            <link rel="stylesheet" href="/css/academicons.min.css">
+        
+
+        
+            
+                
+            
+        
+
+
+  
+    
+    <link href='//cdn.bootcss.com/highlight.js/9.11.0/styles/github.min.css' rel='stylesheet' type='text/css' />
+  
+
+
+      
+<script>
+var doNotTrack = false;
+if (!doNotTrack) {
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+	ga('create', 'UA-114911596-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+
+    </head>
+    <body>
+
+      
+      
+
+    
+    
+<header id="header">
+
+    <nav class="navbar navbar-expand-md navbar-dark" style="background: #790014; color: hsla(0,0%,100%,1);">
+	<a href="#" class="navbar-brand">
+	<img src="/post_image/avata.jpg" class="rounded-circle" alt="PDT" style="width:36px;"></a>
+	<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav mr-auto">
+            
+                <li class="nav-item">
+                    <a class='nav-link' href="/blog">
+                            <i class="fa fa-home active">&nbsp;</i>Home
+                    </a>
+                </li>
+            
+                <li class="nav-item">
+                    <a class='nav-link' href="/news/">
+                            <i class="fa fa-list">&nbsp;</i>News
+                    </a>
+                </li>
+            
+                <li class="nav-item">
+                    <a class='nav-link' href="/xem-truyen/">
+                            <i class="fa fa-id-card-o">&nbsp;</i>Truyện
+                    </a>
+                </li>
+            
+        </ul>
+    </nav>
+    </div>
+</header>
+
+
+   
+    
+	<div class="container">
+	<div class="adv"></div>
+	<div class="row">
+    <main role="main" class="bg-white" style="margin:0; padding:0; box-shadow: 1px 1px 10px rgba(0,0,0,0.1);" >
+	
+        
+        
+        <article class="post">
+  
+
+
+        
+		<div class="thumbnail text-center">
+		 <img class="img-fluid single-content-img lazy" src="/post_image/Contours-and-relief.jpg" style="width:100%">
+		  <div class="caption  text-white">
+            <h3 class="title">Tìm hiểu mạng MobileNetV1</h3>
+			
+			<p class="title-caption">
+			 
+			  <time class="published"
+            datetime='2019-05-25'>
+            25/05/2019</time>
+		 - 
+			   <span class="author-inline">Phạm Duy Tùng</span>
+			   </p>
+			</div>
+			</div>
+            
+        
+       
+
+
+
+  
+
+  
+
+  <div id="content">
+    
+
+<p>Trong bài viết này, chúng ta sẽ tìm hiểu mô hình MobileNetV1 từ nhóm tác giả đến từ Google. Điểm cải tiến (chắc là cải tiến :) của mô hình là sử dụng một cách tính tích chập có tên là <em>Depthwise Separable Convolution</em> để giảm kích thước mô hình và giảm độ phức tạp tính toán. Do đó, mô hình sẽ hữu ích khi chạy các ứng dụng trên di động và các thiết bị nhúng.</p>
+
+<p>Lý do:</p>
+
+<ul>
+<li><p>Mô hình có ít tham số hơn -&gt; kích thước model sẽ nhỏ hơn.</p></li>
+
+<li><p>Mô hình có ít phép tính cộng trừ nhân chia hơn -&gt; độ phức tạp sẽ nhỏ hơn.</p></li>
+</ul>
+
+<p>Hiện tại (2019-05-26), tại thời điểm viết bài, bài viết gốc của tác giả đã được 1594 lượt trích dẫn. Các bạn có thể tìm đọc bài báo gốc của tác giả tại trang <a href="https://arxiv.org/abs/1704.04861">https://arxiv.org/abs/1704.04861</a></p>
+
+<p><img src="/post_image/cimobilenetv1_citations.jpg" alt="Hình ảnh" />
+<strong>Số lượt trích dẫn bài báo MobileNets Efficient Convolutional Neural Networks for Mobile Vision Applications</strong></p>
+
+<h1 id="chi-tiết-về-mạng-mobilenet">Chi tiết về mạng MobileNet</h1>
+
+<h2 id="mô-hình-kiến-trúc">Mô hình kiến trúc</h2>
+
+<p>Kiến trúc mạng MobileNet được trình bày bên dưới. Hình bên dưới được trích từ bài báo gốc của tác giả</p>
+
+<p><img src="/post_image/mobilenetv1_architecture.png" alt="Hình ảnh" />
+<strong>Mô hình kiến trúc mạng MobileNet</strong></p>
+
+<p>Diễn dịch ra ngôn ngữ tự nhiên, chúng ta thấy rằng mô hình có 30 lớp với các đặc điểm sau:</p>
+
+<ul>
+<li><p>Lớp 1:  Convolution layer với stride bằng 2</p></li>
+
+<li><p>Lớp 2: Depthwise layer</p></li>
+
+<li><p>Lớp 3: Pointwise layer</p></li>
+
+<li><p>Lớp 4: Depthwise layer với stride bằng 2 (khác với bước 2, dw lớp 2 có stride size bằng 1)</p></li>
+
+<li><p>Lớp 5: Pointwise layer</p></li>
+
+<li><p>Lớp 30: Softmax, dùng để phân lớp.</p></li>
+</ul>
+
+<h2 id="depthwise-separable-convolution">Depthwise Separable Convolution</h2>
+
+<p>Depthwise separable convolution  là một <em>depthwise convolution theo sau bởi by a pointwise convolution</em> như hình bên dưới:</p>
+
+<p><img src="/post_image/depthwise_separable_convolution.png" alt="Hình ảnh" />
+<strong>Cấu trúc của một Depthwise Separable Convolution</strong></p>
+
+<ul>
+<li><p>Depthwise convolution: là một <em>channel-wise DK×DK spatial convolution</em>. Ví dụ ở hình trên, ta có 5 channels (các bạn để ý cục đầu tiên có 5 khối hộp, cục thứ 2 là phân tách 5 khối hộp ra thành ma trận mxn, cục thứ 3 là spatial convolution có kích thước kxk, cục thứ 4 là kết quả sau khi convolution, cục thứ 5 là ráp 5 cái kết quả của convolution lại ), do đó chúng ta sẽ có 5 DK×DK spatial convolution tương ứng với 5 channel trên.</p></li>
+
+<li><p>Pointwise convolution: đơn giản là một convolution có kích thước 1x1 (như hình ở trên)</p></li>
+</ul>
+
+<p>Với M là số lượng input channel, N là số lượng output channel, Dk là kernel size, Df là feature map size (với dataset ImageNet thì input có kích thước là 224, do đó feature map ban đầu có Df = 224), chúng ta có thể tính được:</p>
+
+<p>Chi phí tính toán của Depthwise convolution là :</p>
+
+<p>$$D_k x D_k \dot M \dot D_f \dot D_f$$</p>
+
+<p>Chi phí tính toán của Pointwise convolution là :</p>
+
+<p>$$M \dot N \dot D_f \dot D_f$$</p>
+
+<p>Tổng chi phí tính toán của Depthwise Separable Convolution là:</p>
+
+<p>$$D_k x D_k \dot M \dot D_f \dot D_f + M \dot N \dot D_f \dot D_f$$</p>
+
+<p>Nếu chúng ta không sử dụng Depthwise Separable Convolution mà sử dụng phép convolution như bình thường, chi phí tính toán là</p>
+
+<p>$$ D_k \dot D_k \dot M \dot N \dot D_f \dot D_f$$</p>
+
+<p>Do đó, chi phí tính toán sẽ giảm:</p>
+
+<p>$$\frac{D_k\dot D\k \dot M \dot D_f \dot \D_f + M \dot N \dot D_f \dot D_f}{D_k \dot D_k \dot M \dot N \dot D_f \dot D_f} =  \frac{1}{N} + \frac{1}{D^2+k}$$</p>
+
+<p>Giả sử, chúng ta chọn kernel size Dk = 3, chúng ta sẽ giảm từ 8 đến 9 lần phép tính nhân =&gt; giảm chi phí tính toán đi rất nhiều.</p>
+
+<p>Một chú ý nhỏ về kiến trúc ở đây, là sau mỗi convolution MobileNet sẽ sử dụng Batch Normalization (BN) và ReLU như hình bên dưới</p>
+
+<p><img src="/post_image/standard_convolution_vs_depthwise_seperable_convolution.png" alt="Hình ảnh" />
+<strong>Standard Convolution bên trái, Depthwise separable convolution với BN và ReLU bên phải</strong></p>
+
+<p>So sánh kết quả của việc sử dụng mạng 30 layer sử dụng thuần Convolution và mạng 30 layer sử dụng  Depthwise Separable Convolution (MobileNet) trên tập dữ liệu ImageNet, chúng ta có bảng kết quả bên dưới</p>
+
+<p><img src="/post_image/standard_convolution_vs_depthwise_seperable_convolution_imagenetds.png" alt="Hình ảnh" />
+<strong>Standard Convolution bên trái, Depthwise separable convolution với BN và ReLU bên phải</strong></p>
+
+<p>MobileNet giảm 1% độ chính xác, nhưng số lượng tham số của mô hình và số lượng phép tính toán giảm đi rất rất nhiều, gần xấp xỉ 90%. Một con số đáng kinh ngạc.</p>
+
+<h2 id="làm-mô-hình-gọn-nhẹ-hơn-nữa">Làm mô hình gọn nhẹ hơn nữa</h2>
+
+<p>Với mong muốn làm mô hình gọn nhẹ hơn nữa, nhóm tác giả đã thêm vào hai tham số alpha và rho.</p>
+
+<p>Tham số alpha: Điều khiển số lượng channel (M và N).</p>
+
+<p>Chi phí tính toán của depthwise separable convolution khi sử dụng thêm tham số alpha.</p>
+
+<p>$$D_k x D_k \dot \alphaM \dot D_f \dot D_f + \alphaM \dot \alphaN \dot D_f \dot D_f$$</p>
+
+<p>Giá trị alpha nằm trong đoạn [0,1], nhóm tác giả set giá trị alpha có bước nhảy là 0.25, các giá trị cần xét là 0.25, 0.5, 0.75, 1. Trường hợp alpha = 1 chính là mạng MobileNet baseline của mình. Trong trường hợp thay đổi alpha, số phép tính toán, số tham số, cũng giảm đi rất nhiều, và tất nhiên, độ chính xác cũng giảm đi tương ứng.</p>
+
+<p><img src="/post_image/mobilenet_alpha_changes.png" alt="Hình ảnh" />
+<strong>Mạng MobileNet với alpha thay đổi</strong></p>
+
+<p>Phân tích kỹ hình ở trên, ta thấy rằng với alpha bằng  0.75 và 0.5 giá trị độ chính xác còn nằm ở mức miễn cưỡng có thể chấp nhận được. Nhưng với alpha bằng 0.25 thì khó mà có thể chấp nhận được kết quả đó. Việc giảm phép tính toán và số lượng tham số dẫn đến kết quả tệ như trên quả là một điều không nên. Mình nghĩ ở đây nhóm tác giả để con số để có ý nghĩa so sánh.</p>
+
+<p>Tham số rho: Tham số này được sử dụng để điều khiển độ phân giải của ảnh input.</p>
+
+<p>Chi phí tính toán của depthwise separable convolution khi sử dụng thêm tham số rho.</p>
+
+<p>$$D_k x D_k \dot \alphaM \dot \rho\D_f \dot \rhoD_f + \alphaM \dot \alphaN \dot \rhoD_f \dot \rhoD_f$$</p>
+
+<p>Giá trị rho cũng nằm trong đoạn [0,1]. Nhóm tác giả sử dụng các giá trị độ phân giải là 224 (độ phân giải gốc, tương ứng với rho =1), 192, 160, 128.</p>
+
+<p><img src="/post_image/mobilenet_beta_changes.png" alt="Hình ảnh" />
+<strong>Mạng MobileNet với rho thay đổi</strong></p>
+
+<p>Giá trị độ chính xác thay đổi theo hướng giảm khá mượt. Việc thay đổi rho chỉ làm giảm số lượng phép tính toán, không làm giảm số lượng tham số. Việc giảm độ chính xác có thể lý giải lý do là có một số hình có kích thước nhỏ nên khi giảm kích thước sẽ làm mất những đặc trưng cần thiết của đối tượng cần xét.</p>
+
+<h1 id="so-sánh-mobilenet-với-các-state-of-the-art-đương-thời">So sánh MobileNet với các State-of-the-art đương thời</h1>
+
+<p>Khi so sánh 1.0 MobileNet-224 với GoogleNet và VGG 16 (hình bên dưới), chúng ta thấy rằng độ chính xác của cả 3 thuật toán là hầu như tương đương nhau. Nhưng 1.0 MobileNet-224 có số lượng tham số ít (75% so với GoogleNet) và số lượng phép toán nhỏ hơn rất nhiều =&gt; chạy nhanh hơn.</p>
+
+<p><img src="/post_image/mobilenet_compare_1.png" alt="Hình ảnh" />
+<strong>So sánh 1.0 MobileNet-224 với GoogleNet và VGG 16 trên tập ImageNet</strong></p>
+
+<p>Với mô hình 0.50 MobileNet-160, chúng ta có thể so sánh với mô hình Squeezenet và AlexNet (mô hình thắng giải nhất cuộc thi ILSVRC 2012). Một lần nữa, mô hình 0.50 MobileNet-160 cho kết quả tốt hơn, nhưng có số lượng phép tính toán ít hơn rất nhiều (hơi đáng buồn là số lượng tham số của mô hình 0.50 MobileNet-160 khá cao, số lượng tham số gấp đôi so với AlexNet và gần bằng Squeezenet) =&gt; 0.50 MobileNet-160 train nhanh hơn, predict cũng nhanh hơn so với Squeezenet và AlexNet, nhưng tốn bộ nhớ RAM hơn.</p>
+
+<p><img src="/post_image/mobilenet_compare_2.png" alt="Hình ảnh" />
+<strong>So sánh 0.50 MobileNet-160 với Squeezenet và AlexNet trên tập ImageNet</strong></p>
+
+<p>So với mô hình Inception-v3 (mô hình thắng giải nhất cuộc thi ILSVRC 2015), MobileNet cho kết quả khá tốt, nhưng số tham số và số lượng phép tính toán nhỏ hơn rất nhiều</p>
+
+<p><img src="/post_image/mobilenet_compare_3.png" alt="Hình ảnh" />
+<strong>So sánh Mobile net và Inception-v3 trên tập Stanford Dog</strong></p>
+
+<p>Các thí nghiệm ở dưới trên các tập dataset khác nhau chứng minh mức độ hiệu quả của MobileNet
+<img src="/post_image/mobilenet_compare_4.png" alt="Hình ảnh" />
+<strong>GPS Localization Via Photos</strong></p>
+
+<p><img src="/post_image/mobilenet_compare_5.png" alt="Hình ảnh" />
+<strong>Face Attribute Classification</strong></p>
+
+<p><img src="/post_image/mobilenet_compare_6.png" alt="Hình ảnh" />
+<strong>MMicrosoft COCO Object Detection Dataset</strong></p>
+
+<p><img src="/post_image/mobilenet_compare_7.png" alt="Hình ảnh" />
+<strong>Face Recognition</strong></p>
+
+<h1 id="kết-luận">Kết luận</h1>
+
+<p>MobileNet cho kết quả tốt ngang ngữa các state-of-the-art thắng giải nhất ở quá khứ, nhưng với mô hình có số lượng tham số nhỏ hơn và số phép tính toán ít hơn. Điều này đạt được là nhờ vào việc sử dụng Depthwise Separable Convolution.</p>
+
+<p>Cảm ơn các bạn đã theo dõi bài viết, có chỗ nào bạn chưa rõ hoặc mình viết bị sai, các bạn vui lòng để lại comment để mình sửa lại cho đúng.</p>
+
+  </div>
+
+  <footer>
+    <ul class="stats list-unstyled">
+ 
+    
+  <li class="tags">
+    <ul class="list-inline">
+       
+            
+            
+                <i class="fa fa-tags"></i>
+                
+                
+                <li class="list-inline-item"><a class="article-category-link" href="/tags/machine-learning">machine learning</a></li>
+                
+                
+                <li class="list-inline-item"><a class="article-category-link" href="/tags/deep-learning">deep learning</a></li>
+                
+                
+                <li class="list-inline-item"><a class="article-category-link" href="/tags/mobilenetv1">MobileNetV1</a></li>
+                
+                
+                <li class="list-inline-item"><a class="article-category-link" href="/tags/depthwise-separable-convolution">Depthwise Separable Convolution</a></li>
+                
+                
+                <li class="list-inline-item"><a class="article-category-link" href="/tags/light-weight-model">Light Weight Model</a></li>
+                
+                
+                <li class="list-inline-item"><a class="article-category-link" href="/tags/width-multiplier">Width Multiplier</a></li>
+                
+                
+                <li class="list-inline-item"><a class="article-category-link" href="/tags/resolution-multiplier">Resolution Multiplier</a></li>
+                
+            
+        
+    </ul>
+  </li>
+  
+</ul>
+
+  </footer>
+
+</article>
+<div class="col-md-12">
+<div class="card-header">Bài viết khác</div>
+<ul class="">
+    
+        <li class="page-item"><a href="/blog/2019-05-26-contours/"
+                class="button big previous">Contour</a></li>
+    
+
+    
+</ul>
+</div>
+
+
+    <article class="post">
+        <div id="disqus_thread"></div>
+<script>
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "phamduytung" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+    </article>
+
+
+
+
+		
+    </main>
+    
+	</div>
+	</div>
+    
+	<hr>
+  <footer class="footer">
+  <div class="container text-center">
+    
+    <p class="copyright">
+      
+        &copy; 2019
+        
+          Phạm Duy Tùng Machine Learning Blog
+        
+      
+     
+    </p>
+	</div>
+  </footer>
+    
+    
+
+    
+      
+    
+
+    
+      
+      
+      
+        <script src="//cdn.bootcss.com/highlight.js/9.11.0/highlight.min.js"></script>
+        
+        
+        
+        <script src="//cdn.bootcss.com/highlight.js/9.11.0/languages/r.min.js"></script>
+        <script src="//cdn.bootcss.com/highlight.js/9.11.0/languages/yaml.min.js"></script>
+        <script src="//cdn.bootcss.com/highlight.js/9.11.0/languages/css.min.js"></script>
+        <script>hljs.configure({languages: []}); hljs.initHighlightingOnLoad();</script>
+      
+    
+    
+    
+      <script src="https://code.jquery.com/jquery-3.3.1.min.js" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/skel/3.0.1/skel.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+      <script src="/js/util.js"></script>
+      <script src="/js/main.js"></script>
+     
+    
+
+    
+      
+        
+      
+    
+	
+    
+    <script>hljs.initHighlightingOnLoad();</script>
+      <script src="//yihui.name/js/math-code.js"></script>
+<script async
+src="//cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+	  
+	  
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-114911596-1"  data-cfasync="false"></script>
+<script  data-cfasync="false">
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-114911596-1');
+</script>
+	   <script  type="text/javascript"  data-cfasync="false">
+
+(function(w, d){
+    var b = d.getElementsByTagName('body')[0];
+    var s = d.createElement("script"); 
+    var v = !("IntersectionObserver" in w) ? "8.17.0" : "10.19.1";
+    s.async = true; 
+    s.src = "https://cdn.jsdelivr.net/npm/vanilla-lazyload@" + v + "/dist/lazyload.min.js";
+    w.lazyLoadOptions = { };
+    b.appendChild(s);
+}(window, document));
+
+  function getcontent(){
+ if( $('#news-contents').length<=0)         
+{
+     return;
+}
+      file_name = "trangchu.json";
+	   cur_index = 1;
+
+                file_name = cur_index+"_"+file_name;
+                $.getJSON("/news/news_data/"+file_name, function(data) {
+                    if(cur_index<=1){
+                    $("#news-contents").html('');
+                    }
+                    $.each(data.items, function(i, f) {
+                        let head = f.head;
+                        let img = f.img;
+                        let desc= f.desc;
+                        let times = f.times;
+                        let links = f.links;
+                       var tblRow = "<li class='news-item list-group-item'> <a target='_blank' href='"+links+"' class='text-und'> <div class='row'>  <img class='img-news lazy img-reponsive' alt='' data-src='"+img+"' data-holder-rendered='true' style='width:100%; max-height:150px;'/> </div> <h5 class='news-tittle'> "+head+" </h5><div class='news-times'>"+times+"</div></div><div class='clearfix'></div></div></a> </li>";
+                        $(tblRow).appendTo("#news-contents");
+                  });
+             var myLazyLoad = new LazyLoad({
+    elements_selector: ".lazy"
+});
+                });
+            }
+			
+			$(document).ready(function(){
+		
+			}); 
+</script>
+  </body>
+</html>
+
