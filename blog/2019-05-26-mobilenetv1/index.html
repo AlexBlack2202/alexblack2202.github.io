@@ -277,7 +277,7 @@ if (!doNotTrack) {
 
 <h2 id="depthwise-separable-convolution">Depthwise Separable Convolution</h2>
 
-<p>Depthwise separable convolution  là một <em>depthwise convolution theo sau bởi by a pointwise convolution</em> như hình bên dưới:</p>
+<p>Depthwise separable convolution  là một <em>depthwise convolution theo sau bởi một pointwise convolution</em> như hình bên dưới:</p>
 
 <p><img src="/post_image/depthwise_separable_convolution.png" alt="Hình ảnh" />
 <strong>Cấu trúc của một Depthwise Separable Convolution</strong></p>
@@ -285,30 +285,30 @@ if (!doNotTrack) {
 <ul>
 <li><p>Depthwise convolution: là một <em>channel-wise DK×DK spatial convolution</em>. Ví dụ ở hình trên, ta có 5 channels (các bạn để ý cục đầu tiên có 5 khối hộp, cục thứ 2 là phân tách 5 khối hộp ra thành ma trận mxn, cục thứ 3 là spatial convolution có kích thước kxk, cục thứ 4 là kết quả sau khi convolution, cục thứ 5 là ráp 5 cái kết quả của convolution lại ), do đó chúng ta sẽ có 5 DK×DK spatial convolution tương ứng với 5 channel trên.</p></li>
 
-<li><p>Pointwise convolution: đơn giản là một convolution có kích thước 1x1 (như hình ở trên)</p></li>
+<li><p>Pointwise convolution: đơn giản là một convolution có kích thước 1x1 (như hình ở trên).</p></li>
 </ul>
 
 <p>Với M là số lượng input channel, N là số lượng output channel, Dk là kernel size, Df là feature map size (với dataset ImageNet thì input có kích thước là 224, do đó feature map ban đầu có Df = 224), chúng ta có thể tính được:</p>
 
 <p>Chi phí tính toán của Depthwise convolution là :</p>
 
-<p>$$D_k x D_k \dot M \dot D_f \dot D_f$$</p>
+<p>$$D_k \cdot D_k \cdot M \cdot D_f \cdot D_f$$</p>
 
 <p>Chi phí tính toán của Pointwise convolution là :</p>
 
-<p>$$M \dot N \dot D_f \dot D_f$$</p>
+<p>$$M \cdot N \cdot D_f \cdot D_f$$</p>
 
 <p>Tổng chi phí tính toán của Depthwise Separable Convolution là:</p>
 
-<p>$$D_k x D_k \dot M \dot D_f \dot D_f + M \dot N \dot D_f \dot D_f$$</p>
+<p>$$D_k \cdot D_k \cdot M \cdot D_f \cdot D_f + M \cdot N \cdot D_f \cdot D_f$$</p>
 
 <p>Nếu chúng ta không sử dụng Depthwise Separable Convolution mà sử dụng phép convolution như bình thường, chi phí tính toán là</p>
 
-<p>$$ D_k \dot D_k \dot M \dot N \dot D_f \dot D_f$$</p>
+<p>$$ D_k \cdot D_k \cdot M \cdot N \cdot D_f \cdot D_f$$</p>
 
 <p>Do đó, chi phí tính toán sẽ giảm:</p>
 
-<p>$$\frac{D_k\dot D\k \dot M \dot D_f \dot \D_f + M \dot N \dot D_f \dot D_f}{D_k \dot D_k \dot M \dot N \dot D_f \dot D_f} =  \frac{1}{N} + \frac{1}{D^2+k}$$</p>
+<p>$$\frac{D_k \cdot D\k \cdot M \cdot D_f \cdot \D_f + M \cdot N \dot D_f \cdot D_f}{D_k \cdot D_k \cdot M \cdot N \cdot D_f \cdot D_f} =  \frac{1}{N} + \frac{1}{D^2_k}$$</p>
 
 <p>Giả sử, chúng ta chọn kernel size Dk = 3, chúng ta sẽ giảm từ 8 đến 9 lần phép tính nhân =&gt; giảm chi phí tính toán đi rất nhiều.</p>
 
@@ -332,7 +332,7 @@ if (!doNotTrack) {
 
 <p>Chi phí tính toán của depthwise separable convolution khi sử dụng thêm tham số alpha.</p>
 
-<p>$$D_k x D_k \dot \alphaM \dot D_f \dot D_f + \alphaM \dot \alphaN \dot D_f \dot D_f$$</p>
+<p>$$D_k x D_k \cdot \alphaM \cdot D_f \cdot D_f + \alphaM \cdot \alphaN \cdot D_f \cdot D_f$$</p>
 
 <p>Giá trị alpha nằm trong đoạn [0,1], nhóm tác giả set giá trị alpha có bước nhảy là 0.25, các giá trị cần xét là 0.25, 0.5, 0.75, 1. Trường hợp alpha = 1 chính là mạng MobileNet baseline của mình. Trong trường hợp thay đổi alpha, số phép tính toán, số tham số, cũng giảm đi rất nhiều, và tất nhiên, độ chính xác cũng giảm đi tương ứng.</p>
 
@@ -345,7 +345,7 @@ if (!doNotTrack) {
 
 <p>Chi phí tính toán của depthwise separable convolution khi sử dụng thêm tham số rho.</p>
 
-<p>$$D_k x D_k \dot \alphaM \dot \rho\D_f \dot \rhoD_f + \alphaM \dot \alphaN \dot \rhoD_f \dot \rhoD_f$$</p>
+<p>$$D_k x D_k \cdot \alphaM \cdot \rho\D_f \cdot \rhoD_f + \alphaM \cdot \alphaN \cdot \rhoD_f \cdot \rhoD_f$$</p>
 
 <p>Giá trị rho cũng nằm trong đoạn [0,1]. Nhóm tác giả sử dụng các giá trị độ phân giải là 224 (độ phân giải gốc, tương ứng với rho =1), 192, 160, 128.</p>
 
