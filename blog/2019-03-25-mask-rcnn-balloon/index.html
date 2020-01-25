@@ -8,7 +8,7 @@
         "@type" : "BlogPosting",
         "mainEntityOfPage": {
              "@type": "WebPage",
-             "@id": "/"
+             "@id": "\/"
         },
         "articleSection" : "blog",
         "name" : "Tìm hiểu Mask R-CNN và ví dụ phân vùng quả bóng bay sử dụng deep learning",
@@ -21,10 +21,10 @@
         "accountablePerson" : "",
         "copyrightHolder" : "",
         "copyrightYear" : "2019",
-        "datePublished": "2019-03-25 00:12:00 &#43;0300 &#43;0300",
-        "dateModified" : "2019-03-25 00:12:00 &#43;0300 &#43;0300",
-        "url" : "/blog/2019-03-25-mask-rcnn-balloon/",
-        "wordCount" : "2885",
+        "datePublished": "2019-03-25 00:12:00 \x2b0300 \x2b0300",
+        "dateModified" : "2019-03-25 00:12:00 \x2b0300 \x2b0300",
+        "url" : "\/blog\/2019-03-25-mask-rcnn-balloon\/",
+        "wordCount" : "2879",
         "keywords" : [ "machine learning","deep learning","Mask R-CNN","balloon","bóng bay","Blog" ]
     }
     </script>
@@ -76,40 +76,22 @@
 <meta property="og:description" content="Ở bài viết này, chúng ta sẽ thực hiện phân đoạn ảnh sử dụng Mask R-CNN với tập dữ liệu là những quả bóng bay bảy màu rất đẹp." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="/blog/2019-03-25-mask-rcnn-balloon/" />
-
-
-
-<meta property="article:published_time" content="2019-03-25T00:12:00&#43;03:00"/>
-
-<meta property="article:modified_time" content="2019-03-25T00:12:00&#43;03:00"/>
-
-
-
-
-
-
-
-
-
-
+<meta property="article:published_time" content="2019-03-25T00:12:00+03:00" />
+<meta property="article:modified_time" content="2019-03-25T00:12:00+03:00" />
 
         <meta property="og:image" content="//images/logo.png">
         <meta property="og:image:type" content="image/png">
         <meta property="og:image:width" content="512">
         <meta property="og:image:height" content="512">
-        
-<meta itemprop="name" content="Tìm hiểu Mask R-CNN và ví dụ phân vùng quả bóng bay sử dụng deep learning">
+        <meta itemprop="name" content="Tìm hiểu Mask R-CNN và ví dụ phân vùng quả bóng bay sử dụng deep learning">
 <meta itemprop="description" content="Ở bài viết này, chúng ta sẽ thực hiện phân đoạn ảnh sử dụng Mask R-CNN với tập dữ liệu là những quả bóng bay bảy màu rất đẹp.">
-
-
 <meta itemprop="datePublished" content="2019-03-25T00:12:00&#43;03:00" />
 <meta itemprop="dateModified" content="2019-03-25T00:12:00&#43;03:00" />
-<meta itemprop="wordCount" content="2885">
+<meta itemprop="wordCount" content="2879">
 
 
 
 <meta itemprop="keywords" content="machine learning,deep learning,Mask R-CNN,balloon,bóng bay," />
-
         
 
         
@@ -142,7 +124,7 @@
 
 
       
-<script>
+<script type="application/javascript">
 var doNotTrack = false;
 if (!doNotTrack) {
 	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
@@ -434,538 +416,478 @@ a ,a:hover{
   
 
   <div id="content" class="col-md-10 mx-auto">
-    
-
-<h2 id="bắt-đầu">Bắt đầu</h2>
-
-<p>Đầu tiên, chúng ta sẽ download tập dataset balloon tại <a href="https://github.com/matterport/Mask_RCNN/releases/download/v2.1/balloon_dataset.zip">https://github.com/matterport/Mask_RCNN/releases/download/v2.1/balloon_dataset.zip</a>, giải nén và bỏ trong thư mục datasets. Tiếp đó, các bạn donwload file balloon.py và visualize.py về. File đầu tiên hỗ trợ chúng ta đọc dữ liệu của dataset balloon và file thứ hai hỗ trợ visualize hình ảnh một cách trực quan. Cả hai file mình đều lấy mã nguồn của Matterport trên <a href="https://github.com/matterport/Mask_RCNN/">https://github.com/matterport/Mask_RCNN/</a> Tiến hành import các thư viện cần thiết về.</p>
-
-<pre><code class="language-python">import os
-import sys
-import itertools
-import math
-import logging
-import json
-import re
-import random
-from collections import OrderedDict
-import numpy as np
-import matplotlib
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
-import matplotlib.lines as lines
-from matplotlib.patches import Polygon
+    <h2 id="bắt-đầu">Bắt đầu</h2>
+<p>Đầu tiên, chúng ta sẽ download tập dataset balloon tại <a href="https://github.com/matterport/Mask_RCNN/releases/download/v2.1/balloon_dataset.zip,">https://github.com/matterport/Mask_RCNN/releases/download/v2.1/balloon_dataset.zip,</a> giải nén và bỏ trong thư mục datasets. Tiếp đó, các bạn donwload file balloon.py và visualize.py về. File đầu tiên hỗ trợ chúng ta đọc dữ liệu của dataset balloon và file thứ hai hỗ trợ visualize hình ảnh một cách trực quan. Cả hai file mình đều lấy mã nguồn của Matterport trên <a href="https://github.com/matterport/Mask_RCNN/">https://github.com/matterport/Mask_RCNN/</a> Tiến hành import các thư viện cần thiết về.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">import</span> os
+<span style="color:#f92672">import</span> sys
+<span style="color:#f92672">import</span> itertools
+<span style="color:#f92672">import</span> math
+<span style="color:#f92672">import</span> logging
+<span style="color:#f92672">import</span> json
+<span style="color:#f92672">import</span> re
+<span style="color:#f92672">import</span> random
+<span style="color:#f92672">from</span> collections <span style="color:#f92672">import</span> OrderedDict
+<span style="color:#f92672">import</span> numpy <span style="color:#f92672">as</span> np
+<span style="color:#f92672">import</span> matplotlib
+<span style="color:#f92672">import</span> matplotlib.pyplot <span style="color:#f92672">as</span> plt
+<span style="color:#f92672">import</span> matplotlib.patches <span style="color:#f92672">as</span> patches
+<span style="color:#f92672">import</span> matplotlib.lines <span style="color:#f92672">as</span> lines
+<span style="color:#f92672">from</span> matplotlib.patches <span style="color:#f92672">import</span> Polygon
 
 
-import balloon
-import utils
-import visualize
+<span style="color:#f92672">import</span> balloon
+<span style="color:#f92672">import</span> utils
+<span style="color:#f92672">import</span> visualize
 
-config = balloon.BalloonConfig()
-BALLOON_DIR = &quot;datasets/balloon&quot;
+config <span style="color:#f92672">=</span> balloon<span style="color:#f92672">.</span>BalloonConfig()
+BALLOON_DIR <span style="color:#f92672">=</span> <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">datasets/balloon</span><span style="color:#e6db74">&#34;</span>
 
-</code></pre>
+</code></pre></div><p>Thông tin của tập train bao gồm</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">dataset <span style="color:#f92672">=</span> balloon<span style="color:#f92672">.</span>BalloonDataset()
+dataset<span style="color:#f92672">.</span>load_balloon(BALLOON_DIR, <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">train</span><span style="color:#e6db74">&#34;</span>)
 
-<p>Thông tin của tập train bao gồm</p>
+<span style="color:#75715e"># Must call before using the dataset</span>
+dataset<span style="color:#f92672">.</span>prepare()
 
-<pre><code class="language-python">dataset = balloon.BalloonDataset()
-dataset.load_balloon(BALLOON_DIR, &quot;train&quot;)
-
-# Must call before using the dataset
-dataset.prepare()
-
-print(&quot;Image Count: {}&quot;.format(len(dataset.image_ids)))
-print(&quot;Class Count: {}&quot;.format(dataset.num_classes))
-for i, info in enumerate(dataset.class_info):
-    print(&quot;{:3}. {:50}&quot;.format(i, info['name']))
-</code></pre>
-
-<pre><code class="language-python">Image Count: 61
-Class Count: 2
-  0. BG
-  1. balloon
-</code></pre>
-
-<p>Vậy là có tổng cộng 61 hình train. Dữ liệu được đánh làm 2 nhãn, một nhãn là background, một nhãn là balloon.</p>
-
+<span style="color:#66d9ef">print</span>(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">Image Count: {}</span><span style="color:#e6db74">&#34;</span><span style="color:#f92672">.</span>format(len(dataset<span style="color:#f92672">.</span>image_ids)))
+<span style="color:#66d9ef">print</span>(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">Class Count: {}</span><span style="color:#e6db74">&#34;</span><span style="color:#f92672">.</span>format(dataset<span style="color:#f92672">.</span>num_classes))
+<span style="color:#66d9ef">for</span> i, info <span style="color:#f92672">in</span> enumerate(dataset<span style="color:#f92672">.</span>class_info):
+    <span style="color:#66d9ef">print</span>(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">{:3}. {:50}</span><span style="color:#e6db74">&#34;</span><span style="color:#f92672">.</span>format(i, info[<span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">name</span><span style="color:#e6db74">&#39;</span>]))
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">Image Count: <span style="color:#ae81ff">61</span>
+Class Count: <span style="color:#ae81ff">2</span>
+  <span style="color:#ae81ff">0.</span> BG
+  <span style="color:#ae81ff">1.</span> balloon
+</code></pre></div><p>Vậy là có tổng cộng 61 hình train. Dữ liệu được đánh làm 2 nhãn, một nhãn là background, một nhãn là balloon.</p>
 <h2 id="visualize-dữ-liệu">Visualize dữ liệu</h2>
-
 <p>Chúng ta sẽ load một vài hình lên xem người ta đã mask dữ liệu như thế nào. Ở đây, với mỗi hình ảnh, mình sẽ load 1 hình gốc và 4 hình của 4 quả bóng tương ứng trong hình, nếu trong hình có nhiều hơn 4 quả bóng thì chỉ vẽ 4 quả bóng đầu tiên</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">
 
-<pre><code class="language-python">
+n_col <span style="color:#f92672">=</span> <span style="color:#ae81ff">5</span>
 
-n_col = 5
+<span style="color:#75715e"># Load and display random samples</span>
+fig, axs <span style="color:#f92672">=</span> plt<span style="color:#f92672">.</span>subplots(nrows<span style="color:#f92672">=</span><span style="color:#ae81ff">4</span>, ncols<span style="color:#f92672">=</span>n_col, figsize<span style="color:#f92672">=</span>(<span style="color:#ae81ff">9.3</span>, <span style="color:#ae81ff">6</span>),subplot_kw<span style="color:#f92672">=</span>{<span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">xticks</span><span style="color:#e6db74">&#39;</span>: [], <span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">yticks</span><span style="color:#e6db74">&#39;</span>: []})
+fig<span style="color:#f92672">.</span>subplots_adjust(left<span style="color:#f92672">=</span><span style="color:#ae81ff">0.03</span>, right<span style="color:#f92672">=</span><span style="color:#ae81ff">0.97</span>, hspace<span style="color:#f92672">=</span><span style="color:#ae81ff">0.3</span>, wspace<span style="color:#f92672">=</span><span style="color:#ae81ff">0.05</span>)
+image_ids <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>random<span style="color:#f92672">.</span>choice(dataset<span style="color:#f92672">.</span>image_ids, <span style="color:#ae81ff">4</span>)
+<span style="color:#75715e"># for image_id in image_ids:</span>
+<span style="color:#75715e"># for ax, image_id in zip(axs.flat, image_ids):</span>
 
-# Load and display random samples
-fig, axs = plt.subplots(nrows=4, ncols=n_col, figsize=(9.3, 6),subplot_kw={'xticks': [], 'yticks': []})
-fig.subplots_adjust(left=0.03, right=0.97, hspace=0.3, wspace=0.05)
-image_ids = np.random.choice(dataset.image_ids, 4)
-# for image_id in image_ids:
-# for ax, image_id in zip(axs.flat, image_ids):
+<span style="color:#66d9ef">for</span> index <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">4</span>):
+    image_id <span style="color:#f92672">=</span> image_ids[index]
 
-for index in range(0,4):
-    image_id = image_ids[index]
+    image <span style="color:#f92672">=</span> dataset<span style="color:#f92672">.</span>load_image(image_id)
+    mask, class_ids <span style="color:#f92672">=</span> dataset<span style="color:#f92672">.</span>load_mask(image_id)
+    <span style="color:#66d9ef">print</span>(mask<span style="color:#f92672">.</span>shape)
+    <span style="color:#66d9ef">print</span>(len(class_ids))
 
-    image = dataset.load_image(image_id)
-    mask, class_ids = dataset.load_mask(image_id)
-    print(mask.shape)
-    print(len(class_ids))
+    axs<span style="color:#f92672">.</span>flat[index<span style="color:#f92672">*</span>n_col]<span style="color:#f92672">.</span>imshow(image)
+    axs<span style="color:#f92672">.</span>flat[index<span style="color:#f92672">*</span>n_col]<span style="color:#f92672">.</span>set_title(<span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">img</span><span style="color:#e6db74">&#39;</span>)
 
-    axs.flat[index*n_col].imshow(image)
-    axs.flat[index*n_col].set_title('img')
-
-    for sub_index in range(0,len(class_ids)):
-        if sub_index &gt;= n_col:
-            break
-        axs.flat[index*n_col +1 + sub_index].imshow(mask[:,:,sub_index])
-        axs.flat[index*n_col + 1+sub_index].set_title(str(dataset.class_names[class_ids[sub_index]]))
-
-
-plt.tight_layout()
-plt.show()
+    <span style="color:#66d9ef">for</span> sub_index <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">0</span>,len(class_ids)):
+        <span style="color:#66d9ef">if</span> sub_index <span style="color:#f92672">&gt;</span><span style="color:#f92672">=</span> n_col:
+            <span style="color:#66d9ef">break</span>
+        axs<span style="color:#f92672">.</span>flat[index<span style="color:#f92672">*</span>n_col <span style="color:#f92672">+</span><span style="color:#ae81ff">1</span> <span style="color:#f92672">+</span> sub_index]<span style="color:#f92672">.</span>imshow(mask[:,:,sub_index])
+        axs<span style="color:#f92672">.</span>flat[index<span style="color:#f92672">*</span>n_col <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span><span style="color:#f92672">+</span>sub_index]<span style="color:#f92672">.</span>set_title(str(dataset<span style="color:#f92672">.</span>class_names[class_ids[sub_index]]))
 
 
-</code></pre>
+plt<span style="color:#f92672">.</span>tight_layout()
+plt<span style="color:#f92672">.</span>show()
 
-<p><img src="/post_image/mask-rnn-1.png" alt="Hình ảnh" /></p>
 
+</code></pre></div><p><img src="/post_image/mask-rnn-1.png" alt="Hình ảnh"></p>
 <p>Các bạn có thể sử dụng hàm display_top_masks của tác giả Mask R-CNN để xem thử, hàm của họ hơi khác của mình một chút.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">
+image_ids <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>random<span style="color:#f92672">.</span>choice(dataset<span style="color:#f92672">.</span>image_ids, <span style="color:#ae81ff">4</span>)
+<span style="color:#66d9ef">for</span> image_id <span style="color:#f92672">in</span> image_ids:
+    image <span style="color:#f92672">=</span> dataset<span style="color:#f92672">.</span>load_image(image_id)
+    mask, class_ids <span style="color:#f92672">=</span> dataset<span style="color:#f92672">.</span>load_mask(image_id)
+    visualize<span style="color:#f92672">.</span>display_top_masks(image, mask, class_ids, dataset<span style="color:#f92672">.</span>class_names)
 
-<pre><code class="language-python">
-image_ids = np.random.choice(dataset.image_ids, 4)
-for image_id in image_ids:
-    image = dataset.load_image(image_id)
-    mask, class_ids = dataset.load_mask(image_id)
-    visualize.display_top_masks(image, mask, class_ids, dataset.class_names)
-
-</code></pre>
-
-<p><img src="/post_image/f-rcnn-image2.jpg" alt="Hình ảnh" /></p>
-
+</code></pre></div><p><img src="/post_image/f-rcnn-image2.jpg" alt="Hình ảnh"></p>
 <h2 id="bounding-boxes">Bounding Boxes</h2>
-
 <p>Chúng ta có 2 cách để lấy Bounding Boxes của các hình. Một là lấy trực tiếp từ tập dataset (đối với những dataset có lưu bounding box), hai là rút trích bounding box từ các toạ độ mask. Chúng ta nên thực hiện cách hai, lý do là chúng ta sẽ dùng các kỹ thuật Data Generator để sinh nhiều ảnh hơn cung cấp cho thuật toán train. Lúc này, việc tính lại bounding box sẽ dễ dàng hơn.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">
+<span style="color:#75715e"># Load random image and mask.</span>
+image_id <span style="color:#f92672">=</span> random<span style="color:#f92672">.</span>choice(dataset<span style="color:#f92672">.</span>image_ids)
+image <span style="color:#f92672">=</span> dataset<span style="color:#f92672">.</span>load_image(image_id)
+mask, class_ids <span style="color:#f92672">=</span> dataset<span style="color:#f92672">.</span>load_mask(image_id)
 
-<pre><code class="language-python">
-# Load random image and mask.
-image_id = random.choice(dataset.image_ids)
-image = dataset.load_image(image_id)
-mask, class_ids = dataset.load_mask(image_id)
+<span style="color:#75715e"># Compute Bounding box</span>
+bbox <span style="color:#f92672">=</span> utils<span style="color:#f92672">.</span>extract_bboxes(mask)
 
-# Compute Bounding box
-bbox = utils.extract_bboxes(mask)
+<span style="color:#75715e"># Display image and additional stats</span>
+<span style="color:#66d9ef">print</span>(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">image_id </span><span style="color:#e6db74">&#34;</span>, image_id, dataset<span style="color:#f92672">.</span>image_reference(image_id))
 
-# Display image and additional stats
-print(&quot;image_id &quot;, image_id, dataset.image_reference(image_id))
+<span style="color:#75715e"># Display image and instances</span>
+visualize<span style="color:#f92672">.</span>display_instances(image, bbox, mask, class_ids, dataset<span style="color:#f92672">.</span>class_names)
 
-# Display image and instances
-visualize.display_instances(image, bbox, mask, class_ids, dataset.class_names)
-
-</code></pre>
-
-<p><img src="/post_image/mask-rcnn-3.jpg" alt="Hình ảnh" /></p>
-
+</code></pre></div><p><img src="/post_image/mask-rcnn-3.jpg" alt="Hình ảnh"></p>
 <h2 id="resize-images">Resize Images</h2>
-
 <p>Các ảnh trong tập train có các kích thước khác nhau. Các bạn có thể xem các hình ở trên, có ảnh có kích thước này, có ảnh có kích thước kia. Chúng ta sẽ resize chúng về cùng một kích thước (ví dụ 1024x1024) để làm đầu vào cho tập huấn luyện. Và chúng ta sẽ sử dụng zero padding để lấp đầy những khoảng trống của những ảnh không đủ kích thước.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">
 
-<pre><code class="language-python">
 
-
-# Load random image and mask.
-image_id = np.random.choice(dataset.image_ids, 1)[0]
-image = dataset.load_image(image_id)
-mask, class_ids = dataset.load_mask(image_id)
-original_shape = image.shape
-# Resize
-image, window, scale, padding, _ = utils.resize_image(
+<span style="color:#75715e"># Load random image and mask.</span>
+image_id <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>random<span style="color:#f92672">.</span>choice(dataset<span style="color:#f92672">.</span>image_ids, <span style="color:#ae81ff">1</span>)[<span style="color:#ae81ff">0</span>]
+image <span style="color:#f92672">=</span> dataset<span style="color:#f92672">.</span>load_image(image_id)
+mask, class_ids <span style="color:#f92672">=</span> dataset<span style="color:#f92672">.</span>load_mask(image_id)
+original_shape <span style="color:#f92672">=</span> image<span style="color:#f92672">.</span>shape
+<span style="color:#75715e"># Resize</span>
+image, window, scale, padding, _ <span style="color:#f92672">=</span> utils<span style="color:#f92672">.</span>resize_image(
     image, 
-    min_dim=config.IMAGE_MIN_DIM, 
-    max_dim=config.IMAGE_MAX_DIM,
-    mode=config.IMAGE_RESIZE_MODE)
-mask = utils.resize_mask(mask, scale, padding)
-# Compute Bounding box
-bbox = utils.extract_bboxes(mask)
+    min_dim<span style="color:#f92672">=</span>config<span style="color:#f92672">.</span>IMAGE_MIN_DIM, 
+    max_dim<span style="color:#f92672">=</span>config<span style="color:#f92672">.</span>IMAGE_MAX_DIM,
+    mode<span style="color:#f92672">=</span>config<span style="color:#f92672">.</span>IMAGE_RESIZE_MODE)
+mask <span style="color:#f92672">=</span> utils<span style="color:#f92672">.</span>resize_mask(mask, scale, padding)
+<span style="color:#75715e"># Compute Bounding box</span>
+bbox <span style="color:#f92672">=</span> utils<span style="color:#f92672">.</span>extract_bboxes(mask)
 
-# Display image and additional stats
-print(&quot;image_id: &quot;, image_id, dataset.image_reference(image_id))
-print(&quot;Original shape: &quot;, original_shape)
-print(&quot;Resize shape: &quot;, image.shape)
-# Display image and instances
-visualize.display_instances(image, bbox, mask, class_ids, dataset.class_names)
-</code></pre>
+<span style="color:#75715e"># Display image and additional stats</span>
+<span style="color:#66d9ef">print</span>(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">image_id: </span><span style="color:#e6db74">&#34;</span>, image_id, dataset<span style="color:#f92672">.</span>image_reference(image_id))
+<span style="color:#66d9ef">print</span>(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">Original shape: </span><span style="color:#e6db74">&#34;</span>, original_shape)
+<span style="color:#66d9ef">print</span>(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">Resize shape: </span><span style="color:#e6db74">&#34;</span>, image<span style="color:#f92672">.</span>shape)
+<span style="color:#75715e"># Display image and instances</span>
+visualize<span style="color:#f92672">.</span>display_instances(image, bbox, mask, class_ids, dataset<span style="color:#f92672">.</span>class_names)
+</code></pre></div><p>Kết quả</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">image_id:  <span style="color:#ae81ff">9</span> datasets<span style="color:#f92672">/</span>balloon\train\<span style="color:#ae81ff">15290896925</span>_884ab33fd3_k<span style="color:#f92672">.</span>jpg
+Original shape:  (<span style="color:#ae81ff">1356</span>, <span style="color:#ae81ff">2048</span>, <span style="color:#ae81ff">3</span>)
+Resize shape:  (<span style="color:#ae81ff">1024</span>, <span style="color:#ae81ff">1024</span>, <span style="color:#ae81ff">3</span>)
 
-<p>Kết quả</p>
-
-<pre><code class="language-python">image_id:  9 datasets/balloon\train\15290896925_884ab33fd3_k.jpg
-Original shape:  (1356, 2048, 3)
-Resize shape:  (1024, 1024, 3)
-
-</code></pre>
-
-<p><img src="/post_image/f-rcnn-image4.jpg" alt="Hình ảnh" /></p>
-
+</code></pre></div><p><img src="/post_image/f-rcnn-image4.jpg" alt="Hình ảnh"></p>
 <p>Lưu ý một điều là ở đây, mình sử dụng random image, nên nếu các bạn chạy lại câu lệnh như mình thì kết quả ra phần nhiều sẽ khác mình. Tuy nhiên, Resize shape luôn là (1024, 1024, 3).</p>
-
 <h2 id="mini-masks">Mini Masks</h2>
-
 <p>Một vấn đề khá nghiêm trọng ở đây là chúng ta cần khá nhiều bộ nhớ để lưu các masks. Numpy sử dụng 1 byte để lưu 1 giá trị bit. Do đó, với kích thước ảnh là 1024x1024, chúng ta cần 1MB bộ nhớ ram để lưu trữ. Nếu chúng ta có tập dataset tầm 1000 bức ảnh thì cần đến 1GB bộ nhớ, khá là lớn. Ngoài việc tốn bộ nhớ lữu trữ, chúng còn làm chậm tốc độ huấn luyện mô hình nữa.</p>
-
-<p>Để cải tiến, chúng ta có thể sử dụng một trong hai cách sau:
-- Cách thứ nhất: Thay vì lưu toàn bộ mask của toàn bức ảnh, chúng ta chỉ lưu những pixel của mask trong bounding box. Với việc sử dụng cách này, chúng ta sẽ tiết kiệm kha khá bộ nhớ chính.
-- Cách thứ hai: Chúng ta có thể resize mask về một kích thước chuẩn nào đó, ví dụ 48x48 pixel. Với những mask có kích thước lớn hơn 48x48, chúng sẽ bị mất thông tin.</p>
-
+<p>Để cải tiến, chúng ta có thể sử dụng một trong hai cách sau:</p>
+<ul>
+<li>Cách thứ nhất: Thay vì lưu toàn bộ mask của toàn bức ảnh, chúng ta chỉ lưu những pixel của mask trong bounding box. Với việc sử dụng cách này, chúng ta sẽ tiết kiệm kha khá bộ nhớ chính.</li>
+<li>Cách thứ hai: Chúng ta có thể resize mask về một kích thước chuẩn nào đó, ví dụ 48x48 pixel. Với những mask có kích thước lớn hơn 48x48, chúng sẽ bị mất thông tin.</li>
+</ul>
 <p>Mình không thích cách thứ hai cho lắm. Tuy nhiên, theo lý giải của nhóm tác giả Mask R-CNN, thì hầu hết việc gán các đường biên (object annotations) thường không chính xác cho lắm (thừa hoặc thiếu một vài chỗ), cho nên, việc mất mát thông tin với lượng nhỏ này hầu như là không đáng kể.</p>
-
 <p>Để đánh giá hiệu quả của hàm mask resizing, chúng ta sẽ chạy đoạn code bên dưới và xem ảnh kết quả. Đoạn code trên mình sử dụng 2 hàm compose_image_meta và load_image_gt của tác giả ở đường dẫn <a href="https://github.com/matterport/Mask_RCNN/blob/master/mrcnn/model.py">https://github.com/matterport/Mask_RCNN/blob/master/mrcnn/model.py</a>. Mình có modify lại hàm load_image_gt một chút để hợp với ý mình hơn.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#75715e">############################################################</span>
+<span style="color:#75715e">#  Data Formatting</span>
+<span style="color:#75715e">############################################################</span>
 
-<pre><code class="language-python">############################################################
-#  Data Formatting
-############################################################
-
-def compose_image_meta(image_id, original_image_shape, image_shape,
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">compose_image_meta</span>(image_id, original_image_shape, image_shape,
                        window, scale, active_class_ids):
-    &quot;&quot;&quot;Takes attributes of an image and puts them in one 1D array.
-    image_id: An int ID of the image. Useful for debugging.
-    original_image_shape: [H, W, C] before resizing or padding.
-    image_shape: [H, W, C] after resizing and padding
-    window: (y1, x1, y2, x2) in pixels. The area of the image where the real
-            image is (excluding the padding)
-    scale: The scaling factor applied to the original image (float32)
-    active_class_ids: List of class_ids available in the dataset from which
-        the image came. Useful if training on images from multiple datasets
-        where not all classes are present in all datasets.
-    &quot;&quot;&quot;
-    meta = np.array(
-        [image_id] +                  # size=1
-        list(original_image_shape) +  # size=3
-        list(image_shape) +           # size=3
-        list(window) +                # size=4 (y1, x1, y2, x2) in image cooredinates
-        [scale] +                     # size=1
-        list(active_class_ids)        # size=num_classes
+    <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;&#34;&#34;</span><span style="color:#e6db74">Takes attributes of an image and puts them in one 1D array.</span><span style="color:#e6db74">
+</span><span style="color:#e6db74"></span><span style="color:#e6db74">    image_id: An int ID of the image. Useful for debugging.</span><span style="color:#e6db74">
+</span><span style="color:#e6db74"></span><span style="color:#e6db74">    original_image_shape: [H, W, C] before resizing or padding.</span><span style="color:#e6db74">
+</span><span style="color:#e6db74"></span><span style="color:#e6db74">    image_shape: [H, W, C] after resizing and padding</span><span style="color:#e6db74">
+</span><span style="color:#e6db74"></span><span style="color:#e6db74">    window: (y1, x1, y2, x2) in pixels. The area of the image where the real</span><span style="color:#e6db74">
+</span><span style="color:#e6db74"></span><span style="color:#e6db74">            image is (excluding the padding)</span><span style="color:#e6db74">
+</span><span style="color:#e6db74"></span><span style="color:#e6db74">    scale: The scaling factor applied to the original image (float32)</span><span style="color:#e6db74">
+</span><span style="color:#e6db74"></span><span style="color:#e6db74">    active_class_ids: List of class_ids available in the dataset from which</span><span style="color:#e6db74">
+</span><span style="color:#e6db74"></span><span style="color:#e6db74">        the image came. Useful if training on images from multiple datasets</span><span style="color:#e6db74">
+</span><span style="color:#e6db74"></span><span style="color:#e6db74">        where not all classes are present in all datasets.</span><span style="color:#e6db74">
+</span><span style="color:#e6db74"></span><span style="color:#e6db74">    </span><span style="color:#e6db74">&#34;&#34;&#34;</span>
+    meta <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>array(
+        [image_id] <span style="color:#f92672">+</span>                  <span style="color:#75715e"># size=1</span>
+        list(original_image_shape) <span style="color:#f92672">+</span>  <span style="color:#75715e"># size=3</span>
+        list(image_shape) <span style="color:#f92672">+</span>           <span style="color:#75715e"># size=3</span>
+        list(window) <span style="color:#f92672">+</span>                <span style="color:#75715e"># size=4 (y1, x1, y2, x2) in image cooredinates</span>
+        [scale] <span style="color:#f92672">+</span>                     <span style="color:#75715e"># size=1</span>
+        list(active_class_ids)        <span style="color:#75715e"># size=num_classes</span>
     )
-    return meta
+    <span style="color:#66d9ef">return</span> meta
 
 
-def load_image_gt(dataset, config, image_id, augment=False, augmentation=None,
-                  use_mini_mask=False):
-    &quot;&quot;&quot;Load and return ground truth data for an image (image, mask, bounding boxes).
-    augment: (deprecated. Use augmentation instead). If true, apply random
-        image augmentation. Currently, only horizontal flipping is offered.
-    augmentation: Optional. An imgaug (https://github.com/aleju/imgaug) augmentation.
-        For example, passing imgaug.augmenters.Fliplr(0.5) flips images
-        right/left 50% of the time.
-    use_mini_mask: If False, returns full-size masks that are the same height
-        and width as the original image. These can be big, for example
-        1024x1024x100 (for 100 instances). Mini masks are smaller, typically,
-        224x224 and are generated by extracting the bounding box of the
-        object and resizing it to MINI_MASK_SHAPE.
-    Returns:
-    image: [height, width, 3]
-    shape: the original shape of the image before resizing and cropping.
-    class_ids: [instance_count] Integer class IDs
-    bbox: [instance_count, (y1, x1, y2, x2)]
-    mask: [height, width, instance_count]. The height and width are those
-        of the image unless use_mini_mask is True, in which case they are
-        defined in MINI_MASK_SHAPE.
-    &quot;&quot;&quot;
-    # Load image and mask
-    image = dataset.load_image(image_id)
-    mask, class_ids = dataset.load_mask(image_id)
-    original_shape = image.shape
-    image, window, scale, padding, crop = utils.resize_image(
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">load_image_gt</span>(dataset, config, image_id, augment<span style="color:#f92672">=</span>False, augmentation<span style="color:#f92672">=</span>None,
+                  use_mini_mask<span style="color:#f92672">=</span>False):
+    <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;&#34;&#34;</span><span style="color:#e6db74">Load and return ground truth data for an image (image, mask, bounding boxes).</span><span style="color:#e6db74">
+</span><span style="color:#e6db74"></span><span style="color:#e6db74">    augment: (deprecated. Use augmentation instead). If true, apply random</span><span style="color:#e6db74">
+</span><span style="color:#e6db74"></span><span style="color:#e6db74">        image augmentation. Currently, only horizontal flipping is offered.</span><span style="color:#e6db74">
+</span><span style="color:#e6db74"></span><span style="color:#e6db74">    augmentation: Optional. An imgaug (https://github.com/aleju/imgaug) augmentation.</span><span style="color:#e6db74">
+</span><span style="color:#e6db74"></span><span style="color:#e6db74">        For example, passing imgaug.augmenters.Fliplr(0.5) flips images</span><span style="color:#e6db74">
+</span><span style="color:#e6db74"></span><span style="color:#e6db74">        right/left 50</span><span style="color:#e6db74">% o</span><span style="color:#e6db74">f the time.</span><span style="color:#e6db74">
+</span><span style="color:#e6db74"></span><span style="color:#e6db74">    use_mini_mask: If False, returns full-size masks that are the same height</span><span style="color:#e6db74">
+</span><span style="color:#e6db74"></span><span style="color:#e6db74">        and width as the original image. These can be big, for example</span><span style="color:#e6db74">
+</span><span style="color:#e6db74"></span><span style="color:#e6db74">        1024x1024x100 (for 100 instances). Mini masks are smaller, typically,</span><span style="color:#e6db74">
+</span><span style="color:#e6db74"></span><span style="color:#e6db74">        224x224 and are generated by extracting the bounding box of the</span><span style="color:#e6db74">
+</span><span style="color:#e6db74"></span><span style="color:#e6db74">        object and resizing it to MINI_MASK_SHAPE.</span><span style="color:#e6db74">
+</span><span style="color:#e6db74"></span><span style="color:#e6db74">    Returns:</span><span style="color:#e6db74">
+</span><span style="color:#e6db74"></span><span style="color:#e6db74">    image: [height, width, 3]</span><span style="color:#e6db74">
+</span><span style="color:#e6db74"></span><span style="color:#e6db74">    shape: the original shape of the image before resizing and cropping.</span><span style="color:#e6db74">
+</span><span style="color:#e6db74"></span><span style="color:#e6db74">    class_ids: [instance_count] Integer class IDs</span><span style="color:#e6db74">
+</span><span style="color:#e6db74"></span><span style="color:#e6db74">    bbox: [instance_count, (y1, x1, y2, x2)]</span><span style="color:#e6db74">
+</span><span style="color:#e6db74"></span><span style="color:#e6db74">    mask: [height, width, instance_count]. The height and width are those</span><span style="color:#e6db74">
+</span><span style="color:#e6db74"></span><span style="color:#e6db74">        of the image unless use_mini_mask is True, in which case they are</span><span style="color:#e6db74">
+</span><span style="color:#e6db74"></span><span style="color:#e6db74">        defined in MINI_MASK_SHAPE.</span><span style="color:#e6db74">
+</span><span style="color:#e6db74"></span><span style="color:#e6db74">    </span><span style="color:#e6db74">&#34;&#34;&#34;</span>
+    <span style="color:#75715e"># Load image and mask</span>
+    image <span style="color:#f92672">=</span> dataset<span style="color:#f92672">.</span>load_image(image_id)
+    mask, class_ids <span style="color:#f92672">=</span> dataset<span style="color:#f92672">.</span>load_mask(image_id)
+    original_shape <span style="color:#f92672">=</span> image<span style="color:#f92672">.</span>shape
+    image, window, scale, padding, crop <span style="color:#f92672">=</span> utils<span style="color:#f92672">.</span>resize_image(
         image,
-        min_dim=config.IMAGE_MIN_DIM,
-        min_scale=config.IMAGE_MIN_SCALE,
-        max_dim=config.IMAGE_MAX_DIM,
-        mode=config.IMAGE_RESIZE_MODE)
-    mask = utils.resize_mask(mask, scale, padding, crop)
+        min_dim<span style="color:#f92672">=</span>config<span style="color:#f92672">.</span>IMAGE_MIN_DIM,
+        min_scale<span style="color:#f92672">=</span>config<span style="color:#f92672">.</span>IMAGE_MIN_SCALE,
+        max_dim<span style="color:#f92672">=</span>config<span style="color:#f92672">.</span>IMAGE_MAX_DIM,
+        mode<span style="color:#f92672">=</span>config<span style="color:#f92672">.</span>IMAGE_RESIZE_MODE)
+    mask <span style="color:#f92672">=</span> utils<span style="color:#f92672">.</span>resize_mask(mask, scale, padding, crop)
 
-    # Random horizontal flips.
-    # TODO: will be removed in a future update in favor of augmentation
-    if augment:
-        logging.warning(&quot;'augment' is deprecated. Use 'augmentation' instead.&quot;)
-        if random.randint(0, 1):
-            image = np.fliplr(image)
-            mask = np.fliplr(mask)
+    <span style="color:#75715e"># Random horizontal flips.</span>
+    <span style="color:#75715e"># TODO: will be removed in a future update in favor of augmentation</span>
+    <span style="color:#66d9ef">if</span> augment:
+        logging<span style="color:#f92672">.</span>warning(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">augment</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74"> is deprecated. Use </span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">augmentation</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74"> instead.</span><span style="color:#e6db74">&#34;</span>)
+        <span style="color:#66d9ef">if</span> random<span style="color:#f92672">.</span>randint(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">1</span>):
+            image <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>fliplr(image)
+            mask <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>fliplr(mask)
 
-    # Augmentation
-    # This requires the imgaug lib (https://github.com/aleju/imgaug)
-    if augmentation:
-        import imgaug
+    <span style="color:#75715e"># Augmentation</span>
+    <span style="color:#75715e"># This requires the imgaug lib (https://github.com/aleju/imgaug)</span>
+    <span style="color:#66d9ef">if</span> augmentation:
+        <span style="color:#f92672">import</span> imgaug
 
-        # Augmenters that are safe to apply to masks
-        # Some, such as Affine, have settings that make them unsafe, so always
-        # test your augmentation on masks
-        MASK_AUGMENTERS = [&quot;Sequential&quot;, &quot;SomeOf&quot;, &quot;OneOf&quot;, &quot;Sometimes&quot;,
-                           &quot;Fliplr&quot;, &quot;Flipud&quot;, &quot;CropAndPad&quot;,
-                           &quot;Affine&quot;, &quot;PiecewiseAffine&quot;]
+        <span style="color:#75715e"># Augmenters that are safe to apply to masks</span>
+        <span style="color:#75715e"># Some, such as Affine, have settings that make them unsafe, so always</span>
+        <span style="color:#75715e"># test your augmentation on masks</span>
+        MASK_AUGMENTERS <span style="color:#f92672">=</span> [<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">Sequential</span><span style="color:#e6db74">&#34;</span>, <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">SomeOf</span><span style="color:#e6db74">&#34;</span>, <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">OneOf</span><span style="color:#e6db74">&#34;</span>, <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">Sometimes</span><span style="color:#e6db74">&#34;</span>,
+                           <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">Fliplr</span><span style="color:#e6db74">&#34;</span>, <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">Flipud</span><span style="color:#e6db74">&#34;</span>, <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">CropAndPad</span><span style="color:#e6db74">&#34;</span>,
+                           <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">Affine</span><span style="color:#e6db74">&#34;</span>, <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">PiecewiseAffine</span><span style="color:#e6db74">&#34;</span>]
 
-        def hook(images, augmenter, parents, default):
-            &quot;&quot;&quot;Determines which augmenters to apply to masks.&quot;&quot;&quot;
-            return augmenter.__class__.__name__ in MASK_AUGMENTERS
+        <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">hook</span>(images, augmenter, parents, default):
+            <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;&#34;&#34;</span><span style="color:#e6db74">Determines which augmenters to apply to masks.</span><span style="color:#e6db74">&#34;&#34;&#34;</span>
+            <span style="color:#66d9ef">return</span> augmenter<span style="color:#f92672">.</span>__class__<span style="color:#f92672">.</span>__name__ <span style="color:#f92672">in</span> MASK_AUGMENTERS
 
-        # Store shapes before augmentation to compare
-        image_shape = image.shape
-        mask_shape = mask.shape
-        # Make augmenters deterministic to apply similarly to images and masks
-        det = augmentation.to_deterministic()
-        image = det.augment_image(image)
-        # Change mask to np.uint8 because imgaug doesn't support np.bool
-        mask = det.augment_image(mask.astype(np.uint8),
-                                 hooks=imgaug.HooksImages(activator=hook))
-        # Verify that shapes didn't change
-        assert image.shape == image_shape, &quot;Augmentation shouldn't change image size&quot;
-        assert mask.shape == mask_shape, &quot;Augmentation shouldn't change mask size&quot;
-        # Change mask back to bool
-        mask = mask.astype(np.bool)
+        <span style="color:#75715e"># Store shapes before augmentation to compare</span>
+        image_shape <span style="color:#f92672">=</span> image<span style="color:#f92672">.</span>shape
+        mask_shape <span style="color:#f92672">=</span> mask<span style="color:#f92672">.</span>shape
+        <span style="color:#75715e"># Make augmenters deterministic to apply similarly to images and masks</span>
+        det <span style="color:#f92672">=</span> augmentation<span style="color:#f92672">.</span>to_deterministic()
+        image <span style="color:#f92672">=</span> det<span style="color:#f92672">.</span>augment_image(image)
+        <span style="color:#75715e"># Change mask to np.uint8 because imgaug doesn&#39;t support np.bool</span>
+        mask <span style="color:#f92672">=</span> det<span style="color:#f92672">.</span>augment_image(mask<span style="color:#f92672">.</span>astype(np<span style="color:#f92672">.</span>uint8),
+                                 hooks<span style="color:#f92672">=</span>imgaug<span style="color:#f92672">.</span>HooksImages(activator<span style="color:#f92672">=</span>hook))
+        <span style="color:#75715e"># Verify that shapes didn&#39;t change</span>
+        <span style="color:#66d9ef">assert</span> image<span style="color:#f92672">.</span>shape <span style="color:#f92672">==</span> image_shape, <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">Augmentation shouldn</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">t change image size</span><span style="color:#e6db74">&#34;</span>
+        <span style="color:#66d9ef">assert</span> mask<span style="color:#f92672">.</span>shape <span style="color:#f92672">==</span> mask_shape, <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">Augmentation shouldn</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">t change mask size</span><span style="color:#e6db74">&#34;</span>
+        <span style="color:#75715e"># Change mask back to bool</span>
+        mask <span style="color:#f92672">=</span> mask<span style="color:#f92672">.</span>astype(np<span style="color:#f92672">.</span>bool)
 
-    # Note that some boxes might be all zeros if the corresponding mask got cropped out.
-    # and here is to filter them out
-    _idx = np.sum(mask, axis=(0, 1)) &gt; 0
-    mask = mask[:, :, _idx]
-    class_ids = class_ids[_idx]
-    # Bounding boxes. Note that some boxes might be all zeros
-    # if the corresponding mask got cropped out.
-    # bbox: [num_instances, (y1, x1, y2, x2)]
-    bbox = utils.extract_bboxes(mask)
+    <span style="color:#75715e"># Note that some boxes might be all zeros if the corresponding mask got cropped out.</span>
+    <span style="color:#75715e"># and here is to filter them out</span>
+    _idx <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>sum(mask, axis<span style="color:#f92672">=</span>(<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">1</span>)) <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">0</span>
+    mask <span style="color:#f92672">=</span> mask[:, :, _idx]
+    class_ids <span style="color:#f92672">=</span> class_ids[_idx]
+    <span style="color:#75715e"># Bounding boxes. Note that some boxes might be all zeros</span>
+    <span style="color:#75715e"># if the corresponding mask got cropped out.</span>
+    <span style="color:#75715e"># bbox: [num_instances, (y1, x1, y2, x2)]</span>
+    bbox <span style="color:#f92672">=</span> utils<span style="color:#f92672">.</span>extract_bboxes(mask)
 
-    # Active classes
-    # Different datasets have different classes, so track the
-    # classes supported in the dataset of this image.
-    active_class_ids = np.zeros([dataset.num_classes], dtype=np.int32)
-    source_class_ids = dataset.source_class_ids[dataset.image_info[image_id][&quot;source&quot;]]
-    active_class_ids[source_class_ids] = 1
+    <span style="color:#75715e"># Active classes</span>
+    <span style="color:#75715e"># Different datasets have different classes, so track the</span>
+    <span style="color:#75715e"># classes supported in the dataset of this image.</span>
+    active_class_ids <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>zeros([dataset<span style="color:#f92672">.</span>num_classes], dtype<span style="color:#f92672">=</span>np<span style="color:#f92672">.</span>int32)
+    source_class_ids <span style="color:#f92672">=</span> dataset<span style="color:#f92672">.</span>source_class_ids[dataset<span style="color:#f92672">.</span>image_info[image_id][<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">source</span><span style="color:#e6db74">&#34;</span>]]
+    active_class_ids[source_class_ids] <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>
 
-    # Resize masks to smaller size to reduce memory usage
-    if use_mini_mask:
-        if USE_MINI_MASK_SHAPE:
-            mask = utils.minimize_mask(bbox, mask, MINI_MASK_SHAPE)
-        else:
-            mask = utils.minimize_mask(bbox, mask, mask.shape[:2])
+    <span style="color:#75715e"># Resize masks to smaller size to reduce memory usage</span>
+    <span style="color:#66d9ef">if</span> use_mini_mask:
+        <span style="color:#66d9ef">if</span> USE_MINI_MASK_SHAPE:
+            mask <span style="color:#f92672">=</span> utils<span style="color:#f92672">.</span>minimize_mask(bbox, mask, MINI_MASK_SHAPE)
+        <span style="color:#66d9ef">else</span>:
+            mask <span style="color:#f92672">=</span> utils<span style="color:#f92672">.</span>minimize_mask(bbox, mask, mask<span style="color:#f92672">.</span>shape[:<span style="color:#ae81ff">2</span>])
 
-    # Image meta data
-    image_meta = compose_image_meta(image_id, original_shape, image.shape,
+    <span style="color:#75715e"># Image meta data</span>
+    image_meta <span style="color:#f92672">=</span> compose_image_meta(image_id, original_shape, image<span style="color:#f92672">.</span>shape,
                                     window, scale, active_class_ids)
 
-    return image, image_meta, class_ids, bbox, mask
+    <span style="color:#66d9ef">return</span> image, image_meta, class_ids, bbox, mask
 
 
-image_id = np.random.choice(dataset.image_ids, 1)[0]
-image, image_meta, class_ids, bbox, mask = load_image_gt(
-    dataset, config, image_id, use_mini_mask=False)
+image_id <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>random<span style="color:#f92672">.</span>choice(dataset<span style="color:#f92672">.</span>image_ids, <span style="color:#ae81ff">1</span>)[<span style="color:#ae81ff">0</span>]
+image, image_meta, class_ids, bbox, mask <span style="color:#f92672">=</span> load_image_gt(
+    dataset, config, image_id, use_mini_mask<span style="color:#f92672">=</span>False)
 
 
-visualize.display_images([image]+[mask[:,:,i] for i in range(min(mask.shape[-1], 5))])
+visualize<span style="color:#f92672">.</span>display_images([image]<span style="color:#f92672">+</span>[mask[:,:,i] <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(min(mask<span style="color:#f92672">.</span>shape[<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>], <span style="color:#ae81ff">5</span>))])
 
-image, image_meta, class_ids, bbox, mask = load_image_gt(
-    dataset, config, image_id, use_mini_mask=True)
-
-
-visualize.display_images([image]+[mask[:,:,i] for i in range(min(mask.shape[-1], 5))])
-
-USE_MINI_MASK_SHAPE = True
-
-image, image_meta, class_ids, bbox, mask = load_image_gt(
-    dataset, config, image_id, use_mini_mask=True)
+image, image_meta, class_ids, bbox, mask <span style="color:#f92672">=</span> load_image_gt(
+    dataset, config, image_id, use_mini_mask<span style="color:#f92672">=</span>True)
 
 
-visualize.display_images([image]+[mask[:,:,i] for i in range(min(mask.shape[-1], 5))])
+visualize<span style="color:#f92672">.</span>display_images([image]<span style="color:#f92672">+</span>[mask[:,:,i] <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(min(mask<span style="color:#f92672">.</span>shape[<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>], <span style="color:#ae81ff">5</span>))])
 
-mask = utils.expand_mask(bbox, mask, image.shape)
-visualize.display_instances(image, bbox, mask, class_ids, dataset.class_names)
-</code></pre>
+USE_MINI_MASK_SHAPE <span style="color:#f92672">=</span> True
 
-<p><img src="/post_image/f-rcnn-image6.jpg" alt="Hình ảnh" /></p>
+image, image_meta, class_ids, bbox, mask <span style="color:#f92672">=</span> load_image_gt(
+    dataset, config, image_id, use_mini_mask<span style="color:#f92672">=</span>True)
 
+
+visualize<span style="color:#f92672">.</span>display_images([image]<span style="color:#f92672">+</span>[mask[:,:,i] <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(min(mask<span style="color:#f92672">.</span>shape[<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>], <span style="color:#ae81ff">5</span>))])
+
+mask <span style="color:#f92672">=</span> utils<span style="color:#f92672">.</span>expand_mask(bbox, mask, image<span style="color:#f92672">.</span>shape)
+visualize<span style="color:#f92672">.</span>display_instances(image, bbox, mask, class_ids, dataset<span style="color:#f92672">.</span>class_names)
+</code></pre></div><p><img src="/post_image/f-rcnn-image6.jpg" alt="Hình ảnh"></p>
 <p>Với ảnh ở line 1 là ảnh gốc ban đầu và các full mask của bức ảnh, ảnh ở line 2 là chỉ lấy mask của bounding box, ảnh ở line 3 là lấy mask ở bounding box và scale ảnh (do scale ảnh nên ở line 3 các bạn sẽ thấy mask có hình răng cưa, khác với các mask line 2). Line 4 là ảnh ở line 3 được revert back lại hình gốc ban đầu. Các bạn có để ý thấy rằng nó sẽ bị răng cưa ở biên cạnh chứ không được smooth như ảnh gốc. Nếu chúng ta không làm object annotations kỹ, thì object cũng sẽ bị răng cưa như trên.</p>
-
 <h2 id="anchors">Anchors</h2>
-
 <p>Thứ tự của các anchor thật sự rất quan trọng. Trong quá trình train, thứ tự của các anchor như thế nào thì trong quá trình test, validation, prediction phải dùng y hệt vậy.</p>
-
 <p>Trong mạng FPN, các anchor phải được xắp xếp theo cách mà chúng ta có thể dễ dàng liên kết với giá trị output</p>
-
 <ul>
-<li><p>Xắp xếp các anchor theo thứ tự các lớp của pyramid. Tất cả các anchor của level đầu tiên, tiếp theo là các anchor của các lớp thứ hai, lớp thư ba&hellip; Việc xắp xếp theo cách này sẽ giúp chúng ta dễ dàng phân tách các lớp anchor và dễ hiểu theo lẽ tự nhiên.</p></li>
-
-<li><p>Trong mỗi level, xắp xếp các anchor trong mỗi level bằng thứ tự xử lý của các feature map. Thông thường, một convolution layer sẽ dịch chuyển trên feature map bắt đầu từ vị trí trái - trên (top - left) đi xuống phải dưới (từ trái qua phải, xuống hàng rồi lại từ trái qua phải).</p></li>
-
-<li><p>Trên mỗi cell của feature map, chúng ta sẽ xắp xếp các anchor theo các ratios.</p></li>
+<li>
+<p>Xắp xếp các anchor theo thứ tự các lớp của pyramid. Tất cả các anchor của level đầu tiên, tiếp theo là các anchor của các lớp thứ hai, lớp thư ba&hellip; Việc xắp xếp theo cách này sẽ giúp chúng ta dễ dàng phân tách các lớp anchor và dễ hiểu theo lẽ tự nhiên.</p>
+</li>
+<li>
+<p>Trong mỗi level, xắp xếp các anchor trong mỗi level bằng thứ tự xử lý của các feature map. Thông thường, một convolution layer sẽ dịch chuyển trên feature map bắt đầu từ vị trí trái - trên (top - left) đi xuống phải dưới (từ trái qua phải, xuống hàng rồi lại từ trái qua phải).</p>
+</li>
+<li>
+<p>Trên mỗi cell của feature map, chúng ta sẽ xắp xếp các anchor theo các ratios.</p>
+</li>
 </ul>
-
 <p>Anchor Stride:</p>
-
-<pre><code class="language-python">
-backbone_shapes = modellib.compute_backbone_shapes(config, config.IMAGE_SHAPE)
-anchors = utils.generate_pyramid_anchors(config.RPN_ANCHOR_SCALES, 
-                                          config.RPN_ANCHOR_RATIOS,
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">
+backbone_shapes <span style="color:#f92672">=</span> modellib<span style="color:#f92672">.</span>compute_backbone_shapes(config, config<span style="color:#f92672">.</span>IMAGE_SHAPE)
+anchors <span style="color:#f92672">=</span> utils<span style="color:#f92672">.</span>generate_pyramid_anchors(config<span style="color:#f92672">.</span>RPN_ANCHOR_SCALES, 
+                                          config<span style="color:#f92672">.</span>RPN_ANCHOR_RATIOS,
                                           backbone_shapes,
-                                          config.BACKBONE_STRIDES, 
-                                          config.RPN_ANCHOR_STRIDE)
+                                          config<span style="color:#f92672">.</span>BACKBONE_STRIDES, 
+                                          config<span style="color:#f92672">.</span>RPN_ANCHOR_STRIDE)
 
-# Print summary of anchors
-num_levels = len(backbone_shapes)
-anchors_per_cell = len(config.RPN_ANCHOR_RATIOS)
-print(&quot;Total anchors: &quot;, anchors.shape[0])
-print(&quot;ANCHOR Scales: &quot;, config.RPN_ANCHOR_SCALES)
-print(&quot;BACKBONE STRIDE: &quot;, config.BACKBONE_STRIDES)
-print(&quot;ratios: &quot;, config.RPN_ANCHOR_RATIOS)
-print(&quot;Anchors per Cell: &quot;, anchors_per_cell)
-# print(&quot;Anchors stride: &quot;, config.RPN_ANCHOR_STRIDE)
-print(&quot;Levels: &quot;, num_levels)
-anchors_per_level = []
-for l in range(num_levels):
-    num_cells = backbone_shapes[l][0] * backbone_shapes[l][1]
-    print(&quot;backbone_shapes in level &quot;,l,' ',backbone_shapes[l][0],'x',backbone_shapes[l][1])
-    print(&quot;num_cells in level &quot;,l,' ',num_cells)
-    anchors_per_level.append(anchors_per_cell * num_cells // config.RPN_ANCHOR_STRIDE**2)
-    print(&quot;Anchors in Level {}: {}&quot;.format(l, anchors_per_level[l]))
-</code></pre>
-
-<pre><code class="language-python">Total anchors:  261888
-ANCHOR Scales:  (32, 64, 128, 256, 512)
-BACKBONE STRIDE:  [4, 8, 16, 32, 64]
-ratios:  [0.5, 1, 2]
-Anchors per Cell:  3
-Levels:  5
-backbone_shapes in level  0   256 x 256
-num_cells in level  0   65536
-Anchors in Level 0: 196608
-backbone_shapes in level  1   128 x 128
-num_cells in level  1   16384
-Anchors in Level 1: 49152
-backbone_shapes in level  2   64 x 64
-num_cells in level  2   4096
-Anchors in Level 2: 12288
-backbone_shapes in level  3   32 x 32
-num_cells in level  3   1024
-Anchors in Level 3: 3072
-backbone_shapes in level  4   16 x 16
-num_cells in level  4   256
-Anchors in Level 4: 768
-</code></pre>
-
-<p>Trong kiến trức FPN, feature map tại một số layer đầu tiên là những feature map có độ phân giải lớn. Ví dụ, nếu bức ảnh đầu vào có kích thước là 1024x1024 pixel, và kích thước của mỗi anchor lớp đầu tiên là 32x32 pixel (giá trị đầu tiên của RPN_ANCHOR_SCALES (32, 64, 128, 256, 512)) và bước nhảy (STRIDE) của lớp đầu tiên là 4 (giá trị đầu tiên của BACKBONE_STRIDES ([4, 8, 16, 32, 64])). Từ những dữ kiện này, ta có thể suy ra được là sẽ sinh ra backbone cell có kích thước 256x256 pixel =&gt; 256x256 = 65536 anchor. Với mỗi backbone cell, chúng ta thực hiện phép scale với 3 tỷ lệ khác nhau là [0.5, 1, 2], vậy chúng ta có tổng cộng là 65536x3 = 196608 anchor (xấp xỉ 200k anchor). Để ý một điều là kích thước của một anchor là 32x32 pixel, và bước nhảy là 4, cho nên chúng ta sẽ bị chống lấn (overlap) 28 pixel của anchor 1 và anchor 2 ngay sau nó.</p>
-
+<span style="color:#75715e"># Print summary of anchors</span>
+num_levels <span style="color:#f92672">=</span> len(backbone_shapes)
+anchors_per_cell <span style="color:#f92672">=</span> len(config<span style="color:#f92672">.</span>RPN_ANCHOR_RATIOS)
+<span style="color:#66d9ef">print</span>(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">Total anchors: </span><span style="color:#e6db74">&#34;</span>, anchors<span style="color:#f92672">.</span>shape[<span style="color:#ae81ff">0</span>])
+<span style="color:#66d9ef">print</span>(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">ANCHOR Scales: </span><span style="color:#e6db74">&#34;</span>, config<span style="color:#f92672">.</span>RPN_ANCHOR_SCALES)
+<span style="color:#66d9ef">print</span>(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">BACKBONE STRIDE: </span><span style="color:#e6db74">&#34;</span>, config<span style="color:#f92672">.</span>BACKBONE_STRIDES)
+<span style="color:#66d9ef">print</span>(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">ratios: </span><span style="color:#e6db74">&#34;</span>, config<span style="color:#f92672">.</span>RPN_ANCHOR_RATIOS)
+<span style="color:#66d9ef">print</span>(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">Anchors per Cell: </span><span style="color:#e6db74">&#34;</span>, anchors_per_cell)
+<span style="color:#75715e"># print(&#34;Anchors stride: &#34;, config.RPN_ANCHOR_STRIDE)</span>
+<span style="color:#66d9ef">print</span>(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">Levels: </span><span style="color:#e6db74">&#34;</span>, num_levels)
+anchors_per_level <span style="color:#f92672">=</span> []
+<span style="color:#66d9ef">for</span> l <span style="color:#f92672">in</span> range(num_levels):
+    num_cells <span style="color:#f92672">=</span> backbone_shapes[l][<span style="color:#ae81ff">0</span>] <span style="color:#f92672">*</span> backbone_shapes[l][<span style="color:#ae81ff">1</span>]
+    <span style="color:#66d9ef">print</span>(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">backbone_shapes in level </span><span style="color:#e6db74">&#34;</span>,l,<span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74"> </span><span style="color:#e6db74">&#39;</span>,backbone_shapes[l][<span style="color:#ae81ff">0</span>],<span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">x</span><span style="color:#e6db74">&#39;</span>,backbone_shapes[l][<span style="color:#ae81ff">1</span>])
+    <span style="color:#66d9ef">print</span>(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">num_cells in level </span><span style="color:#e6db74">&#34;</span>,l,<span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74"> </span><span style="color:#e6db74">&#39;</span>,num_cells)
+    anchors_per_level<span style="color:#f92672">.</span>append(anchors_per_cell <span style="color:#f92672">*</span> num_cells <span style="color:#f92672">/</span><span style="color:#f92672">/</span> config<span style="color:#f92672">.</span>RPN_ANCHOR_STRIDE<span style="color:#f92672">*</span><span style="color:#f92672">*</span><span style="color:#ae81ff">2</span>)
+    <span style="color:#66d9ef">print</span>(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">Anchors in Level {}: {}</span><span style="color:#e6db74">&#34;</span><span style="color:#f92672">.</span>format(l, anchors_per_level[l]))
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">Total anchors:  <span style="color:#ae81ff">261888</span>
+ANCHOR Scales:  (<span style="color:#ae81ff">32</span>, <span style="color:#ae81ff">64</span>, <span style="color:#ae81ff">128</span>, <span style="color:#ae81ff">256</span>, <span style="color:#ae81ff">512</span>)
+BACKBONE STRIDE:  [<span style="color:#ae81ff">4</span>, <span style="color:#ae81ff">8</span>, <span style="color:#ae81ff">16</span>, <span style="color:#ae81ff">32</span>, <span style="color:#ae81ff">64</span>]
+ratios:  [<span style="color:#ae81ff">0.5</span>, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">2</span>]
+Anchors per Cell:  <span style="color:#ae81ff">3</span>
+Levels:  <span style="color:#ae81ff">5</span>
+backbone_shapes <span style="color:#f92672">in</span> level  <span style="color:#ae81ff">0</span>   <span style="color:#ae81ff">256</span> x <span style="color:#ae81ff">256</span>
+num_cells <span style="color:#f92672">in</span> level  <span style="color:#ae81ff">0</span>   <span style="color:#ae81ff">65536</span>
+Anchors <span style="color:#f92672">in</span> Level <span style="color:#ae81ff">0</span>: <span style="color:#ae81ff">196608</span>
+backbone_shapes <span style="color:#f92672">in</span> level  <span style="color:#ae81ff">1</span>   <span style="color:#ae81ff">128</span> x <span style="color:#ae81ff">128</span>
+num_cells <span style="color:#f92672">in</span> level  <span style="color:#ae81ff">1</span>   <span style="color:#ae81ff">16384</span>
+Anchors <span style="color:#f92672">in</span> Level <span style="color:#ae81ff">1</span>: <span style="color:#ae81ff">49152</span>
+backbone_shapes <span style="color:#f92672">in</span> level  <span style="color:#ae81ff">2</span>   <span style="color:#ae81ff">64</span> x <span style="color:#ae81ff">64</span>
+num_cells <span style="color:#f92672">in</span> level  <span style="color:#ae81ff">2</span>   <span style="color:#ae81ff">4096</span>
+Anchors <span style="color:#f92672">in</span> Level <span style="color:#ae81ff">2</span>: <span style="color:#ae81ff">12288</span>
+backbone_shapes <span style="color:#f92672">in</span> level  <span style="color:#ae81ff">3</span>   <span style="color:#ae81ff">32</span> x <span style="color:#ae81ff">32</span>
+num_cells <span style="color:#f92672">in</span> level  <span style="color:#ae81ff">3</span>   <span style="color:#ae81ff">1024</span>
+Anchors <span style="color:#f92672">in</span> Level <span style="color:#ae81ff">3</span>: <span style="color:#ae81ff">3072</span>
+backbone_shapes <span style="color:#f92672">in</span> level  <span style="color:#ae81ff">4</span>   <span style="color:#ae81ff">16</span> x <span style="color:#ae81ff">16</span>
+num_cells <span style="color:#f92672">in</span> level  <span style="color:#ae81ff">4</span>   <span style="color:#ae81ff">256</span>
+Anchors <span style="color:#f92672">in</span> Level <span style="color:#ae81ff">4</span>: <span style="color:#ae81ff">768</span>
+</code></pre></div><p>Trong kiến trức FPN, feature map tại một số layer đầu tiên là những feature map có độ phân giải lớn. Ví dụ, nếu bức ảnh đầu vào có kích thước là 1024x1024 pixel, và kích thước của mỗi anchor lớp đầu tiên là 32x32 pixel (giá trị đầu tiên của RPN_ANCHOR_SCALES (32, 64, 128, 256, 512)) và bước nhảy (STRIDE) của lớp đầu tiên là 4 (giá trị đầu tiên của BACKBONE_STRIDES ([4, 8, 16, 32, 64])). Từ những dữ kiện này, ta có thể suy ra được là sẽ sinh ra backbone cell có kích thước 256x256 pixel =&gt; 256x256 = 65536 anchor. Với mỗi backbone cell, chúng ta thực hiện phép scale với 3 tỷ lệ khác nhau là [0.5, 1, 2], vậy chúng ta có tổng cộng là 65536x3 = 196608 anchor (xấp xỉ 200k anchor). Để ý một điều là kích thước của một anchor là 32x32 pixel, và bước nhảy là 4, cho nên chúng ta sẽ bị chống lấn (overlap) 28 pixel của anchor 1 và anchor 2 ngay sau nó.</p>
 <p>Một điều thú vị là, nếu ta tăng bước nhảy lên gấp 2 lần, ví dụ từ 4 pixel lấy một anchor lên 8 pixel lấy một anchor, thì số lượng anchor giảm đi đến 4 lần (196608 anchor ở level 0 so với 49152 anchor ở level 1).</p>
-
 <p>Thử vẽ tất cả các anchor của tất cả các level ở điểm giữa một bức ảnh bức kỳ lên, mỗi một level sẽ dùng một màu khác nhau, chúng ta được một hình như bên dưới.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#75715e">## Visualize anchors of one cell at the center of the feature map of a specific level</span>
 
-<pre><code class="language-python">## Visualize anchors of one cell at the center of the feature map of a specific level
+<span style="color:#75715e"># Load and draw random image</span>
+image_id <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>random<span style="color:#f92672">.</span>choice(dataset<span style="color:#f92672">.</span>image_ids, <span style="color:#ae81ff">1</span>)[<span style="color:#ae81ff">0</span>]
+image, image_meta, _, _, _ <span style="color:#f92672">=</span> modellib<span style="color:#f92672">.</span>load_image_gt(dataset, config, image_id)
+fig, ax <span style="color:#f92672">=</span> plt<span style="color:#f92672">.</span>subplots(<span style="color:#ae81ff">1</span>, figsize<span style="color:#f92672">=</span>(<span style="color:#ae81ff">10</span>, <span style="color:#ae81ff">10</span>))
+ax<span style="color:#f92672">.</span>imshow(image)
+levels <span style="color:#f92672">=</span> len(backbone_shapes)
 
-# Load and draw random image
-image_id = np.random.choice(dataset.image_ids, 1)[0]
-image, image_meta, _, _, _ = modellib.load_image_gt(dataset, config, image_id)
-fig, ax = plt.subplots(1, figsize=(10, 10))
-ax.imshow(image)
-levels = len(backbone_shapes)
+kn_color <span style="color:#f92672">=</span>np<span style="color:#f92672">.</span>array( [(<span style="color:#ae81ff">255</span>,<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">0</span>),(<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">255</span>,<span style="color:#ae81ff">0</span>),(<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">255</span>),(<span style="color:#ae81ff">128</span>,<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">0</span>),(<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">128</span>,<span style="color:#ae81ff">0</span>),(<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">128</span>)])<span style="color:#f92672">/</span><span style="color:#ae81ff">255.</span>
 
-kn_color =np.array( [(255,0,0),(0,255,0),(0,0,255),(128,0,0),(0,128,0),(0,0,128)])/255.
-
-for level in range(levels):
-    # colors = visualize.random_colors(levels)
-    colors = kn_color
-    # Compute the index of the anchors at the center of the image
-    level_start = sum(anchors_per_level[:level]) # sum of anchors of previous levels
-    level_anchors = anchors[level_start:level_start+anchors_per_level[level]]
-    print(&quot;Level {}. Anchors: {:6}  Feature map Shape: {} &quot;.format(level, level_anchors.shape[0], 
+<span style="color:#66d9ef">for</span> level <span style="color:#f92672">in</span> range(levels):
+    <span style="color:#75715e"># colors = visualize.random_colors(levels)</span>
+    colors <span style="color:#f92672">=</span> kn_color
+    <span style="color:#75715e"># Compute the index of the anchors at the center of the image</span>
+    level_start <span style="color:#f92672">=</span> sum(anchors_per_level[:level]) <span style="color:#75715e"># sum of anchors of previous levels</span>
+    level_anchors <span style="color:#f92672">=</span> anchors[level_start:level_start<span style="color:#f92672">+</span>anchors_per_level[level]]
+    <span style="color:#66d9ef">print</span>(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">Level {}. Anchors: {:6}  Feature map Shape: {} </span><span style="color:#e6db74">&#34;</span><span style="color:#f92672">.</span>format(level, level_anchors<span style="color:#f92672">.</span>shape[<span style="color:#ae81ff">0</span>], 
                                                                   backbone_shapes[level]))
-    center_cell = backbone_shapes[level] // 2
-    center_cell_index = (center_cell[0] * backbone_shapes[level][1] + center_cell[1])
-    level_center = center_cell_index * anchors_per_cell 
-    center_anchor = anchors_per_cell * (
-        (center_cell[0] * backbone_shapes[level][1] / config.RPN_ANCHOR_STRIDE**2) \
-        + center_cell[1] / config.RPN_ANCHOR_STRIDE)
-    level_center = int(center_anchor)
+    center_cell <span style="color:#f92672">=</span> backbone_shapes[level] <span style="color:#f92672">/</span><span style="color:#f92672">/</span> <span style="color:#ae81ff">2</span>
+    center_cell_index <span style="color:#f92672">=</span> (center_cell[<span style="color:#ae81ff">0</span>] <span style="color:#f92672">*</span> backbone_shapes[level][<span style="color:#ae81ff">1</span>] <span style="color:#f92672">+</span> center_cell[<span style="color:#ae81ff">1</span>])
+    level_center <span style="color:#f92672">=</span> center_cell_index <span style="color:#f92672">*</span> anchors_per_cell 
+    center_anchor <span style="color:#f92672">=</span> anchors_per_cell <span style="color:#f92672">*</span> (
+        (center_cell[<span style="color:#ae81ff">0</span>] <span style="color:#f92672">*</span> backbone_shapes[level][<span style="color:#ae81ff">1</span>] <span style="color:#f92672">/</span> config<span style="color:#f92672">.</span>RPN_ANCHOR_STRIDE<span style="color:#f92672">*</span><span style="color:#f92672">*</span><span style="color:#ae81ff">2</span>) \
+        <span style="color:#f92672">+</span> center_cell[<span style="color:#ae81ff">1</span>] <span style="color:#f92672">/</span> config<span style="color:#f92672">.</span>RPN_ANCHOR_STRIDE)
+    level_center <span style="color:#f92672">=</span> int(center_anchor)
 
-    # Draw anchors. Brightness show the order in the array, dark to bright.
-    for i, rect in enumerate(level_anchors[level_center:level_center+anchors_per_cell]):
-        y1, x1, y2, x2 = rect
-        p = patches.Rectangle((x1, y1), x2-x1, y2-y1, linewidth=2, facecolor='none',
-                              edgecolor=np.array(colors[level]) / anchors_per_cell)
-        print(i)
-        ax.add_patch(p)
+    <span style="color:#75715e"># Draw anchors. Brightness show the order in the array, dark to bright.</span>
+    <span style="color:#66d9ef">for</span> i, rect <span style="color:#f92672">in</span> enumerate(level_anchors[level_center:level_center<span style="color:#f92672">+</span>anchors_per_cell]):
+        y1, x1, y2, x2 <span style="color:#f92672">=</span> rect
+        p <span style="color:#f92672">=</span> patches<span style="color:#f92672">.</span>Rectangle((x1, y1), x2<span style="color:#f92672">-</span>x1, y2<span style="color:#f92672">-</span>y1, linewidth<span style="color:#f92672">=</span><span style="color:#ae81ff">2</span>, facecolor<span style="color:#f92672">=</span><span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">none</span><span style="color:#e6db74">&#39;</span>,
+                              edgecolor<span style="color:#f92672">=</span>np<span style="color:#f92672">.</span>array(colors[level]) <span style="color:#f92672">/</span> anchors_per_cell)
+        <span style="color:#66d9ef">print</span>(i)
+        ax<span style="color:#f92672">.</span>add_patch(p)
 
 
-plt.show()
-</code></pre>
-
-<p><img src="/post_image/f-rcnn-image7.jpg" alt="Hình ảnh" /></p>
-
+plt<span style="color:#f92672">.</span>show()
+</code></pre></div><p><img src="/post_image/f-rcnn-image7.jpg" alt="Hình ảnh"></p>
 <p>Nhìn ảnh trên,các bạn phần nào đó mường tượng ra các anchor sẽ như thế nào rồi phải không.</p>
-
 <h2 id="prediction">Prediction</h2>
-
 <p>Để tiến hành detect vị trí quả bóng và mask của quả bóng, chúng ta download một ảnh small party nhỏ trên internet về và kiểm chứng.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">
+<span style="color:#f92672">import</span> os
 
-<pre><code class="language-python">
-import os
+<span style="color:#f92672">import</span> tensorflow <span style="color:#f92672">as</span> tf
 
-import tensorflow as tf
+<span style="color:#f92672">import</span> cv2
 
-import cv2
+DEVICE <span style="color:#f92672">=</span> <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">/cpu:0</span><span style="color:#e6db74">&#34;</span> 
+ROOT_DIR <span style="color:#f92672">=</span> os<span style="color:#f92672">.</span>path<span style="color:#f92672">.</span>abspath(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">../../</span><span style="color:#e6db74">&#34;</span>)
+MODEL_DIR <span style="color:#f92672">=</span> os<span style="color:#f92672">.</span>path<span style="color:#f92672">.</span>join(ROOT_DIR, <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">logs</span><span style="color:#e6db74">&#34;</span>)
+<span style="color:#75715e"># Create model in inference mode</span>
 
-DEVICE = &quot;/cpu:0&quot; 
-ROOT_DIR = os.path.abspath(&quot;../../&quot;)
-MODEL_DIR = os.path.join(ROOT_DIR, &quot;logs&quot;)
-# Create model in inference mode
+<span style="color:#66d9ef">class</span> <span style="color:#a6e22e">InferenceConfig</span>(config<span style="color:#f92672">.</span>__class__):
+    <span style="color:#75715e"># Run detection on one image at a time</span>
+    GPU_COUNT <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>
+    IMAGES_PER_GPU <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>
 
-class InferenceConfig(config.__class__):
-    # Run detection on one image at a time
-    GPU_COUNT = 1
-    IMAGES_PER_GPU = 1
+config <span style="color:#f92672">=</span> InferenceConfig()
+config<span style="color:#f92672">.</span>display()
 
-config = InferenceConfig()
-config.display()
-
-with tf.device(DEVICE):
-    model = modellib.MaskRCNN(mode=&quot;inference&quot;, model_dir=MODEL_DIR,
-                              config=config)
-
-
-weights_path = &quot;mask_rcnn_balloon.h5&quot;
-
-# Load weights
-print(&quot;Loading weights &quot;, weights_path)
-# model.load_weights(weights_path, by_name=True)
-
-imgpath = &quot;datasets\\balloon\\test\\t1.png&quot;
-# imgpath = &quot;datasets/balloon/val/14898532020_ba6199dd22_k.jpg&quot;
-
-image = cv2.imread(imgpath)
-
-image = cv2.cvtColor(image,cv2.COLOR_BGR2RGB)
+<span style="color:#66d9ef">with</span> tf<span style="color:#f92672">.</span>device(DEVICE):
+    model <span style="color:#f92672">=</span> modellib<span style="color:#f92672">.</span>MaskRCNN(mode<span style="color:#f92672">=</span><span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">inference</span><span style="color:#e6db74">&#34;</span>, model_dir<span style="color:#f92672">=</span>MODEL_DIR,
+                              config<span style="color:#f92672">=</span>config)
 
 
+weights_path <span style="color:#f92672">=</span> <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">mask_rcnn_balloon.h5</span><span style="color:#e6db74">&#34;</span>
 
-ds_name = ['BG', 'balloon']
+<span style="color:#75715e"># Load weights</span>
+<span style="color:#66d9ef">print</span>(<span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">Loading weights </span><span style="color:#e6db74">&#34;</span>, weights_path)
+<span style="color:#75715e"># model.load_weights(weights_path, by_name=True)</span>
+
+imgpath <span style="color:#f92672">=</span> <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">datasets</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">balloon</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">test</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">t1.png</span><span style="color:#e6db74">&#34;</span>
+<span style="color:#75715e"># imgpath = &#34;datasets/balloon/val/14898532020_ba6199dd22_k.jpg&#34;</span>
+
+image <span style="color:#f92672">=</span> cv2<span style="color:#f92672">.</span>imread(imgpath)
+
+image <span style="color:#f92672">=</span> cv2<span style="color:#f92672">.</span>cvtColor(image,cv2<span style="color:#f92672">.</span>COLOR_BGR2RGB)
 
 
-results = model.detect([image], verbose=1)
 
-def get_ax(rows=1, cols=1, size=16):
-    &quot;&quot;&quot;Return a Matplotlib Axes array to be used in
-    all visualizations in the notebook. Provide a
-    central point to control graph sizes.
-    
-    Adjust the size attribute to control how big to render images
-    &quot;&quot;&quot;
-    _, ax = plt.subplots(rows, cols, figsize=(size*cols, size*rows))
-    return ax
-# Display results
-ax = get_ax(1)
-r = results[0]
-visualize.display_instances(image, r['rois'], r['masks'], r['class_ids'], 
-                            dataset.class_names, r['scores'], ax=ax,
-                            title=&quot;Predictions&quot;)
-plt.show()
-</code></pre>
+ds_name <span style="color:#f92672">=</span> [<span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">BG</span><span style="color:#e6db74">&#39;</span>, <span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">balloon</span><span style="color:#e6db74">&#39;</span>]
 
-<p><img src="/post_image/f-rcnn-image8.jpg" alt="Hình ảnh" /></p>
 
+results <span style="color:#f92672">=</span> model<span style="color:#f92672">.</span>detect([image], verbose<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>)
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">get_ax</span>(rows<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>, cols<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>, size<span style="color:#f92672">=</span><span style="color:#ae81ff">16</span>):
+    <span style="color:#e6db74"></span><span style="color:#e6db74">&#34;&#34;&#34;</span><span style="color:#e6db74">Return a Matplotlib Axes array to be used in</span><span style="color:#e6db74">
+</span><span style="color:#e6db74"></span><span style="color:#e6db74">    all visualizations in the notebook. Provide a</span><span style="color:#e6db74">
+</span><span style="color:#e6db74"></span><span style="color:#e6db74">    central point to control graph sizes.</span><span style="color:#e6db74">
+</span><span style="color:#e6db74"></span><span style="color:#e6db74">    </span><span style="color:#e6db74">
+</span><span style="color:#e6db74"></span><span style="color:#e6db74">    Adjust the size attribute to control how big to render images</span><span style="color:#e6db74">
+</span><span style="color:#e6db74"></span><span style="color:#e6db74">    </span><span style="color:#e6db74">&#34;&#34;&#34;</span>
+    _, ax <span style="color:#f92672">=</span> plt<span style="color:#f92672">.</span>subplots(rows, cols, figsize<span style="color:#f92672">=</span>(size<span style="color:#f92672">*</span>cols, size<span style="color:#f92672">*</span>rows))
+    <span style="color:#66d9ef">return</span> ax
+<span style="color:#75715e"># Display results</span>
+ax <span style="color:#f92672">=</span> get_ax(<span style="color:#ae81ff">1</span>)
+r <span style="color:#f92672">=</span> results[<span style="color:#ae81ff">0</span>]
+visualize<span style="color:#f92672">.</span>display_instances(image, r[<span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">rois</span><span style="color:#e6db74">&#39;</span>], r[<span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">masks</span><span style="color:#e6db74">&#39;</span>], r[<span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">class_ids</span><span style="color:#e6db74">&#39;</span>], 
+                            dataset<span style="color:#f92672">.</span>class_names, r[<span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">scores</span><span style="color:#e6db74">&#39;</span>], ax<span style="color:#f92672">=</span>ax,
+                            title<span style="color:#f92672">=</span><span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">Predictions</span><span style="color:#e6db74">&#34;</span>)
+plt<span style="color:#f92672">.</span>show()
+</code></pre></div><p><img src="/post_image/f-rcnn-image8.jpg" alt="Hình ảnh"></p>
 <p>Kết quả nhận dạng khá chính xác phải không các bạn.</p>
-
 <p>Cảm ơn các bạn đã theo dõi. Hẹn gặp bạn ở các bài viết tiếp theo.</p>
 
   </div>
@@ -1056,7 +978,7 @@ plt.show()
 
     <article class="post">
         <div id="disqus_thread"></div>
-<script>
+<script type="application/javascript">
     var disqus_config = function () {
     
     

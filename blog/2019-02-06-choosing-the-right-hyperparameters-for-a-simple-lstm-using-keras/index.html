@@ -8,7 +8,7 @@
         "@type" : "BlogPosting",
         "mainEntityOfPage": {
              "@type": "WebPage",
-             "@id": "/"
+             "@id": "\/"
         },
         "articleSection" : "blog",
         "name" : "Lựa chọn siêu tham số cho mô hình LSTM đơn giản sử dụng Keras",
@@ -21,10 +21,10 @@
         "accountablePerson" : "",
         "copyrightHolder" : "",
         "copyrightYear" : "2019",
-        "datePublished": "2019-02-06 00:20:00 &#43;0300 &#43;0300",
-        "dateModified" : "2019-02-06 00:20:00 &#43;0300 &#43;0300",
-        "url" : "/blog/2019-02-06-choosing-the-right-hyperparameters-for-a-simple-lstm-using-keras/",
-        "wordCount" : "2515",
+        "datePublished": "2019-02-06 00:20:00 \x2b0300 \x2b0300",
+        "dateModified" : "2019-02-06 00:20:00 \x2b0300 \x2b0300",
+        "url" : "\/blog\/2019-02-06-choosing-the-right-hyperparameters-for-a-simple-lstm-using-keras\/",
+        "wordCount" : "2514",
         "keywords" : [ "Machine learning","Deeplearning","python","Blog" ]
     }
     </script>
@@ -76,40 +76,22 @@
 <meta property="og:description" content="Khi bạn làm thực tế LSTM, rất khó để xác định số lượng node ẩn, số lớp của mô hình. Trong bài này, mình sẽ trình bày một công thức để giúp các bạn đỡ phải băng khoăn khi lựa chọn tham số." />
 <meta property="og:type" content="article" />
 <meta property="og:url" content="/blog/2019-02-06-choosing-the-right-hyperparameters-for-a-simple-lstm-using-keras/" />
-
-
-
-<meta property="article:published_time" content="2019-02-06T00:20:00&#43;03:00"/>
-
-<meta property="article:modified_time" content="2019-02-06T00:20:00&#43;03:00"/>
-
-
-
-
-
-
-
-
-
-
+<meta property="article:published_time" content="2019-02-06T00:20:00+03:00" />
+<meta property="article:modified_time" content="2019-02-06T00:20:00+03:00" />
 
         <meta property="og:image" content="//images/logo.png">
         <meta property="og:image:type" content="image/png">
         <meta property="og:image:width" content="512">
         <meta property="og:image:height" content="512">
-        
-<meta itemprop="name" content="Lựa chọn siêu tham số cho mô hình LSTM đơn giản sử dụng Keras">
+        <meta itemprop="name" content="Lựa chọn siêu tham số cho mô hình LSTM đơn giản sử dụng Keras">
 <meta itemprop="description" content="Khi bạn làm thực tế LSTM, rất khó để xác định số lượng node ẩn, số lớp của mô hình. Trong bài này, mình sẽ trình bày một công thức để giúp các bạn đỡ phải băng khoăn khi lựa chọn tham số.">
-
-
 <meta itemprop="datePublished" content="2019-02-06T00:20:00&#43;03:00" />
 <meta itemprop="dateModified" content="2019-02-06T00:20:00&#43;03:00" />
-<meta itemprop="wordCount" content="2515">
+<meta itemprop="wordCount" content="2514">
 
 
 
 <meta itemprop="keywords" content="Machine learning,Deeplearning,python," />
-
         
 
         
@@ -142,7 +124,7 @@
 
 
       
-<script>
+<script type="application/javascript">
 var doNotTrack = false;
 if (!doNotTrack) {
 	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
@@ -434,292 +416,241 @@ a ,a:hover{
   
 
   <div id="content" class="col-md-10 mx-auto">
-    
-
-<h2 id="mở-đầu">Mở đầu</h2>
-
+    <h2 id="mở-đầu">Mở đầu</h2>
 <p>Việc xây dựng một mô hình machine learning chưa bao giờ thật sự dễ dàng. Rất nhiều bài báo chỉ &ldquo;show hàng&rdquo; những thứ cao siêu, những thứ chỉ nằm trong sự tưởng tượng của chính các nhà báo. Còn khi đọc các bài báo khoa học về machine learning, tác giả công bố cho chúng ta những mô hình rất tốt, giải quyết một domain nhỏ vấn đề của họ. Tuy nhiên, có một thứ họ không/ chưa công bố. Đó là cách thức họ lựa chọn số lượng note ẩn, số lượng layer trong mô hình neural network. Trong bài viết này, chúng ta sẽ xây dựng mô hình LSTM đơn giản để dự đoán giới tính khi biết tên một người, và thử tìm xem công thức để chọn ra tham số &ldquo;đủ tốt&rdquo; là như thế nào.</p>
-
 <h2 id="chẩn-bị-dữ-liệu">Chẩn bị dữ liệu</h2>
+<p>Tập dữ liệu ở đây có khoảng 500000 tên kèm giới tính. Đầu tiên mình sẽ làm sạch dữ liệu bằng cách chỉ lấy giới tính là &lsquo;m&rsquo; và &lsquo;f&rsquo;, loại bỏ những tên quá ngắn (có ít hơn 3 ký tự)</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">filepath <span style="color:#f92672">=</span> <span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">firstnames.csv</span><span style="color:#e6db74">&#39;</span>
+max_rows <span style="color:#f92672">=</span> <span style="color:#ae81ff">500000</span> <span style="color:#75715e"># Reduction due to memory limitations</span>
 
-<p>Tập dữ liệu ở đây có khoảng 500000 tên kèm giới tính. Đầu tiên mình sẽ làm sạch dữ liệu bằng cách chỉ lấy giới tính là &rsquo;m&rsquo; và &lsquo;f&rsquo;, loại bỏ những tên quá ngắn (có ít hơn 3 ký tự)</p>
+df <span style="color:#f92672">=</span> (pd<span style="color:#f92672">.</span>read_csv(filepath, usecols<span style="color:#f92672">=</span>[<span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">name</span><span style="color:#e6db74">&#39;</span>, <span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">gender</span><span style="color:#e6db74">&#39;</span>],sep<span style="color:#f92672">=</span><span style="color:#e6db74"></span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">;</span><span style="color:#e6db74">&#34;</span>)
+        <span style="color:#f92672">.</span>dropna(subset<span style="color:#f92672">=</span>[<span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">name</span><span style="color:#e6db74">&#39;</span>, <span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">gender</span><span style="color:#e6db74">&#39;</span>])
+        <span style="color:#f92672">.</span>assign(name <span style="color:#f92672">=</span> <span style="color:#66d9ef">lambda</span> x: x<span style="color:#f92672">.</span>name<span style="color:#f92672">.</span>str<span style="color:#f92672">.</span>strip())
+        <span style="color:#f92672">.</span>assign(gender <span style="color:#f92672">=</span> <span style="color:#66d9ef">lambda</span> x: x<span style="color:#f92672">.</span>gender<span style="color:#f92672">.</span>str<span style="color:#f92672">.</span>lower())
+        <span style="color:#f92672">.</span>head(max_rows))
 
-<pre><code class="language-python">filepath = 'firstnames.csv'
-max_rows = 500000 # Reduction due to memory limitations
+df<span style="color:#f92672">=</span> df[df<span style="color:#f92672">.</span>gender<span style="color:#f92672">.</span>isin([<span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">m</span><span style="color:#e6db74">&#39;</span>,<span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">f</span><span style="color:#e6db74">&#39;</span>])]
 
-df = (pd.read_csv(filepath, usecols=['name', 'gender'],sep=&quot;;&quot;)
-        .dropna(subset=['name', 'gender'])
-        .assign(name = lambda x: x.name.str.strip())
-        .assign(gender = lambda x: x.gender.str.lower())
-        .head(max_rows))
+<span style="color:#75715e"># In the case of a middle name, we will simply use the first name only</span>
+df[<span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">name</span><span style="color:#e6db74">&#39;</span>] <span style="color:#f92672">=</span> df[<span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">name</span><span style="color:#e6db74">&#39;</span>]<span style="color:#f92672">.</span>apply(<span style="color:#66d9ef">lambda</span> x: str(x)<span style="color:#f92672">.</span>split(<span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74"> </span><span style="color:#e6db74">&#39;</span>, <span style="color:#ae81ff">1</span>)[<span style="color:#ae81ff">0</span>])
 
-df= df[df.gender.isin(['m','f'])]
+<span style="color:#75715e"># Sometimes people only but the first letter of their name into the field, so we drop all name where len &lt;3</span>
+df<span style="color:#f92672">.</span>drop(df[df[<span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">name</span><span style="color:#e6db74">&#39;</span>]<span style="color:#f92672">.</span>str<span style="color:#f92672">.</span>len() <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">3</span>]<span style="color:#f92672">.</span>index, inplace<span style="color:#f92672">=</span>True)
 
-# In the case of a middle name, we will simply use the first name only
-df['name'] = df['name'].apply(lambda x: str(x).split(' ', 1)[0])
-
-# Sometimes people only but the first letter of their name into the field, so we drop all name where len &lt;3
-df.drop(df[df['name'].str.len() &lt; 3].index, inplace=True)
-
-</code></pre>
-
-<p>Tiếp theo, chúng ta sử dụng một kỹ thuật khá cũ trong NLP là one-hot encoding. Mỗi ký tự được biểu diễn bởi một vector nhị phân. Ví dụ có 26 ký tự trong bảng chữ cái tiếng anh, vector đại diện cho chữ a là [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], ký tự b được biểu diễn là [0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], &hellip; tương tự cho đến z.</p>
-
+</code></pre></div><p>Tiếp theo, chúng ta sử dụng một kỹ thuật khá cũ trong NLP là one-hot encoding. Mỗi ký tự được biểu diễn bởi một vector nhị phân. Ví dụ có 26 ký tự trong bảng chữ cái tiếng anh, vector đại diện cho chữ a là [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], ký tự b được biểu diễn là [0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], &hellip; tương tự cho đến z.</p>
 <p>Một từ được encode là một tập các vector. Ví dụ chữ hello được biểu diễn là</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">[[<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>] <span style="color:#75715e">#h,</span>
+ [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>] <span style="color:#75715e">#e,</span>
+ [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>] <span style="color:#75715e">#l,</span>
+ [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>] <span style="color:#75715e">#l,</span>
+ [<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">0</span>] <span style="color:#75715e">#o]</span>
 
-<pre><code class="language-python">[[0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] #h,
- [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] #e,
- [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] #l,
- [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] #l,
- [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] #o]
+</code></pre></div><p>Đọc đến đây, chắc các bạn đã mườn tượng ra rằng một từ sẽ được encode như thế nào rồi phải không. Tiếp theo, chúng ta sẽ xây dựng hàm encode cho tập dữ liệu</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#75715e"># Define a mapping of chars to integers</span>
+char_to_int <span style="color:#f92672">=</span> dict((c, i) <span style="color:#66d9ef">for</span> i, c <span style="color:#f92672">in</span> enumerate(accepted_chars))
+int_to_char <span style="color:#f92672">=</span> dict((i, c) <span style="color:#66d9ef">for</span> i, c <span style="color:#f92672">in</span> enumerate(accepted_chars))
 
-</code></pre>
+<span style="color:#75715e"># Removes all non accepted characters</span>
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">normalize</span>(line):
+   <span style="color:#66d9ef">return</span> [c<span style="color:#f92672">.</span>lower() <span style="color:#66d9ef">for</span> c <span style="color:#f92672">in</span> line <span style="color:#66d9ef">if</span> c<span style="color:#f92672">.</span>lower() <span style="color:#f92672">in</span> accepted_chars]
 
-<p>Đọc đến đây, chắc các bạn đã mườn tượng ra rằng một từ sẽ được encode như thế nào rồi phải không. Tiếp theo, chúng ta sẽ xây dựng hàm encode cho tập dữ liệu</p>
+<span style="color:#75715e"># Returns a list of n lists with n = word_vec_length</span>
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">name_encoding</span>(name):
 
-<pre><code class="language-python"> # Define a mapping of chars to integers
-char_to_int = dict((c, i) for i, c in enumerate(accepted_chars))
-int_to_char = dict((i, c) for i, c in enumerate(accepted_chars))
+   <span style="color:#75715e"># Encode input data to int, e.g. a-&gt;1, z-&gt;26</span>
+   integer_encoded <span style="color:#f92672">=</span> [char_to_int[char] <span style="color:#66d9ef">for</span> i, char <span style="color:#f92672">in</span> enumerate(name) <span style="color:#66d9ef">if</span> i <span style="color:#f92672">&lt;</span> word_vec_length]
+   
+   <span style="color:#75715e"># Start one-hot-encoding</span>
+   onehot_encoded <span style="color:#f92672">=</span> list()
+   
+   <span style="color:#66d9ef">for</span> value <span style="color:#f92672">in</span> integer_encoded:
+       <span style="color:#75715e"># create a list of n zeros, where n is equal to the number of accepted characters</span>
+       letter <span style="color:#f92672">=</span> [<span style="color:#ae81ff">0</span> <span style="color:#66d9ef">for</span> _ <span style="color:#f92672">in</span> range(char_vec_length)]
+       letter[value] <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>
+       onehot_encoded<span style="color:#f92672">.</span>append(letter)
+       
+   <span style="color:#75715e"># Fill up list to the max length. Lists need do have equal length to be able to convert it into an array</span>
+   <span style="color:#66d9ef">for</span> _ <span style="color:#f92672">in</span> range(word_vec_length <span style="color:#f92672">-</span> len(name)):
+       onehot_encoded<span style="color:#f92672">.</span>append([<span style="color:#ae81ff">0</span> <span style="color:#66d9ef">for</span> _ <span style="color:#f92672">in</span> range(char_vec_length)])
+       
+   <span style="color:#66d9ef">return</span> onehot_encoded
 
-# Removes all non accepted characters
-def normalize(line):
-    return [c.lower() for c in line if c.lower() in accepted_chars]
+<span style="color:#75715e"># Encode the output labels</span>
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">lable_encoding</span>(gender_series):
+   labels <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>empty((<span style="color:#ae81ff">0</span>, <span style="color:#ae81ff">2</span>))
+   <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> gender_series:
+       <span style="color:#66d9ef">if</span> i <span style="color:#f92672">==</span> <span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">m</span><span style="color:#e6db74">&#39;</span>:
+           labels <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>append(labels, [[<span style="color:#ae81ff">1</span>,<span style="color:#ae81ff">0</span>]], axis<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>)
+       <span style="color:#66d9ef">else</span>:
+           labels <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>append(labels, [[<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">1</span>]], axis<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>)
+   <span style="color:#66d9ef">return</span> labels
+</code></pre></div><p>Và tiến hành chia tập dữ liệu thành train, val, và test set</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">
+<span style="color:#75715e"># Split dataset in 60% train, 20% test and 20% validation</span>
+train, validate, test <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>split(df<span style="color:#f92672">.</span>sample(frac<span style="color:#f92672">=</span><span style="color:#ae81ff">1</span>), [int(<span style="color:#f92672">.</span><span style="color:#ae81ff">6</span><span style="color:#f92672">*</span>len(df)), int(<span style="color:#f92672">.</span><span style="color:#ae81ff">8</span><span style="color:#f92672">*</span>len(df))])
 
-# Returns a list of n lists with n = word_vec_length
-def name_encoding(name):
+<span style="color:#75715e"># Convert both the input names as well as the output lables into the discussed machine readable vector format</span>
+train_x <span style="color:#f92672">=</span>  np<span style="color:#f92672">.</span>asarray([np<span style="color:#f92672">.</span>asarray(name_encoding(normalize(name))) <span style="color:#66d9ef">for</span> name <span style="color:#f92672">in</span> train[predictor_col]])
+train_y <span style="color:#f92672">=</span> lable_encoding(train<span style="color:#f92672">.</span>gender)
 
-    # Encode input data to int, e.g. a-&gt;1, z-&gt;26
-    integer_encoded = [char_to_int[char] for i, char in enumerate(name) if i &lt; word_vec_length]
-    
-    # Start one-hot-encoding
-    onehot_encoded = list()
-    
-    for value in integer_encoded:
-        # create a list of n zeros, where n is equal to the number of accepted characters
-        letter = [0 for _ in range(char_vec_length)]
-        letter[value] = 1
-        onehot_encoded.append(letter)
-        
-    # Fill up list to the max length. Lists need do have equal length to be able to convert it into an array
-    for _ in range(word_vec_length - len(name)):
-        onehot_encoded.append([0 for _ in range(char_vec_length)])
-        
-    return onehot_encoded
+validate_x <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>asarray([name_encoding(normalize(name)) <span style="color:#66d9ef">for</span> name <span style="color:#f92672">in</span> validate[predictor_col]])
+validate_y <span style="color:#f92672">=</span> lable_encoding(validate<span style="color:#f92672">.</span>gender)
 
-# Encode the output labels
-def lable_encoding(gender_series):
-    labels = np.empty((0, 2))
-    for i in gender_series:
-        if i == 'm':
-            labels = np.append(labels, [[1,0]], axis=0)
-        else:
-            labels = np.append(labels, [[0,1]], axis=0)
-    return labels
-</code></pre>
-
-<p>Và tiến hành chia tập dữ liệu thành train, val, và test set</p>
-
-<pre><code class="language-python"> 
-# Split dataset in 60% train, 20% test and 20% validation
-train, validate, test = np.split(df.sample(frac=1), [int(.6*len(df)), int(.8*len(df))])
-
-# Convert both the input names as well as the output lables into the discussed machine readable vector format
-train_x =  np.asarray([np.asarray(name_encoding(normalize(name))) for name in train[predictor_col]])
-train_y = lable_encoding(train.gender)
-
-validate_x = np.asarray([name_encoding(normalize(name)) for name in validate[predictor_col]])
-validate_y = lable_encoding(validate.gender)
-
-test_x = np.asarray([name_encoding(normalize(name)) for name in test[predictor_col]])
-test_y = lable_encoding(test.gender)
-</code></pre>
-
-<p>Vậy là chúng ta đã có chuẩn bị xong dữ liệu đầy đủ rồi đó. Bây giờ chúng ta xây dựng mô hình thôi.</p>
-
+test_x <span style="color:#f92672">=</span> np<span style="color:#f92672">.</span>asarray([name_encoding(normalize(name)) <span style="color:#66d9ef">for</span> name <span style="color:#f92672">in</span> test[predictor_col]])
+test_y <span style="color:#f92672">=</span> lable_encoding(test<span style="color:#f92672">.</span>gender)
+</code></pre></div><p>Vậy là chúng ta đã có chuẩn bị xong dữ liệu đầy đủ rồi đó. Bây giờ chúng ta xây dựng mô hình thôi.</p>
 <h2 id="xây-dựng-mô-hình">Xây dựng mô hình</h2>
-
 <p>Có rất nhiều cách để chọn tham số cho mô hình, ví dụ như ở <a href="https://stats.stackexchange.com/questions/95495/guideline-to-select-the-hyperparameters-in-deep-learning">https://stats.stackexchange.com/questions/95495/guideline-to-select-the-hyperparameters-in-deep-learning</a>
- liệt kê ra 4 cách là Manual Search, Grid Search, Random Search, Bayesian Optimization. Tuy nhiên,  những cách trên đều khá tốn thời gian và đòi hỏi người kỹ sư phải có am hiểu nhất định.</p>
-
-<p>Ở đây, chúng ta sử dụng một công thức được đưa ra trong link <a href="https://stats.stackexchange.com/questions/181/how-to-choose-the-number-of-hidden-layers-and-nodes-in-a-feedforward-neural-netw/136542#136542">https://stats.stackexchange.com/questions/181/how-to-choose-the-number-of-hidden-layers-and-nodes-in-a-feedforward-neural-netw/136542#136542</a>, cụ thể</p>
-
+liệt kê ra 4 cách là Manual Search, Grid Search, Random Search, Bayesian Optimization. Tuy nhiên,  những cách trên đều khá tốn thời gian và đòi hỏi người kỹ sư phải có am hiểu nhất định.</p>
+<p>Ở đây, chúng ta sử dụng một công thức được đưa ra trong link <a href="https://stats.stackexchange.com/questions/181/how-to-choose-the-number-of-hidden-layers-and-nodes-in-a-feedforward-neural-netw/136542#136542,">https://stats.stackexchange.com/questions/181/how-to-choose-the-number-of-hidden-layers-and-nodes-in-a-feedforward-neural-netw/136542#136542,</a> cụ thể</p>
 <p>$$ N_h = \frac{N_s}{(\alpha * (N_i + N_o))}$$</p>
-
 <p>Trong đó Ni là số lượng input neural, No là số lượng output neural, Ns là số lượng element trong tập dữ liệu train. alpha là một con số trade-off đại diện cho tỷ lệ thuộc đoạn [2-10].</p>
-
-<p>Một lưu ý ở đây là bạn có thể dựa vào công thức và số alpha mà ước lượng xem rằng bạn đã có đủ dữ liệu mẫu hay chưa. Một ví dụ đơn giản là giả sử bạn có 10,000 mẫu dữ liệu, input số từ 0 đến 9, output là 64, chọn alpha ở mức nhỏ nhất là 2, vậy theo công thức số neural ẩn là 10000/(2*64*10) = 7.8 ~ 8. Nếu bạn tăng số alpha lên thì số hidden layer còn ít nữa. Điều trên chứng tỏ rằng số lượng mẫu của bạn chưa đủ, còn thiếu quá nhiều.  Nếu bạn tăng gấp 100 lần số dữ liệu mẫu, thì con số có vẻ hợp lý hơn.</p>
-
+<p>Một lưu ý ở đây là bạn có thể dựa vào công thức và số alpha mà ước lượng xem rằng bạn đã có đủ dữ liệu mẫu hay chưa. Một ví dụ đơn giản là giả sử bạn có 10,000 mẫu dữ liệu, input số từ 0 đến 9, output là 64, chọn alpha ở mức nhỏ nhất là 2, vậy theo công thức số neural ẩn là 10000/(2<em>64</em>10) = 7.8 ~ 8. Nếu bạn tăng số alpha lên thì số hidden layer còn ít nữa. Điều trên chứng tỏ rằng số lượng mẫu của bạn chưa đủ, còn thiếu quá nhiều.  Nếu bạn tăng gấp 100 lần số dữ liệu mẫu, thì con số có vẻ hợp lý hơn.</p>
 <p>Trong tập dữ liệu, mình có:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">The input vector will have the shape  {<span style="color:#ae81ff">17</span>} x {<span style="color:#ae81ff">82</span>}
+Train len:  (<span style="color:#ae81ff">21883</span>, <span style="color:#ae81ff">17</span>, <span style="color:#ae81ff">82</span>) <span style="color:#ae81ff">36473</span>
 
-<pre><code class="language-python">The input vector will have the shape  {17} x {82}
-Train len:  (21883, 17, 82) 36473
-
-</code></pre>
-
-<p>Tổng cộng N_s là 21883, Ni là 17, No là 82, chọn alpha là 2 thì mình có 21883/(2*17*82) = 7.8 ~ 8. Một con số khá nhỏ, chứng tỏ dữ liệu của mình còn quá ít.</p>
-
+</code></pre></div><p>Tổng cộng N_s là 21883, Ni là 17, No là 82, chọn alpha là 2 thì mình có 21883/(2<em>17</em>82) = 7.8 ~ 8. Một con số khá nhỏ, chứng tỏ dữ liệu của mình còn quá ít.</p>
 <p>Đối với tập dữ liệu nhỏ như thế này, mình thường sẽ áp dụng công thức sau:</p>
-
 <p>$$ N_h= \beta* (N_i + N_o) $$</p>
-
-<p>Với beta là một con số thực thuộc nửa đoạn (0,1]. Thông thường sẽ là <sup>2</sup>&frasl;<sub>3</sub>. Kết quả là số lượng neural của mình khoảng 929.333 node. Thông thường, mình sẽ chọn số neural là một con số là bội số của 2, ở đây 929 gần với 2^10 nhất, nên mình chọn số neural là 2^10.</p>
-
+<p>Với beta là một con số thực thuộc nửa đoạn (0,1]. Thông thường sẽ là 2/3. Kết quả là số lượng neural của mình khoảng 929.333 node. Thông thường, mình sẽ chọn số neural là một con số là bội số của 2, ở đây 929 gần với 2^10 nhất, nên mình chọn số neural là 2^10.</p>
 <p>Tóm lại, mình sẽ theo quy tắc</p>
-
 <p>Nếu dữ liệu nhiều:</p>
-
 <p>$$ N_h = \frac{N_s}{(\alpha * (N_i + N_o))}$$</p>
-
 <p>Nếu dữ liệu ít</p>
-
 <p>$$ N_h= \frac{2}{3}* (N_i + N_o) $$</p>
-
 <p>Làm tròn lên bằng với bội số của 2 mũ gần nhất.</p>
-
 <p>Một lưu ý nhỏ là số lượng node càng nhiều thì tỷ lệ overfit càng cao, và thời gian huấn luyện càng lâu. Do đó, bạn nên trang bị máy có cấu hình kha khá một chút, tốt hơn hết là nên có GPU đi kèm. Ngoài ra, bạn nên chuẩn bị càng nhiều dữ liệu càng tốt. Một kinh nghiệm của mình rút ra trong quá trình làm Machine Learning là nếu không có nhiều dữ liệu, thì đừng cố thử áp dụng các phương pháp ML trên nó.</p>
-
 <p>Mô hình mình xây dựng như sau:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">
+hidden_nodes <span style="color:#f92672">=</span> <span style="color:#ae81ff">1024</span>
 
-<pre><code class="language-python"> 
-hidden_nodes = 1024
 
+<span style="color:#75715e"># Build the model</span>
+<span style="color:#66d9ef">print</span>(<span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">Build model...</span><span style="color:#e6db74">&#39;</span>)
+model <span style="color:#f92672">=</span> Sequential()
+model<span style="color:#f92672">.</span>add(LSTM(hidden_nodes, return_sequences<span style="color:#f92672">=</span>False, input_shape<span style="color:#f92672">=</span>(word_vec_length, char_vec_length)))
+model<span style="color:#f92672">.</span>add(Dropout(<span style="color:#ae81ff">0.2</span>))
+model<span style="color:#f92672">.</span>add(Dense(units<span style="color:#f92672">=</span>output_labels))
+model<span style="color:#f92672">.</span>add(Activation(<span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">softmax</span><span style="color:#e6db74">&#39;</span>))
+model<span style="color:#f92672">.</span>compile(loss<span style="color:#f92672">=</span><span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">categorical_crossentropy</span><span style="color:#e6db74">&#39;</span>, optimizer<span style="color:#f92672">=</span><span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">adam</span><span style="color:#e6db74">&#39;</span>, metrics<span style="color:#f92672">=</span>[<span style="color:#e6db74"></span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">acc</span><span style="color:#e6db74">&#39;</span>])
 
-# Build the model
-print('Build model...')
-model = Sequential()
-model.add(LSTM(hidden_nodes, return_sequences=False, input_shape=(word_vec_length, char_vec_length)))
-model.add(Dropout(0.2))
-model.add(Dense(units=output_labels))
-model.add(Activation('softmax'))
-model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['acc'])
+batch_size<span style="color:#f92672">=</span><span style="color:#ae81ff">1000</span>
+model<span style="color:#f92672">.</span>fit(train_x, train_y, batch_size<span style="color:#f92672">=</span>batch_size, epochs<span style="color:#f92672">=</span><span style="color:#ae81ff">50</span>, validation_data<span style="color:#f92672">=</span>(validate_x, validate_y))
 
-batch_size=1000
-model.fit(train_x, train_y, batch_size=batch_size, epochs=50, validation_data=(validate_x, validate_y))
-
-</code></pre>
-
-<p>Do bài viết chỉ tập trung vào vấn đề lựa chọn số lượng node, nên mình sẽ bỏ qua những phần phụ như là early stoping, save each epochs &hellip;, Các vấn đề trên ít nhiều mình đã đề cập ở các bài viết trước.</p>
-
+</code></pre></div><p>Do bài viết chỉ tập trung vào vấn đề lựa chọn số lượng node, nên mình sẽ bỏ qua những phần phụ như là early stoping, save each epochs &hellip;, Các vấn đề trên ít nhiều mình đã đề cập ở các bài viết trước.</p>
 <p>Kết quả của việc huấn luyện mô hình</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#ae81ff">21883</span><span style="color:#f92672">/</span><span style="color:#ae81ff">21883</span> [<span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span>] <span style="color:#f92672">-</span> <span style="color:#ae81ff">34</span>s <span style="color:#ae81ff">2</span>ms<span style="color:#f92672">/</span>step <span style="color:#f92672">-</span> loss: <span style="color:#ae81ff">0.6602</span> <span style="color:#f92672">-</span> acc: <span style="color:#ae81ff">0.6171</span> <span style="color:#f92672">-</span> val_loss: <span style="color:#ae81ff">0.6276</span> <span style="color:#f92672">-</span> val_acc: <span style="color:#ae81ff">0.7199</span>
+Epoch <span style="color:#ae81ff">2</span><span style="color:#f92672">/</span><span style="color:#ae81ff">50</span>
+<span style="color:#ae81ff">21883</span><span style="color:#f92672">/</span><span style="color:#ae81ff">21883</span> [<span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span>] <span style="color:#f92672">-</span> <span style="color:#ae81ff">30</span>s <span style="color:#ae81ff">1</span>ms<span style="color:#f92672">/</span>step <span style="color:#f92672">-</span> loss: <span style="color:#ae81ff">0.5836</span> <span style="color:#f92672">-</span> acc: <span style="color:#ae81ff">0.7056</span> <span style="color:#f92672">-</span> val_loss: <span style="color:#ae81ff">0.5625</span> <span style="color:#f92672">-</span> val_acc: <span style="color:#ae81ff">0.7193</span>
+Epoch <span style="color:#ae81ff">3</span><span style="color:#f92672">/</span><span style="color:#ae81ff">50</span>
+<span style="color:#ae81ff">21883</span><span style="color:#f92672">/</span><span style="color:#ae81ff">21883</span> [<span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span>] <span style="color:#f92672">-</span> <span style="color:#ae81ff">30</span>s <span style="color:#ae81ff">1</span>ms<span style="color:#f92672">/</span>step <span style="color:#f92672">-</span> loss: <span style="color:#ae81ff">0.5531</span> <span style="color:#f92672">-</span> acc: <span style="color:#ae81ff">0.7353</span> <span style="color:#f92672">-</span> val_loss: <span style="color:#ae81ff">0.5506</span> <span style="color:#f92672">-</span> val_acc: <span style="color:#ae81ff">0.7389</span>
+Epoch <span style="color:#ae81ff">4</span><span style="color:#f92672">/</span><span style="color:#ae81ff">50</span>
+<span style="color:#ae81ff">21883</span><span style="color:#f92672">/</span><span style="color:#ae81ff">21883</span> [<span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span>] <span style="color:#f92672">-</span> <span style="color:#ae81ff">31</span>s <span style="color:#ae81ff">1</span>ms<span style="color:#f92672">/</span>step <span style="color:#f92672">-</span> loss: <span style="color:#ae81ff">0.5480</span> <span style="color:#f92672">-</span> acc: <span style="color:#ae81ff">0.7446</span> <span style="color:#f92672">-</span> val_loss: <span style="color:#ae81ff">0.5664</span> <span style="color:#f92672">-</span> val_acc: <span style="color:#ae81ff">0.7313</span>
+Epoch <span style="color:#ae81ff">5</span><span style="color:#f92672">/</span><span style="color:#ae81ff">50</span>
+<span style="color:#ae81ff">21883</span><span style="color:#f92672">/</span><span style="color:#ae81ff">21883</span> [<span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span>] <span style="color:#f92672">-</span> <span style="color:#ae81ff">30</span>s <span style="color:#ae81ff">1</span>ms<span style="color:#f92672">/</span>step <span style="color:#f92672">-</span> loss: <span style="color:#ae81ff">0.5406</span> <span style="color:#f92672">-</span> acc: <span style="color:#ae81ff">0.7420</span> <span style="color:#f92672">-</span> val_loss: <span style="color:#ae81ff">0.5247</span> <span style="color:#f92672">-</span> val_acc: <span style="color:#ae81ff">0.7613</span>
+Epoch <span style="color:#ae81ff">6</span><span style="color:#f92672">/</span><span style="color:#ae81ff">50</span>
+<span style="color:#ae81ff">21883</span><span style="color:#f92672">/</span><span style="color:#ae81ff">21883</span> [<span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span>] <span style="color:#f92672">-</span> <span style="color:#ae81ff">30</span>s <span style="color:#ae81ff">1</span>ms<span style="color:#f92672">/</span>step <span style="color:#f92672">-</span> loss: <span style="color:#ae81ff">0.5077</span> <span style="color:#f92672">-</span> acc: <span style="color:#ae81ff">0.7686</span> <span style="color:#f92672">-</span> val_loss: <span style="color:#ae81ff">0.4918</span> <span style="color:#f92672">-</span> val_acc: <span style="color:#ae81ff">0.7790</span>
+Epoch <span style="color:#ae81ff">7</span><span style="color:#f92672">/</span><span style="color:#ae81ff">50</span>
+<span style="color:#ae81ff">21883</span><span style="color:#f92672">/</span><span style="color:#ae81ff">21883</span> [<span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span>] <span style="color:#f92672">-</span> <span style="color:#ae81ff">30</span>s <span style="color:#ae81ff">1</span>ms<span style="color:#f92672">/</span>step <span style="color:#f92672">-</span> loss: <span style="color:#ae81ff">0.4825</span> <span style="color:#f92672">-</span> acc: <span style="color:#ae81ff">0.7837</span> <span style="color:#f92672">-</span> val_loss: <span style="color:#ae81ff">0.4939</span> <span style="color:#f92672">-</span> val_acc: <span style="color:#ae81ff">0.7740</span>
+Epoch <span style="color:#ae81ff">8</span><span style="color:#f92672">/</span><span style="color:#ae81ff">50</span>
+<span style="color:#ae81ff">21883</span><span style="color:#f92672">/</span><span style="color:#ae81ff">21883</span> [<span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span>] <span style="color:#f92672">-</span> <span style="color:#ae81ff">31</span>s <span style="color:#ae81ff">1</span>ms<span style="color:#f92672">/</span>step <span style="color:#f92672">-</span> loss: <span style="color:#ae81ff">0.4611</span> <span style="color:#f92672">-</span> acc: <span style="color:#ae81ff">0.7887</span> <span style="color:#f92672">-</span> val_loss: <span style="color:#ae81ff">0.4407</span> <span style="color:#f92672">-</span> val_acc: <span style="color:#ae81ff">0.8037</span>
+Epoch <span style="color:#ae81ff">9</span><span style="color:#f92672">/</span><span style="color:#ae81ff">50</span>
+<span style="color:#ae81ff">21883</span><span style="color:#f92672">/</span><span style="color:#ae81ff">21883</span> [<span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span>] <span style="color:#f92672">-</span> <span style="color:#ae81ff">30</span>s <span style="color:#ae81ff">1</span>ms<span style="color:#f92672">/</span>step <span style="color:#f92672">-</span> loss: <span style="color:#ae81ff">0.4421</span> <span style="color:#f92672">-</span> acc: <span style="color:#ae81ff">0.7987</span> <span style="color:#f92672">-</span> val_loss: <span style="color:#ae81ff">0.4657</span> <span style="color:#f92672">-</span> val_acc: <span style="color:#ae81ff">0.8005</span>
+Epoch <span style="color:#ae81ff">10</span><span style="color:#f92672">/</span><span style="color:#ae81ff">50</span>
+<span style="color:#ae81ff">21883</span><span style="color:#f92672">/</span><span style="color:#ae81ff">21883</span> [<span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span>] <span style="color:#f92672">-</span> <span style="color:#ae81ff">30</span>s <span style="color:#ae81ff">1</span>ms<span style="color:#f92672">/</span>step <span style="color:#f92672">-</span> loss: <span style="color:#ae81ff">0.4293</span> <span style="color:#f92672">-</span> acc: <span style="color:#ae81ff">0.8055</span> <span style="color:#f92672">-</span> val_loss: <span style="color:#ae81ff">0.4183</span> <span style="color:#f92672">-</span> val_acc: <span style="color:#ae81ff">0.8141</span>
+Epoch <span style="color:#ae81ff">11</span><span style="color:#f92672">/</span><span style="color:#ae81ff">50</span>
+<span style="color:#ae81ff">21883</span><span style="color:#f92672">/</span><span style="color:#ae81ff">21883</span> [<span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span>] <span style="color:#f92672">-</span> <span style="color:#ae81ff">31</span>s <span style="color:#ae81ff">1</span>ms<span style="color:#f92672">/</span>step <span style="color:#f92672">-</span> loss: <span style="color:#ae81ff">0.4129</span> <span style="color:#f92672">-</span> acc: <span style="color:#ae81ff">0.8128</span> <span style="color:#f92672">-</span> val_loss: <span style="color:#ae81ff">0.4171</span> <span style="color:#f92672">-</span> val_acc: <span style="color:#ae81ff">0.8212</span>
+Epoch <span style="color:#ae81ff">12</span><span style="color:#f92672">/</span><span style="color:#ae81ff">50</span>
+<span style="color:#ae81ff">21883</span><span style="color:#f92672">/</span><span style="color:#ae81ff">21883</span> [<span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span>] <span style="color:#f92672">-</span> <span style="color:#ae81ff">30</span>s <span style="color:#ae81ff">1</span>ms<span style="color:#f92672">/</span>step <span style="color:#f92672">-</span> loss: <span style="color:#ae81ff">0.4153</span> <span style="color:#f92672">-</span> acc: <span style="color:#ae81ff">0.8141</span> <span style="color:#f92672">-</span> val_loss: <span style="color:#ae81ff">0.4031</span> <span style="color:#f92672">-</span> val_acc: <span style="color:#ae81ff">0.8188</span>
+Epoch <span style="color:#ae81ff">13</span><span style="color:#f92672">/</span><span style="color:#ae81ff">50</span>
+<span style="color:#ae81ff">21883</span><span style="color:#f92672">/</span><span style="color:#ae81ff">21883</span> [<span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span>] <span style="color:#f92672">-</span> <span style="color:#ae81ff">30</span>s <span style="color:#ae81ff">1</span>ms<span style="color:#f92672">/</span>step <span style="color:#f92672">-</span> loss: <span style="color:#ae81ff">0.3978</span> <span style="color:#f92672">-</span> acc: <span style="color:#ae81ff">0.8191</span> <span style="color:#f92672">-</span> val_loss: <span style="color:#ae81ff">0.3918</span> <span style="color:#f92672">-</span> val_acc: <span style="color:#ae81ff">0.8280</span>
+Epoch <span style="color:#ae81ff">14</span><span style="color:#f92672">/</span><span style="color:#ae81ff">50</span>
+<span style="color:#ae81ff">21883</span><span style="color:#f92672">/</span><span style="color:#ae81ff">21883</span> [<span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span>] <span style="color:#f92672">-</span> <span style="color:#ae81ff">30</span>s <span style="color:#ae81ff">1</span>ms<span style="color:#f92672">/</span>step <span style="color:#f92672">-</span> loss: <span style="color:#ae81ff">0.3910</span> <span style="color:#f92672">-</span> acc: <span style="color:#ae81ff">0.8268</span> <span style="color:#f92672">-</span> val_loss: <span style="color:#ae81ff">0.3831</span> <span style="color:#f92672">-</span> val_acc: <span style="color:#ae81ff">0.8276</span>
+Epoch <span style="color:#ae81ff">15</span><span style="color:#f92672">/</span><span style="color:#ae81ff">50</span>
+<span style="color:#ae81ff">21883</span><span style="color:#f92672">/</span><span style="color:#ae81ff">21883</span> [<span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span>] <span style="color:#f92672">-</span> <span style="color:#ae81ff">30</span>s <span style="color:#ae81ff">1</span>ms<span style="color:#f92672">/</span>step <span style="color:#f92672">-</span> loss: <span style="color:#ae81ff">0.3848</span> <span style="color:#f92672">-</span> acc: <span style="color:#ae81ff">0.8272</span> <span style="color:#f92672">-</span> val_loss: <span style="color:#ae81ff">0.3772</span> <span style="color:#f92672">-</span> val_acc: <span style="color:#ae81ff">0.8314</span>
+Epoch <span style="color:#ae81ff">16</span><span style="color:#f92672">/</span><span style="color:#ae81ff">50</span>
+<span style="color:#ae81ff">21883</span><span style="color:#f92672">/</span><span style="color:#ae81ff">21883</span> [<span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span>] <span style="color:#f92672">-</span> <span style="color:#ae81ff">30</span>s <span style="color:#ae81ff">1</span>ms<span style="color:#f92672">/</span>step <span style="color:#f92672">-</span> loss: <span style="color:#ae81ff">0.3751</span> <span style="color:#f92672">-</span> acc: <span style="color:#ae81ff">0.8354</span> <span style="color:#f92672">-</span> val_loss: <span style="color:#ae81ff">0.3737</span> <span style="color:#f92672">-</span> val_acc: <span style="color:#ae81ff">0.8363</span>
+Epoch <span style="color:#ae81ff">17</span><span style="color:#f92672">/</span><span style="color:#ae81ff">50</span>
+<span style="color:#ae81ff">21883</span><span style="color:#f92672">/</span><span style="color:#ae81ff">21883</span> [<span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span>] <span style="color:#f92672">-</span> <span style="color:#ae81ff">30</span>s <span style="color:#ae81ff">1</span>ms<span style="color:#f92672">/</span>step <span style="color:#f92672">-</span> loss: <span style="color:#ae81ff">0.3708</span> <span style="color:#f92672">-</span> acc: <span style="color:#ae81ff">0.8345</span> <span style="color:#f92672">-</span> val_loss: <span style="color:#ae81ff">0.3717</span> <span style="color:#f92672">-</span> val_acc: <span style="color:#ae81ff">0.8374</span>
+Epoch <span style="color:#ae81ff">18</span><span style="color:#f92672">/</span><span style="color:#ae81ff">50</span>
+<span style="color:#ae81ff">21883</span><span style="color:#f92672">/</span><span style="color:#ae81ff">21883</span> [<span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span>] <span style="color:#f92672">-</span> <span style="color:#ae81ff">31</span>s <span style="color:#ae81ff">1</span>ms<span style="color:#f92672">/</span>step <span style="color:#f92672">-</span> loss: <span style="color:#ae81ff">0.3688</span> <span style="color:#f92672">-</span> acc: <span style="color:#ae81ff">0.8375</span> <span style="color:#f92672">-</span> val_loss: <span style="color:#ae81ff">0.3768</span> <span style="color:#f92672">-</span> val_acc: <span style="color:#ae81ff">0.8330</span>
+Epoch <span style="color:#ae81ff">19</span><span style="color:#f92672">/</span><span style="color:#ae81ff">50</span>
+<span style="color:#ae81ff">21883</span><span style="color:#f92672">/</span><span style="color:#ae81ff">21883</span> [<span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span>] <span style="color:#f92672">-</span> <span style="color:#ae81ff">30</span>s <span style="color:#ae81ff">1</span>ms<span style="color:#f92672">/</span>step <span style="color:#f92672">-</span> loss: <span style="color:#ae81ff">0.3704</span> <span style="color:#f92672">-</span> acc: <span style="color:#ae81ff">0.8375</span> <span style="color:#f92672">-</span> val_loss: <span style="color:#ae81ff">0.3621</span> <span style="color:#f92672">-</span> val_acc: <span style="color:#ae81ff">0.8392</span>
+Epoch <span style="color:#ae81ff">20</span><span style="color:#f92672">/</span><span style="color:#ae81ff">50</span>
+<span style="color:#ae81ff">21883</span><span style="color:#f92672">/</span><span style="color:#ae81ff">21883</span> [<span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span>] <span style="color:#f92672">-</span> <span style="color:#ae81ff">31</span>s <span style="color:#ae81ff">1</span>ms<span style="color:#f92672">/</span>step <span style="color:#f92672">-</span> loss: <span style="color:#ae81ff">0.3608</span> <span style="color:#f92672">-</span> acc: <span style="color:#ae81ff">0.8444</span> <span style="color:#f92672">-</span> val_loss: <span style="color:#ae81ff">0.3656</span> <span style="color:#f92672">-</span> val_acc: <span style="color:#ae81ff">0.8422</span>
+Epoch <span style="color:#ae81ff">21</span><span style="color:#f92672">/</span><span style="color:#ae81ff">50</span>
+<span style="color:#ae81ff">21883</span><span style="color:#f92672">/</span><span style="color:#ae81ff">21883</span> [<span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span>] <span style="color:#f92672">-</span> <span style="color:#ae81ff">31</span>s <span style="color:#ae81ff">1</span>ms<span style="color:#f92672">/</span>step <span style="color:#f92672">-</span> loss: <span style="color:#ae81ff">0.3548</span> <span style="color:#f92672">-</span> acc: <span style="color:#ae81ff">0.8459</span> <span style="color:#f92672">-</span> val_loss: <span style="color:#ae81ff">0.3670</span> <span style="color:#f92672">-</span> val_acc: <span style="color:#ae81ff">0.8417</span>
+Epoch <span style="color:#ae81ff">22</span><span style="color:#f92672">/</span><span style="color:#ae81ff">50</span>
+<span style="color:#ae81ff">21883</span><span style="color:#f92672">/</span><span style="color:#ae81ff">21883</span> [<span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span>] <span style="color:#f92672">-</span> <span style="color:#ae81ff">30</span>s <span style="color:#ae81ff">1</span>ms<span style="color:#f92672">/</span>step <span style="color:#f92672">-</span> loss: <span style="color:#ae81ff">0.3521</span> <span style="color:#f92672">-</span> acc: <span style="color:#ae81ff">0.8452</span> <span style="color:#f92672">-</span> val_loss: <span style="color:#ae81ff">0.3555</span> <span style="color:#f92672">-</span> val_acc: <span style="color:#ae81ff">0.8462</span>
+Epoch <span style="color:#ae81ff">23</span><span style="color:#f92672">/</span><span style="color:#ae81ff">50</span>
+<span style="color:#ae81ff">21883</span><span style="color:#f92672">/</span><span style="color:#ae81ff">21883</span> [<span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span>] <span style="color:#f92672">-</span> <span style="color:#ae81ff">30</span>s <span style="color:#ae81ff">1</span>ms<span style="color:#f92672">/</span>step <span style="color:#f92672">-</span> loss: <span style="color:#ae81ff">0.3432</span> <span style="color:#f92672">-</span> acc: <span style="color:#ae81ff">0.8504</span> <span style="color:#f92672">-</span> val_loss: <span style="color:#ae81ff">0.3591</span> <span style="color:#f92672">-</span> val_acc: <span style="color:#ae81ff">0.8402</span>
+Epoch <span style="color:#ae81ff">24</span><span style="color:#f92672">/</span><span style="color:#ae81ff">50</span>
+<span style="color:#ae81ff">21883</span><span style="color:#f92672">/</span><span style="color:#ae81ff">21883</span> [<span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span>] <span style="color:#f92672">-</span> <span style="color:#ae81ff">31</span>s <span style="color:#ae81ff">1</span>ms<span style="color:#f92672">/</span>step <span style="color:#f92672">-</span> loss: <span style="color:#ae81ff">0.3415</span> <span style="color:#f92672">-</span> acc: <span style="color:#ae81ff">0.8524</span> <span style="color:#f92672">-</span> val_loss: <span style="color:#ae81ff">0.3471</span> <span style="color:#f92672">-</span> val_acc: <span style="color:#ae81ff">0.8470</span>
+Epoch <span style="color:#ae81ff">25</span><span style="color:#f92672">/</span><span style="color:#ae81ff">50</span>
+<span style="color:#ae81ff">21883</span><span style="color:#f92672">/</span><span style="color:#ae81ff">21883</span> [<span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span>] <span style="color:#f92672">-</span> <span style="color:#ae81ff">30</span>s <span style="color:#ae81ff">1</span>ms<span style="color:#f92672">/</span>step <span style="color:#f92672">-</span> loss: <span style="color:#ae81ff">0.3355</span> <span style="color:#f92672">-</span> acc: <span style="color:#ae81ff">0.8555</span> <span style="color:#f92672">-</span> val_loss: <span style="color:#ae81ff">0.3577</span> <span style="color:#f92672">-</span> val_acc: <span style="color:#ae81ff">0.8436</span>
+Epoch <span style="color:#ae81ff">26</span><span style="color:#f92672">/</span><span style="color:#ae81ff">50</span>
+<span style="color:#ae81ff">21883</span><span style="color:#f92672">/</span><span style="color:#ae81ff">21883</span> [<span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span>] <span style="color:#f92672">-</span> <span style="color:#ae81ff">30</span>s <span style="color:#ae81ff">1</span>ms<span style="color:#f92672">/</span>step <span style="color:#f92672">-</span> loss: <span style="color:#ae81ff">0.3320</span> <span style="color:#f92672">-</span> acc: <span style="color:#ae81ff">0.8552</span> <span style="color:#f92672">-</span> val_loss: <span style="color:#ae81ff">0.3602</span> <span style="color:#f92672">-</span> val_acc: <span style="color:#ae81ff">0.8430</span>
+Epoch <span style="color:#ae81ff">27</span><span style="color:#f92672">/</span><span style="color:#ae81ff">50</span>
+<span style="color:#ae81ff">21883</span><span style="color:#f92672">/</span><span style="color:#ae81ff">21883</span> [<span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span>] <span style="color:#f92672">-</span> <span style="color:#ae81ff">30</span>s <span style="color:#ae81ff">1</span>ms<span style="color:#f92672">/</span>step <span style="color:#f92672">-</span> loss: <span style="color:#ae81ff">0.3294</span> <span style="color:#f92672">-</span> acc: <span style="color:#ae81ff">0.8578</span> <span style="color:#f92672">-</span> val_loss: <span style="color:#ae81ff">0.3565</span> <span style="color:#f92672">-</span> val_acc: <span style="color:#ae81ff">0.8485</span>
+Epoch <span style="color:#ae81ff">28</span><span style="color:#f92672">/</span><span style="color:#ae81ff">50</span>
+<span style="color:#ae81ff">21883</span><span style="color:#f92672">/</span><span style="color:#ae81ff">21883</span> [<span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span>] <span style="color:#f92672">-</span> <span style="color:#ae81ff">30</span>s <span style="color:#ae81ff">1</span>ms<span style="color:#f92672">/</span>step <span style="color:#f92672">-</span> loss: <span style="color:#ae81ff">0.3235</span> <span style="color:#f92672">-</span> acc: <span style="color:#ae81ff">0.8602</span> <span style="color:#f92672">-</span> val_loss: <span style="color:#ae81ff">0.3427</span> <span style="color:#f92672">-</span> val_acc: <span style="color:#ae81ff">0.8514</span>
+Epoch <span style="color:#ae81ff">29</span><span style="color:#f92672">/</span><span style="color:#ae81ff">50</span>
+<span style="color:#ae81ff">21883</span><span style="color:#f92672">/</span><span style="color:#ae81ff">21883</span> [<span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span>] <span style="color:#f92672">-</span> <span style="color:#ae81ff">31</span>s <span style="color:#ae81ff">1</span>ms<span style="color:#f92672">/</span>step <span style="color:#f92672">-</span> loss: <span style="color:#ae81ff">0.3138</span> <span style="color:#f92672">-</span> acc: <span style="color:#ae81ff">0.8651</span> <span style="color:#f92672">-</span> val_loss: <span style="color:#ae81ff">0.3523</span> <span style="color:#f92672">-</span> val_acc: <span style="color:#ae81ff">0.8470</span>
+Epoch <span style="color:#ae81ff">30</span><span style="color:#f92672">/</span><span style="color:#ae81ff">50</span>
+<span style="color:#ae81ff">21883</span><span style="color:#f92672">/</span><span style="color:#ae81ff">21883</span> [<span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span>] <span style="color:#f92672">-</span> <span style="color:#ae81ff">30</span>s <span style="color:#ae81ff">1</span>ms<span style="color:#f92672">/</span>step <span style="color:#f92672">-</span> loss: <span style="color:#ae81ff">0.3095</span> <span style="color:#f92672">-</span> acc: <span style="color:#ae81ff">0.8683</span> <span style="color:#f92672">-</span> val_loss: <span style="color:#ae81ff">0.3457</span> <span style="color:#f92672">-</span> val_acc: <span style="color:#ae81ff">0.8487</span>
+Epoch <span style="color:#ae81ff">31</span><span style="color:#f92672">/</span><span style="color:#ae81ff">50</span>
+<span style="color:#ae81ff">21883</span><span style="color:#f92672">/</span><span style="color:#ae81ff">21883</span> [<span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span>] <span style="color:#f92672">-</span> <span style="color:#ae81ff">31</span>s <span style="color:#ae81ff">1</span>ms<span style="color:#f92672">/</span>step <span style="color:#f92672">-</span> loss: <span style="color:#ae81ff">0.3064</span> <span style="color:#f92672">-</span> acc: <span style="color:#ae81ff">0.8701</span> <span style="color:#f92672">-</span> val_loss: <span style="color:#ae81ff">0.3538</span> <span style="color:#f92672">-</span> val_acc: <span style="color:#ae81ff">0.8531</span>
+Epoch <span style="color:#ae81ff">32</span><span style="color:#f92672">/</span><span style="color:#ae81ff">50</span>
+<span style="color:#ae81ff">21883</span><span style="color:#f92672">/</span><span style="color:#ae81ff">21883</span> [<span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span>] <span style="color:#f92672">-</span> <span style="color:#ae81ff">30</span>s <span style="color:#ae81ff">1</span>ms<span style="color:#f92672">/</span>step <span style="color:#f92672">-</span> loss: <span style="color:#ae81ff">0.2985</span> <span style="color:#f92672">-</span> acc: <span style="color:#ae81ff">0.8717</span> <span style="color:#f92672">-</span> val_loss: <span style="color:#ae81ff">0.3555</span> <span style="color:#f92672">-</span> val_acc: <span style="color:#ae81ff">0.8455</span>
+Epoch <span style="color:#ae81ff">33</span><span style="color:#f92672">/</span><span style="color:#ae81ff">50</span>
+<span style="color:#ae81ff">21883</span><span style="color:#f92672">/</span><span style="color:#ae81ff">21883</span> [<span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span>] <span style="color:#f92672">-</span> <span style="color:#ae81ff">30</span>s <span style="color:#ae81ff">1</span>ms<span style="color:#f92672">/</span>step <span style="color:#f92672">-</span> loss: <span style="color:#ae81ff">0.2930</span> <span style="color:#f92672">-</span> acc: <span style="color:#ae81ff">0.8741</span> <span style="color:#f92672">-</span> val_loss: <span style="color:#ae81ff">0.3430</span> <span style="color:#f92672">-</span> val_acc: <span style="color:#ae81ff">0.8525</span>
+Epoch <span style="color:#ae81ff">34</span><span style="color:#f92672">/</span><span style="color:#ae81ff">50</span>
+<span style="color:#ae81ff">21883</span><span style="color:#f92672">/</span><span style="color:#ae81ff">21883</span> [<span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span>] <span style="color:#f92672">-</span> <span style="color:#ae81ff">30</span>s <span style="color:#ae81ff">1</span>ms<span style="color:#f92672">/</span>step <span style="color:#f92672">-</span> loss: <span style="color:#ae81ff">0.2901</span> <span style="color:#f92672">-</span> acc: <span style="color:#ae81ff">0.8786</span> <span style="color:#f92672">-</span> val_loss: <span style="color:#ae81ff">0.3457</span> <span style="color:#f92672">-</span> val_acc: <span style="color:#ae81ff">0.8503</span>
+Epoch <span style="color:#ae81ff">35</span><span style="color:#f92672">/</span><span style="color:#ae81ff">50</span>
+<span style="color:#ae81ff">21883</span><span style="color:#f92672">/</span><span style="color:#ae81ff">21883</span> [<span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span>] <span style="color:#f92672">-</span> <span style="color:#ae81ff">30</span>s <span style="color:#ae81ff">1</span>ms<span style="color:#f92672">/</span>step <span style="color:#f92672">-</span> loss: <span style="color:#ae81ff">0.2852</span> <span style="color:#f92672">-</span> acc: <span style="color:#ae81ff">0.8776</span> <span style="color:#f92672">-</span> val_loss: <span style="color:#ae81ff">0.3458</span> <span style="color:#f92672">-</span> val_acc: <span style="color:#ae81ff">0.8510</span>
+Epoch <span style="color:#ae81ff">36</span><span style="color:#f92672">/</span><span style="color:#ae81ff">50</span>
+<span style="color:#ae81ff">21883</span><span style="color:#f92672">/</span><span style="color:#ae81ff">21883</span> [<span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span>] <span style="color:#f92672">-</span> <span style="color:#ae81ff">30</span>s <span style="color:#ae81ff">1</span>ms<span style="color:#f92672">/</span>step <span style="color:#f92672">-</span> loss: <span style="color:#ae81ff">0.2817</span> <span style="color:#f92672">-</span> acc: <span style="color:#ae81ff">0.8811</span> <span style="color:#f92672">-</span> val_loss: <span style="color:#ae81ff">0.3445</span> <span style="color:#f92672">-</span> val_acc: <span style="color:#ae81ff">0.8568</span>
+Epoch <span style="color:#ae81ff">37</span><span style="color:#f92672">/</span><span style="color:#ae81ff">50</span>
+<span style="color:#ae81ff">21883</span><span style="color:#f92672">/</span><span style="color:#ae81ff">21883</span> [<span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span>] <span style="color:#f92672">-</span> <span style="color:#ae81ff">30</span>s <span style="color:#ae81ff">1</span>ms<span style="color:#f92672">/</span>step <span style="color:#f92672">-</span> loss: <span style="color:#ae81ff">0.2780</span> <span style="color:#f92672">-</span> acc: <span style="color:#ae81ff">0.8816</span> <span style="color:#f92672">-</span> val_loss: <span style="color:#ae81ff">0.3356</span> <span style="color:#f92672">-</span> val_acc: <span style="color:#ae81ff">0.8540</span>
+Epoch <span style="color:#ae81ff">38</span><span style="color:#f92672">/</span><span style="color:#ae81ff">50</span>
+<span style="color:#ae81ff">21883</span><span style="color:#f92672">/</span><span style="color:#ae81ff">21883</span> [<span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span>] <span style="color:#f92672">-</span> <span style="color:#ae81ff">30</span>s <span style="color:#ae81ff">1</span>ms<span style="color:#f92672">/</span>step <span style="color:#f92672">-</span> loss: <span style="color:#ae81ff">0.2734</span> <span style="color:#f92672">-</span> acc: <span style="color:#ae81ff">0.8852</span> <span style="color:#f92672">-</span> val_loss: <span style="color:#ae81ff">0.3442</span> <span style="color:#f92672">-</span> val_acc: <span style="color:#ae81ff">0.8559</span>
+Epoch <span style="color:#ae81ff">39</span><span style="color:#f92672">/</span><span style="color:#ae81ff">50</span>
+<span style="color:#ae81ff">21883</span><span style="color:#f92672">/</span><span style="color:#ae81ff">21883</span> [<span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span>] <span style="color:#f92672">-</span> <span style="color:#ae81ff">31</span>s <span style="color:#ae81ff">1</span>ms<span style="color:#f92672">/</span>step <span style="color:#f92672">-</span> loss: <span style="color:#ae81ff">0.2579</span> <span style="color:#f92672">-</span> acc: <span style="color:#ae81ff">0.8904</span> <span style="color:#f92672">-</span> val_loss: <span style="color:#ae81ff">0.3552</span> <span style="color:#f92672">-</span> val_acc: <span style="color:#ae81ff">0.8540</span>
+Epoch <span style="color:#ae81ff">40</span><span style="color:#f92672">/</span><span style="color:#ae81ff">50</span>
+<span style="color:#ae81ff">21883</span><span style="color:#f92672">/</span><span style="color:#ae81ff">21883</span> [<span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span>] <span style="color:#f92672">-</span> <span style="color:#ae81ff">30</span>s <span style="color:#ae81ff">1</span>ms<span style="color:#f92672">/</span>step <span style="color:#f92672">-</span> loss: <span style="color:#ae81ff">0.2551</span> <span style="color:#f92672">-</span> acc: <span style="color:#ae81ff">0.8927</span> <span style="color:#f92672">-</span> val_loss: <span style="color:#ae81ff">0.3677</span> <span style="color:#f92672">-</span> val_acc: <span style="color:#ae81ff">0.8532</span>
+Epoch <span style="color:#ae81ff">41</span><span style="color:#f92672">/</span><span style="color:#ae81ff">50</span>
+<span style="color:#ae81ff">21883</span><span style="color:#f92672">/</span><span style="color:#ae81ff">21883</span> [<span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span>] <span style="color:#f92672">-</span> <span style="color:#ae81ff">30</span>s <span style="color:#ae81ff">1</span>ms<span style="color:#f92672">/</span>step <span style="color:#f92672">-</span> loss: <span style="color:#ae81ff">0.2558</span> <span style="color:#f92672">-</span> acc: <span style="color:#ae81ff">0.8921</span> <span style="color:#f92672">-</span> val_loss: <span style="color:#ae81ff">0.3496</span> <span style="color:#f92672">-</span> val_acc: <span style="color:#ae81ff">0.8588</span>
+Epoch <span style="color:#ae81ff">42</span><span style="color:#f92672">/</span><span style="color:#ae81ff">50</span>
+<span style="color:#ae81ff">21883</span><span style="color:#f92672">/</span><span style="color:#ae81ff">21883</span> [<span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span>] <span style="color:#f92672">-</span> <span style="color:#ae81ff">30</span>s <span style="color:#ae81ff">1</span>ms<span style="color:#f92672">/</span>step <span style="color:#f92672">-</span> loss: <span style="color:#ae81ff">0.2472</span> <span style="color:#f92672">-</span> acc: <span style="color:#ae81ff">0.8963</span> <span style="color:#f92672">-</span> val_loss: <span style="color:#ae81ff">0.3534</span> <span style="color:#f92672">-</span> val_acc: <span style="color:#ae81ff">0.8587</span>
+Epoch <span style="color:#ae81ff">43</span><span style="color:#f92672">/</span><span style="color:#ae81ff">50</span>
+<span style="color:#ae81ff">21883</span><span style="color:#f92672">/</span><span style="color:#ae81ff">21883</span> [<span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span>] <span style="color:#f92672">-</span> <span style="color:#ae81ff">31</span>s <span style="color:#ae81ff">1</span>ms<span style="color:#f92672">/</span>step <span style="color:#f92672">-</span> loss: <span style="color:#ae81ff">0.2486</span> <span style="color:#f92672">-</span> acc: <span style="color:#ae81ff">0.8948</span> <span style="color:#f92672">-</span> val_loss: <span style="color:#ae81ff">0.3490</span> <span style="color:#f92672">-</span> val_acc: <span style="color:#ae81ff">0.8537</span>
+Epoch <span style="color:#ae81ff">44</span><span style="color:#f92672">/</span><span style="color:#ae81ff">50</span>
+<span style="color:#ae81ff">21883</span><span style="color:#f92672">/</span><span style="color:#ae81ff">21883</span> [<span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span>] <span style="color:#f92672">-</span> <span style="color:#ae81ff">31</span>s <span style="color:#ae81ff">1</span>ms<span style="color:#f92672">/</span>step <span style="color:#f92672">-</span> loss: <span style="color:#ae81ff">0.2503</span> <span style="color:#f92672">-</span> acc: <span style="color:#ae81ff">0.8965</span> <span style="color:#f92672">-</span> val_loss: <span style="color:#ae81ff">0.3594</span> <span style="color:#f92672">-</span> val_acc: <span style="color:#ae81ff">0.8552</span>
+Epoch <span style="color:#ae81ff">45</span><span style="color:#f92672">/</span><span style="color:#ae81ff">50</span>
+<span style="color:#ae81ff">21883</span><span style="color:#f92672">/</span><span style="color:#ae81ff">21883</span> [<span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span>] <span style="color:#f92672">-</span> <span style="color:#ae81ff">30</span>s <span style="color:#ae81ff">1</span>ms<span style="color:#f92672">/</span>step <span style="color:#f92672">-</span> loss: <span style="color:#ae81ff">0.2391</span> <span style="color:#f92672">-</span> acc: <span style="color:#ae81ff">0.8993</span> <span style="color:#f92672">-</span> val_loss: <span style="color:#ae81ff">0.3793</span> <span style="color:#f92672">-</span> val_acc: <span style="color:#ae81ff">0.8566</span>
+Epoch <span style="color:#ae81ff">46</span><span style="color:#f92672">/</span><span style="color:#ae81ff">50</span>
+<span style="color:#ae81ff">21883</span><span style="color:#f92672">/</span><span style="color:#ae81ff">21883</span> [<span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span>] <span style="color:#f92672">-</span> <span style="color:#ae81ff">31</span>s <span style="color:#ae81ff">1</span>ms<span style="color:#f92672">/</span>step <span style="color:#f92672">-</span> loss: <span style="color:#ae81ff">0.2244</span> <span style="color:#f92672">-</span> acc: <span style="color:#ae81ff">0.9048</span> <span style="color:#f92672">-</span> val_loss: <span style="color:#ae81ff">0.3815</span> <span style="color:#f92672">-</span> val_acc: <span style="color:#ae81ff">0.8543</span>
+Epoch <span style="color:#ae81ff">47</span><span style="color:#f92672">/</span><span style="color:#ae81ff">50</span>
+<span style="color:#ae81ff">21883</span><span style="color:#f92672">/</span><span style="color:#ae81ff">21883</span> [<span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span>] <span style="color:#f92672">-</span> <span style="color:#ae81ff">30</span>s <span style="color:#ae81ff">1</span>ms<span style="color:#f92672">/</span>step <span style="color:#f92672">-</span> loss: <span style="color:#ae81ff">0.2203</span> <span style="color:#f92672">-</span> acc: <span style="color:#ae81ff">0.9095</span> <span style="color:#f92672">-</span> val_loss: <span style="color:#ae81ff">0.3848</span> <span style="color:#f92672">-</span> val_acc: <span style="color:#ae81ff">0.8554</span>
+Epoch <span style="color:#ae81ff">48</span><span style="color:#f92672">/</span><span style="color:#ae81ff">50</span>
+<span style="color:#ae81ff">21883</span><span style="color:#f92672">/</span><span style="color:#ae81ff">21883</span> [<span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span>] <span style="color:#f92672">-</span> <span style="color:#ae81ff">30</span>s <span style="color:#ae81ff">1</span>ms<span style="color:#f92672">/</span>step <span style="color:#f92672">-</span> loss: <span style="color:#ae81ff">0.2221</span> <span style="color:#f92672">-</span> acc: <span style="color:#ae81ff">0.9051</span> <span style="color:#f92672">-</span> val_loss: <span style="color:#ae81ff">0.3892</span> <span style="color:#f92672">-</span> val_acc: <span style="color:#ae81ff">0.8558</span>
+Epoch <span style="color:#ae81ff">49</span><span style="color:#f92672">/</span><span style="color:#ae81ff">50</span>
+<span style="color:#ae81ff">21883</span><span style="color:#f92672">/</span><span style="color:#ae81ff">21883</span> [<span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span>] <span style="color:#f92672">-</span> <span style="color:#ae81ff">30</span>s <span style="color:#ae81ff">1</span>ms<span style="color:#f92672">/</span>step <span style="color:#f92672">-</span> loss: <span style="color:#ae81ff">0.2117</span> <span style="color:#f92672">-</span> acc: <span style="color:#ae81ff">0.9124</span> <span style="color:#f92672">-</span> val_loss: <span style="color:#ae81ff">0.3654</span> <span style="color:#f92672">-</span> val_acc: <span style="color:#ae81ff">0.8544</span>
+Epoch <span style="color:#ae81ff">50</span><span style="color:#f92672">/</span><span style="color:#ae81ff">50</span>
+<span style="color:#ae81ff">21883</span><span style="color:#f92672">/</span><span style="color:#ae81ff">21883</span> [<span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span><span style="color:#f92672">==</span>] <span style="color:#f92672">-</span> <span style="color:#ae81ff">30</span>s <span style="color:#ae81ff">1</span>ms<span style="color:#f92672">/</span>step <span style="color:#f92672">-</span> loss: <span style="color:#ae81ff">0.2141</span> <span style="color:#f92672">-</span> acc: <span style="color:#ae81ff">0.9118</span> <span style="color:#f92672">-</span> val_loss: <span style="color:#ae81ff">0.3726</span> <span style="color:#f92672">-</span> val_acc: <span style="color:#ae81ff">0.8547</span>
 
-<pre><code class="language-python"> 21883/21883 [==============================] - 34s 2ms/step - loss: 0.6602 - acc: 0.6171 - val_loss: 0.6276 - val_acc: 0.7199
-Epoch 2/50
-21883/21883 [==============================] - 30s 1ms/step - loss: 0.5836 - acc: 0.7056 - val_loss: 0.5625 - val_acc: 0.7193
-Epoch 3/50
-21883/21883 [==============================] - 30s 1ms/step - loss: 0.5531 - acc: 0.7353 - val_loss: 0.5506 - val_acc: 0.7389
-Epoch 4/50
-21883/21883 [==============================] - 31s 1ms/step - loss: 0.5480 - acc: 0.7446 - val_loss: 0.5664 - val_acc: 0.7313
-Epoch 5/50
-21883/21883 [==============================] - 30s 1ms/step - loss: 0.5406 - acc: 0.7420 - val_loss: 0.5247 - val_acc: 0.7613
-Epoch 6/50
-21883/21883 [==============================] - 30s 1ms/step - loss: 0.5077 - acc: 0.7686 - val_loss: 0.4918 - val_acc: 0.7790
-Epoch 7/50
-21883/21883 [==============================] - 30s 1ms/step - loss: 0.4825 - acc: 0.7837 - val_loss: 0.4939 - val_acc: 0.7740
-Epoch 8/50
-21883/21883 [==============================] - 31s 1ms/step - loss: 0.4611 - acc: 0.7887 - val_loss: 0.4407 - val_acc: 0.8037
-Epoch 9/50
-21883/21883 [==============================] - 30s 1ms/step - loss: 0.4421 - acc: 0.7987 - val_loss: 0.4657 - val_acc: 0.8005
-Epoch 10/50
-21883/21883 [==============================] - 30s 1ms/step - loss: 0.4293 - acc: 0.8055 - val_loss: 0.4183 - val_acc: 0.8141
-Epoch 11/50
-21883/21883 [==============================] - 31s 1ms/step - loss: 0.4129 - acc: 0.8128 - val_loss: 0.4171 - val_acc: 0.8212
-Epoch 12/50
-21883/21883 [==============================] - 30s 1ms/step - loss: 0.4153 - acc: 0.8141 - val_loss: 0.4031 - val_acc: 0.8188
-Epoch 13/50
-21883/21883 [==============================] - 30s 1ms/step - loss: 0.3978 - acc: 0.8191 - val_loss: 0.3918 - val_acc: 0.8280
-Epoch 14/50
-21883/21883 [==============================] - 30s 1ms/step - loss: 0.3910 - acc: 0.8268 - val_loss: 0.3831 - val_acc: 0.8276
-Epoch 15/50
-21883/21883 [==============================] - 30s 1ms/step - loss: 0.3848 - acc: 0.8272 - val_loss: 0.3772 - val_acc: 0.8314
-Epoch 16/50
-21883/21883 [==============================] - 30s 1ms/step - loss: 0.3751 - acc: 0.8354 - val_loss: 0.3737 - val_acc: 0.8363
-Epoch 17/50
-21883/21883 [==============================] - 30s 1ms/step - loss: 0.3708 - acc: 0.8345 - val_loss: 0.3717 - val_acc: 0.8374
-Epoch 18/50
-21883/21883 [==============================] - 31s 1ms/step - loss: 0.3688 - acc: 0.8375 - val_loss: 0.3768 - val_acc: 0.8330
-Epoch 19/50
-21883/21883 [==============================] - 30s 1ms/step - loss: 0.3704 - acc: 0.8375 - val_loss: 0.3621 - val_acc: 0.8392
-Epoch 20/50
-21883/21883 [==============================] - 31s 1ms/step - loss: 0.3608 - acc: 0.8444 - val_loss: 0.3656 - val_acc: 0.8422
-Epoch 21/50
-21883/21883 [==============================] - 31s 1ms/step - loss: 0.3548 - acc: 0.8459 - val_loss: 0.3670 - val_acc: 0.8417
-Epoch 22/50
-21883/21883 [==============================] - 30s 1ms/step - loss: 0.3521 - acc: 0.8452 - val_loss: 0.3555 - val_acc: 0.8462
-Epoch 23/50
-21883/21883 [==============================] - 30s 1ms/step - loss: 0.3432 - acc: 0.8504 - val_loss: 0.3591 - val_acc: 0.8402
-Epoch 24/50
-21883/21883 [==============================] - 31s 1ms/step - loss: 0.3415 - acc: 0.8524 - val_loss: 0.3471 - val_acc: 0.8470
-Epoch 25/50
-21883/21883 [==============================] - 30s 1ms/step - loss: 0.3355 - acc: 0.8555 - val_loss: 0.3577 - val_acc: 0.8436
-Epoch 26/50
-21883/21883 [==============================] - 30s 1ms/step - loss: 0.3320 - acc: 0.8552 - val_loss: 0.3602 - val_acc: 0.8430
-Epoch 27/50
-21883/21883 [==============================] - 30s 1ms/step - loss: 0.3294 - acc: 0.8578 - val_loss: 0.3565 - val_acc: 0.8485
-Epoch 28/50
-21883/21883 [==============================] - 30s 1ms/step - loss: 0.3235 - acc: 0.8602 - val_loss: 0.3427 - val_acc: 0.8514
-Epoch 29/50
-21883/21883 [==============================] - 31s 1ms/step - loss: 0.3138 - acc: 0.8651 - val_loss: 0.3523 - val_acc: 0.8470
-Epoch 30/50
-21883/21883 [==============================] - 30s 1ms/step - loss: 0.3095 - acc: 0.8683 - val_loss: 0.3457 - val_acc: 0.8487
-Epoch 31/50
-21883/21883 [==============================] - 31s 1ms/step - loss: 0.3064 - acc: 0.8701 - val_loss: 0.3538 - val_acc: 0.8531
-Epoch 32/50
-21883/21883 [==============================] - 30s 1ms/step - loss: 0.2985 - acc: 0.8717 - val_loss: 0.3555 - val_acc: 0.8455
-Epoch 33/50
-21883/21883 [==============================] - 30s 1ms/step - loss: 0.2930 - acc: 0.8741 - val_loss: 0.3430 - val_acc: 0.8525
-Epoch 34/50
-21883/21883 [==============================] - 30s 1ms/step - loss: 0.2901 - acc: 0.8786 - val_loss: 0.3457 - val_acc: 0.8503
-Epoch 35/50
-21883/21883 [==============================] - 30s 1ms/step - loss: 0.2852 - acc: 0.8776 - val_loss: 0.3458 - val_acc: 0.8510
-Epoch 36/50
-21883/21883 [==============================] - 30s 1ms/step - loss: 0.2817 - acc: 0.8811 - val_loss: 0.3445 - val_acc: 0.8568
-Epoch 37/50
-21883/21883 [==============================] - 30s 1ms/step - loss: 0.2780 - acc: 0.8816 - val_loss: 0.3356 - val_acc: 0.8540
-Epoch 38/50
-21883/21883 [==============================] - 30s 1ms/step - loss: 0.2734 - acc: 0.8852 - val_loss: 0.3442 - val_acc: 0.8559
-Epoch 39/50
-21883/21883 [==============================] - 31s 1ms/step - loss: 0.2579 - acc: 0.8904 - val_loss: 0.3552 - val_acc: 0.8540
-Epoch 40/50
-21883/21883 [==============================] - 30s 1ms/step - loss: 0.2551 - acc: 0.8927 - val_loss: 0.3677 - val_acc: 0.8532
-Epoch 41/50
-21883/21883 [==============================] - 30s 1ms/step - loss: 0.2558 - acc: 0.8921 - val_loss: 0.3496 - val_acc: 0.8588
-Epoch 42/50
-21883/21883 [==============================] - 30s 1ms/step - loss: 0.2472 - acc: 0.8963 - val_loss: 0.3534 - val_acc: 0.8587
-Epoch 43/50
-21883/21883 [==============================] - 31s 1ms/step - loss: 0.2486 - acc: 0.8948 - val_loss: 0.3490 - val_acc: 0.8537
-Epoch 44/50
-21883/21883 [==============================] - 31s 1ms/step - loss: 0.2503 - acc: 0.8965 - val_loss: 0.3594 - val_acc: 0.8552
-Epoch 45/50
-21883/21883 [==============================] - 30s 1ms/step - loss: 0.2391 - acc: 0.8993 - val_loss: 0.3793 - val_acc: 0.8566
-Epoch 46/50
-21883/21883 [==============================] - 31s 1ms/step - loss: 0.2244 - acc: 0.9048 - val_loss: 0.3815 - val_acc: 0.8543
-Epoch 47/50
-21883/21883 [==============================] - 30s 1ms/step - loss: 0.2203 - acc: 0.9095 - val_loss: 0.3848 - val_acc: 0.8554
-Epoch 48/50
-21883/21883 [==============================] - 30s 1ms/step - loss: 0.2221 - acc: 0.9051 - val_loss: 0.3892 - val_acc: 0.8558
-Epoch 49/50
-21883/21883 [==============================] - 30s 1ms/step - loss: 0.2117 - acc: 0.9124 - val_loss: 0.3654 - val_acc: 0.8544
-Epoch 50/50
-21883/21883 [==============================] - 30s 1ms/step - loss: 0.2141 - acc: 0.9118 - val_loss: 0.3726 - val_acc: 0.8547
 
+</code></pre></div><p>Độ chính xác trên tập train là hơn 90%, trên tập val là hơn 85%. Nhìn kỹ hơn vào những từ sai ta thấy rằng</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">             name gender predicted_gender
+<span style="color:#ae81ff">6750</span>       Chiaki      f                m
+<span style="color:#ae81ff">28599</span>      Naheed      f                m
+<span style="color:#ae81ff">11448</span>  Espiridión      m                f
+<span style="color:#ae81ff">895</span>       Akmaral      f                m
+<span style="color:#ae81ff">33778</span>         Ros      f                m
 
-</code></pre>
-
-<p>Độ chính xác trên tập train là hơn 90%, trên tập val là hơn 85%. Nhìn kỹ hơn vào những từ sai ta thấy rằng</p>
-
-<pre><code class="language-python">             name gender predicted_gender
-6750       Chiaki      f                m
-28599      Naheed      f                m
-11448  Espiridión      m                f
-895       Akmaral      f                m
-33778         Ros      f                m
-
-</code></pre>
-
-<p>Có một sự nhập nhằng ở ngôn ngữ giữa tên nam và tên nữ ở những từ này. Có lẽ một tập dữ liệu với đầy đủ họ và tên sẽ cho ra một kết quả có độ chính xác cao hơn. Ví dụ, ở Việt Nam, tên Ngọc thì có thể đặt được cho cả Nam lẫn Nữ.</p>
-
+</code></pre></div><p>Có một sự nhập nhằng ở ngôn ngữ giữa tên nam và tên nữ ở những từ này. Có lẽ một tập dữ liệu với đầy đủ họ và tên sẽ cho ra một kết quả có độ chính xác cao hơn. Ví dụ, ở Việt Nam, tên Ngọc thì có thể đặt được cho cả Nam lẫn Nữ.</p>
 <p>Mình sẽ cố gắng kiếm một bộ dataset tên tiếng việt và thực hiện việc xây dựng mô hình xác định giới tính thông qua tên người dựa vào mô hình LSTM.</p>
-
 <p>Cảm ơn các bạn đã theo dõi. Hẹn gặp bạn ở các bài viết tiếp theo.</p>
 
   </div>
@@ -804,7 +735,7 @@ Epoch 50/50
 
     <article class="post">
         <div id="disqus_thread"></div>
-<script>
+<script type="application/javascript">
     var disqus_config = function () {
     
     
