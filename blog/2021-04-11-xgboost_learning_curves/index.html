@@ -27,7 +27,7 @@
         "datePublished": "2021-04-11 00:19:00 &#43;0300 &#43;0300",
         "dateModified" : "2021-04-11 00:19:00 &#43;0300 &#43;0300",
         "url" : "/blog/2021-04-11-xgboost_learning_curves/",
-        "wordCount" : "2795",
+        "wordCount" : "791",
         "keywords" : [ "python","Blog" ]
     }
     </script>
@@ -94,7 +94,7 @@
 
 <meta itemprop="datePublished" content="2021-04-11T00:19:00&#43;03:00" />
 <meta itemprop="dateModified" content="2021-04-11T00:19:00&#43;03:00" />
-<meta itemprop="wordCount" content="2795">
+<meta itemprop="wordCount" content="791">
 
 
 
@@ -461,660 +461,102 @@ article .captionnews {
 
 <h1 id="giới-thiệu">Giới thiệu</h1>
 
-<p>Dạo gần đây, mình hay đọc các bài thơ cổ cho con mình nghe, ngặt nỗi các tác phẩm đã từng học thì giờ câu quên, câu mất. Chữ đực, chữ cái, đọc câu nọ lại xọ qua câu kia, mà kiếm mãi trên google thì toàn các bài giải thơ. Lang thang một hồi thì mình mình cũng tìm được bản dịch bài này của bác Ngô Tất Tố. Theo mình đánh giá thì đây là bản dịch ổn nhất trong so với bản dịch của bác Bùi Kỷ hoặc của các tác giả khác. Nên mình trích lại tác phẩm này trong website cá nhân của mình để mình dễ tìm kiếm hơn.</p>
+<p>Trong quá trình giải các bài toán có sử dụng machine learning, vì để làm nhanh nên đôi khi mình sẽ sử dụng các tham số mặc định của mô hình để train. Một phần vì lý do chúng ta không biết cách chỉnh các tham só như thế nào, so với cái gì để có mô hình huấn luyện là tốt nhất. Ở bài viết này, mình sẽ sử dụng Learning Curves để tối ưu hóa các tham số của XGBoost. Các mô hình khác cũng làm tương tự thôi. Mình chọn XGBoost vì mô hình này thường cho kết quả khá tốt trên các cuộc thi ở Kaggle.</p>
 
-<h1 id="bình-ngô-đại-cáo-tác-giả-nguyễn-trãi">Bình ngô đại cáo - Tác giả Nguyễn Trãi</h1>
+<h1 id="bắt-đầu">Bắt đầu</h1>
 
-<p>Thay trời hành hoá, hoàng thượng truyền rằng.
-<br />
-<br />
-Từng nghe:
-<br /></p>
+<p>Để bắt đầu thí nghiệm, chúng ta sẽ sinh ngẫu nhiên 60 ngàn dữ liệu có 1 ngàn thuộc tính bằng cách sử dụng hàm make_classification, sau đó sẽ chia dữ liệu thành 2 tập train và test với tỷ lệ 10% là tập test</p>
 
-<p>Việc nhân nghĩa cốt ở yên dân</p>
+<pre><code class="language-python">X, y = make_classification(n_samples=60000, n_features=1000, n_informative=50, n_redundant=0, random_state=1)
+#  split data into train and test sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.10, random_state=1)
 
-<p>Quân điếu phạt trước lo trừ bạo</p>
+</code></pre>
 
-<p>Như nước Đại Việt ta từ trước</p>
+<p>Load mô hình XGBClassifier với các tham số là mặc định. Mô hình này được xem như là baseline và các cải tiến tham số ở sau sẽ so sánh kết quả trên mô hình này.</p>
 
-<p>Vốn xưng nền văn hiến đã lâu</p>
+<pre><code class="language-python">
 
-<p>Núi sông bờ cõi đã chia</p>
+model = XGBClassifier()
 
-<p>Phong tục Bắc Nam cũng khác</p>
+evalset = [(X_train, y_train), (X_test, y_test)]
 
-<p>Từ Triệu, Đinh, Lý, Trần bao đời xây nền độc lập</p>
+model.fit(X_train, y_train, eval_metric='logloss', eval_set=evalset)
+# evaluate performance
+yhat = model.predict(X_test)
+score = accuracy_score(y_test, yhat)
+print('Accuracy: %.3f' % score)
+# retrieve performance metrics
+results = model.evals_result()
+# plot learning curves
+pyplot.plot(results['validation_0']['logloss'], label='train')
+pyplot.plot(results['validation_1']['logloss'], label='test')
+# show the legend
+pyplot.legend()
+# show the plot
+pyplot.show()
 
-<p>Cùng Hán, Đường, Tống, Nguyên mỗi bên hùng cứ một phương</p>
 
-<p>Tuy mạnh yếu có lúc khác nhau</p>
+</code></pre>
 
-<p>Song hào kiệt thời nào cũng có.
-<br />
-<br />
-Cho nên:</p>
+<p>Độ chính xác: Accuracy: 0.962. Lưu ý ràng độ chính xác khi thực nghiệm của mỗi lần chạy sẽ khác nhau, do data sinh ngẫu nhiên và một phần do sự ngẫu nhiên trong XGBoost.</p>
 
-<p>Lưu Cung tham công nên thất bại,</p>
+<p><img src="/post_image/xgboost_learning_cruver.jpg" alt="Hình ảnh Learning Curves" /></p>
 
-<p>Triệu Tiết thích lớn phải tiêu vong,</p>
+<p>Nhìn vào hình trên, chúng ta thấy rằng đường cong của tập train (đường màu xanh) có độ lỗi tốt hơn so với đường cong của tập test( đường màu đỏ)</p>
 
-<p>Cửa Hàm tử bắt sống Toa Đô</p>
+<h1 id="tiến-hành-turning">Tiến hành turning</h1>
 
-<p>Sông Bạch Đằng giết tươi Ô Mã</p>
+<p>Đầu tiên, nhìn vào đồ thị, ta thấy rằng đường cong vẫn còn có độ dốc, nên việc tăng số lần lặp có thể sẽ làm tăng thêm độ chính xác, thử thay đổi số lần lặp lên 500 xem sao.</p>
 
-<p>Việc xưa xem xét,</p>
+<p>Trong XGBoost số lần lặp được tham số hóa bởi tham số n_estimators, chỉnh lại đoạn mã lệnh ở trên với một thay đổi nhỏ rồi chạy lại</p>
 
-<p>Chứng cớ còn ghi.
-<br />
-<br /></p>
+<pre><code class="language-python">
+model = XGBClassifier(n_estimators=500)
 
-<p>Vừa rồi:</p>
+</code></pre>
 
-<p>Nhân họ Hồ chính sự phiền hà,</p>
+<p>Độ chính xác của mô hình tăng lên 1 chút, đối với thực nghiệm của mình là Accuracy: 0.981</p>
 
-<p>Để trong nước lòng dân oán hận.</p>
+<p><img src="/post_image/xgboost_learning_cruver_n500.jpg" alt="Hình ảnh Learning Curves với số lần lặp 500" /></p>
 
-<p>Quân cuồng Minh thừa cơ gây hoạ,</p>
+<p>Quan sát đường cong của hình trên, ta thấy phần đuôi đoạn số lần lặp từ 270 đến 500 có độ dốc nhỏ, hầu như là bằng phẳng, có thể kết luận là việc huấn luyện ở đoạn này hầu như không cải tiến gì nhiều.</p>
 
-<p>Bọn gian tà còn bán nước cầu vinh.</p>
+<p>Một nhận xét nữa là đoạn trước 150 có độ dốc khá lớn, có khả năng là hệ số học (learning reate) quá lớn, làm cho mô hình chưa đạt được cực tiểu, thử điều chỉnh hệ số học này nhỏ hơn là 0.01, thay vì 0.3 như giá trị mặc định xem sao.</p>
 
-<p>Nướng dân đen trên ngọn lửa hung tàn,</p>
+<p>Một lưu ý là hệ số học nhỏ thì sẽ lâu hội tụ, nên chúng ta phải tăng số lần lặp lên. Ở đây đồng thời với việc giảm hệ số học xuống 0.01, mình còn tăng số lần lặp lên 1000.</p>
 
-<p>Vùi con đỏ xuống dưới hầm tai vạ.</p>
+<p>Trong XGBoost hệ số học được tham số hóa bởi tham số eta</p>
 
-<p>Dối trời lừa dân đủ muôn ngàn kế,</p>
+<pre><code class="language-python">
+model = XGBClassifier(n_estimators=1000, eta=0.01)
 
-<p>Gây thù kết oán trải mấy mươi năm.</p>
+</code></pre>
 
-<p>Bại nhân nghĩa nát cả đất trời,</p>
+<p>Độ chính xác đạt được: Accuracy: 0.954</p>
 
-<p>Nặng thuế khoá sạch không đầm núi.</p>
+<p><img src="/post_image/xgboost_learning_cruver_n1000.jpg" alt="Hình ảnh Learning Curves với số lần lặp 1000,  eta=0.01" /></p>
 
-<p>Người bị ép xuống biển dòng lưng mò ngọc, ngán thay cá mập thuồng luồng.</p>
+<p>Tuy mô hình có độ chính xác giảm, nhưng nhìn vào đồ thị thì ta thấy mô hình vẫn còn độ dốc, nghĩa là mô hình sẽ cho kết quả tốt hơn nữa nếu ta tăng số vòng lặp.</p>
 
-<p>Kẻ bị đem vào núi đãi cát tìm vàng, khốn nỗi rừng sâu, nước độc.</p>
+<p>Một cách khách là thay đổi các chuẩn hóa (regularization ) bằng cách giảm các tham số số mẫu ( samples) và số đặc trưng (features) được dùng để xây dựng cây trong tập hợp. Hai tham số này được tham số hóa bởi tham số subsample và colsample_bytree. Giá trị mặc định của chúng là 1. Chúng ta sẽ thay đổi thành 0.35 xem sao nhé</p>
 
-<p>Vét sản vật, bắt dò chim sả, chốn chốn lưới chăng,</p>
+<pre><code class="language-python">
+model = XGBClassifier(n_estimators=1000, eta=0.01, subsample=0.35, colsample_bytree=0.35)
 
-<p>Nhiễu nhân dân, bắt hươu đen, nơi nơi cạm đặt.</p>
+</code></pre>
 
-<p>Tàn hại cả giống côn trùng cây cỏ,</p>
+<p>Quá trình này có thể tiếp tục, dựa vào quan sát của các bạn trên đường cong và hơn hết là sự hiệu biết thấu đáo của các bạn trên các tham số mà mô hình của bạn đang sử dụng. Chúc các bạn sẽ có một hướng đi tốt để giảm thiểu thời gian mò mẫm.</p>
 
-<p>Nheo nhóc thay kẻ goá bụa khốn cùng.</p>
+<p>Cảm ơn các bạn đã chú ý theo dõi. Hẹn gặp lại ở các bài viết tiếp theo.</p>
 
-<p>Thằng há miệng, đứa nhe răng, máu mỡ bấy no nê chưa chán ;</p>
+<p>Nguồn tham khảo</p>
 
-<p>Nay xây nhà, mai đắp đất, chân tay nào phục dịch cho vừa.</p>
+<p><a href="https://xgboost.readthedocs.io/en/latest/python/python_api.html#xgboost.XGBClassifier">https://xgboost.readthedocs.io/en/latest/python/python_api.html#xgboost.XGBClassifier</a></p>
 
-<p>Nặng nề những nổi phu phen,</p>
+<p><a href="https://machinelearningmastery.com/tune-xgboost-performance-with-learning-curves/">https://machinelearningmastery.com/tune-xgboost-performance-with-learning-curves/</a></p>
 
-<p>Tan tác cả nghề canh cửi.</p>
-
-<p>Độc ác thay, trúc Nam Sơn không ghi hết tội,</p>
-
-<p>Dơ bẩn thay, nước Đông Hải không rửa sạch mùi.</p>
-
-<p>Lẽ nào trời đất dung tha,</p>
-
-<p>Ai bảo thần dân chịu được?</p>
-
-<p><br />
-<br /></p>
-
-<p>Ta đây:</p>
-
-<p>Núi Lam sơn dấy nghĩa</p>
-
-<p>Chốn hoang dã nương mình</p>
-
-<p>Ngẫm thù lớn há đội trời chung</p>
-
-<p>Căm giặc nước thề không cùng sống</p>
-
-<p>Đau lòng nhức óc, chốc đà mười mấy năm trời</p>
-
-<p>Nếm mật nằm gai, há phải một hai sớm tối.</p>
-
-<p>Quên ăn vì giận, sách lược thao suy xét đã tinh,</p>
-
-<p>Ngẫm trước đến nay, lẽ hưng phế đắn đo càng kỹ.</p>
-
-<p>Những trằn trọc trong cơn mộng mị,</p>
-
-<p>Chỉ băn khoăn một nỗi đồ hồi</p>
-
-<p>Vừa khi cờ nghĩa dấy lên,</p>
-
-<p>Chính lúc quân thù đang mạnh.</p>
-
-<p><br />
-<br /></p>
-
-<p>Lại ngặt vì:</p>
-
-<p>Tuấn kiệt như sao buổi sớm,</p>
-
-<p>Nhân tài như lá mùa thu,</p>
-
-<p>Việc bôn tẩu thiếu kẻ đỡ đần,</p>
-
-<p>Nơi duy ác hiếm người bàn bạc,</p>
-
-<p>Tấm lòng cứu nước, vẫn đăm đăm muốn tiến về Đông,</p>
-
-<p>Cỗ xe cầu hiền, thường chăm chắm còn dành phía tả.</p>
-
-<p><br />
-<br /></p>
-
-<p>Thế mà:</p>
-
-<p>Trông người, người càng vắng bóng, mịt mù như nhìn chốn bể khơi.</p>
-
-<p>Tự ta, ta phải dốc lòng, vội vã hơn cứu người chết đuối.</p>
-
-<p>Phần vì giận quân thù ngang dọc,</p>
-
-<p>Phần vì lo vận nước khó khăn,</p>
-
-<p>Khi Linh Sơn lương hết mấy tuần,</p>
-
-<p>Lúc Khôi Huyện quân không một đội.</p>
-
-<p>Trời thử lòng trao cho mệnh lớn</p>
-
-<p>Ta gắng trí khắc phục gian nan.</p>
-
-<p>Nhân dân bốn cõi một nhà, dựng cần trúc ngọn cờ phấp phới</p>
-
-<p>Tướng sĩ một lòng phụ tử, hoà nước sông chén rượu ngọt ngào.</p>
-
-<p>Thế trận xuất kỳ, lấy yếu chống mạnh,</p>
-
-<p>Dùng quân mai phục, lấy ít địch nhiều.</p>
-
-<p><br />
-<br /></p>
-
-<p>Trọn hay:</p>
-
-<p>Đem đại nghĩa để thắng hung tàn,</p>
-
-<p>Lấy chí nhân để thay cường bạo.</p>
-
-<p>Trận Bồ Đằng sấm vang chớp giật,</p>
-
-<p>Miền Trà Lân trúc chẻ tro bay.</p>
-
-<p>Sĩ khí đã hăng</p>
-
-<p>Quân thanh càng mạnh.</p>
-
-<p>Trần Trí, Sơn Thọ nghe hơi mà mất vía,</p>
-
-<p>Lý An, Phương Chính, nín thở cầu thoát thân.</p>
-
-<p>Thừa thắng đuổi dài, Tây Kinh quân ta chiếm lại,</p>
-
-<p>Tuyển binh tiến đánh, Đông Đô đất cũ thu về.</p>
-
-<p>Ninh Kiều máu chảy thành sông, tanh trôi vạn dặm</p>
-
-<p>Tuy Động thây chất đầy nội, nhơ để ngàn năm.</p>
-
-<p>Phúc tâm quân giặc Trần Hiệp đã phải bêu đầu</p>
-
-<p>Mọt gian kẻ thù Lý Lượng cũng đành bỏ mạng.</p>
-
-<p>Vương Thông gỡ thế nguy, mà đám lửa cháy lại càng cháy</p>
-
-<p>Mã Anh cứu trận đánh mà quân ta hăng lại càng hăng.</p>
-
-<p>Bó tay để đợi bại vong, giặc đã trí cùng lực kiệt,</p>
-
-<p>Chẳng đánh mà người chịu khuất, ta đây mưu phạt tâm công.</p>
-
-<p>Tưởng chúng biết lẽ ăn năn nên đã thay lòng đổi dạ</p>
-
-<p>Ngờ đâu vẫn đương mưu tính lại còn chuốc tội gây oan.</p>
-
-<p>Giữ ý kiến một người, gieo vạ cho bao nhiêu kẻ khác,</p>
-
-<p>Tham công danh một lúc, để cười cho tất cả thế gian.</p>
-
-<p><br />
-<br />
-Bởi thế:</p>
-
-<p>Thằng nhãi con Tuyên Đức động binh không ngừng</p>
-
-<p>Đồ nhút nhát Thạnh, Thăng đem dầu chữa cháy</p>
-
-<p>Đinh mùi tháng chín, Liễu Thăng đem binh từ Khâu Ôn kéo lại</p>
-
-<p>Năm ấy tháng mười, Mộc Thạnh chia đường từ Vân Nam tiến sang.</p>
-
-<p>Ta trước đã điều binh thủ hiểm, chặt mũi tiên phong</p>
-
-<p>Sau lại sai tướng chẹn đường, tuyệt nguồn lương thực</p>
-
-<p>Ngày mười tám, trận Chi Lăng, Liễu Thăng thất thế</p>
-
-<p>Ngày hai mươi, trận Mã Yên, Liễu Thăng cụt đầu</p>
-
-<p>Ngày hăm lăm, bá tước Lương Minh đại bại tử vong</p>
-
-<p>Ngày hăm tám, thượng thư Lý Khánh cùng kế tự vẫn.</p>
-
-<p>Thuận đà ta đưa lưỡi dao tung phá</p>
-
-<p>Bí nước giặc quay mũi giáo đánh nhau</p>
-
-<p>Lại thêm quân bốn mặt vây thành</p>
-
-<p>Hẹn đến giữa tháng mười diệt giặc</p>
-
-<p>Sĩ tốt kén người hùng hổ</p>
-
-<p>Bề tôi chọn kẻ vuốt nanh</p>
-
-<p>Gươm mài đá, đá núi cũng mòn</p>
-
-<p>Voi uống nước, nước sông phải cạn.</p>
-
-<p>Đánh một trận, sạch không kình ngạc</p>
-
-<p>Đánh hai trận tan tác chim muông.</p>
-
-<p>Cơn gió to trút sạch lá khô,</p>
-
-<p>Tổ kiến hổng sụt toang đê vỡ.</p>
-
-<p>Đô đốc Thôi Tụ lê gối dâng tờ tạ tội,</p>
-
-<p>Thượng thư Hoàng Phúc trói tay để tự xin hàng.</p>
-
-<p>Lạng Giang, Lạng Sơn, thây chất đầy đường</p>
-
-<p>Xương Giang, Bình Than, máu trôi đỏ nước</p>
-
-<p>Ghê gớm thay! Sắc phong vân phải đổi,</p>
-
-<p>Thảm đạm thay! Ánh nhật nguyệt phải mờ</p>
-
-<p>Bị ta chặn ở Lê Hoa, quân Vân Nam nghi ngờ khiếp vía mà vỡ mật!</p>
-
-<p>Nghe Thăng thua ở Cần Trạm, quân Mộc Thạnh xéo lên nhau chạy để thoát thân.</p>
-
-<p>Suối Lãnh Câu, máu chảy thành sông, nước sông nghẹn ngào tiếng khóc</p>
-
-<p>Thành Đan Xá, thây chất thành núi, cỏ nội đầm đìa máu đen.</p>
-
-<p>Cứu binh hai đạo tan tành, quay gót chẳng kịp,</p>
-
-<p>Quân giặc các thành khốn đốn, cởi giáp ra hàng</p>
-
-<p>Tướng giặc bị cầm tù, như hổ đói vẫy đuôi xin cứu mạng</p>
-
-<p>Thần Vũ chẳng giết hại, thể lòng trời ta mở đường hiếu sinh</p>
-
-<p>Mã Kỳ, Phương Chính, cấp cho năm trăm chiếc thuyền, ra đến biển mà vẫn hồn bay phách lạc,</p>
-
-<p>Vương Thông, Mã Anh, phát cho vài nghìn cỗ ngựa, về đến nước mà vẫn tim đập chân run.</p>
-
-<p>Họ đã tham sống sợ chết mà hoà hiếu thực lòng</p>
-
-<p>Ta lấy toàn quân là hơn, để nhân dân nghỉ sức.</p>
-
-<p>Chẳng những mưu kế kì diệu</p>
-
-<p>Cũng là chưa thấy xưa nay</p>
-
-<p>Xã tắc từ đây vững bền</p>
-
-<p>Giang sơn từ đây đổi mới</p>
-
-<p>Càn khôn bĩ rồi lại thái</p>
-
-<p>Nhật nguyệt hối rồi lại minh</p>
-
-<p>Ngàn năm vết nhục nhã sạch làu</p>
-
-<p>Muôn thuở nền thái bình vững chắc</p>
-
-<p>Âu cũng nhờ trời đất tổ tông linh thiêng đã lặng thầm phù trợ;</p>
-
-<p><br />
-<br /></p>
-
-<p>Than ôi!</p>
-
-<p>Một cỗ nhung y chiến thắng,</p>
-
-<p>Nên công oanh liệt ngàn năm</p>
-
-<p>Bốn phương biển cả thanh bình,</p>
-
-<p>Ban chiếu duy tân khắp chốn.</p>
-
-<p><br />
-<br /></p>
-
-<p>Xa gần bá cáo,</p>
-
-<p>Ai nấy đều hay.</p>
-
-<h1 id="bình-ngô-đại-cáo-bản-phiên-âm-hán-việt">Bình ngô đại cáo - Bản phiên âm Hán Việt</h1>
-
-<p>Đại thiên hành hoá hoàng thượng nhược viết:</p>
-
-<p>Cái văn:</p>
-
-<p>Nhân nghĩa chi cử, yếu tại an dân,</p>
-
-<p>Điếu phạt chi sư mạc tiên khử bạo.</p>
-
-<p>Duy, ngã Đại Việt chi quốc,</p>
-
-<p>Thực vi văn hiến chi bang.</p>
-
-<p>Sơn xuyên chi phong vực ký thù,</p>
-
-<p>Nam bắc chi phong tục diệc dị.</p>
-
-<p>Tự Triệu, Đinh, Lý, Trần chi triệu tạo ngã quốc,</p>
-
-<p>Dữ Hán, Đường, Tống, Nguyên nhi các đế nhất phương.</p>
-
-<p>Tuy cường nhược thì hữu bất đồng,</p>
-
-<p>Nhi hào kiệt thế vị thường phạp.</p>
-
-<p>Cố Lưu Cung tham công dĩ thủ bại,</p>
-
-<p>Nhi Triệu Tiết hiếu đại dĩ xúc vong.</p>
-
-<p>Toa Đô ký cầm ư Hàm Tử quan,</p>
-
-<p>Ô Mã hựu ế ư Bạch Đằng hải.</p>
-
-<p>Kê chư vãng cổ,</p>
-
-<p>Quyết hữu minh trưng.</p>
-
-<p>Khoảnh nhân Hồ chính chi phiền hà.</p>
-
-<p>Chí sử nhân tâm chi oán bạn.</p>
-
-<p>Cuồng Minh tứ khích, nhân dĩ độc ngã dân;</p>
-
-<p>Ác Đảng hoài gian, cánh dĩ mại ngã quốc.</p>
-
-<p>Hân thương sinh ư ngược diệm,</p>
-
-<p>Hãm xích tử ư hoạ khanh.</p>
-
-<p>Khi thiên võng dân, quỷ kế cái thiên vạn trạng;</p>
-
-<p>Liên binh kết hấn nẫm ác đãi nhị thập niên.</p>
-
-<p>Bại nghĩa thương nhân, càn khôn kỷ hồ dục tức;</p>
-
-<p>Trọng kHoa hậu liễm, sơn trạch mi hữu kiết di.</p>
-
-<p>Khai kim trường tái mạo lam chướng nhi phủ sơn đào sa,</p>
-
-<p>Thái minh châu tắc xúc giao long nhi căng yêu thộn hải.</p>
-
-<p>Nhiễu dân thiết huyền lộc chi hãm tịnh,</p>
-
-<p>Điển vật chức thuý cầm chi võng la.</p>
-
-<p>Côn trùng thảo mộc giai bất đắc dĩ toại kỳ sinh,</p>
-
-<p>Quan quả điên liên câu bất hoạch dĩ an kỳ sở.</p>
-
-<p>Tuấn sinh linh chi huyết dĩ nhuận kiệt hiệt chi vẫn nha;</p>
-
-<p>Cực thổ mộc chi công dĩ sùng công tư chi giải vũ.</p>
-
-<p>Châu lý chi chinh dao trọng khốn,</p>
-
-<p>Lư diêm chi trữ trục giai không.</p>
-
-<p>Quyết Đông Hải chi thuỷ bất túc dĩ trạc kỳ ô,</p>
-
-<p>Khánh Nam Sơn chi trúc bất túc dĩ thư kỳ ác.</p>
-
-<p>Thần dân chi sở cộng phẫn,</p>
-
-<p>Thiên địa chi sở bất dung.</p>
-
-<p>Dư:</p>
-
-<p>Phấn tích Lam Sơn,</p>
-
-<p>Thê thân hoang dã.</p>
-
-<p>Niệm thế thù khởi khả cộng đới,</p>
-
-<p>Thệ nghịch tặc nan dữ câu sinh.</p>
-
-<p>Thống tâm tật thủ giả thuỳ thập dư niên,</p>
-
-<p>Thường đảm ngoạ tân giả cái phi nhất nhật.</p>
-
-<p>Phát phẫn vong thực, mỗi nghiên đàm thao lược chi thư,</p>
-
-<p>Tức cổ nghiệm kim, tế suy cứu hưng vong chi lý.</p>
-
-<p>Đồ hồi chi chí,</p>
-
-<p>Ngộ mị bất vong.</p>
-
-<p>Đương nghĩa kỳ sơ khởi chi thì,</p>
-
-<p>Chính tặc thế phương trương chi nhật.</p>
-
-<p>Nại dĩ:</p>
-
-<p>Nhân tài thu diệp,</p>
-
-<p>Tuấn kiệt thần tinh.</p>
-
-<p>Bôn tẩu tiên hậu giả ký phạp kỳ nhân,</p>
-
-<p>Mưu mô duy ác giả hựu quả kỳ trợ.</p>
-
-<p>Đặc dĩ cứu dân chi niệm, mỗi uất uất nhi dục đông;</p>
-
-<p>Cố ư đãi hiền chi xa, thường cấp cấp dĩ hư tả.</p>
-
-<p>Nhiên kỳ:</p>
-
-<p>Đắc nhân chi hiệu mang nhược vọng dương,</p>
-
-<p>Do kỷ chi thành thậm ư chửng nịch.</p>
-
-<p>Phẫn hung đồ chi vị diệt,</p>
-
-<p>Niệm quốc bộ chi tao truân.</p>
-
-<p>Linh Sơn chi thực tận kiêm tuần,</p>
-
-<p>Khôi Huyện chi chúng vô nhất lữ.</p>
-
-<p>Cái thiên dục khốn ngã dĩ giáng quyết nhiệm,</p>
-
-<p>Cố dữ ích lệ chí dĩ tế vu nan.</p>
-
-<p>Yết can vi kỳ, manh lệ chi đồ tứ tập;</p>
-
-<p>Đầu giao hưởng sĩ, phụ tử chi binh nhất tâm.</p>
-
-<p>Dĩ nhược chế cường, hoặc công nhân chi bất bị;</p>
-
-<p>Dĩ quả địch chúng thường thiết phục dĩ xuất kỳ.</p>
-
-<p>Tốt năng:</p>
-
-<p>Dĩ đại nghĩa nhi thắng hung tàn,</p>
-
-<p>Dĩ chí nhân nhi dị cường bạo.</p>
-
-<p>Bồ Đằng chi đình khu điện xế,</p>
-
-<p>Trà Lân chi trúc phá hôi phi.</p>
-
-<p>Sĩ khí dĩ chi ích tăng,</p>
-
-<p>Quân thanh dĩ chi đại chấn.</p>
-
-<p>Trần Trí, Sơn Thọ văn phong nhi sỉ phách,</p>
-
-<p>Lý An, Phương Chính giả tức dĩ thâu sinh.</p>
-
-<p>Thừa thắng trường khu, Tây Kinh ký vị ngã hữu;</p>
-
-<p>Tuyển binh tiến thủ, Đông Đô tận phục cựu cương.</p>
-
-<p>Ninh Kiều chi huyết thành xuyên, lưu tinh vạn lý;</p>
-
-<p>Tốt Động chi thi tích dã, di xú thiên niên.</p>
-
-<p>Trần Hiệp tặc chi phúc tâm, ký kiêu kỳ thủ;</p>
-
-<p>Lý Lượng tặc chi gian đố, hựu bạo quyết thi.</p>
-
-<p>Vương Thông lý loạn nhi phần giả ích phần,</p>
-
-<p>Mã Anh cứu đấu nhi nộ giả ích nộ.</p>
-
-<p>Bỉ trí cùng nhi lực tận, thúc thủ đãi vong;</p>
-
-<p>Ngã mưu phạt nhi tâm công, bất chiến tự khuất.</p>
-
-<p>Vị bỉ tất dị tâm nhi cải lự,</p>
-
-<p>Khởi ý phục tác nghiệt dĩ tốc cô.</p>
-
-<p>Chấp nhất kỷ chi kiến dĩ giá hoạ ư tha nhân,</p>
-
-<p>Tham nhất thì chi công dĩ di tiếu ư thiên hạ.</p>
-
-<p>Toại linh Tuyên Đức chi giảo đồng, độc binh vô yếm;</p>
-
-<p>Nhưng mệnh Thạnh Thăng chi noạ tướng, dĩ du cứu phần.</p>
-
-<p>Đinh vị cửu nguyệt Liễu Thăng toại dẫn binh do Khâu Ôn nhi tiến,</p>
-
-<p>Nản niên thập nguyệt Mộc Thạnh hựu phân đồ tự Vân Nam nhi lai.</p>
-
-<p>Dư tiền ký tuyển binh tái hiểm dĩ tồi kỳ phong,</p>
-
-<p>Dư hậu tái điều binh tiệt lộ dĩ đoạn kỳ thực.</p>
-
-<p>Bản nguyệt thập bát nhật Liễu Thăng vị ngã quân sở công, kế truỵ ư Chi Lăng chi dã;</p>
-
-<p>Bản nguyệt nhị thập nhật Liễu Thăng hựu vị ngã quân sở bại, thân tử ư Mã An chi sơn.</p>
-
-<p>Nhị thập ngũ nhật Bảo Định bá Lương Minh trận hãm nhi táng khu,</p>
-
-<p>Nhị thập bát nhật Thượng thư Lý Khánh kế cùng nhi vẫn thủ.</p>
-
-<p>Ngã toại nghênh nhận nhi giải,</p>
-
-<p>Bỉ tự đảo qua tương công.</p>
-
-<p>Kế nhi tứ diện thiêm binh dĩ bao vi,</p>
-
-<p>Kỳ dĩ thập nguyệt trung tuần nhi điễn diệt.</p>
-
-<p>Viên tuyển tì hưu chi sĩ,</p>
-
-<p>Thân mệnh trảo nha chi thần.</p>
-
-<p>Ẩm tượng nhi hà thuỷ càn,</p>
-
-<p>Ma đao nhi sơn thạch khuyết.</p>
-
-<p>Nhất cổ nhi kình khô ngạc đoạn,</p>
-
-<p>Tái cổ nhi điểu tán quân kinh.</p>
-
-<p>Quyết hội nghĩ ư băng đê,</p>
-
-<p>Chấn cương phong ư cảo diệp.</p>
-
-<p>Đô đốc Thôi Tụ tất hành nhi tống khoản,</p>
-
-<p>Thượng thư Hoàng Phúc diện phọc dĩ tựu cầm.</p>
-
-<p>Cương thi tái Lượng Giang, Lượng Sơn chi đồ,</p>
-
-<p>Chiến huyết xích Xương Giang, Bình Than chi thuỷ.</p>
-
-<p>Phong vân vị chi biến sắc,</p>
-
-<p>Nhật nguyệt thảm dĩ vô quang.</p>
-
-<p>Kỳ Vân Nam binh vị ngã quân sở ách ư Lê Hoa, tự đỗng nghi hư hạt nhi tiên dĩ phá phủ;</p>
-
-<p>Kỳ Mộc Thạnh chúng văn Thăng quân sở bại ư Cần Trạm, toại lận tạ bôn hội nhi cận đắc thoát thân.</p>
-
-<p>Lãnh Câu chi huyết chử phiếu, giang thuỷ vị chi ô yết;</p>
-
-<p>Đan Xá chi thi sơn tích, dã thảo vị chi ân hồng.</p>
-
-<p>Lưỡng lộ cứu binh ký bất toàn chủng nhi câu bại,</p>
-
-<p>Các thành cùng khấu diệc tướng giải giáp dĩ xuất hàng.</p>
-
-<p>Tặc thủ thành cầm, bỉ ký trạo ngạ hổ khất liên chi vĩ;</p>
-
-<p>Thần võ bất sát, dư diệc thể thượng đế hiếu sinh chi tâm.</p>
-
-<p>Tham tướng Phương Chính, Nội quan Mã Kỳ, tiên cấp hạm ngũ bách dư sưu, ký độ hải nhi do thả hồn phi phách tán;</p>
-
-<p>Tổng binh Vương Thông, Tham chính Mã Anh, hựu cấp mã sổ thiên dư thất, dĩ hoàn quốc nhi ích tự cổ lật tâm kinh.</p>
-
-<p>Bỉ ký uý tử tham sinh, nhi tu hảo hữu thành;</p>
-
-<p>Dư dĩ toàn quân vi thượng, nhi dục dân chi đắc tức.</p>
-
-<p>Phi duy mưu kế chi cực kỳ thâm viễn,</p>
-
-<p>Cái diệc cổ kim chi sở vị kiến văn.</p>
-
-<p>Xã tắc dĩ chi điện an,</p>
-
-<p>Sơn xuyên dĩ chi cải quan.</p>
-
-<p>Càn khôn ký bĩ nhi phục thái,</p>
-
-<p>Nhật nguyệt ký hối nhi phục minh.</p>
-
-<p>Vu dĩ khai vạn thế thái bình chi cơ,</p>
-
-<p>Vu dĩ tuyết thiên địa vô cùng chi sỉ.</p>
-
-<p>Thị do thiên địa tổ tông chi linh hữu,</p>
-
-<p>Dĩ mặc tương âm hữu nhi trí nhiên dã.</p>
-
-<p>Ô hô!</p>
-
-<p>Nhất nhung đại định,</p>
-
-<p>Hất thành vô cạnh chi công;</p>
-
-<p>Tứ hải vĩnh thanh,</p>
-
-<p>Đản bố duy tân chi cáo.</p>
-
-<p>Bá cáo hà nhĩ,</p>
-
-<p>Hàm sử văn tri.</p>
+<p><a href="https://machinelearningmastery.com/learning-curves-for-diagnosing-machine-learning-model-performance/">https://machinelearningmastery.com/learning-curves-for-diagnosing-machine-learning-model-performance/</a></p>
 
   </div>
   
