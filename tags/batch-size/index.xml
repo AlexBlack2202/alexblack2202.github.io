@@ -10,9 +10,7 @@
     <webMaster>alexblack2202@gmail.com (Phạm Duy Tùng)</webMaster>
     <copyright>This work is licensed under a Creative Commons Attribution-ShareAlike 4.0 International License.</copyright>
     <lastBuildDate>Tue, 02 Oct 2018 00:19:00 +0300</lastBuildDate>
-    
-	<atom:link href="/tags/batch-size/index.xml" rel="self" type="application/rss+xml" />
-    
+    <atom:link href="/tags/batch-size/" rel="self" type="application/rss+xml" />
     
     <item>
       <title>Phân biệt Epoch - Batch size và Iterations</title>
@@ -20,8 +18,73 @@
       <pubDate>Tue, 02 Oct 2018 00:19:00 +0300</pubDate>
       <author>alexblack2202@gmail.com (Phạm Duy Tùng)</author>
       <guid>/blog/2018-10-02-understanding-epoch-batchsize-iterations/</guid>
-      <description>Lời mở đầu Khi mới bắt đầu bước vào thế giới của ML/DL chúng ta sẽ bắt gặp các thuật ngữ Epoch - Batch size và Iterations. Và sẽ cảm thấy bối rối vì chúng khá giống nhau, nhưng thực tế là chúng khác xa nhau.
-Để hiểu rõ sự khác biệt giữa chúng, các bạn cần tìm hiểu một số khái niệm trong machine learning như Gradient Descent.</description>
+      <description>
+
+&lt;h2 id=&#34;lời-mở-đầu&#34;&gt;Lời mở đầu&lt;/h2&gt;
+
+&lt;p&gt;Khi mới bắt đầu bước vào thế giới của ML/DL chúng ta sẽ bắt gặp các thuật ngữ Epoch - Batch size và Iterations. Và sẽ cảm thấy bối rối vì chúng khá giống nhau, nhưng thực tế là chúng khác xa nhau.&lt;/p&gt;
+
+&lt;p&gt;Để hiểu rõ sự khác biệt giữa chúng, các bạn cần tìm hiểu một số khái niệm trong machine learning như Gradient Descent.&lt;/p&gt;
+
+&lt;p&gt;Định nghĩa ngắn gọn của Gradient Descent:&lt;/p&gt;
+
+&lt;p&gt;Gradient Descent là thuật toán lặp tối ưu (iteractive optimization algorithm) được sử dụng trong machine learning để tìm kết quả tốt nhất (minima of a curve).&lt;/p&gt;
+
+&lt;p&gt;Trong đó:
+..* Gradient có nghĩa là tỷ lệ của độ nghiêm của đường dốc.&lt;/p&gt;
+
+&lt;p&gt;..* Descent là từ viết tắt của decending - nghĩa là giảm.&lt;/p&gt;
+
+&lt;p&gt;Thuật toán sẽ lặp đi lặp lại nhiều lần để tìm ra được kết quả tối ưu.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/gradient.gif&#34; alt=&#34;Hình ảnh&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://medium.com/onfido-tech/machine-learning-101-be2e0a86c96a&#34;&gt;https://medium.com/onfido-tech/machine-learning-101-be2e0a86c96a&lt;/a&gt; Nguồn ảnh&lt;/p&gt;
+
+&lt;p&gt;Thuật toán gradient Descent có một tham số là learning rate. Như hình phía trên bên trái, ban đầu bước nhảy khá lớn, nghĩa là giá trị learning rate lớn, và sau một vài lần lặp, điểm chấm đen đi xuống dần, và giá trị learning rate nhỏ dần theo.&lt;/p&gt;
+
+&lt;p&gt;Chúng ta sử dụng thuật ngữ epochs, batch size, iterations khi dữ liệu của chúng ta quá (rất) lớn (vd 10 triệu mẫu). Lúc này các khái niệm trên mới trở nên rõ ràng, còn với trường hợp dữ liệu nhỏ thì chúng khá tương tự nhau.&lt;/p&gt;
+
+&lt;h2 id=&#34;khái-niện-epoch&#34;&gt;Khái niện Epoch&lt;/h2&gt;
+
+&lt;p&gt;Một Epoch được tính là khi chúng ta đưa tất cả dữ liệu vào mạng neural network 1 lần.&lt;/p&gt;
+
+&lt;p&gt;Khi dữ liệu quá lớn, chúng ta không thể đưa hết mỗi lần tất cả tập dữ liệu vào để huấn luyện được. Buộc lòng chúng ta phải chia nhỏ  tập dữ liệu ra thành các batch (size nhỏ hơn).&lt;/p&gt;
+
+&lt;h3 id=&#34;tại-sao-phải-dùng-hơn-1-epoch&#34;&gt;Tại sao phải dùng hơn 1 Epoch.&lt;/h3&gt;
+
+&lt;p&gt;Câu trả lời ở đây là tại vì chúng ta đang dùng thuật toán tối ưu là Gradient Descent. Thuật toán này đòi hỏi chúng ta phải đem toàn bộ dữ liệu qua mạng một vài lần để tìm được kết quả tối ưu. Vì vậy, dùng 1 epoch thật sự không đủ để tìm được kết quả tốt nhất.&lt;/p&gt;
+
+&lt;p&gt;Với việc chỉ sử dụng 1 lần lặp, xác suất rất cao là dữ liệu sẽ bị underfitting(như hình mô tả bên dưới).&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/overfit_underfit.png&#34; alt=&#34;Hình ảnh&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Khi số lần lặp tăng dần, trạng thái của mô hình sẽ chuyển dần từ underfitting sang optimal và sau đó là overfitting (thông thường là vậy, trừ khi mô hình huấn luyện của bạn đang sử dụng quá đơn giản, quá ít trọng số thì chúng không thể nào overfitting nổi).&lt;/p&gt;
+
+&lt;p&gt;Chúng ta có thể dùng 1 epoch để huấn luyện mô hình, với điều kiện là ta sử dụng thuật toán tối ưu không phải là gradient descent.&lt;/p&gt;
+
+&lt;h3 id=&#34;số-lần-lặp-tối-ưu-là-bao-nhiêu&#34;&gt;Số lần lặp tối ưu là bao nhiêu?&lt;/h3&gt;
+
+&lt;p&gt;Tiếc rằng không có câu trả lời cho câu hỏi này. Phụ thuộc hoàn toàn vào tập dữ liệu của bạn đang có.&lt;/p&gt;
+
+&lt;h2 id=&#34;batch-size&#34;&gt;Batch Size&lt;/h2&gt;
+
+&lt;p&gt;Batch size là số lượng mẫu dữ liệu trong một batch.&lt;/p&gt;
+
+&lt;p&gt;Ở đây, khái niệm batch size và số lượng batch(number of batch) là hoàn toàn khác nhau.&lt;/p&gt;
+
+&lt;p&gt;Như đã nói ở trên, chúng ta không thể đưa hết toàn bộ dữ liệu vào huấn luyện trong 1 epoch, vì vậy chúng ta cần phải chia tập dữ liệu thành các phần (number of batch), mỗi phần có kích thước là batch size.&lt;/p&gt;
+
+&lt;h2 id=&#34;iterations&#34;&gt;Iterations&lt;/h2&gt;
+
+&lt;p&gt;Iterations là số lượng batchs cần để hoàn thành 1 epoch.&lt;/p&gt;
+
+&lt;p&gt;Ví dụ chúng ta có tập dữ liệu có 20,000 mẫu, batch size là 500, vậy chúng ta cần 40 lần lặp (iteration) để hoàn thành 1 epoch.&lt;/p&gt;
+
+&lt;p&gt;Cảm ơn các bạn đã theo dõi bài viết.&lt;/p&gt;
+
+&lt;p&gt;Nguồn: &lt;a href=&#34;https://towardsdatascience.com/epoch-vs-iterations-vs-batch-size-4dfb9c7ce9c9&#34;&gt;https://towardsdatascience.com/epoch-vs-iterations-vs-batch-size-4dfb9c7ce9c9&lt;/a&gt;&lt;/p&gt;
+</description>
     </item>
     
   </channel>

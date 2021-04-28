@@ -10,9 +10,7 @@
     <webMaster>alexblack2202@gmail.com (Phạm Duy Tùng)</webMaster>
     <copyright>This work is licensed under a Creative Commons Attribution-ShareAlike 4.0 International License.</copyright>
     <lastBuildDate>Sun, 26 Jan 2020 00:19:00 +0300</lastBuildDate>
-    
-	<atom:link href="/tags/hash/index.xml" rel="self" type="application/rss+xml" />
-    
+    <atom:link href="/tags/hash/" rel="self" type="application/rss+xml" />
     
     <item>
       <title>Simhash</title>
@@ -20,7 +18,98 @@
       <pubDate>Sun, 26 Jan 2020 00:19:00 +0300</pubDate>
       <author>alexblack2202@gmail.com (Phạm Duy Tùng)</author>
       <guid>/blog/2020-01-26-simhash/</guid>
-      <description>Đặt vấn đề Giả sử bạn và tôi đều thích nghe nhạc trên trang mp3.zing.vn. Mỗi người đều nghe khoảng 100 bài nhạc khác nhau. Để đo sự giống nhau giữa danh sách bài hát bạn nghe và danh sách bài hát tôi nghe, thông thường chúng ta sẽ dùng độ đo Jaccard Similarity, được đo bằng cách lấy phần giao (intersection ) chia cho phần hợp (union). Nghĩa là đếm số lượng bài hát cả hai cùng nghe (phần giao) chia cho tổng số bài hát không lặp của cả hai.</description>
+      <description>
+
+&lt;h1 id=&#34;đặt-vấn-đề&#34;&gt;Đặt vấn đề&lt;/h1&gt;
+
+&lt;p&gt;Giả sử bạn và tôi đều thích nghe nhạc trên trang mp3.zing.vn. Mỗi người đều nghe khoảng 100 bài nhạc khác nhau. Để đo sự giống nhau giữa danh sách bài hát bạn nghe và danh sách bài hát tôi nghe, thông thường chúng ta sẽ dùng độ đo Jaccard Similarity, được đo bằng cách lấy phần giao (intersection ) chia cho phần hợp (union). Nghĩa là đếm số lượng bài hát cả hai cùng nghe (phần giao) chia cho tổng số bài hát không lặp của cả hai.&lt;/p&gt;
+
+&lt;p&gt;Trong trường hợp bạn và tôi đều nghe 100 bài, trong đó có 30 bài giống nhau, vậy phần giao là 30, phần hợp là 170, giá trị Jaccard Similarity sẽ là &lt;sup&gt;30&lt;/sup&gt;&amp;frasl;&lt;sub&gt;170&lt;/sub&gt;.&lt;/p&gt;
+
+&lt;p&gt;Độ đo Jaccard Similarity được sử dụng ở phương pháp apriori , FP Growth, &amp;hellip; mà các bạn đã có dịp học trong môn khai phá dữ liệu ở Đại học.&lt;/p&gt;
+
+&lt;h1 id=&#34;bài-toán-tìm-kiếm-văn-bản-tương-đồng&#34;&gt;Bài toán tìm kiếm văn bản tương đồng&lt;/h1&gt;
+
+&lt;p&gt;Giả sử bạn quản lý một số lượng lớn văn bản (N= 1 tỷ), và xếp của bạn có nhu cầu nhóm những bài viết giống nhau thành từng cụm. Để:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;Loại bỏ bớt những kết quả trùng trong khung search.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Nhóm những bài viết vào từng nhóm sự kiện theo dòng thời gian, ví dụ sự kiện &amp;lsquo;cô gái giao gà&amp;rsquo;, sự kiện &amp;lsquo;dịch cúm corona&amp;rsquo;, &amp;hellip;&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Vì một bất kể lý do nào đó mà trong lúc viết bài này tác giả chưa nghĩ ra.&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Khi đó, các vấn đều sau có thể sẽ phát sinh:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;Nhiều phần nhỏ của văn bản này xuất hiện ở một vị trí lộn xộn nào ở  một hoặc nhiều văn bản khác.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Văn bản quá dài nên không thể lưu trữ hết lên bộ nhớ chính (RAM).&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Có quá nhiều cặp văn bản cần phải so sánh.&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Để giải quyết bài toán trên, chúng ta sẽ tiếp cận theo hướng sau:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;Shingling: Chuyển văn bản thành tập ký tự, tập từ &amp;hellip;.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Min-Hashing: Chuyển tập ký tự thành 1 chuỗi số hash định danh.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Locality-Sensitive Hashing: Tìm các văn bản tương đồng dựa vào chuỗi số định danh.&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Ở bài viết này, mình chỉ đề cập bước thứ 2 là Min-Hashing. Bước 1 và bước 3 bạn có thể tham khảo thêm trong khóa học, mình có để link bên dưới.&lt;/p&gt;
+
+&lt;h2 id=&#34;vì-sao-phải-dùng-min-hashing&#34;&gt;Vì sao phải dùng Min-Hashing&lt;/h2&gt;
+
+&lt;p&gt;Như bài toán đặt ra ở trên, chúng ta có 1 tỷ văn bản, chúng ta cần N(N-1)/2 = 5*10^17 phép tính Jaccard Similarity. Chúng ta có một server có thể thực hiện 5x10^6 phép so sánh, thì chúng ta phải mất 10^11 giây tương đương 31,710 năm để thực hiện xong.&lt;/p&gt;
+
+&lt;p&gt;Thuật toán MinHash sẽ giúp chúng ta một giá trị xấp xỉ giá trị của Jaccard Similarity của hai tập dữ liệu. Ưu điểm của MinHash:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;Có chiều dài đầu ra cố định&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Không phụ thuộc vào chiều dài đầu vào.&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Để tính giá trị xấp xỉ Jaccard Similarity (MinHash signatures), đầu tiên ta sẽ tính MinHash của hai tập data, được 2 giá trị hash, sau đó đếm giá trị trùng nhau của 2 chuỗi hash và chia chiều dài gía trị hash, chúng ta sẽ được một giá trị xấp xỉ giá trị Jaccard Similarity.&lt;/p&gt;
+
+&lt;p&gt;Ví dụ ta có hai tập tập dữ liệu {a,x,c,d} và {a,x,d,e} hai giá trị hash ta có tương ứng là 1234 và 1235, số ký tự trùng nhau là 3 (1,2,3), chiều dài là 4, vậy ta có giá trị Jaccard Similarity là &lt;sup&gt;3&lt;/sup&gt;&amp;frasl;&lt;sub&gt;4&lt;/sub&gt;.&lt;/p&gt;
+
+&lt;p&gt;Phép tính này sẽ hơn việc tính  Jaccard Similarity truyền thống, lý do là chúng ta không cần phải tính phần giao và phần hợp của hai tập dữ liệu ( trong trường hợp hai tập có nhiều giá trị thì việc tính càng lâu), và giá trị hash thường có chiều dài ngắn hơn so với số lượng phần trử trong tập dữ liệu, ngoài ra phép so sánh cũng đơn giản hơn nhiều.&lt;/p&gt;
+
+&lt;h2 id=&#34;thuật-toán-minhash&#34;&gt;Thuật toán MinHash&lt;/h2&gt;
+
+&lt;p&gt;Ý tưởng của thuật toán khá đơn giản:&lt;/p&gt;
+
+&lt;p&gt;ta có hàm hash:&lt;/p&gt;
+
+&lt;p&gt;$$ h(x) = (ax+b)%c $$&lt;/p&gt;
+
+&lt;p&gt;Trong đó:
+- x là số nguyên đầu vào,  a và b là hai số được chọn ngẫu nhiên với điều kiện a và b &amp;lt; x&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;c là số nguyên tố được chọn ngẫu nhiên, với điều kiện c lớn hơn x.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Cách thuật toán thực hiện như sau:&lt;/p&gt;
+
+&lt;p&gt;Với 1 văn bản, chạy thuật toán hash 10 lần, do ta có số a và b là ngẫu nhiên nên 10 lần chạy sẽ cho ra các kết quả khác nhau, lấy giá trị hash nhỏ nhất (do đó thuật toán có tên là min hash) làm thành phần đầu tiên của MinHash signature. Lặp lại quá trình trên 10 lần, chúng ta có MinHash signature  với 10 giá trị.&lt;/p&gt;
+
+&lt;p&gt;Xong thuật toán, quá dễ.&lt;/p&gt;
+
+&lt;p&gt;Cảm ơn các bạn đã quan tâm và theo dõi bài viết, hẹn gặp bạn ở các bài viết tiếp theo.&lt;/p&gt;
+
+&lt;p&gt;Tham khảo
+- Khóa học Mining of Massive Datasets chương 3 &lt;a href=&#34;http://www.mmds.org/&#34;&gt;http://www.mmds.org/&lt;/a&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://mccormickml.com/2015/06/12/minhash-tutorial-with-python-code/&#34;&gt;https://mccormickml.com/2015/06/12/minhash-tutorial-with-python-code/&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</description>
     </item>
     
     <item>
@@ -29,9 +118,189 @@
       <pubDate>Sat, 25 Jan 2020 00:19:00 +0300</pubDate>
       <author>alexblack2202@gmail.com (Phạm Duy Tùng)</author>
       <guid>/blog/2020-01-13-hash-in-python/</guid>
-      <description>Built-In Hashing Python có xây dựng sẵn cho chúng ta một hàm hash, chúng ta cứ việc gọi ra và sử dụng.
-hash(&amp;quot;pham duy tung&amp;quot;) -7141560399917772220  Một lưu ý nhỏ là giá trị của hàm hash sẽ khác nhau giữa các phiên bản python. Ví dụ ở trên mình xài python 3.8, với bản 3.6 sẽ là
-hash(&amp;quot;pham duy tung&amp;quot;) 1568935795476364190  Checksums Chúng ta có thể sử dụng checksums để hash dữ liệu.</description>
+      <description>
+
+&lt;h1 id=&#34;built-in-hashing&#34;&gt;Built-In Hashing&lt;/h1&gt;
+
+&lt;p&gt;Python có xây dựng sẵn cho chúng ta một hàm hash, chúng ta cứ việc gọi ra và sử dụng.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;hash(&amp;quot;pham duy tung&amp;quot;)
+-7141560399917772220
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Một lưu ý nhỏ là giá trị của hàm hash  sẽ khác nhau giữa các phiên bản python. Ví dụ ở trên mình xài python 3.8, với bản 3.6 sẽ là&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;hash(&amp;quot;pham duy tung&amp;quot;)
+1568935795476364190
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h1 id=&#34;checksums&#34;&gt;Checksums&lt;/h1&gt;
+
+&lt;p&gt;Chúng ta có thể sử dụng checksums để hash dữ liệu. Checksum được sử dụng trong thuật toán nén file ZIP để đảm bảo toàn vẹn dữ liệu sau khi nén. Thư viện zlib của python hỗ trợ 2 hàm tính checksum là adler32 và crc32. Để đảm bảo tốc độ chương trình và chỉ cần lấy hash đơn giản, chúng ta có thể sử dụng hàm Adler32. Tuy nhiên, nếu bạn muốn chương trình có độ tin cậy cao hoặc đơn giản là checksums, hãy sử dụng crc32. Các bạn có thể đọc bài viết ở đây &lt;a href=&#34;https://www.leviathansecurity.com/blog/analysis-of-adler32&#34;&gt;https://www.leviathansecurity.com/blog/analysis-of-adler32&lt;/a&gt; để hiểu hơn.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;&amp;gt;&amp;gt;&amp;gt; import zlib
+&amp;gt;&amp;gt;&amp;gt; zlib.adler32(b&amp;quot;Pham Duy Tung&amp;quot;)
+524616855
+&amp;gt;&amp;gt;&amp;gt; zlib.crc32(b&amp;quot;Pham Duy Tung&amp;quot;)
+3750031252
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h1 id=&#34;secure-hashing&#34;&gt;Secure Hashing&lt;/h1&gt;
+
+&lt;p&gt;Mã hóa an toàn (Secure Hashing) và bảo mật dữ liệu đã được nghiên cứu và ứng dụng từ nhiều năm về trước. Tiền thân là thuật toán MD5 đến SHA1, SHA256, SHA512&amp;hellip;. Mỗi thuật toán ra đời sau sẽ cải tiến độ bảo mật và giảm đụng độ của các thuật toán trước đó.&lt;/p&gt;
+
+&lt;p&gt;Một số hàm hash phổ biến:&lt;/p&gt;
+
+&lt;h2 id=&#34;md5-16-bytes-128-bit&#34;&gt;MD5– 16 bytes/128 bit&lt;/h2&gt;
+
+&lt;p&gt;Chuỗi đầu ra của  MD5 có kích thước 16 bytes hay 16*8 = 128 bits. Ở thời điểm hiện tại MD5 không còn là thuật toán phổ biến và không được khuyến khích dùng bởi các tổ chức bảo mật.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;&amp;gt;&amp;gt;&amp;gt; import hashlib
+&amp;gt;&amp;gt;&amp;gt; hashlib.md5(b&amp;quot;Pham Duy Tung&amp;quot;).hexdigest()
+&#39;58067430b9caa44f5ac1220b171f45c8&#39;
+&amp;gt;&amp;gt;&amp;gt; len(hashlib.md5(b&amp;quot;Pham Duy Tung&amp;quot;).digest()) # Chiều dài của đầu ra là 16 bytes
+16
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Chú ý:
+Hàm hexdigest biểu diễn một byte thành một ký tự hex (2 ký tự  đầu 58 của ví dụ trên là giá trị hex của số 88 trong hệ thập phân)&lt;/p&gt;
+
+&lt;h2 id=&#34;sha1-20-bytes-160-bits&#34;&gt;SHA1–20 bytes/160 bits&lt;/h2&gt;
+
+&lt;p&gt;Đầu ra của SHA1 có chiều dài là 20 bytes tương ứng với 160 bit. Cũng giống như MD5, SHA1 cũng không được khuyến khích sử dụng ở trong các ứng dụng bảo mật.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;&amp;gt;&amp;gt;&amp;gt; import hashlib
+&amp;gt;&amp;gt;&amp;gt; hashlib.sha1(b&amp;quot;Pham Duy Tung&amp;quot;).hexdigest()
+&#39;b95b8716f15d89b6db67e2e788dea42d3fba5ee8&#39;
+&amp;gt;&amp;gt;&amp;gt; len(hashlib.sha1(b&amp;quot;Pham Duy Tung&amp;quot;).digest())
+20
+
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;sha256-32-bytes-256-bit-và-sha512-64-bytes-512-bit&#34;&gt;SHA256–32 bytes/256 bit và SHA512–64 bytes/512 bit&lt;/h2&gt;
+
+&lt;p&gt;Đây là hai hàm hash được khuyên là nên dùng ở thời điểm hiện tại&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;&amp;gt;&amp;gt;&amp;gt; hashlib.sha256(b&amp;quot;Pham Duy Tung&amp;quot;).hexdigest()
+&#39;611b322b6b8ee570831c6061408ac5aa77fcdb572206d5d443855f5d3c1383c6&#39;
+&amp;gt;&amp;gt;&amp;gt; len(hashlib.sha256(b&amp;quot;Pham Duy Tung&amp;quot;).digest())
+32
+&amp;gt;&amp;gt;&amp;gt; hashlib.sha512(b&amp;quot;Pham Duy Tung&amp;quot;).hexdigest()
+&#39;ac1f6a2dd234bc15c1fa2be1db4e55ad4af8c476abb8e3d9ac3d4c74d3e151c23314e20925616e90a0bcb13a38b5531e064c586d65fed54504d713fdabee03f9&#39;
+&amp;gt;&amp;gt;&amp;gt; len(hashlib.sha512(b&amp;quot;Pham Duy Tung&amp;quot;).digest())
+64
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h1 id=&#34;near-duplicate-detection&#34;&gt;Near-Duplicate Detection&lt;/h1&gt;
+
+&lt;p&gt;Các thuật toán được giới thiệu ở trên, khi chúng ta thay đổi giá trị đầu vào, dù chỉ một giá trị nhỏ thôi ở một vài vị trí nào đó, thì kết quả trả ra lại khác nhau khá lớn. Tuy nhiên, đôi khi chúng ta gặp những bài toán tìm nội dung tương tự nhau hoặc gần như tương tự nhau. Ví dụ giống như google crawler dữ liệu xác định những bài văn copy paste từ những trang web khác nhau, hoặc phát hiện đạo văn, phát hiện đạo nhạc &amp;hellip;&lt;/p&gt;
+
+&lt;p&gt;Một thuật toán khá phổ biến nằm trong nhóm này là SimHash. Thuật toán được google sử dụng  để tìm ra các trang gần trùng nhau (theo wiki &lt;a href=&#34;https://en.wikipedia.org/wiki/SimHash&#34;&gt;https://en.wikipedia.org/wiki/SimHash&lt;/a&gt;). Tác giả của thuật toán là Moses Charikar.&lt;/p&gt;
+
+&lt;p&gt;Để dùng Simhash, chúng ta phải cài đặt package từ kho của python&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from simhash import Simhash
+
+&amp;gt;&amp;gt;&amp;gt; Simhash(&amp;quot;Pham Duy Tung&amp;quot;).value
+17022061268703429674
+&amp;gt;&amp;gt;&amp;gt; Simhash(&amp;quot;Pham Duy Tung1&amp;quot;).value
+17184261516160517290
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Một trong những lưu ý quan trọng khi sử dụng SimHash  ( tham khảo &lt;a href=&#34;https://stackoverflow.com/questions/49820228/how-to-compare-the-similarity-of-documents-with-simhash-algorithm/49831194#49831194&#34;&gt;https://stackoverflow.com/questions/49820228/how-to-compare-the-similarity-of-documents-with-simhash-algorithm/49831194#49831194&lt;/a&gt;)&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;SimHash thật sự hữu ích trong bài toán phát hiện văn bản trùng lắp.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Để tìm văn bản trùng lắp chính xác, dúng ta có thể sử dụng các thuật toán đơn giản mà hiệu quả như md5, sha1sha1.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Thuật toán phù hợp các văn bản lớn, không phù hợp cho các câu văn nhỏ.&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Đoạn code bên dưới là một ví dụ được dùng để tìm các văn bản có đạo nội dung.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt; #assuming that you have a dictionary with document id as the key and the document as the value: 
+# documents = { doc_id: doc } you can do:
+
+from simhash import simhash
+
+def split_hash(str, num):
+    return [ str[start:start+num] for start in range(0, len(str), num) ]
+
+hashes = {}
+for doc_id, doc in documents.items():
+    hash = simhash(doc)
+
+    # you can either use the whole hash for higher precision or split into chunks for higher recall
+    hash_chunks = split_hash(hash, 4)
+
+    for chunk in hash_chunks:
+        if chunk not in hashes:
+            hashes[chunk] = []
+        hashes[chunk].append(doc_id)
+
+# now you can print the duplicate documents:
+for hash, doc_list in hashes:
+    if doc_list &amp;gt; 1:
+        print(&amp;quot;Duplicates documents: &amp;quot;, doc_list)
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Ngoài SimHash, còn một thuật toán hash khá nổi tiếng nữa cũng được google sử dụng trong việc cá nhân hóa người dùng, đó là MinHash. Ở các bài viết tiếp theo mình sẽ viết về thuật toán này.&lt;/p&gt;
+
+&lt;h1 id=&#34;perceptual-hashing&#34;&gt;Perceptual Hashing&lt;/h1&gt;
+
+&lt;p&gt;Loại hash cuối cùng chúng ta đề cập ở đây là  perceptual hashing. Loại hash này được sử dụng để phát hiện sự khác nhau trong tập hình ảnh hoặc trong video.&lt;/p&gt;
+
+&lt;p&gt;Một ví dụ của các thuật toán thuộc nhóm là là được dùng để phát hiện các frame ảnh trùng lắp trong video. Thuật toán được dùng để loại bỏ những nội dung trùng lắp, giúp tiết kiệm lưu trữ. Hoặc dùng trong các thuật toán tóm tắt video.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/google_free_ds_1.png&#34; alt=&#34;Ảnh 1&#34; /&gt;
+&lt;strong&gt;Ảnh 1&lt;/strong&gt;
+&lt;img src=&#34;/post_image/google_free_ds_2.png&#34; alt=&#34;Ảnh 2&#34; /&gt;
+&lt;strong&gt;Ảnh 2&lt;/strong&gt;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;&amp;gt;&amp;gt;&amp;gt; import hashlib
+&amp;gt;&amp;gt;&amp;gt; from PIL import Image
+&amp;gt;&amp;gt;&amp;gt; image1 = Image.open(&amp;quot;google_free_ds1.png&amp;quot;)
+&amp;gt;&amp;gt;&amp;gt; image1 = Image.open(&amp;quot;google_free_ds_1.png&amp;quot;)
+&amp;gt;&amp;gt;&amp;gt; image2 = Image.open(&amp;quot;google_free_ds_2.png&amp;quot;)
+&amp;gt;&amp;gt;&amp;gt; hashlib.sha256(image1.tobytes()).hexdigest()
+&#39;c57d0b5b1ca64077b45bdb65f817497834675232a2fc2ed76d6b8aa7955126b9&#39;
+&amp;gt;&amp;gt;&amp;gt; hashlib.sha256(image2.tobytes()).hexdigest()
+&#39;02ea5e51b19cf3748f91f9bbe26976e9e14dca4b47e0aaff88ab20030a695f44&#39;
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Giá trị hash khác xa nhau, có vẻ chúng ta không thể nào sử dụng SHA256 trong bài toán này được. Lúc này, chúng ta sẽ tìm tới các thư viện thuộc nhóm Perceptual Hashing, một trong số chúng là ImageHash.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;&amp;gt;&amp;gt;&amp;gt; import imagehash
+&amp;gt;&amp;gt;&amp;gt; hash1 = imagehash.average_hash(image1)
+&amp;gt;&amp;gt;&amp;gt; hash2 = imagehash.average_hash(image2)
+&amp;gt;&amp;gt;&amp;gt; hash1-hash2
+24
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Giá trị hash của hai ảnh trên là khác nhau, nhưng sự khác nhau là rất ít. Chứng tỏ hai ảnh trên có thể là bản sao của nhau.&lt;/p&gt;
+
+&lt;h1 id=&#34;kết-luận&#34;&gt;Kết luận&lt;/h1&gt;
+
+&lt;p&gt;Trong bài viết này, chúng ta đã đề cập qua các cách khác nhau để hash dữ liệu trong Python. Phụ thuộc vào bài toán, chúng ta sẽ sử dụng các thuật toán với các tham số phù hợp. Hi vọng bài viết này sẽ ít nhiều giúp ích được cho các bạn.&lt;/p&gt;
+
+&lt;p&gt;Chú thích:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;Ảnh cover của bài viết là ảnh của chùm sao thất tinh bắc đẩu mình chụp từ trang &lt;a href=&#34;https://stellarium-web.org/&#34;&gt;https://stellarium-web.org/&lt;/a&gt;.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;hash collision : Khi cho 2 input khác nhau vào hàm hash mà cùng ra một output -&amp;gt; collision.&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Nguồn bài viết:&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://medium.com/better-programming/how-to-hash-in-python-8bf181806141&#34;&gt;https://medium.com/better-programming/how-to-hash-in-python-8bf181806141&lt;/a&gt;&lt;/p&gt;
+</description>
     </item>
     
   </channel>

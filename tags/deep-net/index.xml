@@ -10,9 +10,7 @@
     <webMaster>alexblack2202@gmail.com (Phạm Duy Tùng)</webMaster>
     <copyright>This work is licensed under a Creative Commons Attribution-ShareAlike 4.0 International License.</copyright>
     <lastBuildDate>Sun, 05 May 2019 00:12:00 +0300</lastBuildDate>
-    
-	<atom:link href="/tags/deep-net/index.xml" rel="self" type="application/rss+xml" />
-    
+    <atom:link href="/tags/deep-net/" rel="self" type="application/rss+xml" />
     
     <item>
       <title>Tìm hiểu về dropout trong deep learning, machine learning</title>
@@ -20,8 +18,294 @@
       <pubDate>Sun, 05 May 2019 00:12:00 +0300</pubDate>
       <author>alexblack2202@gmail.com (Phạm Duy Tùng)</author>
       <guid>/blog/2019-05-05-deep-learning-dropout/</guid>
-      <description>1. Dropout là gì, nó có ý nghĩa gì trong mạng neural network Theo Wikipedia, thuật ngữ &amp;ldquo;dropout&amp;rdquo; đề cập đến việc bỏ qua các đơn vị (unit) (cả hai hidden unit và visible unit) trong mạng neural network.
-Hiểu đơn giản là, trong mạng neural network, kỹ thuật dropout là việc chúng ta sẽ bỏ qua một vài unit trong suốt quá trình train trong mô hình, những unit bị bỏ qua được lựa chọn ngẫu nhiên.</description>
+      <description>
+
+&lt;h1 id=&#34;1-dropout-là-gì-nó-có-ý-nghĩa-gì-trong-mạng-neural-network&#34;&gt;1. Dropout là gì, nó có ý nghĩa gì trong mạng neural network&lt;/h1&gt;
+
+&lt;p&gt;Theo Wikipedia, thuật ngữ &amp;ldquo;dropout&amp;rdquo; đề cập đến việc bỏ qua các đơn vị (unit) (cả hai hidden unit và visible unit) trong mạng neural network.&lt;/p&gt;
+
+&lt;p&gt;Hiểu đơn giản là, trong mạng neural network, kỹ thuật dropout là việc chúng ta sẽ bỏ qua một vài unit trong suốt quá trình train trong mô hình, những unit bị bỏ qua được lựa chọn ngẫu nhiên. Ở đây, chúng ta hiểu &amp;ldquo;bỏ qua - ignoring&amp;rdquo; là unit đó sẽ không tham gia và đóng góp vào quá trình huấn luyện (lan truyền tiến và lan truyền ngược).&lt;/p&gt;
+
+&lt;p&gt;Về mặt kỹ thuật, tại mỗi giai đoạn huấn luyện, mỗi node có xác suất bị bỏ qua là 1-p và xác suất được chọn là p&lt;/p&gt;
+
+&lt;h1 id=&#34;2-tạo-sao-chúng-ta-cần-dropout&#34;&gt;2. Tạo sao chúng ta cần dropout&lt;/h1&gt;
+
+&lt;p&gt;Giả sử rằng bạn hiểu hoàn toàn những gì đã nói ở phần 1, câu hỏi đặt ra là tại sao chúng ta cần đến dropout, tại sao chúng ta cần phải loại bỏ một vài các unit nào đó trong mạng neural network?&lt;/p&gt;
+
+&lt;p&gt;Câu trả lời cho câu hỏi này là &lt;strong&gt;để chống over-fitting&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Khi chúng ta sử dụng full connected layer, các neural sẽ phụ thuộc &amp;ldquo;mạnh&amp;rdquo; lẫn nhau trong suốt quá trình huấn luyện, điều này làm giảm sức mạng cho mỗi neural và dẫn đến bị over-fitting tập train.&lt;/p&gt;
+
+&lt;h1 id=&#34;3-dropout&#34;&gt;3. Dropout&lt;/h1&gt;
+
+&lt;p&gt;Đọc đến đây, bạn đã có một khái niệm cơ bản về dropout và động lực - động cơ để chúng ta sử dụng nó. Nếu bạn chỉ muốn có cái nhìn tổng quan về dropout trong neural network, hai sections trên đã cung cấp đầy đủ thông tin cho bạn, bạn có thể dừng tại đây. Phần tiếp theo, chúng ta sẽ nói kỹ hơn về mặt kỹ thuật của dropout.&lt;/p&gt;
+
+&lt;p&gt;Trước đây, trong machine learning, người ta thường sử dụng regularization để ngăng chặn over-fititng. Regularization làm giảm over-fitting bằng cách thêm yếu tố &amp;ldquo;phạt&amp;rdquo; vào hàm độ lỗi (loss function).  Bằng việc thêm vào điểm phạt này, mô hình được huấn luyện sẽ giúp các features weights giảm đi sự phụ thuộc lẫn nhau. Đối với những ai đã sử dụng Logistic Regression rồi thì sẽ không xa lạ với thuật ngữ phạt L1(Laplacian) và L2 (Gaussian).&lt;/p&gt;
+
+&lt;p&gt;Dropout là một kỹ thuật khác, một cách tiếp cận khác để regularization  trong mạng neural netwoks.&lt;/p&gt;
+
+&lt;p&gt;Kỹ thuật dropout được thực hiện như sau:&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Trong pha train&lt;/strong&gt;: với mỗi hidden layer, với mỗi trainning sample, với mỗi lần lặp, chọn ngẫu nhiên p phần trăm số node và bỏ qua nó (bỏ qua luôn hàm kích hoạt cho các node bị bỏ qua).&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Trong pha test&lt;/strong&gt;: Sử dụng toàn bộ activations, nhưng giảm chúng với tỷ lệ p (do chúng ta bị miss p% hàm activation trong quá trình train).&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/drop_out.png&#34; alt=&#34;Hình ảnh&#34; /&gt;
+&lt;strong&gt;Mô tả về kiến trúc mạng có và không có dropout&lt;/strong&gt;&lt;/p&gt;
+
+&lt;h1 id=&#34;4-một-số-đặc-điểm-rút-ra-được-khi-huấn-luyện-nhiều-mô-hình-khác-nhau-sử-dụng-dropout&#34;&gt;4. Một số đặc điểm rút ra được khi huấn luyện nhiều mô hình khác nhau sử dụng dropout&lt;/h1&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;Dropout ép mạng neural phải tìm ra nhiều robust features hơn, với đặc điểm là chúng phải hữu ích hơn, tốt hơn, ngon hơn khi kết hợp với nhiều neuron khác.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Dropout đòi hỏi phải gấp đôi quá trình huấn luyện để đạt được sự hội tụ. Tuy nhiên, thời gian huấn luyện cho mỗi epoch sẽ ít hơn.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Với H unit trong mô hình, mỗi unit đều có xác xuất bị bỏ qua hoặc được chọn, chúng ta sẽ có 2^H mô hình có thể có. Trong pha test, toàn bộ network được sử dụng và mỗi hàm activation được giảm đi với hệ số p.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Một số nghiên cứu chỉ ra rằng, khi sử dụng Dropout và Batch Normalization (BN) cùng nhau thì kết quả rất tệ, trong cả lý thuyết và thực nghiệm, ví dụ nghiên cứu ở papper &amp;ldquo;Understanding the Disharmony between Dropout and Batch Normalization by Variance Shift&amp;rdquo;, nguồn &lt;a href=&#34;https://arxiv.org/abs/1801.05134&#34;&gt;https://arxiv.org/abs/1801.05134&lt;/a&gt;, nhóm tác giả giải thích về mặt lý thuyết rằng: &amp;ldquo;đối với một neural, Dropout sẽ thay đổi phương sai của nó khi chúng ta chuyển trạng thái từ trian sang test. Còn BN thì không, BN vẫn tích luỹ đầy đủ thông tin trong quá trình huấn luyện. Do Dropout làm thay đổi phương sai nên sẽ xảy ra hiện tượng không đồng nhất về phương sai, dẫn đến hành vi suy luận không chắc chắn dẫn đến suy luận bị sai nhiều. Đặc biệt là khi kết hợp dropout và BN thì khiến cho suy luận càng sai lầm trầm trọng. &amp;ldquo;. Cho nên, trong một số trường hợp/bài toán chúng ta có thể dùng Dropout, trong một số trường hợp/ bài toán, người ta sử dụng BN và không sử dụng dropout.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Người ta thường dùng hệ số dropout là 0.5. Lý giải cho việc này, bạn có thể đọc bài báo &lt;a href=&#34;http://papers.nips.cc/paper/4878-understanding-dropout.pdf&#34;&gt;http://papers.nips.cc/paper/4878-understanding-dropout.pdf&lt;/a&gt;. Nói nôm là việc sử dụng giảm 50% của dropout giúp kết quả đạt được là tốt nhất so với các phương pháp chuẩn hoá khác.&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1 id=&#34;5-thực-nghiệm-trong-keras&#34;&gt;5. Thực nghiệm trong keras&lt;/h1&gt;
+
+&lt;p&gt;Những vấn đề nói ở trên chỉ là lý thuyết. Bây giờ chúng ta sẽ bắt tay vào làm thực tế. Để xem thử dropout hoạt động như thế nào, chúng ta sẽ xây dựng mô hình deep net sử dụng keras và sử dụng tập dữ liệu cifar-10. Mô hình chúng ta xây dựng có 3 hidden layer với kích thước lần lượt là 64, 128, 256 và 1 full connected layer có kích thước 512 và output layer có kích thước 10 (do mình có 10 lớp).&lt;/p&gt;
+
+&lt;p&gt;Chúng ta sử dụng hàm kích hoạt là ReLU trên các hidden layer và sử dụng hàm sigmoid trên output layer. Sử dụng hàm lỗi categorical cross-entropy.&lt;/p&gt;
+
+&lt;p&gt;Trong trường hợp mô hình có sử dụng dropout, chúng ta sẽ set dropout ở tất cả các layer và thay đổi tỷ lệ dropout nằm trong khoảng từ 0.0 đến 0.9 với bước nhảy là 0.1.&lt;/p&gt;
+
+&lt;p&gt;Mô hình setup với số epochs là 20. Bắt đầu xem nào.&lt;/p&gt;
+
+&lt;p&gt;Đầu tiên, chúng ta sẽ load một vài thư viện cần thiết&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;import numpy as np
+import os
+
+import keras
+
+from keras.datasets import cifar10
+from keras.models  import Sequential
+from keras.layers import Dense, Dropout, Activation, Flatten
+from keras.layers import Convolution2D, MaxPooling2D
+from keras.optimizers import SGD
+from keras.utils import np_utils
+from keras.preprocessing.image import ImageDataGenerator
+import matplotlib.pyplot as plt
+
+from pylab import rcParams
+rcParams[&#39;figure.figsize&#39;] = 20, 20
+
+from keras.datasets import cifar10
+
+(X_train, y_train), (X_test, y_test) = cifar10.load_data()
+
+
+print(&amp;quot;Training data:&amp;quot;)
+print(&amp;quot;Number of examples: &amp;quot;, X_train.shape[0])
+print(&amp;quot;Number of channels:&amp;quot;,X_train.shape[3]) 
+print(&amp;quot;Image size:&amp;quot;,X_train.shape[1], X_train.shape[2], X_train.shape[3])
+
+print(&amp;quot;Test data:&amp;quot;)
+print(&amp;quot;Number of examples:&amp;quot;, X_test.shape[0])
+print(&amp;quot;Number of channels:&amp;quot;, X_test.shape[3])
+print(&amp;quot;Image size:&amp;quot;,X_test.shape[1], X_test.shape[2], X_test.shape[3])
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Kết quả&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Training data:
+Number of examples:  50000
+Number of channels: 3
+Image size: 32 32 3
+Test data:
+Number of examples: 10000
+Number of channels: 3
+Image size: 32 32 3
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Chúng ta có 50000 hình train, và 10000 hình test. Mỗi hình là một ảnh RGB có kích thước 33x32x3 pixel.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/cifar-10-overview.jpg&#34; alt=&#34;Hình ảnh&#34; /&gt;
+&lt;strong&gt;dataset cifar 10&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Tiếp theo, chúng ta sẽ chuẩn hoá dữ liệu. Đây là 1 bước quan trọng trước khi huấn luyện mô hình&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;print( &amp;quot;mean before normalization:&amp;quot;, np.mean(X_train)) 
+print( &amp;quot;std before normalization:&amp;quot;, np.std(X_train))
+
+mean=[0,0,0]
+std=[0,0,0]
+newX_train = np.ones(X_train.shape)
+newX_test = np.ones(X_test.shape)
+for i in range(3):
+    mean[i] = np.mean(X_train[:,i,:,:])
+    std[i] = np.std(X_train[:,i,:,:])
+    
+for i in range(3):
+    newX_train[:,i,:,:] = X_train[:,i,:,:] - mean[i]
+    newX_train[:,i,:,:] = newX_train[:,i,:,:] / std[i]
+    newX_test[:,i,:,:] = X_test[:,i,:,:] - mean[i]
+    newX_test[:,i,:,:] = newX_test[:,i,:,:] / std[i]
+        
+    
+X_train = newX_train
+X_test = newX_test
+
+print(&amp;quot;mean after normalization:&amp;quot;, np.mean(X_train))
+print(&amp;quot;std after normalization:&amp;quot;, np.std(X_train))
+
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code&gt;mean before normalization: 120.70756512369792
+std before normalization: 64.1500758911213
+mean after normalization: 0.9062499999999979
+std after normalization: 0.4227421643271468
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Full code đoạn huấn luyện&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+
+# In[3]:Specify Training Parameters
+
+batchSize = 512                   #-- Training Batch Size
+num_classes = 10                  #-- Number of classes in CIFAR-10 dataset
+num_epochs = 100                   #-- Number of epochs for training   
+learningRate= 0.001               #-- Learning rate for the network
+lr_weight_decay = 0.95            #-- Learning weight decay. Reduce the learn rate by 0.95 after epoch
+
+
+img_rows, img_cols = 32, 32       #-- input image dimensions
+
+Y_train = np_utils.to_categorical(y_train, num_classes)
+Y_test = np_utils.to_categorical(y_test, num_classes)
+
+
+
+batchSize = 512                   #-- Training Batch Size
+num_classes = 10                  #-- Number of classes in CIFAR-10 dataset
+num_epochs = 100                   #-- Number of epochs for training   
+learningRate= 0.001               #-- Learning rate for the network
+lr_weight_decay = 0.95            #-- Learning weight decay. Reduce the learn rate by 0.95 after epoch
+
+
+img_rows, img_cols = 32, 32       #-- input image dimensions
+
+Y_train = np_utils.to_categorical(y_train, num_classes)
+Y_test = np_utils.to_categorical(y_test, num_classes)
+
+
+# In[4]:VGGnet-10
+
+
+from keras.layers import Conv2D
+import copy
+result = {}
+y = {}
+loss = []
+acc = []
+dropouts = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+for dropout in dropouts:
+    print(&amp;quot;Dropout: &amp;quot;, (dropout))
+    model = Sequential()                                               
+
+    #-- layer 1
+    model.add(Conv2D(64, (3, 3),                                    
+                            border_mode=&#39;valid&#39;,
+                            input_shape=( img_rows, img_cols,3))) 
+    model.add(Dropout(dropout))  
+    model.add(Conv2D(64, (3, 3)))
+    model.add(Dropout(dropout))
+    model.add(Activation(&#39;relu&#39;))                                       
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+
+    ##--layer 2                        
+    model.add(Conv2D(128, (3, 3)))
+    model.add(Dropout(dropout)) 
+    model.add(Activation(&#39;relu&#39;))                                       
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+
+    ##--layer 3                         
+    model.add(Conv2D(256, (3, 3)))
+    model.add(Dropout(dropout)) 
+    model.add(Activation(&#39;relu&#39;))                                       
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+
+    ##-- layer 4
+    model.add(Flatten())                                                
+    model.add(Dense(512))                                               
+    model.add(Activation(&#39;relu&#39;))                                                                           
+
+    #-- layer 5
+    model.add(Dense(num_classes))                                       
+
+    #-- loss
+    model.add(Activation(&#39;softmax&#39;))
+    
+    sgd = SGD(lr=learningRate, decay = lr_weight_decay)
+    model.compile(loss=&#39;categorical_crossentropy&#39;,
+                  optimizer=&#39;sgd&#39;,
+                  metrics=[&#39;accuracy&#39;])
+    
+    model_cce = model.fit(X_train, Y_train, batch_size=batchSize, epochs=20, verbose=1, shuffle=True, validation_data=(X_test, Y_test))
+    score = model.evaluate(X_test, Y_test, verbose=0)
+    y[dropout] = model.predict(X_test)
+    print(&#39;Test score:&#39;, score[0])
+    print(&#39;Test accuracy:&#39;, score[1])
+    result[dropout] = copy.deepcopy(model_cce.history)   
+    loss.append(score[0])
+    acc.append(score[1])
+
+
+
+# In[5]: plot dropout 
+import numpy as np                                                               
+import matplotlib.pyplot as plt
+
+width = 0.1
+
+plt.bar(dropouts, acc, width, align=&#39;center&#39;)
+
+plt.tick_params(axis=&#39;both&#39;, which=&#39;major&#39;, labelsize=35)
+plt.tick_params(axis=&#39;both&#39;, which=&#39;minor&#39;, labelsize=35)
+
+plt.ylabel(&#39;Accuracy&#39;,size = 30)
+plt.xlabel(&#39;Dropout&#39;, size = 30)
+plt.show()
+
+
+# In[6]: plot non drop out
+
+import numpy as np                                                               
+import matplotlib.pyplot as plt
+
+width = 0.1
+
+plt.bar(dropouts, loss, width, align=&#39;center&#39;,color = &#39;green&#39;)
+
+plt.tick_params(axis=&#39;both&#39;, which=&#39;major&#39;, labelsize=35)
+plt.tick_params(axis=&#39;both&#39;, which=&#39;minor&#39;, labelsize=35)
+
+plt.ylabel(&#39;Loss&#39;,size = 30)
+plt.xlabel(&#39;Dropout&#39;, size = 30)
+plt.show()
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/drop_out_result.png&#34; alt=&#34;Hình ảnh&#34; /&gt;
+&lt;strong&gt;Kết quả&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Nhìn hình kết quả ở trên, chúng ta có một số kết luận nhỏ như sau:&lt;/p&gt;
+
+&lt;p&gt;Giá trị dropout tốt nhất là 0.2, khoảng dropout cho giá trị chấp nhận được là nằm trong đoạn từ 0 đến 0.5. Nếu dropout lớn hơn 0.5 thì kết quả hàm huấn luyện trả về khá tệ.&lt;/p&gt;
+
+&lt;p&gt;Giá trị độ chính xác còn khá thấp =&amp;gt; 20 epochs là chưa đủ, cần huấn luyện nhiều hơn nữa.&lt;/p&gt;
+
+&lt;p&gt;Cảm ơn các bạn đã theo dõi. Hẹn gặp bạn ở những bài viết tiếp theo.&lt;/p&gt;
+</description>
     </item>
     
   </channel>

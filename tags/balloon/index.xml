@@ -10,9 +10,7 @@
     <webMaster>alexblack2202@gmail.com (Phạm Duy Tùng)</webMaster>
     <copyright>This work is licensed under a Creative Commons Attribution-ShareAlike 4.0 International License.</copyright>
     <lastBuildDate>Mon, 25 Mar 2019 00:12:00 +0300</lastBuildDate>
-    
-	<atom:link href="/tags/balloon/index.xml" rel="self" type="application/rss+xml" />
-    
+    <atom:link href="/tags/balloon/" rel="self" type="application/rss+xml" />
     
     <item>
       <title>Tìm hiểu Mask R-CNN và ví dụ phân vùng quả bóng bay sử dụng deep learning</title>
@@ -20,7 +18,540 @@
       <pubDate>Mon, 25 Mar 2019 00:12:00 +0300</pubDate>
       <author>alexblack2202@gmail.com (Phạm Duy Tùng)</author>
       <guid>/blog/2019-03-25-mask-rcnn-balloon/</guid>
-      <description>Bắt đầu Đầu tiên, chúng ta sẽ download tập dataset balloon tại https://github.com/matterport/Mask_RCNN/releases/download/v2.1/balloon_dataset.zip, giải nén và bỏ trong thư mục datasets. Tiếp đó, các bạn donwload file balloon.py và visualize.py về. File đầu tiên hỗ trợ chúng ta đọc dữ liệu của dataset balloon và file thứ hai hỗ trợ visualize hình ảnh một cách trực quan. Cả hai file mình đều lấy mã nguồn của Matterport trên https://github.com/matterport/Mask_RCNN/ Tiến hành import các thư viện cần thiết về.</description>
+      <description>
+
+&lt;h2 id=&#34;bắt-đầu&#34;&gt;Bắt đầu&lt;/h2&gt;
+
+&lt;p&gt;Đầu tiên, chúng ta sẽ download tập dataset balloon tại &lt;a href=&#34;https://github.com/matterport/Mask_RCNN/releases/download/v2.1/balloon_dataset.zip&#34;&gt;https://github.com/matterport/Mask_RCNN/releases/download/v2.1/balloon_dataset.zip&lt;/a&gt;, giải nén và bỏ trong thư mục datasets. Tiếp đó, các bạn donwload file balloon.py và visualize.py về. File đầu tiên hỗ trợ chúng ta đọc dữ liệu của dataset balloon và file thứ hai hỗ trợ visualize hình ảnh một cách trực quan. Cả hai file mình đều lấy mã nguồn của Matterport trên &lt;a href=&#34;https://github.com/matterport/Mask_RCNN/&#34;&gt;https://github.com/matterport/Mask_RCNN/&lt;/a&gt; Tiến hành import các thư viện cần thiết về.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;import os
+import sys
+import itertools
+import math
+import logging
+import json
+import re
+import random
+from collections import OrderedDict
+import numpy as np
+import matplotlib
+import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+import matplotlib.lines as lines
+from matplotlib.patches import Polygon
+
+
+import balloon
+import utils
+import visualize
+
+config = balloon.BalloonConfig()
+BALLOON_DIR = &amp;quot;datasets/balloon&amp;quot;
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Thông tin của tập train bao gồm&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;dataset = balloon.BalloonDataset()
+dataset.load_balloon(BALLOON_DIR, &amp;quot;train&amp;quot;)
+
+# Must call before using the dataset
+dataset.prepare()
+
+print(&amp;quot;Image Count: {}&amp;quot;.format(len(dataset.image_ids)))
+print(&amp;quot;Class Count: {}&amp;quot;.format(dataset.num_classes))
+for i, info in enumerate(dataset.class_info):
+    print(&amp;quot;{:3}. {:50}&amp;quot;.format(i, info[&#39;name&#39;]))
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;Image Count: 61
+Class Count: 2
+  0. BG
+  1. balloon
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Vậy là có tổng cộng 61 hình train. Dữ liệu được đánh làm 2 nhãn, một nhãn là background, một nhãn là balloon.&lt;/p&gt;
+
+&lt;h2 id=&#34;visualize-dữ-liệu&#34;&gt;Visualize dữ liệu&lt;/h2&gt;
+
+&lt;p&gt;Chúng ta sẽ load một vài hình lên xem người ta đã mask dữ liệu như thế nào. Ở đây, với mỗi hình ảnh, mình sẽ load 1 hình gốc và 4 hình của 4 quả bóng tương ứng trong hình, nếu trong hình có nhiều hơn 4 quả bóng thì chỉ vẽ 4 quả bóng đầu tiên&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+
+n_col = 5
+
+# Load and display random samples
+fig, axs = plt.subplots(nrows=4, ncols=n_col, figsize=(9.3, 6),subplot_kw={&#39;xticks&#39;: [], &#39;yticks&#39;: []})
+fig.subplots_adjust(left=0.03, right=0.97, hspace=0.3, wspace=0.05)
+image_ids = np.random.choice(dataset.image_ids, 4)
+# for image_id in image_ids:
+# for ax, image_id in zip(axs.flat, image_ids):
+
+for index in range(0,4):
+    image_id = image_ids[index]
+
+    image = dataset.load_image(image_id)
+    mask, class_ids = dataset.load_mask(image_id)
+    print(mask.shape)
+    print(len(class_ids))
+
+    axs.flat[index*n_col].imshow(image)
+    axs.flat[index*n_col].set_title(&#39;img&#39;)
+
+    for sub_index in range(0,len(class_ids)):
+        if sub_index &amp;gt;= n_col:
+            break
+        axs.flat[index*n_col +1 + sub_index].imshow(mask[:,:,sub_index])
+        axs.flat[index*n_col + 1+sub_index].set_title(str(dataset.class_names[class_ids[sub_index]]))
+
+
+plt.tight_layout()
+plt.show()
+
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/mask-rnn-1.png&#34; alt=&#34;Hình ảnh&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Các bạn có thể sử dụng hàm display_top_masks của tác giả Mask R-CNN để xem thử, hàm của họ hơi khác của mình một chút.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+image_ids = np.random.choice(dataset.image_ids, 4)
+for image_id in image_ids:
+    image = dataset.load_image(image_id)
+    mask, class_ids = dataset.load_mask(image_id)
+    visualize.display_top_masks(image, mask, class_ids, dataset.class_names)
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/f-rcnn-image2.jpg&#34; alt=&#34;Hình ảnh&#34; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;bounding-boxes&#34;&gt;Bounding Boxes&lt;/h2&gt;
+
+&lt;p&gt;Chúng ta có 2 cách để lấy Bounding Boxes của các hình. Một là lấy trực tiếp từ tập dataset (đối với những dataset có lưu bounding box), hai là rút trích bounding box từ các toạ độ mask. Chúng ta nên thực hiện cách hai, lý do là chúng ta sẽ dùng các kỹ thuật Data Generator để sinh nhiều ảnh hơn cung cấp cho thuật toán train. Lúc này, việc tính lại bounding box sẽ dễ dàng hơn.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+# Load random image and mask.
+image_id = random.choice(dataset.image_ids)
+image = dataset.load_image(image_id)
+mask, class_ids = dataset.load_mask(image_id)
+
+# Compute Bounding box
+bbox = utils.extract_bboxes(mask)
+
+# Display image and additional stats
+print(&amp;quot;image_id &amp;quot;, image_id, dataset.image_reference(image_id))
+
+# Display image and instances
+visualize.display_instances(image, bbox, mask, class_ids, dataset.class_names)
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/mask-rcnn-3.jpg&#34; alt=&#34;Hình ảnh&#34; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;resize-images&#34;&gt;Resize Images&lt;/h2&gt;
+
+&lt;p&gt;Các ảnh trong tập train có các kích thước khác nhau. Các bạn có thể xem các hình ở trên, có ảnh có kích thước này, có ảnh có kích thước kia. Chúng ta sẽ resize chúng về cùng một kích thước (ví dụ 1024x1024) để làm đầu vào cho tập huấn luyện. Và chúng ta sẽ sử dụng zero padding để lấp đầy những khoảng trống của những ảnh không đủ kích thước.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+
+
+# Load random image and mask.
+image_id = np.random.choice(dataset.image_ids, 1)[0]
+image = dataset.load_image(image_id)
+mask, class_ids = dataset.load_mask(image_id)
+original_shape = image.shape
+# Resize
+image, window, scale, padding, _ = utils.resize_image(
+    image, 
+    min_dim=config.IMAGE_MIN_DIM, 
+    max_dim=config.IMAGE_MAX_DIM,
+    mode=config.IMAGE_RESIZE_MODE)
+mask = utils.resize_mask(mask, scale, padding)
+# Compute Bounding box
+bbox = utils.extract_bboxes(mask)
+
+# Display image and additional stats
+print(&amp;quot;image_id: &amp;quot;, image_id, dataset.image_reference(image_id))
+print(&amp;quot;Original shape: &amp;quot;, original_shape)
+print(&amp;quot;Resize shape: &amp;quot;, image.shape)
+# Display image and instances
+visualize.display_instances(image, bbox, mask, class_ids, dataset.class_names)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Kết quả&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;image_id:  9 datasets/balloon\train\15290896925_884ab33fd3_k.jpg
+Original shape:  (1356, 2048, 3)
+Resize shape:  (1024, 1024, 3)
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/f-rcnn-image4.jpg&#34; alt=&#34;Hình ảnh&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Lưu ý một điều là ở đây, mình sử dụng random image, nên nếu các bạn chạy lại câu lệnh như mình thì kết quả ra phần nhiều sẽ khác mình. Tuy nhiên, Resize shape luôn là (1024, 1024, 3).&lt;/p&gt;
+
+&lt;h2 id=&#34;mini-masks&#34;&gt;Mini Masks&lt;/h2&gt;
+
+&lt;p&gt;Một vấn đề khá nghiêm trọng ở đây là chúng ta cần khá nhiều bộ nhớ để lưu các masks. Numpy sử dụng 1 byte để lưu 1 giá trị bit. Do đó, với kích thước ảnh là 1024x1024, chúng ta cần 1MB bộ nhớ ram để lưu trữ. Nếu chúng ta có tập dataset tầm 1000 bức ảnh thì cần đến 1GB bộ nhớ, khá là lớn. Ngoài việc tốn bộ nhớ lữu trữ, chúng còn làm chậm tốc độ huấn luyện mô hình nữa.&lt;/p&gt;
+
+&lt;p&gt;Để cải tiến, chúng ta có thể sử dụng một trong hai cách sau:
+- Cách thứ nhất: Thay vì lưu toàn bộ mask của toàn bức ảnh, chúng ta chỉ lưu những pixel của mask trong bounding box. Với việc sử dụng cách này, chúng ta sẽ tiết kiệm kha khá bộ nhớ chính.
+- Cách thứ hai: Chúng ta có thể resize mask về một kích thước chuẩn nào đó, ví dụ 48x48 pixel. Với những mask có kích thước lớn hơn 48x48, chúng sẽ bị mất thông tin.&lt;/p&gt;
+
+&lt;p&gt;Mình không thích cách thứ hai cho lắm. Tuy nhiên, theo lý giải của nhóm tác giả Mask R-CNN, thì hầu hết việc gán các đường biên (object annotations) thường không chính xác cho lắm (thừa hoặc thiếu một vài chỗ), cho nên, việc mất mát thông tin với lượng nhỏ này hầu như là không đáng kể.&lt;/p&gt;
+
+&lt;p&gt;Để đánh giá hiệu quả của hàm mask resizing, chúng ta sẽ chạy đoạn code bên dưới và xem ảnh kết quả. Đoạn code trên mình sử dụng 2 hàm compose_image_meta và load_image_gt của tác giả ở đường dẫn &lt;a href=&#34;https://github.com/matterport/Mask_RCNN/blob/master/mrcnn/model.py&#34;&gt;https://github.com/matterport/Mask_RCNN/blob/master/mrcnn/model.py&lt;/a&gt;. Mình có modify lại hàm load_image_gt một chút để hợp với ý mình hơn.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;############################################################
+#  Data Formatting
+############################################################
+
+def compose_image_meta(image_id, original_image_shape, image_shape,
+                       window, scale, active_class_ids):
+    &amp;quot;&amp;quot;&amp;quot;Takes attributes of an image and puts them in one 1D array.
+    image_id: An int ID of the image. Useful for debugging.
+    original_image_shape: [H, W, C] before resizing or padding.
+    image_shape: [H, W, C] after resizing and padding
+    window: (y1, x1, y2, x2) in pixels. The area of the image where the real
+            image is (excluding the padding)
+    scale: The scaling factor applied to the original image (float32)
+    active_class_ids: List of class_ids available in the dataset from which
+        the image came. Useful if training on images from multiple datasets
+        where not all classes are present in all datasets.
+    &amp;quot;&amp;quot;&amp;quot;
+    meta = np.array(
+        [image_id] +                  # size=1
+        list(original_image_shape) +  # size=3
+        list(image_shape) +           # size=3
+        list(window) +                # size=4 (y1, x1, y2, x2) in image cooredinates
+        [scale] +                     # size=1
+        list(active_class_ids)        # size=num_classes
+    )
+    return meta
+
+
+def load_image_gt(dataset, config, image_id, augment=False, augmentation=None,
+                  use_mini_mask=False):
+    &amp;quot;&amp;quot;&amp;quot;Load and return ground truth data for an image (image, mask, bounding boxes).
+    augment: (deprecated. Use augmentation instead). If true, apply random
+        image augmentation. Currently, only horizontal flipping is offered.
+    augmentation: Optional. An imgaug (https://github.com/aleju/imgaug) augmentation.
+        For example, passing imgaug.augmenters.Fliplr(0.5) flips images
+        right/left 50% of the time.
+    use_mini_mask: If False, returns full-size masks that are the same height
+        and width as the original image. These can be big, for example
+        1024x1024x100 (for 100 instances). Mini masks are smaller, typically,
+        224x224 and are generated by extracting the bounding box of the
+        object and resizing it to MINI_MASK_SHAPE.
+    Returns:
+    image: [height, width, 3]
+    shape: the original shape of the image before resizing and cropping.
+    class_ids: [instance_count] Integer class IDs
+    bbox: [instance_count, (y1, x1, y2, x2)]
+    mask: [height, width, instance_count]. The height and width are those
+        of the image unless use_mini_mask is True, in which case they are
+        defined in MINI_MASK_SHAPE.
+    &amp;quot;&amp;quot;&amp;quot;
+    # Load image and mask
+    image = dataset.load_image(image_id)
+    mask, class_ids = dataset.load_mask(image_id)
+    original_shape = image.shape
+    image, window, scale, padding, crop = utils.resize_image(
+        image,
+        min_dim=config.IMAGE_MIN_DIM,
+        min_scale=config.IMAGE_MIN_SCALE,
+        max_dim=config.IMAGE_MAX_DIM,
+        mode=config.IMAGE_RESIZE_MODE)
+    mask = utils.resize_mask(mask, scale, padding, crop)
+
+    # Random horizontal flips.
+    # TODO: will be removed in a future update in favor of augmentation
+    if augment:
+        logging.warning(&amp;quot;&#39;augment&#39; is deprecated. Use &#39;augmentation&#39; instead.&amp;quot;)
+        if random.randint(0, 1):
+            image = np.fliplr(image)
+            mask = np.fliplr(mask)
+
+    # Augmentation
+    # This requires the imgaug lib (https://github.com/aleju/imgaug)
+    if augmentation:
+        import imgaug
+
+        # Augmenters that are safe to apply to masks
+        # Some, such as Affine, have settings that make them unsafe, so always
+        # test your augmentation on masks
+        MASK_AUGMENTERS = [&amp;quot;Sequential&amp;quot;, &amp;quot;SomeOf&amp;quot;, &amp;quot;OneOf&amp;quot;, &amp;quot;Sometimes&amp;quot;,
+                           &amp;quot;Fliplr&amp;quot;, &amp;quot;Flipud&amp;quot;, &amp;quot;CropAndPad&amp;quot;,
+                           &amp;quot;Affine&amp;quot;, &amp;quot;PiecewiseAffine&amp;quot;]
+
+        def hook(images, augmenter, parents, default):
+            &amp;quot;&amp;quot;&amp;quot;Determines which augmenters to apply to masks.&amp;quot;&amp;quot;&amp;quot;
+            return augmenter.__class__.__name__ in MASK_AUGMENTERS
+
+        # Store shapes before augmentation to compare
+        image_shape = image.shape
+        mask_shape = mask.shape
+        # Make augmenters deterministic to apply similarly to images and masks
+        det = augmentation.to_deterministic()
+        image = det.augment_image(image)
+        # Change mask to np.uint8 because imgaug doesn&#39;t support np.bool
+        mask = det.augment_image(mask.astype(np.uint8),
+                                 hooks=imgaug.HooksImages(activator=hook))
+        # Verify that shapes didn&#39;t change
+        assert image.shape == image_shape, &amp;quot;Augmentation shouldn&#39;t change image size&amp;quot;
+        assert mask.shape == mask_shape, &amp;quot;Augmentation shouldn&#39;t change mask size&amp;quot;
+        # Change mask back to bool
+        mask = mask.astype(np.bool)
+
+    # Note that some boxes might be all zeros if the corresponding mask got cropped out.
+    # and here is to filter them out
+    _idx = np.sum(mask, axis=(0, 1)) &amp;gt; 0
+    mask = mask[:, :, _idx]
+    class_ids = class_ids[_idx]
+    # Bounding boxes. Note that some boxes might be all zeros
+    # if the corresponding mask got cropped out.
+    # bbox: [num_instances, (y1, x1, y2, x2)]
+    bbox = utils.extract_bboxes(mask)
+
+    # Active classes
+    # Different datasets have different classes, so track the
+    # classes supported in the dataset of this image.
+    active_class_ids = np.zeros([dataset.num_classes], dtype=np.int32)
+    source_class_ids = dataset.source_class_ids[dataset.image_info[image_id][&amp;quot;source&amp;quot;]]
+    active_class_ids[source_class_ids] = 1
+
+    # Resize masks to smaller size to reduce memory usage
+    if use_mini_mask:
+        if USE_MINI_MASK_SHAPE:
+            mask = utils.minimize_mask(bbox, mask, MINI_MASK_SHAPE)
+        else:
+            mask = utils.minimize_mask(bbox, mask, mask.shape[:2])
+
+    # Image meta data
+    image_meta = compose_image_meta(image_id, original_shape, image.shape,
+                                    window, scale, active_class_ids)
+
+    return image, image_meta, class_ids, bbox, mask
+
+
+image_id = np.random.choice(dataset.image_ids, 1)[0]
+image, image_meta, class_ids, bbox, mask = load_image_gt(
+    dataset, config, image_id, use_mini_mask=False)
+
+
+visualize.display_images([image]+[mask[:,:,i] for i in range(min(mask.shape[-1], 5))])
+
+image, image_meta, class_ids, bbox, mask = load_image_gt(
+    dataset, config, image_id, use_mini_mask=True)
+
+
+visualize.display_images([image]+[mask[:,:,i] for i in range(min(mask.shape[-1], 5))])
+
+USE_MINI_MASK_SHAPE = True
+
+image, image_meta, class_ids, bbox, mask = load_image_gt(
+    dataset, config, image_id, use_mini_mask=True)
+
+
+visualize.display_images([image]+[mask[:,:,i] for i in range(min(mask.shape[-1], 5))])
+
+mask = utils.expand_mask(bbox, mask, image.shape)
+visualize.display_instances(image, bbox, mask, class_ids, dataset.class_names)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/f-rcnn-image6.jpg&#34; alt=&#34;Hình ảnh&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Với ảnh ở line 1 là ảnh gốc ban đầu và các full mask của bức ảnh, ảnh ở line 2 là chỉ lấy mask của bounding box, ảnh ở line 3 là lấy mask ở bounding box và scale ảnh (do scale ảnh nên ở line 3 các bạn sẽ thấy mask có hình răng cưa, khác với các mask line 2). Line 4 là ảnh ở line 3 được revert back lại hình gốc ban đầu. Các bạn có để ý thấy rằng nó sẽ bị răng cưa ở biên cạnh chứ không được smooth như ảnh gốc. Nếu chúng ta không làm object annotations kỹ, thì object cũng sẽ bị răng cưa như trên.&lt;/p&gt;
+
+&lt;h2 id=&#34;anchors&#34;&gt;Anchors&lt;/h2&gt;
+
+&lt;p&gt;Thứ tự của các anchor thật sự rất quan trọng. Trong quá trình train, thứ tự của các anchor như thế nào thì trong quá trình test, validation, prediction phải dùng y hệt vậy.&lt;/p&gt;
+
+&lt;p&gt;Trong mạng FPN, các anchor phải được xắp xếp theo cách mà chúng ta có thể dễ dàng liên kết với giá trị output&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;Xắp xếp các anchor theo thứ tự các lớp của pyramid. Tất cả các anchor của level đầu tiên, tiếp theo là các anchor của các lớp thứ hai, lớp thư ba&amp;hellip; Việc xắp xếp theo cách này sẽ giúp chúng ta dễ dàng phân tách các lớp anchor và dễ hiểu theo lẽ tự nhiên.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Trong mỗi level, xắp xếp các anchor trong mỗi level bằng thứ tự xử lý của các feature map. Thông thường, một convolution layer sẽ dịch chuyển trên feature map bắt đầu từ vị trí trái - trên (top - left) đi xuống phải dưới (từ trái qua phải, xuống hàng rồi lại từ trái qua phải).&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Trên mỗi cell của feature map, chúng ta sẽ xắp xếp các anchor theo các ratios.&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Anchor Stride:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+backbone_shapes = modellib.compute_backbone_shapes(config, config.IMAGE_SHAPE)
+anchors = utils.generate_pyramid_anchors(config.RPN_ANCHOR_SCALES, 
+                                          config.RPN_ANCHOR_RATIOS,
+                                          backbone_shapes,
+                                          config.BACKBONE_STRIDES, 
+                                          config.RPN_ANCHOR_STRIDE)
+
+# Print summary of anchors
+num_levels = len(backbone_shapes)
+anchors_per_cell = len(config.RPN_ANCHOR_RATIOS)
+print(&amp;quot;Total anchors: &amp;quot;, anchors.shape[0])
+print(&amp;quot;ANCHOR Scales: &amp;quot;, config.RPN_ANCHOR_SCALES)
+print(&amp;quot;BACKBONE STRIDE: &amp;quot;, config.BACKBONE_STRIDES)
+print(&amp;quot;ratios: &amp;quot;, config.RPN_ANCHOR_RATIOS)
+print(&amp;quot;Anchors per Cell: &amp;quot;, anchors_per_cell)
+# print(&amp;quot;Anchors stride: &amp;quot;, config.RPN_ANCHOR_STRIDE)
+print(&amp;quot;Levels: &amp;quot;, num_levels)
+anchors_per_level = []
+for l in range(num_levels):
+    num_cells = backbone_shapes[l][0] * backbone_shapes[l][1]
+    print(&amp;quot;backbone_shapes in level &amp;quot;,l,&#39; &#39;,backbone_shapes[l][0],&#39;x&#39;,backbone_shapes[l][1])
+    print(&amp;quot;num_cells in level &amp;quot;,l,&#39; &#39;,num_cells)
+    anchors_per_level.append(anchors_per_cell * num_cells // config.RPN_ANCHOR_STRIDE**2)
+    print(&amp;quot;Anchors in Level {}: {}&amp;quot;.format(l, anchors_per_level[l]))
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;Total anchors:  261888
+ANCHOR Scales:  (32, 64, 128, 256, 512)
+BACKBONE STRIDE:  [4, 8, 16, 32, 64]
+ratios:  [0.5, 1, 2]
+Anchors per Cell:  3
+Levels:  5
+backbone_shapes in level  0   256 x 256
+num_cells in level  0   65536
+Anchors in Level 0: 196608
+backbone_shapes in level  1   128 x 128
+num_cells in level  1   16384
+Anchors in Level 1: 49152
+backbone_shapes in level  2   64 x 64
+num_cells in level  2   4096
+Anchors in Level 2: 12288
+backbone_shapes in level  3   32 x 32
+num_cells in level  3   1024
+Anchors in Level 3: 3072
+backbone_shapes in level  4   16 x 16
+num_cells in level  4   256
+Anchors in Level 4: 768
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Trong kiến trức FPN, feature map tại một số layer đầu tiên là những feature map có độ phân giải lớn. Ví dụ, nếu bức ảnh đầu vào có kích thước là 1024x1024 pixel, và kích thước của mỗi anchor lớp đầu tiên là 32x32 pixel (giá trị đầu tiên của RPN_ANCHOR_SCALES (32, 64, 128, 256, 512)) và bước nhảy (STRIDE) của lớp đầu tiên là 4 (giá trị đầu tiên của BACKBONE_STRIDES ([4, 8, 16, 32, 64])). Từ những dữ kiện này, ta có thể suy ra được là sẽ sinh ra backbone cell có kích thước 256x256 pixel =&amp;gt; 256x256 = 65536 anchor. Với mỗi backbone cell, chúng ta thực hiện phép scale với 3 tỷ lệ khác nhau là [0.5, 1, 2], vậy chúng ta có tổng cộng là 65536x3 = 196608 anchor (xấp xỉ 200k anchor). Để ý một điều là kích thước của một anchor là 32x32 pixel, và bước nhảy là 4, cho nên chúng ta sẽ bị chống lấn (overlap) 28 pixel của anchor 1 và anchor 2 ngay sau nó.&lt;/p&gt;
+
+&lt;p&gt;Một điều thú vị là, nếu ta tăng bước nhảy lên gấp 2 lần, ví dụ từ 4 pixel lấy một anchor lên 8 pixel lấy một anchor, thì số lượng anchor giảm đi đến 4 lần (196608 anchor ở level 0 so với 49152 anchor ở level 1).&lt;/p&gt;
+
+&lt;p&gt;Thử vẽ tất cả các anchor của tất cả các level ở điểm giữa một bức ảnh bức kỳ lên, mỗi một level sẽ dùng một màu khác nhau, chúng ta được một hình như bên dưới.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;## Visualize anchors of one cell at the center of the feature map of a specific level
+
+# Load and draw random image
+image_id = np.random.choice(dataset.image_ids, 1)[0]
+image, image_meta, _, _, _ = modellib.load_image_gt(dataset, config, image_id)
+fig, ax = plt.subplots(1, figsize=(10, 10))
+ax.imshow(image)
+levels = len(backbone_shapes)
+
+kn_color =np.array( [(255,0,0),(0,255,0),(0,0,255),(128,0,0),(0,128,0),(0,0,128)])/255.
+
+for level in range(levels):
+    # colors = visualize.random_colors(levels)
+    colors = kn_color
+    # Compute the index of the anchors at the center of the image
+    level_start = sum(anchors_per_level[:level]) # sum of anchors of previous levels
+    level_anchors = anchors[level_start:level_start+anchors_per_level[level]]
+    print(&amp;quot;Level {}. Anchors: {:6}  Feature map Shape: {} &amp;quot;.format(level, level_anchors.shape[0], 
+                                                                  backbone_shapes[level]))
+    center_cell = backbone_shapes[level] // 2
+    center_cell_index = (center_cell[0] * backbone_shapes[level][1] + center_cell[1])
+    level_center = center_cell_index * anchors_per_cell 
+    center_anchor = anchors_per_cell * (
+        (center_cell[0] * backbone_shapes[level][1] / config.RPN_ANCHOR_STRIDE**2) \
+        + center_cell[1] / config.RPN_ANCHOR_STRIDE)
+    level_center = int(center_anchor)
+
+    # Draw anchors. Brightness show the order in the array, dark to bright.
+    for i, rect in enumerate(level_anchors[level_center:level_center+anchors_per_cell]):
+        y1, x1, y2, x2 = rect
+        p = patches.Rectangle((x1, y1), x2-x1, y2-y1, linewidth=2, facecolor=&#39;none&#39;,
+                              edgecolor=np.array(colors[level]) / anchors_per_cell)
+        print(i)
+        ax.add_patch(p)
+
+
+plt.show()
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/f-rcnn-image7.jpg&#34; alt=&#34;Hình ảnh&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Nhìn ảnh trên,các bạn phần nào đó mường tượng ra các anchor sẽ như thế nào rồi phải không.&lt;/p&gt;
+
+&lt;h2 id=&#34;prediction&#34;&gt;Prediction&lt;/h2&gt;
+
+&lt;p&gt;Để tiến hành detect vị trí quả bóng và mask của quả bóng, chúng ta download một ảnh small party nhỏ trên internet về và kiểm chứng.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+import os
+
+import tensorflow as tf
+
+import cv2
+
+DEVICE = &amp;quot;/cpu:0&amp;quot; 
+ROOT_DIR = os.path.abspath(&amp;quot;../../&amp;quot;)
+MODEL_DIR = os.path.join(ROOT_DIR, &amp;quot;logs&amp;quot;)
+# Create model in inference mode
+
+class InferenceConfig(config.__class__):
+    # Run detection on one image at a time
+    GPU_COUNT = 1
+    IMAGES_PER_GPU = 1
+
+config = InferenceConfig()
+config.display()
+
+with tf.device(DEVICE):
+    model = modellib.MaskRCNN(mode=&amp;quot;inference&amp;quot;, model_dir=MODEL_DIR,
+                              config=config)
+
+
+weights_path = &amp;quot;mask_rcnn_balloon.h5&amp;quot;
+
+# Load weights
+print(&amp;quot;Loading weights &amp;quot;, weights_path)
+# model.load_weights(weights_path, by_name=True)
+
+imgpath = &amp;quot;datasets\\balloon\\test\\t1.png&amp;quot;
+# imgpath = &amp;quot;datasets/balloon/val/14898532020_ba6199dd22_k.jpg&amp;quot;
+
+image = cv2.imread(imgpath)
+
+image = cv2.cvtColor(image,cv2.COLOR_BGR2RGB)
+
+
+
+ds_name = [&#39;BG&#39;, &#39;balloon&#39;]
+
+
+results = model.detect([image], verbose=1)
+
+def get_ax(rows=1, cols=1, size=16):
+    &amp;quot;&amp;quot;&amp;quot;Return a Matplotlib Axes array to be used in
+    all visualizations in the notebook. Provide a
+    central point to control graph sizes.
+    
+    Adjust the size attribute to control how big to render images
+    &amp;quot;&amp;quot;&amp;quot;
+    _, ax = plt.subplots(rows, cols, figsize=(size*cols, size*rows))
+    return ax
+# Display results
+ax = get_ax(1)
+r = results[0]
+visualize.display_instances(image, r[&#39;rois&#39;], r[&#39;masks&#39;], r[&#39;class_ids&#39;], 
+                            dataset.class_names, r[&#39;scores&#39;], ax=ax,
+                            title=&amp;quot;Predictions&amp;quot;)
+plt.show()
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/f-rcnn-image8.jpg&#34; alt=&#34;Hình ảnh&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Kết quả nhận dạng khá chính xác phải không các bạn.&lt;/p&gt;
+
+&lt;p&gt;Cảm ơn các bạn đã theo dõi. Hẹn gặp bạn ở các bài viết tiếp theo.&lt;/p&gt;
+</description>
     </item>
     
   </channel>

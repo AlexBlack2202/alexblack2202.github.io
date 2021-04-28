@@ -10,9 +10,7 @@
     <webMaster>alexblack2202@gmail.com (Phạm Duy Tùng)</webMaster>
     <copyright>This work is licensed under a Creative Commons Attribution-ShareAlike 4.0 International License.</copyright>
     <lastBuildDate>Mon, 27 May 2019 00:12:00 +0300</lastBuildDate>
-    
-	<atom:link href="/tags/dropout/index.xml" rel="self" type="application/rss+xml" />
-    
+    <atom:link href="/tags/dropout/" rel="self" type="application/rss+xml" />
     
     <item>
       <title>Tìm hiểu mạng AlexNet, mô hình giành chiến thắng tại cuộc thi ILSVRC 2012</title>
@@ -20,7 +18,199 @@
       <pubDate>Mon, 27 May 2019 00:12:00 +0300</pubDate>
       <author>alexblack2202@gmail.com (Phạm Duy Tùng)</author>
       <guid>/blog/2019-05-27-alexnet/</guid>
-      <description>Trong bài viết này, chúng ta sẽ tìm hiểu mô hình AlexNet từ nhóm của giáo sư Hinton. Tới thời điểm hiện tại (2019-05-27), bài viết của giáo sư đã có hơn 40316 lượt trích dẫn. Bài báo này có bước đóng góp cực kỳ quan trọng, là một đột phá lớn trong lĩnh vực deep learning, mở đầu cho sự quay lại của mạng neural network và đóng góp trực tiếp vào thành công của những chương trình trí tuệ nhân tạo tại thời điểm hiện tại.</description>
+      <description>
+
+&lt;p&gt;Trong bài viết này, chúng ta sẽ tìm hiểu mô hình AlexNet từ nhóm của giáo sư Hinton. Tới thời điểm hiện tại (2019-05-27), bài viết của giáo sư đã có hơn 40316 lượt trích dẫn. Bài báo này có bước đóng góp cực kỳ quan trọng, là một đột phá lớn trong lĩnh vực deep learning, mở đầu cho sự quay lại của mạng neural network và đóng góp trực tiếp vào thành công của những chương trình trí tuệ nhân tạo tại thời điểm hiện tại.&lt;/p&gt;
+
+&lt;p&gt;Về bài báo gốc của tác giả, mình có để ở phần trích dẫn bên dưới. Các bạn có nhu cầu tìm hiểu có thể tìm và đọc. Theo ý kiến riêng của mình, đây là một bài báo &lt;em&gt;rất nên đọc và phải đọc&lt;/em&gt;. Trước đây mình đã có viết 1 bài về tập AlexNet nhưng chưa đầy đủ, bài đó mình chỉ giới thiệu phớt phớt qua mạng AlexNet. Trong bài viết này, mình sẽ trình bày kỹ hơn.&lt;/p&gt;
+
+&lt;p&gt;Sơ lược một chút, tập dữ liệu ImageNet là tập dataset có khoảng 15 triệu hình ảnh có độ phân giải cao đã được gán nhãn (có khoảng 22000 nhãn). Cuộc thi ILSVRC  sử dụng một phần nhỏ của tập ImageNet với khoảng 1.2 triệu ảnh của 1000 nhãn (trung bình mỗi nhãn có khoảng 1.2 ngàn hình ảnh) làm tập train, 50000 ảnh làm tập validation và 150000 ảnh làm tập test (tập validation và tập test đều có 1000 nhãn thuộc tập train).&lt;/p&gt;
+
+&lt;h1 id=&#34;kiến-trúc-mạng-alexnet&#34;&gt;Kiến trúc mạng AlexNet&lt;/h1&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/alexnet_architecture.jpg&#34; alt=&#34;Hình ảnh&#34; /&gt;
+&lt;strong&gt;Kiến trúc mô hình AlexNet&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Mạng AlexNet bao gồm 8 lớp (tính luôn lớp input là 9), bao gồm:&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;Input&lt;/em&gt;: có kích thước 224x224x3 (Scale ảnh đầu vào về dạng 224x224x3, thực chất ảnh của tập ImageNet có size tùy ý)&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;Lớp thứ nhất&lt;/em&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Convolution Layer có kích thước 11x11x3 với stride size = 4 và pad = 0. Kết quả sau bước này ta được tập feature map có kích thước 55x55x96 (mình nghĩ là các bạn sẽ biết cách tính sao cho ra số 55, mình cũng đã đề cập vấn đề cách tính này ở 1 bài viết trước đây).
+
+Tiếp theo là một Overlapping Max Pooling 3x3 có stride =2 =&amp;gt; feature maps = 27x27x96.
+
+Tiếp theo là Local Response Normalization =&amp;gt; feature maps = 27x27x96.
+
+Xong lớp thứ nhất
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;em&gt;Lớp thứ hai&lt;/em&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Convolutional Layer: 256 kernels có kích thước 5x5x48 (stride size = 1, pad = 2) =&amp;gt; 27x27x256 feature maps.
+
+Overlapping Max Pooling 3x3 có stride =2 =&amp;gt; feature maps = 13x13x256.
+
+Tiếp theo là Local Response Normalization =&amp;gt; feature maps = 13x13x256.
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;em&gt;Lớp thứ ba&lt;/em&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Convolutional Layer: 384 kernels có kích thước 3x3x256 (stride size = 1, pad = 1) =&amp;gt; 13x13x384 feature maps.
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;em&gt;Lớp thứ bốn&lt;/em&gt;: 384 kernels có kích thước 3x3x192 (stride size = 1, pad = 1) =&amp;gt; 13x13x384 feature maps.&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;Lớp thứ năm&lt;/em&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Convolutional Layer: 256 kernels có kích thước 3x3x192 (stride size = 1, pad = 1) =&amp;gt; 13x13x256 feature maps.
+
+Overlapping Max Pooling 3x3 có stride =2 =&amp;gt; feature maps = 6x6x256.
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;em&gt;Lớp thứ sáu&lt;/em&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Full connected (hay còn gọi là Dense layer) với 4096 neurals
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;em&gt;Lớp thứ bảy&lt;/em&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Full connected  với 4096 neurals
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;em&gt;Lớp thứ tám&lt;/em&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Full connected ra output 1000 neural (do có 1000 lớp)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Hàm độ lỗi được sử dụng là Softmax.&lt;/p&gt;
+
+&lt;p&gt;Tổng cộng, chúng ta có 60 triệu tham số được sử dụng để huấn luyện.&lt;/p&gt;
+
+&lt;h1 id=&#34;cải-tiến-của-mô-hình-để-giảm-error-rate&#34;&gt;Cải tiến của mô hình để giảm error rate&lt;/h1&gt;
+
+&lt;h2 id=&#34;sử-dụng-relu-thay-cho-tanh&#34;&gt;Sử dụng ReLU thay cho TanH&lt;/h2&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/relu_activation_function.png&#34; alt=&#34;Hình ảnh&#34; /&gt;
+&lt;strong&gt;Hàm kích hoạt ReLU và TanH&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Các mô hình neural network trước khi bài báo ra đời thường sử dụng hàm Tanh làm hàm kích hoạt. Mô hình AlexNet không sử dụng hàm TanH mà giới thiệu một hàm kích hoạt mới là ReLU. ReLU giúp cho quá trình huấn luyện chạy nhanh hơn gấp 6 lần so với kiến trúc tương tự sử dụng TanH, góp một phần vào việc độ lỗi trên tập huấn luyện là 25%.&lt;/p&gt;
+
+&lt;h2 id=&#34;local-response-normalization&#34;&gt;Local Response Normalization&lt;/h2&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/local_response_norm_vs_batch_norm.png&#34; alt=&#34;Hình ảnh&#34; /&gt;
+&lt;strong&gt;Local Response Normalization và Batch Normalization&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Trong mạng AlexNet, nhóm tác giả sử dụng hàm chuẩn hóa là Local Response Normalization. Hàm này không phải là Batch Normalization mà các bạn hay sử dụng ở thời điểm hiện tại (xem hình ở trên, hai hàm có công thức tính toán hoàn toàn khác nhau). Việc sử dụng chuẩn hóa (Normalization) giúp tăng tốc độ hội tụ. Ngày nay, chúng ta không còn sử dụng Local Response Normalization nữa. Thay vào đó, chúng ta sử  dụng Batch Normalization làm hàm chuẩn hóa.&lt;/p&gt;
+
+&lt;p&gt;Với việc sử dụng hàm chuẩn hóa Local Response Normalization, độ lỗi top-1 error rate giảm 1.4%, top-5 giảm 1.2%.&lt;/p&gt;
+
+&lt;h2 id=&#34;overlapping-pooling&#34;&gt;Overlapping Pooling&lt;/h2&gt;
+
+&lt;p&gt;Overlapping Pooling là pooling với stride nhỏ hơn kernel size. Một khái niệm ngược với Overlapping Pooling là Non-Overlapping Pooling với stride lớn hoăn hoặc bằng kernel.&lt;/p&gt;
+
+&lt;p&gt;Mạng AlexNet sử dụng Overlapping Pooling ở hidden layer thứ 1, 2 và 5 (Kernel size = 3x3, stride =2).&lt;/p&gt;
+
+&lt;p&gt;Với việc sử dụng overlapping pooling, top-1 error rates giảm 0.4%, top-5 error rate giảm 0.3%.&lt;/p&gt;
+
+&lt;h2 id=&#34;sử-dụng-data-augmentation&#34;&gt;Sử dụng Data Augmentation&lt;/h2&gt;
+
+&lt;p&gt;Dữ liệu của tập huấn luyện khá nhiều, 1.2 triệu mẫu. Nhưng chia ra cho 1000 lớp thì mỗi lớp có khoảng 1200, khá khiêm tốn phải không. Cho nên, tác giả đã nghĩ ra một cách khá hay để tăng số lượng hình ảnh mà vẫn giữ được tính IID của dữ liệu, đó là sử dụng các phép biến đổi affine trên dữ liệu ảnh gốc để thu thêm nhiều ảnh hơn.&lt;/p&gt;
+
+&lt;p&gt;Có hai dạng Data Augentation được tác giả sử dụng&lt;/p&gt;
+
+&lt;p&gt;Dạng thứ nhất: Image translation và horizontal reflection (mirroring)&lt;/p&gt;
+
+&lt;p&gt;Image translation được hiểu như sau: ảnh ImageNet gốc có kích thước 256x256 pixel, tác giả rút ra một ảnh con có kích thước 224x224 pixel, sau đó dịch qua trái 1 pixel và lấy 1 ảnh con tiếp theo có kích thước 224x224. Làm như vậy theo hàng, hết hàng làm theo cột. Cuối cùng tác giả có thể từ một bức hình 256x256 ban đầu rút trích thành 1024 hình có kích thước 224x224&lt;/p&gt;
+
+&lt;p&gt;horizontal reflection (mirroring) được hiểu là lấy ảnh phản chiếu của ánh gốc qua đường chéo chính. Ví dụ con báo dang có hướng tai của nó từ trái qua phải, ta lấy horizontal reflection của ảnh đó thì sẽ được con báo hướng tai từ phải qua trái.&lt;/p&gt;
+
+&lt;p&gt;Với việc kết hợp Image translation và horizontal reflection (mirroring), tác giả có thể rút tối đa 2048 bức ảnh khác nhau chỉ từ 1 bức ảnh gốc =&amp;gt; với hơn 1000 bức ảnh của 1 nhãn có thể sinh ra tối đa là 2048000 bức ảnh, một con số khá lớn phải không các bạn.&lt;/p&gt;
+
+&lt;p&gt;Ở tập test, tác giả sử dụng 4 hình 224x224 ở bốn góc cộng với 1 hình 224x224 ở trung tâm =&amp;gt; được 5 hình, đem 5 hình đó sử dụng horizontal reflection thì thu được 10 hình cho mỗi file test.&lt;/p&gt;
+
+&lt;p&gt;Dạng thứ hai: Thay đổi độ sáng&lt;/p&gt;
+
+&lt;p&gt;Thực hiện tính PCA trên tập train. Với mỗi hình trên tập train, thay đổi giá trị độ sáng&lt;/p&gt;
+
+&lt;p&gt;$$[p_1, p_2, p_3][\alpha_1 \gamma_1, \alpha_2 \gamma_2, \alpha_3 \gamma_3]^T$$&lt;/p&gt;
+
+&lt;p&gt;với pi và gammai là giá trị trị riêng và vector riêng thứ i của ma trận hiệp phương sai 3x3 của ảnh, và alpha i là một giá trị ngẫu nhiên thuộc đoạn 1 và độ lệch chuẩn 0.1..&lt;/p&gt;
+
+&lt;p&gt;Với việc sử dụng data augmentation, top-1 error rate giảm 1% độ lỗi.&lt;/p&gt;
+
+&lt;h2 id=&#34;dropout&#34;&gt;Dropout&lt;/h2&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/drop_out.png&#34; alt=&#34;Hình ảnh&#34; /&gt;
+&lt;strong&gt;Dropout&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Với mỗi layer sử dụng dropout, mỗi neural sẽ có cơ hội không đóng góp vào feed forward và backpropagation. Do đó, mỗi neural đều có cơ hội  rất lớn đóng góp vào thuật toán, và chúng ta sẽ giảm thiểu tình trạng phụ thuộc vào một vài neural.&lt;/p&gt;
+
+&lt;p&gt;Không sử dụng dropout trong tập quá trình test.&lt;/p&gt;
+
+&lt;p&gt;Mạng AlexNet sử dụng giá trị xác xuất của dropout là 0.5  ở hai fully-connected layer. &lt;em&gt;Dopout được xem như là một kỹ thuật chuẩn hóa nhằm mục đích giảm overfitting.&lt;/em&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;sử-dụng-nhiều-gpu&#34;&gt;Sử dụng nhiều GPU&lt;/h2&gt;
+
+&lt;p&gt;Tại năm 2012, nhóm tác giả sử dụng card đồ họa NIVIDIA GTX 580 có 3GB bộ nhớ RAM. Cho nên, để có thể huấn luyện được mô hình AlexNet trên GPU, mô hình cần sử dụng  2 GPU.&lt;/p&gt;
+
+&lt;p&gt;vì vậy &lt;em&gt;việc sử dụng 2 hoặc nhiều GPU là do vấn đề thiếu bộ nhớ, chứ không phải là vấn đề tăng tốc quá trình train hơn so với 1 GPU&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;Ngoài ra, do giới hạn của GPU, nên mô hình AlexNet được tách ra làm 2 phần, mỗi phần được huấn luyện trên 1 GPU. Phiên bản 1 GPU của mô hình có tên là CaffeNet, và đòi hỏi chúng ta phải sử dụng GPU có bộ nhớ RAM lớn hơn hoặc bằng 6GB.&lt;/p&gt;
+
+&lt;h1 id=&#34;một-số-chi-tiết-khác-về-các-learning-param&#34;&gt;Một số chi tiết khác về các learning param&lt;/h1&gt;
+
+&lt;p&gt;Batch size: 128&lt;/p&gt;
+
+&lt;p&gt;Momemtum: 0.9&lt;/p&gt;
+
+&lt;p&gt;Weight Decay: 0.0005&lt;/p&gt;
+
+&lt;p&gt;Learning rate: 0.01, giá trị learning rate sẽ giảm đi 10 lần nếu validation error rate không thay đổi trong 1 khoảng thời gian. Số lần giảm là 3.&lt;/p&gt;
+
+&lt;p&gt;Epoch: 90&lt;/p&gt;
+
+&lt;p&gt;Nhóm tác giả đã sử dụng 2 GPU 580 có  3GB GPU RAM và tốn 6 ngày để huấn luyện.&lt;/p&gt;
+
+&lt;h1 id=&#34;kết-quả&#34;&gt;Kết quả&lt;/h1&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/alexnet_result_1.png&#34; alt=&#34;Hình ảnh&#34; /&gt;
+&lt;strong&gt;Độ lỗi của AlexNet trên ILSVRC 2010&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Trong cuộc thi ILSVRC 2010, AlexNet đạt độ chính xác top-1 error 37.5% và top-5 error là 17.0%, kết quả này tốt hơn vượt trội so với các cách tiếp cận khác.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/alexnet_result_2.png&#34; alt=&#34;Hình ảnh&#34; /&gt;
+&lt;strong&gt;Độ lỗi của AlexNet trên ILSVRC 2012&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Đến cuộc thi ILSVRC 2012, độ lỗi của AlexNet trên tập validation giảm còn 18.2%.&lt;/p&gt;
+
+&lt;p&gt;Nếu lấy trung bình của dự đoán trên 5 mạng AlexNet được huấn luyện khác nhau, độ lỗi giảm còn 16.4%. Các lấy trung bình trên nhiều hơn 1 mạng CNN là một kỹ thuật &lt;em&gt;boosting&lt;/em&gt; và được sử dụng trước đó ở bài toán phân loại số của mạng LeNet.&lt;/p&gt;
+
+&lt;p&gt;Ở dòng số 3 là mạng AlexNet nhưng được thêm 1 convolution layer nữa (nên được ký hiệu là 1CNN*), độ lỗi trên tập validation giảm còn 16.4%.&lt;/p&gt;
+
+&lt;p&gt;Nếu lấy kết quả trung bình của 2 mạng neural net được chỉnh sửa (thêm 1 convolution layer) và 5 mạng AlexNet gốc (=&amp;gt; chúng ta có 7CNN*), độ lỗi trên tập validation giảm xuống 15.4%&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/alexnet_result_3.png&#34; alt=&#34;Hình ảnh&#34; /&gt;
+&lt;strong&gt;Demo kết quả top-5 của mạng AlexNet&lt;/strong&gt;&lt;/p&gt;
+
+&lt;h1 id=&#34;mạng-caffenet&#34;&gt;Mạng CaffeNet&lt;/h1&gt;
+
+&lt;p&gt;Mạng này là phiên bản kiến trúc 1-GPU của AlexNet. Kiến trúc của mạng caffeNet như hình bên dưới:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/caffenet.png&#34; alt=&#34;Hình ảnh&#34; /&gt;
+&lt;strong&gt;Mạng caffeNet&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Bạn thấy đó, thay vì có 2 phần trên và dưới như mô ình AlexNet ở trên, mô hình CaffeNet chỉ có 1 phần. Ví dụ lớp hidden layer thứ 7 mạng AlexNet gồm 2 phần, mỗi phần có kích thước 2048, còn ở phiên bản CaffeNet thì đã gộp lại thành 1 phần.&lt;/p&gt;
+
+&lt;p&gt;Tài liệu tham khảo&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://papers.nips.cc/paper/4824-imagenet-classification-with-deep-convolutional-neural-networks.pdf&#34;&gt;https://papers.nips.cc/paper/4824-imagenet-classification-with-deep-convolutional-neural-networks.pdf&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;http://www.image-net.org/challenges/LSVRC/&#34;&gt;http://www.image-net.org/challenges/LSVRC/&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;Cảm ơn các bạn đã theo dõi bài viết, có chỗ nào bạn chưa rõ hoặc mình viết bị sai, các bạn vui lòng để lại comment để mình sửa lại cho đúng.&lt;/p&gt;
+</description>
     </item>
     
     <item>
@@ -29,8 +219,294 @@
       <pubDate>Sun, 05 May 2019 00:12:00 +0300</pubDate>
       <author>alexblack2202@gmail.com (Phạm Duy Tùng)</author>
       <guid>/blog/2019-05-05-deep-learning-dropout/</guid>
-      <description>1. Dropout là gì, nó có ý nghĩa gì trong mạng neural network Theo Wikipedia, thuật ngữ &amp;ldquo;dropout&amp;rdquo; đề cập đến việc bỏ qua các đơn vị (unit) (cả hai hidden unit và visible unit) trong mạng neural network.
-Hiểu đơn giản là, trong mạng neural network, kỹ thuật dropout là việc chúng ta sẽ bỏ qua một vài unit trong suốt quá trình train trong mô hình, những unit bị bỏ qua được lựa chọn ngẫu nhiên.</description>
+      <description>
+
+&lt;h1 id=&#34;1-dropout-là-gì-nó-có-ý-nghĩa-gì-trong-mạng-neural-network&#34;&gt;1. Dropout là gì, nó có ý nghĩa gì trong mạng neural network&lt;/h1&gt;
+
+&lt;p&gt;Theo Wikipedia, thuật ngữ &amp;ldquo;dropout&amp;rdquo; đề cập đến việc bỏ qua các đơn vị (unit) (cả hai hidden unit và visible unit) trong mạng neural network.&lt;/p&gt;
+
+&lt;p&gt;Hiểu đơn giản là, trong mạng neural network, kỹ thuật dropout là việc chúng ta sẽ bỏ qua một vài unit trong suốt quá trình train trong mô hình, những unit bị bỏ qua được lựa chọn ngẫu nhiên. Ở đây, chúng ta hiểu &amp;ldquo;bỏ qua - ignoring&amp;rdquo; là unit đó sẽ không tham gia và đóng góp vào quá trình huấn luyện (lan truyền tiến và lan truyền ngược).&lt;/p&gt;
+
+&lt;p&gt;Về mặt kỹ thuật, tại mỗi giai đoạn huấn luyện, mỗi node có xác suất bị bỏ qua là 1-p và xác suất được chọn là p&lt;/p&gt;
+
+&lt;h1 id=&#34;2-tạo-sao-chúng-ta-cần-dropout&#34;&gt;2. Tạo sao chúng ta cần dropout&lt;/h1&gt;
+
+&lt;p&gt;Giả sử rằng bạn hiểu hoàn toàn những gì đã nói ở phần 1, câu hỏi đặt ra là tại sao chúng ta cần đến dropout, tại sao chúng ta cần phải loại bỏ một vài các unit nào đó trong mạng neural network?&lt;/p&gt;
+
+&lt;p&gt;Câu trả lời cho câu hỏi này là &lt;strong&gt;để chống over-fitting&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Khi chúng ta sử dụng full connected layer, các neural sẽ phụ thuộc &amp;ldquo;mạnh&amp;rdquo; lẫn nhau trong suốt quá trình huấn luyện, điều này làm giảm sức mạng cho mỗi neural và dẫn đến bị over-fitting tập train.&lt;/p&gt;
+
+&lt;h1 id=&#34;3-dropout&#34;&gt;3. Dropout&lt;/h1&gt;
+
+&lt;p&gt;Đọc đến đây, bạn đã có một khái niệm cơ bản về dropout và động lực - động cơ để chúng ta sử dụng nó. Nếu bạn chỉ muốn có cái nhìn tổng quan về dropout trong neural network, hai sections trên đã cung cấp đầy đủ thông tin cho bạn, bạn có thể dừng tại đây. Phần tiếp theo, chúng ta sẽ nói kỹ hơn về mặt kỹ thuật của dropout.&lt;/p&gt;
+
+&lt;p&gt;Trước đây, trong machine learning, người ta thường sử dụng regularization để ngăng chặn over-fititng. Regularization làm giảm over-fitting bằng cách thêm yếu tố &amp;ldquo;phạt&amp;rdquo; vào hàm độ lỗi (loss function).  Bằng việc thêm vào điểm phạt này, mô hình được huấn luyện sẽ giúp các features weights giảm đi sự phụ thuộc lẫn nhau. Đối với những ai đã sử dụng Logistic Regression rồi thì sẽ không xa lạ với thuật ngữ phạt L1(Laplacian) và L2 (Gaussian).&lt;/p&gt;
+
+&lt;p&gt;Dropout là một kỹ thuật khác, một cách tiếp cận khác để regularization  trong mạng neural netwoks.&lt;/p&gt;
+
+&lt;p&gt;Kỹ thuật dropout được thực hiện như sau:&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Trong pha train&lt;/strong&gt;: với mỗi hidden layer, với mỗi trainning sample, với mỗi lần lặp, chọn ngẫu nhiên p phần trăm số node và bỏ qua nó (bỏ qua luôn hàm kích hoạt cho các node bị bỏ qua).&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Trong pha test&lt;/strong&gt;: Sử dụng toàn bộ activations, nhưng giảm chúng với tỷ lệ p (do chúng ta bị miss p% hàm activation trong quá trình train).&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/drop_out.png&#34; alt=&#34;Hình ảnh&#34; /&gt;
+&lt;strong&gt;Mô tả về kiến trúc mạng có và không có dropout&lt;/strong&gt;&lt;/p&gt;
+
+&lt;h1 id=&#34;4-một-số-đặc-điểm-rút-ra-được-khi-huấn-luyện-nhiều-mô-hình-khác-nhau-sử-dụng-dropout&#34;&gt;4. Một số đặc điểm rút ra được khi huấn luyện nhiều mô hình khác nhau sử dụng dropout&lt;/h1&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;Dropout ép mạng neural phải tìm ra nhiều robust features hơn, với đặc điểm là chúng phải hữu ích hơn, tốt hơn, ngon hơn khi kết hợp với nhiều neuron khác.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Dropout đòi hỏi phải gấp đôi quá trình huấn luyện để đạt được sự hội tụ. Tuy nhiên, thời gian huấn luyện cho mỗi epoch sẽ ít hơn.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Với H unit trong mô hình, mỗi unit đều có xác xuất bị bỏ qua hoặc được chọn, chúng ta sẽ có 2^H mô hình có thể có. Trong pha test, toàn bộ network được sử dụng và mỗi hàm activation được giảm đi với hệ số p.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Một số nghiên cứu chỉ ra rằng, khi sử dụng Dropout và Batch Normalization (BN) cùng nhau thì kết quả rất tệ, trong cả lý thuyết và thực nghiệm, ví dụ nghiên cứu ở papper &amp;ldquo;Understanding the Disharmony between Dropout and Batch Normalization by Variance Shift&amp;rdquo;, nguồn &lt;a href=&#34;https://arxiv.org/abs/1801.05134&#34;&gt;https://arxiv.org/abs/1801.05134&lt;/a&gt;, nhóm tác giả giải thích về mặt lý thuyết rằng: &amp;ldquo;đối với một neural, Dropout sẽ thay đổi phương sai của nó khi chúng ta chuyển trạng thái từ trian sang test. Còn BN thì không, BN vẫn tích luỹ đầy đủ thông tin trong quá trình huấn luyện. Do Dropout làm thay đổi phương sai nên sẽ xảy ra hiện tượng không đồng nhất về phương sai, dẫn đến hành vi suy luận không chắc chắn dẫn đến suy luận bị sai nhiều. Đặc biệt là khi kết hợp dropout và BN thì khiến cho suy luận càng sai lầm trầm trọng. &amp;ldquo;. Cho nên, trong một số trường hợp/bài toán chúng ta có thể dùng Dropout, trong một số trường hợp/ bài toán, người ta sử dụng BN và không sử dụng dropout.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Người ta thường dùng hệ số dropout là 0.5. Lý giải cho việc này, bạn có thể đọc bài báo &lt;a href=&#34;http://papers.nips.cc/paper/4878-understanding-dropout.pdf&#34;&gt;http://papers.nips.cc/paper/4878-understanding-dropout.pdf&lt;/a&gt;. Nói nôm là việc sử dụng giảm 50% của dropout giúp kết quả đạt được là tốt nhất so với các phương pháp chuẩn hoá khác.&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1 id=&#34;5-thực-nghiệm-trong-keras&#34;&gt;5. Thực nghiệm trong keras&lt;/h1&gt;
+
+&lt;p&gt;Những vấn đề nói ở trên chỉ là lý thuyết. Bây giờ chúng ta sẽ bắt tay vào làm thực tế. Để xem thử dropout hoạt động như thế nào, chúng ta sẽ xây dựng mô hình deep net sử dụng keras và sử dụng tập dữ liệu cifar-10. Mô hình chúng ta xây dựng có 3 hidden layer với kích thước lần lượt là 64, 128, 256 và 1 full connected layer có kích thước 512 và output layer có kích thước 10 (do mình có 10 lớp).&lt;/p&gt;
+
+&lt;p&gt;Chúng ta sử dụng hàm kích hoạt là ReLU trên các hidden layer và sử dụng hàm sigmoid trên output layer. Sử dụng hàm lỗi categorical cross-entropy.&lt;/p&gt;
+
+&lt;p&gt;Trong trường hợp mô hình có sử dụng dropout, chúng ta sẽ set dropout ở tất cả các layer và thay đổi tỷ lệ dropout nằm trong khoảng từ 0.0 đến 0.9 với bước nhảy là 0.1.&lt;/p&gt;
+
+&lt;p&gt;Mô hình setup với số epochs là 20. Bắt đầu xem nào.&lt;/p&gt;
+
+&lt;p&gt;Đầu tiên, chúng ta sẽ load một vài thư viện cần thiết&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;import numpy as np
+import os
+
+import keras
+
+from keras.datasets import cifar10
+from keras.models  import Sequential
+from keras.layers import Dense, Dropout, Activation, Flatten
+from keras.layers import Convolution2D, MaxPooling2D
+from keras.optimizers import SGD
+from keras.utils import np_utils
+from keras.preprocessing.image import ImageDataGenerator
+import matplotlib.pyplot as plt
+
+from pylab import rcParams
+rcParams[&#39;figure.figsize&#39;] = 20, 20
+
+from keras.datasets import cifar10
+
+(X_train, y_train), (X_test, y_test) = cifar10.load_data()
+
+
+print(&amp;quot;Training data:&amp;quot;)
+print(&amp;quot;Number of examples: &amp;quot;, X_train.shape[0])
+print(&amp;quot;Number of channels:&amp;quot;,X_train.shape[3]) 
+print(&amp;quot;Image size:&amp;quot;,X_train.shape[1], X_train.shape[2], X_train.shape[3])
+
+print(&amp;quot;Test data:&amp;quot;)
+print(&amp;quot;Number of examples:&amp;quot;, X_test.shape[0])
+print(&amp;quot;Number of channels:&amp;quot;, X_test.shape[3])
+print(&amp;quot;Image size:&amp;quot;,X_test.shape[1], X_test.shape[2], X_test.shape[3])
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Kết quả&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Training data:
+Number of examples:  50000
+Number of channels: 3
+Image size: 32 32 3
+Test data:
+Number of examples: 10000
+Number of channels: 3
+Image size: 32 32 3
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Chúng ta có 50000 hình train, và 10000 hình test. Mỗi hình là một ảnh RGB có kích thước 33x32x3 pixel.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/cifar-10-overview.jpg&#34; alt=&#34;Hình ảnh&#34; /&gt;
+&lt;strong&gt;dataset cifar 10&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Tiếp theo, chúng ta sẽ chuẩn hoá dữ liệu. Đây là 1 bước quan trọng trước khi huấn luyện mô hình&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;print( &amp;quot;mean before normalization:&amp;quot;, np.mean(X_train)) 
+print( &amp;quot;std before normalization:&amp;quot;, np.std(X_train))
+
+mean=[0,0,0]
+std=[0,0,0]
+newX_train = np.ones(X_train.shape)
+newX_test = np.ones(X_test.shape)
+for i in range(3):
+    mean[i] = np.mean(X_train[:,i,:,:])
+    std[i] = np.std(X_train[:,i,:,:])
+    
+for i in range(3):
+    newX_train[:,i,:,:] = X_train[:,i,:,:] - mean[i]
+    newX_train[:,i,:,:] = newX_train[:,i,:,:] / std[i]
+    newX_test[:,i,:,:] = X_test[:,i,:,:] - mean[i]
+    newX_test[:,i,:,:] = newX_test[:,i,:,:] / std[i]
+        
+    
+X_train = newX_train
+X_test = newX_test
+
+print(&amp;quot;mean after normalization:&amp;quot;, np.mean(X_train))
+print(&amp;quot;std after normalization:&amp;quot;, np.std(X_train))
+
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code&gt;mean before normalization: 120.70756512369792
+std before normalization: 64.1500758911213
+mean after normalization: 0.9062499999999979
+std after normalization: 0.4227421643271468
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Full code đoạn huấn luyện&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+
+# In[3]:Specify Training Parameters
+
+batchSize = 512                   #-- Training Batch Size
+num_classes = 10                  #-- Number of classes in CIFAR-10 dataset
+num_epochs = 100                   #-- Number of epochs for training   
+learningRate= 0.001               #-- Learning rate for the network
+lr_weight_decay = 0.95            #-- Learning weight decay. Reduce the learn rate by 0.95 after epoch
+
+
+img_rows, img_cols = 32, 32       #-- input image dimensions
+
+Y_train = np_utils.to_categorical(y_train, num_classes)
+Y_test = np_utils.to_categorical(y_test, num_classes)
+
+
+
+batchSize = 512                   #-- Training Batch Size
+num_classes = 10                  #-- Number of classes in CIFAR-10 dataset
+num_epochs = 100                   #-- Number of epochs for training   
+learningRate= 0.001               #-- Learning rate for the network
+lr_weight_decay = 0.95            #-- Learning weight decay. Reduce the learn rate by 0.95 after epoch
+
+
+img_rows, img_cols = 32, 32       #-- input image dimensions
+
+Y_train = np_utils.to_categorical(y_train, num_classes)
+Y_test = np_utils.to_categorical(y_test, num_classes)
+
+
+# In[4]:VGGnet-10
+
+
+from keras.layers import Conv2D
+import copy
+result = {}
+y = {}
+loss = []
+acc = []
+dropouts = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+for dropout in dropouts:
+    print(&amp;quot;Dropout: &amp;quot;, (dropout))
+    model = Sequential()                                               
+
+    #-- layer 1
+    model.add(Conv2D(64, (3, 3),                                    
+                            border_mode=&#39;valid&#39;,
+                            input_shape=( img_rows, img_cols,3))) 
+    model.add(Dropout(dropout))  
+    model.add(Conv2D(64, (3, 3)))
+    model.add(Dropout(dropout))
+    model.add(Activation(&#39;relu&#39;))                                       
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+
+    ##--layer 2                        
+    model.add(Conv2D(128, (3, 3)))
+    model.add(Dropout(dropout)) 
+    model.add(Activation(&#39;relu&#39;))                                       
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+
+    ##--layer 3                         
+    model.add(Conv2D(256, (3, 3)))
+    model.add(Dropout(dropout)) 
+    model.add(Activation(&#39;relu&#39;))                                       
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+
+    ##-- layer 4
+    model.add(Flatten())                                                
+    model.add(Dense(512))                                               
+    model.add(Activation(&#39;relu&#39;))                                                                           
+
+    #-- layer 5
+    model.add(Dense(num_classes))                                       
+
+    #-- loss
+    model.add(Activation(&#39;softmax&#39;))
+    
+    sgd = SGD(lr=learningRate, decay = lr_weight_decay)
+    model.compile(loss=&#39;categorical_crossentropy&#39;,
+                  optimizer=&#39;sgd&#39;,
+                  metrics=[&#39;accuracy&#39;])
+    
+    model_cce = model.fit(X_train, Y_train, batch_size=batchSize, epochs=20, verbose=1, shuffle=True, validation_data=(X_test, Y_test))
+    score = model.evaluate(X_test, Y_test, verbose=0)
+    y[dropout] = model.predict(X_test)
+    print(&#39;Test score:&#39;, score[0])
+    print(&#39;Test accuracy:&#39;, score[1])
+    result[dropout] = copy.deepcopy(model_cce.history)   
+    loss.append(score[0])
+    acc.append(score[1])
+
+
+
+# In[5]: plot dropout 
+import numpy as np                                                               
+import matplotlib.pyplot as plt
+
+width = 0.1
+
+plt.bar(dropouts, acc, width, align=&#39;center&#39;)
+
+plt.tick_params(axis=&#39;both&#39;, which=&#39;major&#39;, labelsize=35)
+plt.tick_params(axis=&#39;both&#39;, which=&#39;minor&#39;, labelsize=35)
+
+plt.ylabel(&#39;Accuracy&#39;,size = 30)
+plt.xlabel(&#39;Dropout&#39;, size = 30)
+plt.show()
+
+
+# In[6]: plot non drop out
+
+import numpy as np                                                               
+import matplotlib.pyplot as plt
+
+width = 0.1
+
+plt.bar(dropouts, loss, width, align=&#39;center&#39;,color = &#39;green&#39;)
+
+plt.tick_params(axis=&#39;both&#39;, which=&#39;major&#39;, labelsize=35)
+plt.tick_params(axis=&#39;both&#39;, which=&#39;minor&#39;, labelsize=35)
+
+plt.ylabel(&#39;Loss&#39;,size = 30)
+plt.xlabel(&#39;Dropout&#39;, size = 30)
+plt.show()
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/drop_out_result.png&#34; alt=&#34;Hình ảnh&#34; /&gt;
+&lt;strong&gt;Kết quả&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Nhìn hình kết quả ở trên, chúng ta có một số kết luận nhỏ như sau:&lt;/p&gt;
+
+&lt;p&gt;Giá trị dropout tốt nhất là 0.2, khoảng dropout cho giá trị chấp nhận được là nằm trong đoạn từ 0 đến 0.5. Nếu dropout lớn hơn 0.5 thì kết quả hàm huấn luyện trả về khá tệ.&lt;/p&gt;
+
+&lt;p&gt;Giá trị độ chính xác còn khá thấp =&amp;gt; 20 epochs là chưa đủ, cần huấn luyện nhiều hơn nữa.&lt;/p&gt;
+
+&lt;p&gt;Cảm ơn các bạn đã theo dõi. Hẹn gặp bạn ở những bài viết tiếp theo.&lt;/p&gt;
+</description>
     </item>
     
   </channel>

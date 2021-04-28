@@ -10,9 +10,7 @@
     <webMaster>alexblack2202@gmail.com (Phạm Duy Tùng)</webMaster>
     <copyright>This work is licensed under a Creative Commons Attribution-ShareAlike 4.0 International License.</copyright>
     <lastBuildDate>Mon, 08 Oct 2018 00:19:00 +0300</lastBuildDate>
-    
-	<atom:link href="/tags/spark/index.xml" rel="self" type="application/rss+xml" />
-    
+    <atom:link href="/tags/spark/" rel="self" type="application/rss+xml" />
     
     <item>
       <title>Mask R-CNN trong bài toán nhận dạng và phân vùng đối tượng</title>
@@ -20,7 +18,408 @@
       <pubDate>Mon, 08 Oct 2018 00:19:00 +0300</pubDate>
       <author>alexblack2202@gmail.com (Phạm Duy Tùng)</author>
       <guid>/blog/2018-10-08-mask-rnn/</guid>
-      <description>Lời mở đầu Phân vùng đối tượng là một bài toán khá phổ biến trong lĩnh vực computer vision. Trong open cv có hỗ trợ cho chúng ta một số hàm để phân vùng đối tượng rất dễ sử dụng. Đặc điểm chung của các hàm này là độ chính xác không được cao cho lắm. Ở bài viết này, chúng ta sẽ tìm hiểu cách sử dụng mô hình pretrain của DNN để phân vùng các đối tượng trong ảnh.</description>
+      <description>
+
+&lt;h2 id=&#34;lời-mở-đầu&#34;&gt;Lời mở đầu&lt;/h2&gt;
+
+&lt;p&gt;Phân vùng đối tượng là một bài toán khá phổ biến trong lĩnh vực computer vision. Trong open cv có hỗ trợ cho chúng ta một số hàm để phân vùng đối tượng rất dễ sử dụng. Đặc điểm chung của các hàm này là độ chính xác không được cao cho lắm. Ở bài viết này, chúng ta sẽ tìm hiểu cách sử dụng mô hình pretrain của DNN để phân vùng các đối tượng trong ảnh.&lt;/p&gt;
+
+&lt;h2 id=&#34;sử-dụng-pretrain-model&#34;&gt;Sử dụng pretrain model&lt;/h2&gt;
+
+&lt;p&gt;Đầu tiên, các bạn download file pretrain model, giải nén ra và để ở đâu đó trong ổ cứng của máy bạn. Đường dẫn file pretrain model các bạn có thể download ở &lt;a href=&#34;http://download.tensorflow.org/models/object_detection/mask_rcnn_inception_v2_coco_2018_01_28.tar.gz&#34;&gt;http://download.tensorflow.org/models/object_detection/mask_rcnn_inception_v2_coco_2018_01_28.tar.gz&lt;/a&gt;. Các bạn có thể download các file pretrain khác nếu có hứng thú tìm hiểu.&lt;/p&gt;
+
+&lt;p&gt;Tiếp theo, chúng ta sẽ load mô hình lên:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;import numpy as np
+import os
+import sys
+import tarfile
+import tensorflow as tf
+
+from collections import defaultdict
+from io import StringIO
+from matplotlib import pyplot as plt
+from PIL import Image
+import PIL.ImageDraw as ImageDraw
+import PIL.ImageFont as ImageFont
+import cv2
+
+import pprint
+
+import PIL.Image as Image
+import PIL.ImageColor as ImageColor
+
+# Model preparation
+
+
+# Path to frozen detection graph. This is the actual model that is used for the object detection.
+PATH_TO_CKPT = &#39;mask_rcnn_inception_v2_coco_2018_01_28&#39; + &#39;/frozen_inference_graph.pb&#39;
+
+# List of the strings that is used to add correct label for each box.
+#PATH_TO_LABELS = &#39;mscoco_label_map.pbtxt&#39;
+
+NUM_CLASSES = 1
+
+
+# categories
+
+category_index = {1: {&#39;id&#39;: 1, &#39;name&#39;: &#39;person&#39;},
+# 3: {&#39;id&#39;: 3, &#39;name&#39;: &#39;car&#39;},
+ }
+
+detection_graph = tf.Graph()
+with detection_graph.as_default():
+    od_graph_def = tf.GraphDef()
+    with tf.gfile.GFile(PATH_TO_CKPT, &#39;rb&#39;) as fid:
+        serialized_graph = fid.read()
+        od_graph_def.ParseFromString(serialized_graph)
+        tf.import_graph_def(od_graph_def, name=&#39;&#39;)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Ở đây, mình chỉ demo detect người trong hình, nên mình chỉ để category_index chỉ là &amp;ldquo;person&amp;rdquo;. Thực tế, mô hình COCO hỗ trợ cho chúng ta nhận dạng 90 loại đối tượng khác nhau, các bạn có nhu cầu tìm hiểu thì thay bằng đoạn mã sau:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;category_index = {1: {&#39;id&#39;: 1, &#39;name&#39;: &#39;person&#39;},
+ 2: {&#39;id&#39;: 2, &#39;name&#39;: &#39;bicycle&#39;},
+ 3: {&#39;id&#39;: 3, &#39;name&#39;: &#39;car&#39;},
+ 4: {&#39;id&#39;: 4, &#39;name&#39;: &#39;motorcycle&#39;},
+ 5: {&#39;id&#39;: 5, &#39;name&#39;: &#39;airplane&#39;},
+ 6: {&#39;id&#39;: 6, &#39;name&#39;: &#39;bus&#39;},
+ 7: {&#39;id&#39;: 7, &#39;name&#39;: &#39;train&#39;},
+ 8: {&#39;id&#39;: 8, &#39;name&#39;: &#39;truck&#39;},
+ 9: {&#39;id&#39;: 9, &#39;name&#39;: &#39;boat&#39;},
+ 10: {&#39;id&#39;: 10, &#39;name&#39;: &#39;traffic light&#39;},
+ 11: {&#39;id&#39;: 11, &#39;name&#39;: &#39;fire hydrant&#39;},
+ 13: {&#39;id&#39;: 13, &#39;name&#39;: &#39;stop sign&#39;},
+ 14: {&#39;id&#39;: 14, &#39;name&#39;: &#39;parking meter&#39;},
+ 15: {&#39;id&#39;: 15, &#39;name&#39;: &#39;bench&#39;},
+ 16: {&#39;id&#39;: 16, &#39;name&#39;: &#39;bird&#39;},
+ 17: {&#39;id&#39;: 17, &#39;name&#39;: &#39;cat&#39;},
+ 18: {&#39;id&#39;: 18, &#39;name&#39;: &#39;dog&#39;},
+ 19: {&#39;id&#39;: 19, &#39;name&#39;: &#39;horse&#39;},
+ 20: {&#39;id&#39;: 20, &#39;name&#39;: &#39;sheep&#39;},
+ 21: {&#39;id&#39;: 21, &#39;name&#39;: &#39;cow&#39;},
+ 22: {&#39;id&#39;: 22, &#39;name&#39;: &#39;elephant&#39;},
+ 23: {&#39;id&#39;: 23, &#39;name&#39;: &#39;bear&#39;},
+ 24: {&#39;id&#39;: 24, &#39;name&#39;: &#39;zebra&#39;},
+ 25: {&#39;id&#39;: 25, &#39;name&#39;: &#39;giraffe&#39;},
+ 27: {&#39;id&#39;: 27, &#39;name&#39;: &#39;backpack&#39;},
+ 28: {&#39;id&#39;: 28, &#39;name&#39;: &#39;umbrella&#39;},
+ 31: {&#39;id&#39;: 31, &#39;name&#39;: &#39;handbag&#39;},
+ 32: {&#39;id&#39;: 32, &#39;name&#39;: &#39;tie&#39;},
+ 33: {&#39;id&#39;: 33, &#39;name&#39;: &#39;suitcase&#39;},
+ 34: {&#39;id&#39;: 34, &#39;name&#39;: &#39;frisbee&#39;},
+ 35: {&#39;id&#39;: 35, &#39;name&#39;: &#39;skis&#39;},
+ 36: {&#39;id&#39;: 36, &#39;name&#39;: &#39;snowboard&#39;},
+ 37: {&#39;id&#39;: 37, &#39;name&#39;: &#39;sports ball&#39;},
+ 38: {&#39;id&#39;: 38, &#39;name&#39;: &#39;kite&#39;},
+ 39: {&#39;id&#39;: 39, &#39;name&#39;: &#39;baseball bat&#39;},
+ 40: {&#39;id&#39;: 40, &#39;name&#39;: &#39;baseball glove&#39;},
+ 41: {&#39;id&#39;: 41, &#39;name&#39;: &#39;skateboard&#39;},
+ 42: {&#39;id&#39;: 42, &#39;name&#39;: &#39;surfboard&#39;},
+ 43: {&#39;id&#39;: 43, &#39;name&#39;: &#39;tennis racket&#39;},
+ 44: {&#39;id&#39;: 44, &#39;name&#39;: &#39;bottle&#39;},
+ 46: {&#39;id&#39;: 46, &#39;name&#39;: &#39;wine glass&#39;},
+ 47: {&#39;id&#39;: 47, &#39;name&#39;: &#39;cup&#39;},
+ 48: {&#39;id&#39;: 48, &#39;name&#39;: &#39;fork&#39;},
+ 49: {&#39;id&#39;: 49, &#39;name&#39;: &#39;knife&#39;},
+ 50: {&#39;id&#39;: 50, &#39;name&#39;: &#39;spoon&#39;},
+ 51: {&#39;id&#39;: 51, &#39;name&#39;: &#39;bowl&#39;},
+ 52: {&#39;id&#39;: 52, &#39;name&#39;: &#39;banana&#39;},
+ 53: {&#39;id&#39;: 53, &#39;name&#39;: &#39;apple&#39;},
+ 54: {&#39;id&#39;: 54, &#39;name&#39;: &#39;sandwich&#39;},
+ 55: {&#39;id&#39;: 55, &#39;name&#39;: &#39;orange&#39;},
+ 56: {&#39;id&#39;: 56, &#39;name&#39;: &#39;broccoli&#39;},
+ 57: {&#39;id&#39;: 57, &#39;name&#39;: &#39;carrot&#39;},
+ 58: {&#39;id&#39;: 58, &#39;name&#39;: &#39;hot dog&#39;},
+ 59: {&#39;id&#39;: 59, &#39;name&#39;: &#39;pizza&#39;},
+ 60: {&#39;id&#39;: 60, &#39;name&#39;: &#39;donut&#39;},
+ 61: {&#39;id&#39;: 61, &#39;name&#39;: &#39;cake&#39;},
+ 62: {&#39;id&#39;: 62, &#39;name&#39;: &#39;chair&#39;},
+ 63: {&#39;id&#39;: 63, &#39;name&#39;: &#39;couch&#39;},
+ 64: {&#39;id&#39;: 64, &#39;name&#39;: &#39;potted plant&#39;},
+ 65: {&#39;id&#39;: 65, &#39;name&#39;: &#39;bed&#39;},
+ 67: {&#39;id&#39;: 67, &#39;name&#39;: &#39;dining table&#39;},
+ 70: {&#39;id&#39;: 70, &#39;name&#39;: &#39;toilet&#39;},
+ 72: {&#39;id&#39;: 72, &#39;name&#39;: &#39;tv&#39;},
+ 73: {&#39;id&#39;: 73, &#39;name&#39;: &#39;laptop&#39;},
+ 74: {&#39;id&#39;: 74, &#39;name&#39;: &#39;mouse&#39;},
+ 75: {&#39;id&#39;: 75, &#39;name&#39;: &#39;remote&#39;},
+ 76: {&#39;id&#39;: 76, &#39;name&#39;: &#39;keyboard&#39;},
+ 77: {&#39;id&#39;: 77, &#39;name&#39;: &#39;cell phone&#39;},
+ 78: {&#39;id&#39;: 78, &#39;name&#39;: &#39;microwave&#39;},
+ 79: {&#39;id&#39;: 79, &#39;name&#39;: &#39;oven&#39;},
+ 80: {&#39;id&#39;: 80, &#39;name&#39;: &#39;toaster&#39;},
+ 81: {&#39;id&#39;: 81, &#39;name&#39;: &#39;sink&#39;},
+ 82: {&#39;id&#39;: 82, &#39;name&#39;: &#39;refrigerator&#39;},
+ 84: {&#39;id&#39;: 84, &#39;name&#39;: &#39;book&#39;},
+ 85: {&#39;id&#39;: 85, &#39;name&#39;: &#39;clock&#39;},
+ 86: {&#39;id&#39;: 86, &#39;name&#39;: &#39;vase&#39;},
+ 87: {&#39;id&#39;: 87, &#39;name&#39;: &#39;scissors&#39;},
+ 88: {&#39;id&#39;: 88, &#39;name&#39;: &#39;teddy bear&#39;},
+ 89: {&#39;id&#39;: 89, &#39;name&#39;: &#39;hair drier&#39;},
+ 90: {&#39;id&#39;: 90, &#39;name&#39;: &#39;toothbrush&#39;}} 
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Tiếp theo, chúng ta sẽ load một số hàm giúp hỗ trợ việc hậu xử lý ảnh để vẽ các mask cho chúng ta xem trực quan hơn.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+    draw  =  ImageDraw.Draw(image)
+    im_width,  im_height  =  image.size
+    if  use_normalized_coordinates:
+        (left,  right,  top,  bottom)  =  (xmin  *  im_width,  xmax  *  im_width,
+                                                                    ymin  *  im_height,  ymax  *  im_height)
+    else:
+        (left,  right,  top,  bottom)  =  (xmin,  xmax,  ymin,  ymax)
+    draw.line([(left,  top),  (left,  bottom),  (right,  bottom),
+                          (right,  top),  (left,  top)],  width=thickness,  fill=color)
+    try:
+        font  =  ImageFont.truetype(&#39;arial.ttf&#39;,  24)
+    except  IOError:
+        font  =  ImageFont.load_default()
+
+    #  If  the  total  height  of  the  display  strings  added  to  the  top  of  the  bounding
+    #  box  exceeds  the  top  of  the  image,  stack  the  strings  below  the  bounding  box
+    #  instead  of  above.
+    display_str_heights  =  [font.getsize(ds)[1]  for  ds  in  display_str_list]
+    #  Each  display_str  has  a  top  and  bottom  margin  of  0.05x.
+    total_display_str_height  =  (1  +  2  *  0.05)  *  sum(display_str_heights)
+
+    if  top  &amp;gt;  total_display_str_height:
+        text_bottom  =  top
+    else:
+        text_bottom  =  bottom  +  total_display_str_height
+    #  Reverse  list  and  print  from  bottom  to  top.
+    for  display_str  in  display_str_list[::-1]:
+        text_width,  text_height  =  font.getsize(display_str)
+        margin  =  np.ceil(0.05  *  text_height)
+        draw.rectangle(
+                [(left,  text_bottom  -  text_height  -  2  *  margin),  (left  +  text_width,
+                                                                                                                    text_bottom)],
+                fill=color)
+        draw.text(
+                (left  +  margin,  text_bottom  -  text_height  -  margin),
+                display_str,
+                fill=&#39;black&#39;,
+                font=font)
+        text_bottom  -=  text_height  -  2  *  margin
+
+
+
+def visualize_boxes_and_labels_on_image_array(
+        image,
+        boxes,
+        classes,
+        scores,
+        category_index,
+        instance_masks=None,
+        instance_boundaries=None,
+        keypoints=None,
+        use_normalized_coordinates=False,
+        max_boxes_to_draw=20,
+        min_score_thresh=.5,
+        agnostic_mode=False,
+        line_thickness=4,
+        groundtruth_box_visualization_color=&#39;black&#39;,
+        skip_scores=False,
+        skip_labels=False):
+
+    box_to_display_str_map = collections.defaultdict(list)
+    box_to_color_map = collections.defaultdict(str)
+    box_to_instance_masks_map = {}
+    box_to_instance_boundaries_map = {}
+    box_to_keypoints_map = collections.defaultdict(list)
+    if not max_boxes_to_draw:
+        max_boxes_to_draw = boxes.shape[0]
+    #print(boxes)
+    for i in range(min(max_boxes_to_draw, boxes.shape[0])):
+        if scores is None or scores[i] &amp;gt; min_score_thresh:
+            box = tuple(boxes[i].tolist())
+        if instance_masks is not None:
+            box_to_instance_masks_map[box] = instance_masks[i]
+        if instance_boundaries is not None:
+            box_to_instance_boundaries_map[box] = instance_boundaries[i]
+        if keypoints is not None:
+            box_to_keypoints_map[box].extend(keypoints[i])
+        if scores is None:
+            box_to_color_map[box] = groundtruth_box_visualization_color
+        else:
+            display_str = &#39;&#39;
+            if not skip_labels:
+                if not agnostic_mode:
+                    if classes[i] in category_index.keys():
+                        class_name = category_index[classes[i]][&#39;name&#39;]
+                    else:
+                        class_name = &#39;N/A&#39;
+                    display_str = str(class_name)
+            if not skip_scores:
+                if not display_str:
+                    display_str = &#39;{}%&#39;.format(int(100 * scores[i]))
+                else:
+                    display_str = &#39;{}: {}%&#39;.format(
+                        display_str, int(100 * scores[i]))
+            box_to_display_str_map[box].append(display_str)
+            if agnostic_mode:
+                box_to_color_map[box] = &#39;DarkOrange&#39;
+            else:
+                box_to_color_map[box] = STANDARD_COLORS[classes[i] %
+                                                        len(STANDARD_COLORS)]
+
+    # Draw all boxes onto image.
+    for box, color in box_to_color_map.items():
+        ymin, xmin, ymax, xmax = box
+        if instance_masks is not None:
+            draw_mask_on_image_array(image, box_to_instance_masks_map[box], color=color)
+
+        draw_bounding_box_on_image_array(
+        image,
+        ymin,
+        xmin,
+        ymax,
+        xmax,
+        color=color,
+        thickness=line_thickness,
+        display_str_list=box_to_display_str_map[box],
+        use_normalized_coordinates=use_normalized_coordinates)
+
+    return image
+
+
+def reframe_box_masks_to_image_masks(box_masks,  boxes,  image_height,
+                                     image_width):
+    &amp;quot;&amp;quot;&amp;quot;Transforms  the  box  masks  back  to  full  image  masks.
+
+    Embeds  masks  in  bounding  boxes  of  larger  masks  whose  shapes  correspond  to
+    image  shape.
+
+    Args:
+        box_masks:  A  tf.float32  tensor  of  size  [num_masks,  mask_height,  mask_width].
+        boxes:  A  tf.float32  tensor  of  size  [num_masks,  4]  containing  the  box
+                      corners.  Row  i  contains  [ymin,  xmin,  ymax,  xmax]  of  the  box
+                      corresponding  to  mask  i.  Note  that  the  box  corners  are  in
+                      normalized  coordinates.
+        image_height:  Image  height.  The  output  mask  will  have  the  same  height  as
+                                    the  image  height.
+        image_width:  Image  width.  The  output  mask  will  have  the  same  width  as  the
+                                  image  width.
+
+    Returns:
+        A  tf.float32  tensor  of  size  [num_masks,  image_height,  image_width].
+    &amp;quot;&amp;quot;&amp;quot;
+    #  TODO(rathodv):  Make  this  a  public  function.
+    def reframe_box_masks_to_image_masks_default():
+        &amp;quot;&amp;quot;&amp;quot;The  default  function  when  there  are  more  than  0  box  masks.&amp;quot;&amp;quot;&amp;quot;
+        def transform_boxes_relative_to_boxes(boxes,  reference_boxes):
+            boxes = tf.reshape(boxes,  [-1,  2,  2])
+            min_corner = tf.expand_dims(reference_boxes[:,  0:2],  1)
+            max_corner = tf.expand_dims(reference_boxes[:,  2:4],  1)
+            transformed_boxes = (boxes - min_corner) / \
+                (max_corner - min_corner)
+            return tf.reshape(transformed_boxes,  [-1,  4])
+
+        box_masks_expanded = tf.expand_dims(box_masks,  axis=3)
+        num_boxes = tf.shape(box_masks_expanded)[0]
+        unit_boxes = tf.concat(
+            [tf.zeros([num_boxes,  2]),  tf.ones([num_boxes,  2])],  axis=1)
+        reverse_boxes = transform_boxes_relative_to_boxes(unit_boxes,  boxes)
+        return tf.image.crop_and_resize(
+            image=box_masks_expanded,
+            boxes=reverse_boxes,
+            box_ind=tf.range(num_boxes),
+            crop_size=[image_height,  image_width],
+            extrapolation_value=0.0)
+    image_masks = tf.cond(
+        tf.shape(box_masks)[0] &amp;gt; 0,
+        reframe_box_masks_to_image_masks_default,
+        lambda:  tf.zeros([0,  image_height,  image_width,  1],  dtype=tf.float32))
+    return tf.squeeze(image_masks,  axis=3)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Cho hình ảnh vào và rút ra kết quả.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+def detect_frame(image_np, sess, detection_graph):
+
+    with detection_graph.as_default():
+
+        ops = tf.get_default_graph().get_operations()
+        all_tensor_names = {output.name for op in ops for output in op.outputs}
+        tensor_dict = {}
+        for key in [
+            &#39;num_detections&#39;, &#39;detection_boxes&#39;, &#39;detection_scores&#39;,
+            &#39;detection_classes&#39;, &#39;detection_masks&#39;
+        ]:
+            tensor_name = key + &#39;:0&#39;
+            if tensor_name in all_tensor_names:
+                tensor_dict[key] = tf.get_default_graph(
+                ).get_tensor_by_name(tensor_name)
+        if &#39;detection_masks&#39; in tensor_dict:
+            # The following processing is only for single image
+            detection_boxes = tf.squeeze(tensor_dict[&#39;detection_boxes&#39;], [0])
+            detection_masks = tf.squeeze(tensor_dict[&#39;detection_masks&#39;], [0])
+            # Reframe is required to translate mask from box coordinates to image coordinates and fit the image size.
+            real_num_detection = tf.cast(
+                tensor_dict[&#39;num_detections&#39;][0], tf.int32)
+           
+            detection_boxes = tf.slice(detection_boxes, [0, 0], [
+                                       real_num_detection, -1])
+            detection_masks = tf.slice(detection_masks, [0, 0, 0], [
+                                       real_num_detection, -1, -1])
+            detection_masks_reframed = reframe_box_masks_to_image_masks(
+                detection_masks, detection_boxes, image_np.shape[0], image_np.shape[1])
+            detection_masks_reframed = tf.cast(
+                tf.greater(detection_masks_reframed, 0.5), tf.uint8)
+            # Follow the convention by adding back the batch dimension
+            tensor_dict[&#39;detection_masks&#39;] = tf.expand_dims(
+                detection_masks_reframed, 0)
+        image_tensor = tf.get_default_graph().get_tensor_by_name(&#39;image_tensor:0&#39;)
+
+      # Run inference
+        output_dict = sess.run(tensor_dict,
+                               feed_dict={image_tensor: np.expand_dims(image_np, 0)})
+
+      # all outputs are float32 numpy arrays, so convert types as appropriate
+        output_dict[&#39;num_detections&#39;] = int(output_dict[&#39;num_detections&#39;][0])
+        #print(&amp;quot;num detect &amp;quot;+str(output_dict[&#39;num_detections&#39;]))
+        output_dict[&#39;detection_classes&#39;] = output_dict[&#39;detection_classes&#39;][0].astype(
+            np.uint8)
+        output_dict[&#39;detection_boxes&#39;] = output_dict[&#39;detection_boxes&#39;][0]
+        output_dict[&#39;detection_scores&#39;] = output_dict[&#39;detection_scores&#39;][0]
+        if &#39;detection_masks&#39; in output_dict:
+            output_dict[&#39;detection_masks&#39;] = output_dict[&#39;detection_masks&#39;][0]
+
+        visualize_boxes_and_labels_on_image_array(
+            image_np,
+            output_dict[&#39;detection_boxes&#39;],
+            output_dict[&#39;detection_classes&#39;],
+            output_dict[&#39;detection_scores&#39;],
+            category_index,
+            instance_masks=output_dict.get(&#39;detection_masks&#39;),
+            use_normalized_coordinates=True,
+            line_thickness=1,
+            max_boxes_to_draw=min(output_dict[&#39;num_detections&#39;],20)
+            )
+
+    return image_np
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;image = cv2.imread(&#39;img2.jpg&#39;)
+with detection_graph.as_default():
+    with tf.Session(graph=detection_graph) as sess:
+        image_np = detect_frame(image, sess, detection_graph)
+
+cv2.imwrite(&#39;output.jpg&#39;, image)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Kết quả file output.jpg của chúng ta là:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/mask_rnn_output_mieule.jpg&#34; alt=&#34;Phân vùng của mark ca sĩ midu&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Thử với bức ảnh người và xe hơi.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/mask_rnn_output_nguoidep_xehoi.jpg&#34; alt=&#34;Phân vùng của người và xe hơi&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Cảm ơn các bạn đã theo dõi. Hẹn gặp bạn ở các bài viết tiếp theo.&lt;/p&gt;
+</description>
     </item>
     
     <item>
@@ -29,8 +428,376 @@
       <pubDate>Mon, 01 Oct 2018 00:19:00 +0300</pubDate>
       <author>alexblack2202@gmail.com (Phạm Duy Tùng)</author>
       <guid>/blog/2018-10-01-buiding-a-movie-model/</guid>
-      <description>Lời mở đầu MovieLens là một tập dữ liệu được sử dụng rộng rãi cách đây nhiều năm. Hôm nay, mình sẽ sử dụng tập dữ liệu này và mô hình ALS của spark để xây dựng chương trình dự đoán phim cho người dùng.
-Chuẩn bị dữ liệu Các bạn có thể download tập dữ liệu MovieLens ở link https://grouplens.org/datasets/movielens/. Các bạn có thể download trực tiếp 2 file nén ở link http://files.</description>
+      <description>
+
+&lt;h2 id=&#34;lời-mở-đầu&#34;&gt;Lời mở đầu&lt;/h2&gt;
+
+&lt;p&gt;MovieLens là một tập dữ liệu được sử dụng rộng rãi cách đây nhiều năm. Hôm nay, mình sẽ sử dụng tập dữ liệu này và mô hình ALS của spark để xây dựng chương trình dự đoán phim cho người dùng.&lt;/p&gt;
+
+&lt;h2 id=&#34;chuẩn-bị-dữ-liệu&#34;&gt;Chuẩn bị dữ liệu&lt;/h2&gt;
+
+&lt;p&gt;Các bạn có thể download tập dữ liệu MovieLens ở link &lt;a href=&#34;https://grouplens.org/datasets/movielens/&#34;&gt;https://grouplens.org/datasets/movielens/&lt;/a&gt;. Các bạn có thể download trực tiếp 2 file nén ở link &lt;a href=&#34;http://files.grouplens.org/datasets/movielens/ml-latest-small.zip&#34;&gt;http://files.grouplens.org/datasets/movielens/ml-latest-small.zip&lt;/a&gt; và link  &lt;a href=&#34;http://files.grouplens.org/datasets/movielens/ml-latest.zip&#34;&gt;http://files.grouplens.org/datasets/movielens/ml-latest.zip&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;Ở trên bao gồm 2 tập dữ liệu. chúng ta tạo thư mục datasets và download rồi bỏ chúng vào trong thư mục đấy.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;complete_dataset_url = &#39;http://files.grouplens.org/datasets/movielens/ml-latest.zip&#39;
+small_dataset_url = &#39;http://files.grouplens.org/datasets/movielens/ml-latest-small.zip&#39;
+
+import os
+
+datasets_path = &#39;datasets&#39;
+if not os.path.exists(datasets_path):
+    os.makedirs(datasets_path))
+
+complete_dataset_path = os.path.join(datasets_path, &#39;ml-latest.zip&#39;)
+small_dataset_path = os.path.join(datasets_path, &#39;ml-latest-small.zip&#39;)
+
+import urllib
+import zipfile
+
+if not os.path.exists(small_dataset_url):
+    small_f = urllib.urlretrieve (small_dataset_url, small_dataset_path)#Download
+    with zipfile.ZipFile(small_dataset_path, &amp;quot;r&amp;quot;) as z:#Giải nén
+        z.extractall(datasets_path)
+if not os.path.exists(small_dataset_url):
+    complete_f = urllib.urlretrieve (complete_dataset_url, complete_dataset_path)#Download
+    with zipfile.ZipFile(complete_dataset_path, &amp;quot;r&amp;quot;) as z:#Giải nén
+        z.extractall(datasets_path)
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Trong thư mục giải nén, chúng ta sẽ có các file ratings.csv, movies.csv, tags.csv, links.csv, README.txt.&lt;/p&gt;
+
+&lt;h2 id=&#34;loading-và-parsing-dữ-liệu&#34;&gt;Loading và parsing dữ liệu.&lt;/h2&gt;
+
+&lt;p&gt;Mỗi dòng trong tập ratings.csv có định dạng &lt;code&gt;&amp;quot;userId,movieId,rating,timestamp&amp;quot;&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;Mỗi dòng trong tập movies.csv có định dạng &lt;code&gt;&amp;quot;movieId,title,genres&amp;quot;&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;Mỗi dòng trong tập tags.csv có định dạng &lt;code&gt;&amp;quot;userId,movieId,tag,timestamp&amp;quot;&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;Mỗi dòng trong tập links.csv có định dạng &lt;code&gt;&amp;quot;movieId,imdbId,tmdbId&amp;quot;&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;Tóm lại, các trường dữ liệu trong các file csv đều ngăn cách nhau bởi dấu phẩy (,). Trong python, ta có thể dùng hàm split để cắt chúng ra. Sau đó sẽ load toàn bộ dữ liệu lên RDDs.&lt;/p&gt;
+
+&lt;p&gt;Lưu ý nhỏ:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Ở tập dữ liệu ratings, chúng ta chỉ giữ lại các trường &lt;code&gt;(UserID, MovieID, Rating)&lt;/code&gt; bỏ đi trường timestamp vì không cần thiết.&lt;/li&gt;
+&lt;li&gt;Ở tập dữ liệu movies  chúng ta giữ lại trường &lt;code&gt;(MovieID, Title)&lt;/code&gt; và bỏ đi trường genres vì lý do tương tự.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;small_ratings_file = os.path.join(datasets_path, &#39;ml-latest-small&#39;, &#39;ratings.csv&#39;)
+small_ratings_raw_data = sc.textFile(small_ratings_file)
+small_ratings_raw_data_header = small_ratings_raw_data.take(1)[0]
+small_ratings_data = small_ratings_raw_data.filter(lambda line: line!=small_ratings_raw_data_header).map(lambda line: line.split(&amp;quot;,&amp;quot;)).map(lambda tokens: (tokens[0],tokens[1],tokens[2])).cache()
+print(small_ratings_data.take(3)) #Hiện thị top 3 ratting đầu tiên
+
+small_movies_file = os.path.join(datasets_path, &#39;ml-latest-small&#39;, &#39;movies.csv&#39;)
+
+small_movies_raw_data = sc.textFile(small_movies_file)
+small_movies_raw_data_header = small_movies_raw_data.take(1)[0]
+
+small_movies_data = small_movies_raw_data.filter(lambda line: line!=small_movies_raw_data_header)\
+    .map(lambda line: line.split(&amp;quot;,&amp;quot;)).map(lambda tokens: (tokens[0],tokens[1])).cache()
+    
+small_movies_data.take(3) #Hiện thị top 3 movie đầu tiên
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Phần tiếp theo, chúng ta sẽ tìm hiểu lọc cộng tác (Collaborative Filtering) và cách sử dụng Spark MLlib để xây dựng mô hình dự báo.&lt;/p&gt;
+
+&lt;h2 id=&#34;collaborative-filtering&#34;&gt;Collaborative Filtering&lt;/h2&gt;
+
+&lt;p&gt;Ở đây, tôi sẽ không đề cập đến lọc cộng tác là gì, các bạn có nhu cầu tìm hiểu có thể xem ở bài post khác hoặc tham khảo trên wiki. Chúng ta sẽ tập trung vào tìm hiểu cách sử dụng ALS trong thư viện MLlib của Spark. Các tham số của thuật toán này bao gồm:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;numBlocks: số lượng block được sử dụng trong tính toán song song (-1 với ý nghĩa là auto configure).&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;rank: số lượng nhân tố ẩn (latent factor) trong mô hình.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;iterations: số lần lặp.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;lambda: tham số của chuẩn hoá(regularization ) trong ALS.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;implicitPrefs specifies whether to use the explicit feedback ALS variant or one adapted for implicit feedback data.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;alpha is a parameter applicable to the implicit feedback variant of ALS that governs the baseline confidence in preference observations.&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&#34;chọn-các-tham-số-cho-als&#34;&gt;Chọn các tham số cho ALS&lt;/h2&gt;
+
+&lt;p&gt;Để chọn được các tham số tốt nhất cho mô hình ALS, chúng ta sẽ sử dụng tập small để grid search. Đầu tiên, chúng ta chia tập dữ liệu thành 3 phần là tập train, tập vali và  tập test. Sau đó tiến hành huấn luyện trên tập train và predict trên tập valid để tìm được tham số tốt nhất. Cuối cùng đánh giá kết quả đạt được trên tập test.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;training_RDD, validation_RDD, test_RDD = small_ratings_data.randomSplit([6, 2, 2], seed=0)
+validation_for_predict_RDD = validation_RDD.map(lambda x: (x[0], x[1]))
+test_for_predict_RDD = test_RDD.map(lambda x: (x[0], x[1]))
+
+from pyspark.mllib.recommendation import ALS
+import math
+
+seed = 5L
+iterations = 10
+regularization_parameter = 0.1
+ranks = [4, 8, 12]
+errors = [0, 0, 0]
+err = 0
+tolerance = 0.02
+
+min_error = float(&#39;inf&#39;)
+best_rank = -1
+best_iteration = -1
+for rank in ranks:
+    model = ALS.train(training_RDD, rank, seed=seed, iterations=iterations,
+                      lambda_=regularization_parameter)
+    predictions = model.predictAll(validation_for_predict_RDD).map(lambda r: ((r[0], r[1]), r[2]))
+    rates_and_preds = validation_RDD.map(lambda r: ((int(r[0]), int(r[1])), float(r[2]))).join(predictions)
+    error = math.sqrt(rates_and_preds.map(lambda r: (r[1][0] - r[1][1])**2).mean())
+    errors[err] = error
+    err += 1
+    print(&#39;For rank %s the RMSE is %s&#39; % (rank, error))
+    if error &amp;lt; min_error:
+        min_error = error
+        best_rank = rank
+
+print(&#39;The best model was trained with rank %s&#39; % best_rank)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Kết quả sau khi thực hiện đoạn code trên là:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;For rank 4 the RMSE is 0.963681878574
+For rank 8 the RMSE is 0.96250475933
+For rank 12 the RMSE is 0.971647563632
+The best model was trained with rank 8
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Tiến hành thực hiện test.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;model_test = ALS.train(training_RDD, best_rank, seed=seed, iterations=iterations,
+                      lambda_=regularization_parameter)
+predictions = model_test.predictAll(test_for_predict_RDD).map(lambda r: ((r[0], r[1]), r[2]))
+rates_and_preds = test_RDD.map(lambda r: ((int(r[0]), int(r[1])), float(r[2]))).join(predictions)
+error = math.sqrt(rates_and_preds.map(lambda r: (r[1][0] - r[1][1])**2).mean())
+    
+print(&#39;For testing data the RMSE is %s&#39; % (error))
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;For testing data the RMSE is 0.972342381898
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Xem kỹ hơn một chút về dữ liệu mà spark trả về cho chúng ta. Với predictions và rates_and_preds, ta có:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;print(predictions.take(3))
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;[((32, 4018), 3.280114696166238),
+ ((375, 4018), 2.7365714977314086),
+ ((674, 4018), 2.510684514310653)]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Tập dữ liệu trả về bao gồm cặp &lt;code&gt;(UserID, MovieID)&lt;/code&gt; và &lt;code&gt;Rating&lt;/code&gt; (tương ứng với colum 0, column 1 và column 2 ở trên),được hiểu ở đây là với người dùng UserID và phim MovieID thì mô hình sẽ dự đoán người dùng sẽ rating kết quả Rating.&lt;/p&gt;
+
+&lt;p&gt;Sau đó chúng ta sẽ nối(join) chúng với tập valid tương ứng theo cặp &lt;code&gt;(UserID, MovieID)&lt;/code&gt;, kết quả đạt được là:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;rates_and_preds.take(3)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;[((558, 788), (3.0, 3.0419325487471403)),
+ ((176, 3550), (4.5, 3.3214065001580986)),
+ ((302, 3908), (1.0, 2.4728711204440765))]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Việc còn lại là chúng ta sẽ tính trung bình độ lỗi bằng hàm &lt;code&gt;mean()&lt;/code&gt; và &lt;code&gt;sqlt()&lt;/code&gt;.&lt;/p&gt;
+
+&lt;h2 id=&#34;xây-dựng-mô-hình-với-tập-dữ-liệu-large&#34;&gt;Xây dựng mô hình với tập dữ liệu large&lt;/h2&gt;
+
+&lt;p&gt;Tiếp theo, chúng ta sẽ sử dụng tập dự liệu bự hơn để xây dựng mô hình. Cách thực hiện y chang như tập dữ liệu nhỏ đã được trình bày ở trên, nên tôi sẽ bỏ qua một số giải thích không cần thiết để tránh lặp lại.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Load the complete dataset file
+complete_ratings_file = os.path.join(datasets_path, &#39;ml-latest&#39;, &#39;ratings.csv&#39;)
+complete_ratings_raw_data = sc.textFile(complete_ratings_file)
+complete_ratings_raw_data_header = complete_ratings_raw_data.take(1)[0]
+
+# Parse
+complete_ratings_data = complete_ratings_raw_data.filter(lambda line: line!=complete_ratings_raw_data_header)\
+    .map(lambda line: line.split(&amp;quot;,&amp;quot;)).map(lambda tokens: (int(tokens[0]),int(tokens[1]),float(tokens[2]))).cache()
+    
+print(&amp;quot;There are %s recommendations in the complete dataset&amp;quot; % (complete_ratings_data.count()))
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;There are 21063128 recommendations in the complete dataset
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Tiến hành train và test.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;training_RDD, test_RDD = complete_ratings_data.randomSplit([7, 3], seed=0)
+
+complete_model = ALS.train(training_RDD, best_rank, seed=seed,iterations=iterations, lambda_=regularization_parameter)
+
+test_for_predict_RDD = test_RDD.map(lambda x: (x[0], x[1]))
+
+predictions = complete_model.predictAll(test_for_predict_RDD).map(lambda r: ((r[0], r[1]), r[2]))
+rates_and_preds = test_RDD.map(lambda r: ((int(r[0]), int(r[1])), float(r[2]))).join(predictions)
+error = math.sqrt(rates_and_preds.map(lambda r: (r[1][0] - r[1][1])**2).mean())
+    
+print(&#39;For testing data the RMSE is %s&#39; % (error))
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;For testing data the RMSE is 0.82183583368
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;xây-dựng-mô-hình-dự-đoán-phim&#34;&gt;Xây dựng mô hình dự đoán phim&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;complete_movies_file = os.path.join(datasets_path, &#39;ml-latest&#39;, &#39;movies.csv&#39;)
+complete_movies_raw_data = sc.textFile(complete_movies_file)
+complete_movies_raw_data_header = complete_movies_raw_data.take(1)[0]
+
+# Parse
+complete_movies_data = complete_movies_raw_data.filter(lambda line: line!=complete_movies_raw_data_header)\
+    .map(lambda line: line.split(&amp;quot;,&amp;quot;)).map(lambda tokens: (int(tokens[0]),tokens[1],tokens[2])).cache()
+
+complete_movies_titles = complete_movies_data.map(lambda x: (int(x[0]),x[1]))
+    
+print(&amp;quot;There are %s movies in the complete dataset&amp;quot; % (complete_movies_titles.count()))
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;There are 27303 movies in the complete dataset
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def get_counts_and_averages(ID_and_ratings_tuple):
+    nratings = len(ID_and_ratings_tuple[1])
+    return ID_and_ratings_tuple[0], (nratings, float(sum(x for x in ID_and_ratings_tuple[1]))/nratings)
+
+movie_ID_with_ratings_RDD = (complete_ratings_data.map(lambda x: (x[1], x[2])).groupByKey())
+movie_ID_with_avg_ratings_RDD = movie_ID_with_ratings_RDD.map(get_counts_and_averages)
+movie_rating_counts_RDD = movie_ID_with_avg_ratings_RDD.map(lambda x: (x[0], x[1][0]))
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Giả sử chúng ta có 1 người dùng mới, với các ratting như sau:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;new_user_ID = 0
+
+# The format of each line is (userID, movieID, rating)
+new_user_ratings = [
+     (0,260,4), # Star Wars (1977)
+     (0,1,3), # Toy Story (1995)
+     (0,16,3), # Casino (1995)
+     (0,25,4), # Leaving Las Vegas (1995)
+     (0,32,4), # Twelve Monkeys (a.k.a. 12 Monkeys) (1995)
+     (0,335,1), # Flintstones, The (1994)
+     (0,379,1), # Timecop (1994)
+     (0,296,3), # Pulp Fiction (1994)
+     (0,858,5) , # Godfather, The (1972)
+     (0,50,4) # Usual Suspects, The (1995)
+    ]
+new_user_ratings_RDD = sc.parallelize(new_user_ratings)
+print(&#39;New user ratings: %s&#39; % new_user_ratings_RDD.take(10))
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;New user ratings: [(0, 260, 9), (0, 1, 8), (0, 16, 7), (0, 25, 8), (0, 32, 9), (0, 335, 4), (0, 379, 3), (0, 296, 7), (0, 858, 10), (0, 50, 8)]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Chúng ta tiến hành huấn luyện lại mô hình khi có thêm người mới:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;complete_data_with_new_ratings_RDD = complete_ratings_data.union(new_user_ratings_RDD)
+
+from time import time
+
+t0 = time()
+new_ratings_model = ALS.train(complete_data_with_new_ratings_RDD, best_rank, seed=seed, 
+                              iterations=iterations, lambda_=regularization_parameter)
+tt = time() - t0
+
+print(&amp;quot;New model trained in %s seconds&amp;quot; % round(tt,3))
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;New model trained in 56.61 seconds
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Tiến hành dự đoán ratting của người dùng mới cho toàn bộ các phim người dùng đó chưa xem.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;new_user_ratings_ids = map(lambda x: x[1], new_user_ratings) # get just movie IDs
+# keep just those not on the ID list (thanks Lei Li for spotting the error!)
+new_user_unrated_movies_RDD = (complete_movies_data.filter(lambda x: x[0] not in new_user_ratings_ids).map(lambda x: (new_user_ID, x[0])))
+
+# Use the input RDD, new_user_unrated_movies_RDD, with new_ratings_model.predictAll() to predict new ratings for the movies
+new_user_recommendations_RDD = new_ratings_model.predictAll(new_user_unrated_movies_RDD)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Và show ra top 3 kết quả :&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Transform new_user_recommendations_RDD into pairs of the form (Movie ID, Predicted Rating)
+new_user_recommendations_rating_RDD = new_user_recommendations_RDD.map(lambda x: (x.product, x.rating))
+new_user_recommendations_rating_title_and_count_RDD = \
+    new_user_recommendations_rating_RDD.join(complete_movies_titles).join(movie_rating_counts_RDD)
+new_user_recommendations_rating_title_and_count_RDD.take(3)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Hiển thị top recommend (Ở đây sẽ flat dữ liệu hiển thị thành dàng &lt;code&gt;((Title, Rating, Ratings Count))&lt;/code&gt; ra cho dễ nhìn).&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;new_user_recommendations_rating_title_and_count_RDD = new_user_recommendations_rating_title_and_count_RDD.map(lambda r: (r[1][0][1], r[1][0][0], r[1][1]))
+
+top_movies = new_user_recommendations_rating_title_and_count_RDD.filter(lambda r: r[2]&amp;gt;=25).takeOrdered(25, key=lambda x: -x[1])
+
+print (&#39;TOP recommended movies (with more than 25 reviews):\n%s&#39; %
+        &#39;\n&#39;.join(map(str, top_movies)))
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;TOP recommended movies (with more than 25 reviews):
+    (u&#39;&amp;quot;Godfather: Part II&#39;, 8.503749129186701, 29198)
+    (u&#39;&amp;quot;Civil War&#39;, 8.386497469089297, 257)
+    (u&#39;Frozen Planet (2011)&#39;, 8.372705479107108, 31)
+    (u&#39;&amp;quot;Shawshank Redemption&#39;, 8.258510064442426, 67741)
+    (u&#39;Cosmos (1980)&#39;, 8.252254825768972, 948)
+    (u&#39;Band of Brothers (2001)&#39;, 8.225114960311624, 4450)
+    (u&#39;Generation Kill (2008)&#39;, 8.206487040524653, 52)
+    (u&amp;quot;Schindler&#39;s List (1993)&amp;quot;, 8.172761674773625, 53609)
+    (u&#39;Dr. Strangelove or: How I Learned to Stop Worrying and Love the Bomb (1964)&#39;, 8.166229786764168, 23915)
+    (u&amp;quot;One Flew Over the Cuckoo&#39;s Nest (1975)&amp;quot;, 8.15617022970577, 32948)
+    (u&#39;Casablanca (1942)&#39;, 8.141303207981174, 26114)
+    (u&#39;Seven Samurai (Shichinin no samurai) (1954)&#39;, 8.139633165142612, 11796)
+    (u&#39;Goodfellas (1990)&#39;, 8.12931139039048, 27123)
+    (u&#39;Star Wars: Episode V - The Empire Strikes Back (1980)&#39;, 8.124225700242096, 47710)
+    (u&#39;Jazz (2001)&#39;, 8.078538221315313, 25)
+    (u&amp;quot;Long Night&#39;s Journey Into Day (2000)&amp;quot;, 8.050176820606127, 34)
+    (u&#39;Lawrence of Arabia (1962)&#39;, 8.041331489948814, 13452)
+    (u&#39;Raiders of the Lost Ark (Indiana Jones and the Raiders of the Lost Ark) (1981)&#39;, 8.0399424815528, 45908)
+    (u&#39;12 Angry Men (1957)&#39;, 8.011389274280754, 13235)
+    (u&amp;quot;It&#39;s Such a Beautiful Day (2012)&amp;quot;, 8.007734839026181, 35)
+    (u&#39;Apocalypse Now (1979)&#39;, 8.005094327199552, 23905)
+    (u&#39;Paths of Glory (1957)&#39;, 7.999379786394267, 3598)
+    (u&#39;Rear Window (1954)&#39;, 7.9860865203540214, 17996)
+    (u&#39;State of Play (2003)&#39;, 7.981582126801772, 27)
+    (u&#39;Chinatown (1974)&#39;, 7.978673289692703, 16195)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;dự-đoán-rating-của-1-cá-nhân&#34;&gt;Dự đoán rating của 1 cá nhân&lt;/h2&gt;
+
+&lt;p&gt;Một trường hợp khác là chúng ta cần dự đoán giá trị ratting của 1 người dùng với 1 bộ phim cụ thể nào đó.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;my_movie = sc.parallelize([(0, 500)]) # Quiz Show (1994)
+individual_movie_rating_RDD = new_ratings_model.predictAll(new_user_unrated_movies_RDD)
+individual_movie_rating_RDD.take(1)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;[Rating(user=0, product=122880, rating=4.955831875971526)]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;lưu-trữ-mô-hình&#34;&gt;Lưu trữ mô hình&lt;/h2&gt;
+
+&lt;p&gt;Sau khi có được mô hình. Chúng ta cần phải lưu trữ chúng lại để sau này dùng.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from pyspark.mllib.recommendation import MatrixFactorizationModel
+
+model_path = os.path.join(&#39;models&#39;, &#39;movie_lens_als&#39;)
+
+# Save and load model
+model.save(sc, model_path)
+same_model = MatrixFactorizationModel.load(sc, model_path)
+
+&lt;/code&gt;&lt;/pre&gt;
+</description>
     </item>
     
   </channel>

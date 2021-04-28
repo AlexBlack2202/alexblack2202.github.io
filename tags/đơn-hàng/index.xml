@@ -10,9 +10,7 @@
     <webMaster>alexblack2202@gmail.com (Phạm Duy Tùng)</webMaster>
     <copyright>This work is licensed under a Creative Commons Attribution-ShareAlike 4.0 International License.</copyright>
     <lastBuildDate>Tue, 13 Nov 2018 00:19:00 +0300</lastBuildDate>
-    
-	<atom:link href="/tags/%C4%91%C6%A1n-h%C3%A0ng/index.xml" rel="self" type="application/rss+xml" />
-    
+    <atom:link href="/tags/%C4%91%C6%A1n-h%C3%A0ng/" rel="self" type="application/rss+xml" />
     
     <item>
       <title>Phân tích giỏ hàng của website instacart</title>
@@ -20,7 +18,560 @@
       <pubDate>Tue, 13 Nov 2018 00:19:00 +0300</pubDate>
       <author>alexblack2202@gmail.com (Phạm Duy Tùng)</author>
       <guid>/blog/2018-11-13-instacart-market-basket-analysis/</guid>
-      <description>Lời mở đầu Instacart là một startup cung ứng đồ tạp hóa qua website và ứng dụng di động. Người dùng chỉ cần chọn đồ muốn mua tại các chuỗi bán lẻ và đặt đồ, Instacart sẽ đi mua và giao đến tận tay họ. Đến nay, Instacart hoạt động tại 15.000 cửa hàng tạp hoá tại 4.000 thành phố với khoảng 50.000 “trợ lý mua sắm”. Team data science của instacart đóng vai trò rất quan trọng trong việc cung cấp trải nghiệm người dùng trong việc sử dụng app để mua hàng.</description>
+      <description>
+
+&lt;h1 id=&#34;lời-mở-đầu&#34;&gt;Lời mở đầu&lt;/h1&gt;
+
+&lt;p&gt;Instacart là một startup cung ứng đồ tạp hóa qua website và ứng dụng di động. Người dùng chỉ cần chọn đồ muốn mua tại các chuỗi bán lẻ và đặt đồ, Instacart sẽ đi mua và giao đến tận tay họ. Đến nay, Instacart hoạt động tại 15.000 cửa hàng tạp hoá tại 4.000 thành phố với khoảng 50.000 “trợ lý mua sắm”. Team data science của instacart đóng vai trò rất quan trọng trong việc cung cấp trải nghiệm người dùng trong việc sử dụng app để mua hàng. Hiện tại, họ đang sử dụng các dữ liệu của khách hàng để tạo nên mô hình dự đoán sản phẩm nào người dùng sẽ mua lại, sẽ mua thử lần đầu tiên, hoặc sẽ thêm vào giỏ hàng. Hiện họ đã publish khoảng 3 triệu đơn hàng của họ để các nhà khoa học dữ liệu khác sử dụng và nghiên cứu.&lt;/p&gt;
+
+&lt;h1 id=&#34;dẫn-nhập&#34;&gt;Dẫn nhập&lt;/h1&gt;
+
+&lt;h2 id=&#34;phân-tích-dữ-liệu&#34;&gt;Phân tích dữ liệu&lt;/h2&gt;
+
+&lt;p&gt;Các bạn có thể download dữ liệu ở &lt;a href=&#34;https://www.instacart.com/datasets/grocery-shopping-2017&#34;&gt;https://www.instacart.com/datasets/grocery-shopping-2017&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;Các file bao gồm:&lt;/p&gt;
+
+&lt;p&gt;File aisles.csv (134 dòng) có 2 cột là aisle_id,aisle&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;aisle_id,aisle  
+1,prepared soups salads  
+2,specialty cheeses  
+3,energy granola bars  
+ ...
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;File departments.csv (21 dòng) gồm 2 cột là department_id,department&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;department_id,department  
+1,frozen  
+2,other  
+3,bakery   
+ ...
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;File order_products__(prior|train).csv (trên 30 triệu dòng)&lt;/p&gt;
+
+&lt;p&gt;Tập này chứa danh sách sản phẩm được mua trong mỗi đơn hàng. File order_products__prior.csv chứa sản phẩm của đơn hàng trước đó của khách hàng. &amp;lsquo;reordered&amp;rsquo; nói rằng sản phẩm này trong đơn hàng hiện tại đã được mua ở đơn hàng trước đó. Vì vậy, sẽ có đơn hàng không được gán là &amp;lsquo;reordered&amp;rsquo; (chúng ta có thể gán nhãn là None hoặc cái gì đó cũng được để chỉ các sản phẩm này). &amp;lsquo;add_to_cart_order&amp;rsquo; là thứ tự của sp được thêm vào giỏ hàng.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;order_id,product_id,add_to_cart_order,reordered  
+ 1,49302,1,1  
+ 1,11109,2,1  
+ 1,10246,3,0  
+ ... 
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;File orders.csv (3.4 triệu dòng, 206k users): chứa thông tin của đơn hàng, trong đó, order_dow là ngày trong tuần, eval_set thuộc một trong 3 loại là prior, train, test.  order_number là thứ tự của đơn hàng của user này.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;order_id,user_id,eval_set,order_number,order_dow,order_hour_of_day,days_since_prior_order  
+ 2539329,1,prior,1,2,08,  
+ 2398795,1,prior,2,3,07,15.0  
+ 473747,1,prior,3,3,12,21.0  
+ ...
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;File products.csv ((50k dòng) chứa thông tin sản phẩm:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt; product_id,product_name,aisle_id,department_id
+ 1,Chocolate Sandwich Cookies,61,19  
+ 2,All-Seasons Salt,104,13  
+ 3,Robust Golden Unsweetened Oolong Tea,94,7  
+ ...
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Với mỗi order_id trong tập test ở file orders.csv, chúng ta phải dự đoán các sản phẩm nào người dùng sẽ mua lại (&amp;ldquo;reorder&amp;rdquo;) thuộc đơn hàng đó. Nếu bạn dự đoán đó là đơn hàng không có sản phẩm nào được mua lại, thì ta sẽ điền vào giá trị &amp;lsquo;None&amp;rsquo;&lt;/p&gt;
+
+&lt;p&gt;Ví dụ về kết quả dự đoán:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;order_id,products  
+17,1 2  
+34,None  
+137,1 2 3  
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h1 id=&#34;thực-hành&#34;&gt;Thực hành&lt;/h1&gt;
+
+&lt;p&gt;Đầu tiên, ta sẽ import một số thư viện cơ bản để sử dụng, và load tất cả các file lên. Lưu ý một chút là ở đây, mình để tất cả các file trong thư mục data&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;import pandas as pd
+import numpy as np
+from collections import OrderedDict
+
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import f1_score
+
+from sklearn import metrics, cross_validation
+from sklearn.metrics import f1_score
+from sklearn.preprocessing import MinMaxScaler
+
+#Import the files
+aisles_df = pd.read_csv(&#39;data/aisles.csv&#39;)
+products_df = pd.read_csv(&#39;data/products.csv&#39;)
+orders_df = pd.read_csv(&#39;data/orders.csv&#39;)
+order_products_prior_df = pd.read_csv(&#39;data/order_products__prior.csv&#39;)
+departments_df = pd.read_csv(&#39;data/departments.csv&#39;)
+order_products_train_df = pd.read_csv(&#39;data/order_products__train.csv&#39;)
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Sau đó, mình sẽ merge đơn hàng vào chi tiết đơn hàng của tập train và tập prior&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;order_products_train_df = order_products_train_df.merge(orders_df.drop(&#39;eval_set&#39;, axis=1), on=&#39;order_id&#39;)
+order_products_prior_df = order_products_prior_df.merge(orders_df.drop(&#39;eval_set&#39;, axis=1), on=&#39;order_id&#39;)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;show ra 5 dòng đầu tiên của order_products_train_df&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;print(order_products_train_df.head())
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;   order_id  product_id  add_to_cart_order  reordered  user_id  order_number  order_dow  order_hour_of_day  days_since_prior_order
+0         1       49302                  1          1   112108             4          4                 10                     9.0
+1         1       11109                  2          1   112108             4          4                 10                     9.0
+2         1       10246                  3          0   112108             4          4                 10                     9.0
+3         1       49683                  4          0   112108             4          4                 10                     9.0
+4         1       43633                  5          1   112108             4          4                 10                     9.0
+
+[5 rows x 9 columns]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Tổng cộng mình có 9 cột, ý nghĩa các cột mình có giải thích ở trên rồi nha.&lt;/p&gt;
+
+&lt;p&gt;Tiếp theo, chúng ta tạo tập tập dữ liệu đếm số lượng sản phẩm của từng người mua&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;user_product_df = (order_products_prior_df.groupby([&#39;product_id&#39;,&#39;user_id&#39;],as_index=False) 
+                                          .agg({&#39;order_id&#39;:&#39;count&#39;}) 
+                                          .rename(columns={&#39;order_id&#39;:&#39;user_product_total_orders&#39;}))
+
+train_ids = order_products_train_df[&#39;user_id&#39;].unique() 
+df_X = user_product_df[user_product_df[&#39;user_id&#39;].isin(train_ids)]
+print(df_X.head())
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;   product_id  user_id  user_product_total_orders
+0           1      138                          2
+1           1      709                          1
+3           1      777                          1
+6           1     1052                          2
+9           1     1494                          3
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Ở đây, người 138 mua sản phẩm 1 2 lần, người 709 mua sản phẩm 1 1 lần, &amp;hellip; tương tự như vậy cho các user và product khác.&lt;/p&gt;
+
+&lt;p&gt;Bước tiếp theo, chúng ta sẽ liệt kê các sản phẩm người dùng đã mua:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;train_carts = (order_products_train_df.groupby(&#39;user_id&#39;,as_index=False)
+                                      .agg({&#39;product_id&#39;:(lambda x: set(x))})
+                                      .rename(columns={&#39;product_id&#39;:&#39;latest_cart&#39;}))
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;print(train_carts.head())&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;  user_id                                        latest_cart
+0        1  {196, 26405, 27845, 46149, 13032, 39657, 26088...
+1        2  {24838, 11913, 45066, 31883, 48523, 38547, 248...
+2        5  {40706, 21413, 20843, 48204, 21616, 19057, 201...
+3        7  {17638, 29894, 47272, 45066, 13198, 37999, 408...
+4        8  {27104, 15937, 5539, 41540, 31717, 48230, 2224...
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Mối tương quan giữa sản phẩm được add to card và sản phẩm được mua&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;df_X = df_X.merge(train_carts, on=&#39;user_id&#39;)
+df_X[&#39;in_cart&#39;] = (df_X.apply(lambda row: row[&#39;product_id&#39;] in row[&#39;latest_cart&#39;], axis=1).astype(int))
+
+print(df_X.head())
+
+print(df_X[&#39;in_cart&#39;].value_counts())
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# df_X.head()
+   product_id  user_id  user_product_total_orders latest_cart  in_cart
+0           1      138                          2     {42475}        0
+1         907      138                          2     {42475}        0
+2        1000      138                          1     {42475}        0
+3        3265      138                          1     {42475}        0
+4        4913      138                          1     {42475}        0
+
+# df_X[&#39;in_cart&#39;].value_counts()
+0    7645837
+1     828824
+Name: in_cart, dtype: int64
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Tỷ lệ khoảng 9.7%. Điều này nói lên rằng, người dùng trong 1 phiên mua hàng có thể add rất nhiều sản phẩm vào giỏ, nhưng chỉ khoảng 10% sản phẩm họ mua thật sự, hơn 90% sản phẩm còn lại sẽ bị remove trước khi nọ nhấn nút thanh toán.&lt;/p&gt;
+
+&lt;h1 id=&#34;xây-dựng-tập-đặc-trưng&#34;&gt;Xây dựng tập đặc trưng&lt;/h1&gt;
+
+&lt;h2 id=&#34;đặc-trưng-sản-phẩm&#34;&gt;Đặc trưng sản phẩm&lt;/h2&gt;
+
+&lt;p&gt;Với đặc trưng sản phẩm, chúng ta sẽ rút trích 2 đặc trưng đơn giản là tổng số lượng đơn hàng của một sản phẩm và trung bình số lượng đơn hàng có chứa sản phẩm.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;prod_features = [&#39;product_total_orders&#39;,&#39;product_avg_add_to_cart_order&#39;]
+
+prod_features_df = (order_products_prior_df.groupby([&#39;product_id&#39;],as_index=False)
+                                           .agg(OrderedDict(
+                                                   [(&#39;order_id&#39;,&#39;nunique&#39;),
+                                                    (&#39;add_to_cart_order&#39;,&#39;mean&#39;)])))
+prod_features_df.columns = [&#39;product_id&#39;] + prod_features
+print(prod_features_df.head())
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+   product_id  product_total_orders  product_avg_add_to_cart_order
+0           1                  1852                       5.801836
+1           2                    90                       9.888889
+2           3                   277                       6.415162
+3           4                   329                       9.507599
+4           5                    15                       6.466667
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Add thêm đặc trưng sản phẩm vào trong tập huấn luyện&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+df_X = df_X.merge(prod_features_df, on=&#39;product_id&#39;)
+
+#note that dropping rows with NA product_avg_days_since_prior_order is likely a naive choice 
+df_X = df_X.dropna()
+print(df_X.head())
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;   product_id  user_id              ...               product_total_orders product_avg_add_to_cart_order
+0           1      138              ...                               1852                      5.801836
+1           1      709              ...                               1852                      5.801836
+2           1      777              ...                               1852                      5.801836
+3           1     1052              ...                               1852                      5.801836
+4           1     1494              ...                               1852                      5.801836
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;đặc-trưng-người-dùng&#34;&gt;Đặc trưng người dùng&lt;/h2&gt;
+
+&lt;p&gt;Với người dùng, chúng sa sử dụng các đặc trưng là: Tổng số lượng đơn hàng, trung bình số sản phẩm trong 1 đơn hàng, tổng số lượng sản phẩm người dùng mua, Trung bình số ngày user sẽ mua đơn hàng tiếp theo&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;user_features = [&#39;user_total_orders&#39;,&#39;user_avg_cartsize&#39;,&#39;user_total_products&#39;,&#39;user_avg_days_since_prior_order&#39;]
+
+user_features_df = (order_products_prior_df.groupby([&#39;user_id&#39;],as_index=False)
+                                           .agg(OrderedDict(
+                                                   [(&#39;order_id&#39;,[&#39;nunique&#39;, (lambda x: x.shape[0] / x.nunique())]),
+                                                    (&#39;product_id&#39;,&#39;nunique&#39;),
+                                                    (&#39;days_since_prior_order&#39;,&#39;mean&#39;)])))
+
+user_features_df.columns = [&#39;user_id&#39;] + user_features
+print(user_features_df.head())
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Và chúng ta merge tiếp đặc trưng user vào trong tập huấn luyện.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+df_X = df_X.merge(user_features_df, on=&#39;product_id&#39;)
+
+#note that dropping rows with NA product_avg_days_since_prior_order is likely a naive choice 
+df_X = df_X.dropna()
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;đặc-trưng-mối-tương-quan-giữa-người-dùng-và-sản-phẩm&#34;&gt;Đặc trưng mối tương quan giữa người dùng và sản phẩm&lt;/h2&gt;
+
+&lt;p&gt;Ở đây, chúng ta sử dụng đặc trưng trung bình số sản phẩm của 1 người được thêm vào đơn hàng và tần suất 1 sản phẩm 1 user add vào đơn hàng.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;user_prod_features = [&#39;user_product_avg_add_to_cart_order&#39;]
+
+user_prod_features_df = (order_products_prior_df.groupby([&#39;product_id&#39;,&#39;user_id&#39;],as_index=False) \
+                                                .agg(OrderedDict(
+                                                     [(&#39;add_to_cart_order&#39;,&#39;mean&#39;)])))
+
+user_prod_features_df.columns = [&#39;product_id&#39;,&#39;user_id&#39;] + user_prod_features
+df_X = df_X.merge(user_prod_features_df,on=[&#39;user_id&#39;,&#39;product_id&#39;])
+df_X[&#39;user_product_order_freq&#39;] = df_X[&#39;user_product_total_orders&#39;] / df_X[&#39;user_total_orders&#39;] 
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h1 id=&#34;bổ-sung-thêm-đặc-trưng&#34;&gt;Bổ sung thêm đặc trưng&lt;/h1&gt;
+
+&lt;p&gt;Ngoài các đặc trưng cơ bản ở trên, ta sẽ bổ sung thêm một số đặc trưng khác:&lt;/p&gt;
+
+&lt;p&gt;Đặc trưng sản phẩm: bổ sung thêm 3 đặc trưng trung bình ngày trong tuần được đặt hàng  (cột order_down), trung bình giờ đặt hàng (cột order_hour_of_day), trung bình ngày đặt hàng kể từ lần đặt trước đó (cột days_since_prior_order) theo sản phẩm.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;prod_features = [&#39;product_avg_order_dow&#39;, &#39;product_avg_order_hour_of_day&#39;, &#39;product_avg_days_since_prior_order&#39;]
+
+prod_features_df = (order_products_prior_df.groupby([&#39;product_id&#39;], as_index=False)
+                                     .agg(OrderedDict(
+                                     [(&#39;order_dow&#39;,&#39;mean&#39;),
+                                      (&#39;order_hour_of_day&#39;, &#39;mean&#39;),
+                                      (&#39;days_since_prior_order&#39;, &#39;mean&#39;)])))
+
+prod_features_df.columns = [&#39;product_id&#39;] + prod_features
+
+df_X = df_X.merge(prod_features_df, on=&#39;product_id&#39;)
+df_X = df_X.dropna()
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Đặc trưng người dùng: bổ sung thêm 2 cột đặc trung trung bình ngày trong tuần được đặt hàng  (cột order_down) và  trung bình giờ đặt hàng (cột order_hour_of_day) theo người dùng&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;user_features = [&#39;user_avg_order_dow&#39;,&#39;user_avg_order_hour_of_day&#39;]
+
+user_features_df = (order_products_prior_df.groupby([&#39;user_id&#39;],as_index=False)
+                                           .agg(OrderedDict(
+                                                   [(&#39;order_dow&#39;,&#39;mean&#39;),
+                                                    (&#39;order_hour_of_day&#39;,&#39;mean&#39;)])))
+
+user_features_df.columns = [&#39;user_id&#39;] + user_features
+df_X = df_X.merge(user_features_df, on=&#39;user_id&#39;)
+df_X = df_X.dropna()
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Đặc trung người dùng - sản phẩm: Bổ sung thêm đặc trưng tung bình trên cột order_down, order_hour_of_day, days_since_prior_order theo người dùng và sản phẩm&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+user_prod_features = [&#39;user_product_avg_days_since_prior_order&#39;,
+                      &#39;user_product_avg_order_dow&#39;,
+                      &#39;user_product_avg_order_hour_of_day&#39;]
+
+user_prod_features_df = (order_products_prior_df.groupby([&#39;product_id&#39;,&#39;user_id&#39;],as_index=False) \
+                                                .agg(OrderedDict(
+                                                     [(&#39;days_since_prior_order&#39;,&#39;mean&#39;),
+                                                     (&#39;order_dow&#39;,&#39;mean&#39;),
+                                                     (&#39;order_hour_of_day&#39;,&#39;mean&#39;)])))
+
+user_prod_features_df.columns = [&#39;product_id&#39;,&#39;user_id&#39;] + user_prod_features 
+
+df_X = df_X.merge(user_prod_features_df, on=[&#39;user_id&#39;, &#39;product_id&#39;])
+df_X = df_X.dropna()
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Đặc trưng độ lệch: Tính độ lệch của của một số đặc trưng so với trung bình của chúng&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;#Create delta columns to compare how users perform against averages
+df_X[&#39;product_total_orders_delta_per_user&#39;] = df_X[&#39;product_total_orders&#39;] - df_X[&#39;user_product_total_orders&#39;]
+
+df_X[&#39;product_avg_add_to_cart_order_delta_per_user&#39;] = df_X[&#39;product_avg_add_to_cart_order&#39;] - \
+                                                            df_X[&#39;user_product_avg_add_to_cart_order&#39;]
+
+df_X[&#39;product_avg_order_dow_per_user&#39;] = df_X[&#39;product_avg_order_dow&#39;] - df_X[&#39;user_product_avg_order_dow&#39;]
+
+df_X[&#39;product_avg_order_hour_of_day_per_user&#39;] = df_X[&#39;product_avg_order_hour_of_day&#39;] - \
+                                                            df_X[&#39;user_product_avg_order_hour_of_day&#39;]
+
+df_X[&#39;product_avg_days_since_prior_order_per_user&#39;] = df_X[&#39;product_avg_days_since_prior_order&#39;] - \
+                                                            df_X[&#39;user_product_avg_days_since_prior_order&#39;]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Bổ sung thêm đặc trưng department name&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;f_departments_df = products_df.merge(departments_df, on = &#39;department_id&#39;)
+f_departments_df = f_departments_df[[&#39;product_id&#39;, &#39;department&#39;]]
+
+df_X = df_X.merge(f_departments_df, on = &#39;product_id&#39;)
+df_X = df_X.dropna()
+df_X = pd.concat([df_X, pd.get_dummies(df_X[&#39;department&#39;])], axis=1)
+del df_X[&#39;department&#39;]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Chúng ta có tổng cộng 21 department name, vậy chúng ta thêm 21 cột, một cột tương ứng với một department name, ví dụ: alcohol,babies ,bakery, &amp;hellip; Sản phẩm thuộc department name thì sẽ được đánh số 1, không thuộc department name thì đánh số 0.&lt;/p&gt;
+
+&lt;h1 id=&#34;huấn-luyện-mô-hình&#34;&gt;Huấn luyện mô hình&lt;/h1&gt;
+
+&lt;p&gt;Chia tập dữ liệu thành &lt;sup&gt;80&lt;/sup&gt;&amp;frasl;&lt;sub&gt;20&lt;/sub&gt; trong đó 80% là tập train, 20% là tập test. Sử dụng k-fold-cross_validation với k=10&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+np.random.seed(99)
+total_users = df_X[&#39;user_id&#39;].unique() 
+test_users = np.random.choice(total_users, size=int(total_users.shape[0] * .20), replace=False)
+
+
+
+test_user_sets = []
+length = len(test_users)
+cv = 10
+
+
+for x in range (0, cv):
+    start = int(x/cv*length)
+    finish = int((x+1)/cv*length)
+    test_user_sets.append(test_users[start:finish])
+
+cv_f1_scores = []
+cv_f1_scores_balanced = []
+cv_f1_scores_10fit = []
+
+for test_user_set in test_user_sets:
+    df_X_tr, df_X_te = df_X[~df_X[&#39;user_id&#39;].isin(test_user_set)], df_X[df_X[&#39;user_id&#39;].isin(test_user_set)] 
+
+    y_tr, y_te = df_X_tr[&#39;in_cart&#39;], df_X_te[&#39;in_cart&#39;]
+    X_tr, X_te = df_X_tr.drop([&#39;product_id&#39;,&#39;user_id&#39;,&#39;latest_cart&#39;,&#39;in_cart&#39;],axis=1), \
+             df_X_te.drop([&#39;product_id&#39;,&#39;user_id&#39;,&#39;latest_cart&#39;,&#39;in_cart&#39;],axis=1), \
+        
+    scaler = MinMaxScaler()
+    X_tr = pd.DataFrame(scaler.fit_transform(X_tr), columns=X_tr.columns)
+    X_te = pd.DataFrame(scaler.fit_transform(X_te), columns=X_te.columns)
+    
+    lr = LogisticRegression(C=10000000) 
+    lr_balanced = LogisticRegression(class_weight=&#39;balanced&#39;, C=10000000)
+    lr_10x = LogisticRegression(class_weight={1 : 6, 0 : 1}, C=10000000)
+    
+    lr.fit(X_tr, y_tr)
+    cv_f1_scores.append(f1_score(lr.predict(X_te), y_te))
+
+    lr_balanced.fit(X_tr, y_tr)
+    cv_f1_scores_balanced.append(f1_score(lr_balanced.predict(X_te), y_te))
+
+    lr_10x.fit(X_tr, y_tr)
+    cv_f1_scores_10fit.append(f1_score(lr_10x.predict(X_te), y_te))   
+
+print(&amp;quot;cv_f1_scores: &amp;quot; +str( np.mean(cv_f1_scores)))
+print(&amp;quot;cv_f1_scores_balanced: &amp;quot;+str(np.mean(cv_f1_scores_balanced)))
+print(&amp;quot;cv_f1_scores_10fit: &amp;quot;+str(np.mean(cv_f1_scores_10fit)))
+
+df_X_tr, df_X_te = df_X[~df_X[&#39;user_id&#39;].isin(test_users)], df_X[df_X[&#39;user_id&#39;].isin(test_users)]
+
+y_tr, y_te = df_X_tr[&#39;in_cart&#39;], df_X_te[&#39;in_cart&#39;]
+X_tr, X_te = df_X_tr.drop([&#39;product_id&#39;,&#39;user_id&#39;,&#39;latest_cart&#39;,&#39;in_cart&#39;],axis=1), \
+             df_X_te.drop([&#39;product_id&#39;,&#39;user_id&#39;,&#39;latest_cart&#39;,&#39;in_cart&#39;],axis=1), \
+
+lr_10x = LogisticRegression(class_weight={1 : 6, 0 : 1}, C=10000000)
+lr_10x.fit(X_tr, y_tr)
+print(&amp;quot;F1 store all: &amp;quot;+str(f1_score(lr_10x.predict(X_te), y_te)))
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;cv_f1_scores: 0.2026889989037295
+cv_f1_scores_balanced: 0.3816810646496983
+cv_f1_scores_10fit: 0.3899595078917494
+
+F1 store all: 0.3808374055616213
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Thử in ra hệ số của hàm hồi quy&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;coefficients = pd.DataFrame(lr_10x.coef_, columns = X_tr.columns)
+coefficients = np.exp(coefficients)
+print(coefficients.T)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;user_product_total_orders                     1.160475
+product_total_orders                          1.077254
+product_avg_add_to_cart_order                 0.915343
+user_total_orders                             0.983272
+user_avg_cartsize                             1.059655
+user_total_products                           0.993839
+user_avg_days_since_prior_order               0.993513
+user_product_avg_add_to_cart_order            0.950418
+user_product_order_freq                       1.051246
+product_avg_order_dow                         0.994744
+product_avg_order_hour_of_day                 1.010971
+product_avg_days_since_prior_order            0.994498
+user_avg_order_dow                            0.997298
+user_avg_order_hour_of_day                    1.012958
+user_product_avg_days_since_prior_order       1.003382
+user_product_avg_order_dow                    0.994477
+user_product_avg_order_hour_of_day            1.003457
+product_total_orders_delta_per_user           0.928288
+product_avg_add_to_cart_order_delta_per_user  0.963095
+product_avg_order_dow_per_user                1.000268
+product_avg_order_hour_of_day_per_user        1.007489
+product_avg_days_since_prior_order_per_user   0.991147
+alcohol                                       0.998866
+babies                                        1.000313
+bakery                                        1.003098
+beverages                                     1.007733
+breakfast                                     1.000117
+bulk                                          0.999980
+canned goods                                  0.995017
+dairy eggs                                    1.018069
+deli                                          1.002720
+dry goods pasta                               0.997379
+frozen                                        1.000752
+household                                     0.992164
+international                                 0.996822
+meat seafood                                  1.000340
+missing                                       1.001953
+other                                         0.999607
+pantry                                        0.972038
+personal care                                 0.992072
+pets                                          1.000466
+produce                                       1.017809
+snacks                                        1.004893
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Thử show confusion matrix của dữ liệu:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from sklearn.metrics import confusion_matrix
+import seaborn as sns
+import matplotlib.pyplot as plt
+%matplotlib inline
+plt.style.use(&#39;fivethirtyeight&#39;)
+
+def plot_confusion_matrix(cm,title=&#39;Confusion matrix&#39;, cmap=plt.cm.Reds):
+    plt.imshow(cm, interpolation=&#39;nearest&#39;,cmap=cmap)
+    plt.title(title)
+    plt.colorbar()
+    plt.tight_layout()
+    plt.ylabel(&#39;True label&#39;)
+    plt.xlabel(&#39;Predicted label&#39;)
+
+#y_tr=np.ravel(y_tr)
+
+train_acc=lr_10x.score(X_tr, y_tr)
+test_acc=lr_10x.score(X_te, y_te)
+print(&amp;quot;Training Data Accuracy: %0.2f&amp;quot; %(train_acc))
+print(&amp;quot;Test Data Accuracy:     %0.2f&amp;quot; %(test_acc))
+    
+y_true = y_te
+y_pred = lr_10x.predict(X_te)
+
+
+conf = confusion_matrix(y_true, y_pred)
+print(conf)
+
+print (&#39;\n&#39;)
+print (&amp;quot;Precision:              %0.2f&amp;quot; %(conf[1, 1] / (conf[1, 1] + conf[0, 1])))
+print (&amp;quot;Recall:                 %0.2f&amp;quot;% (conf[1, 1] / (conf[1, 1] + conf[1, 0])))
+    
+cm=confusion_matrix(y_true, y_pred, labels=[0, 1])
+    
+plt.figure()
+plot_confusion_matrix(cm)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Kết quả&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;Training Data Accuracy: 0.83
+Test Data Accuracy:     0.83
+[[1236979  190126]
+ [  78107   82493]]
+
+
+Precision:              0.30
+Recall:                 0.51
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/instartcart_plot_confusion_matrix.png&#34; alt=&#34;Hình ảnh&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Show đường cong ROC của dữ liệu&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+from sklearn.metrics import roc_curve, auc
+
+y_score = lr_10x.predict_proba(X_te)[:,1]
+
+fpr, tpr,_ = roc_curve(y_te, y_score)
+roc_auc = auc(fpr, tpr)
+
+plt.figure()
+# Plotting our Baseline..
+plt.plot([0,1],[0,1], linestyle=&#39;--&#39;, color = &#39;black&#39;)
+plt.plot(fpr, tpr, color = &#39;green&#39;)
+plt.xlabel(&#39;False Positive Rate&#39;)
+plt.ylabel(&#39;True Positive Rate&#39;)
+plt.gca().set_aspect(&#39;equal&#39;, adjustable=&#39;box&#39;)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/instartcart_roc.png&#34; alt=&#34;Hình ảnh&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Cảm ơn các bạn đã theo dõi. Hẹn gặp bạn ở các bài viết tiếp theo.&lt;/p&gt;
+</description>
     </item>
     
   </channel>

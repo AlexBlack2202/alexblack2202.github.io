@@ -10,9 +10,7 @@
     <webMaster>alexblack2202@gmail.com (Phạm Duy Tùng)</webMaster>
     <copyright>This work is licensed under a Creative Commons Attribution-ShareAlike 4.0 International License.</copyright>
     <lastBuildDate>Tue, 11 Dec 2018 00:19:00 +0300</lastBuildDate>
-    
-	<atom:link href="/tags/single-shot/index.xml" rel="self" type="application/rss+xml" />
-    
+    <atom:link href="/tags/single-shot/" rel="self" type="application/rss+xml" />
     
     <item>
       <title>Một số mẹo để lựa chọn mô hình object detection</title>
@@ -20,8 +18,94 @@
       <pubDate>Tue, 11 Dec 2018 00:19:00 +0300</pubDate>
       <author>alexblack2202@gmail.com (Phạm Duy Tùng)</author>
       <guid>/blog/2018-12-11-a-bunch-of-tips-and-tricks-for-training-deep-neural-networks/</guid>
-      <description>Lời mở đầu Việc huấn luyện một mô hình neural network khá đơn giản, chỉ việc download code mẫu về, quăng tập data của mình vào, rồi cho chạy, xong. Nhưng khó khăn ở đây là làm cách nào để nâng độ chính xác của mô hình lên. Ở bài viết này, chúng ta sẽ tìm hiểu một số cách giúp tăng độ chính xác của mô hình.
-Kiểm tra dữ liệu  Thực chất, chúng ta phải hiểu rõ kỹ chúng ta đang có những gì trong tay, thì chúng ta mới dạy cho máy học đủ và đúng được.</description>
+      <description>
+
+&lt;h2 id=&#34;lời-mở-đầu&#34;&gt;Lời mở đầu&lt;/h2&gt;
+
+&lt;p&gt;Việc huấn luyện một mô hình neural network khá đơn giản, chỉ việc download code mẫu về, quăng tập data của mình vào, rồi cho chạy, xong. Nhưng khó khăn ở đây là làm cách nào để nâng độ chính xác của mô hình lên. Ở bài viết này, chúng ta sẽ tìm hiểu một số cách giúp tăng độ chính xác của mô hình.&lt;/p&gt;
+
+&lt;h3 id=&#34;kiểm-tra-dữ-liệu&#34;&gt;Kiểm tra dữ liệu&lt;/h3&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;p&gt;Thực chất, chúng ta phải hiểu rõ kỹ chúng ta đang có những gì trong tay, thì chúng ta mới dạy cho máy học đủ và đúng được. Các bạn hãy kiểm tra thật kỹ để đảm bảo rằng tập nhãn được gán chính xác, bouding box của đối tượng được vẽ không quá dư thừa, không có missing value, v.v. Một ví dụ nhỏ là tập MNIST, có nhiều hình bị nhập nhằng giữa những con số, chúng ta không thể phân biệt được chính xác hình đó là con số nào bằng mắt thường.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Tiếp theo, các bạn hãy quyết định xem rằng mình có nên sử dụng các pre-train model hay không.&lt;/p&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;Nếu tập dữ liệu của bạn gần giống với tập dữ liệu ImageNet, hãy dùng pre-train model. Có các mô hình đã được huấn luyện sẵn là VGG net, ResNet, DenseNet, Xception. Với các kiến trúc khác nhau như VGG(16 và 19 layer), ResNet (50, 101, 152 layer), DenseNet(201,169,121 layer). Ban đầu, đừng sử dụng các kiến trúc có số lượng nhiều (ResNet152, DenseNet201) bởi vì nó rất tốn chi phí tính toán. Chúng ta nên bắt đầu bởi các mô hình nhỏ như VGG16, ResNet50. Hãy chọn một mô hình mà bạn nghĩ là sẽ có kết quả tốt. Sau khi huấn luyện, nếu kết quả không được như ý muốn, hãy tăng số lớp lên (ví dụ ban đầu chọn Resnet50, sau đó nâng lên Resnet101, &amp;hellip;).&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Nếu bạn có ít dữ liệu, bạn nãy &amp;ldquo;đóng băng&amp;rdquo; lại trọng số của pre-train model, chỉ huấn luyện phần phân lớp. Bạn cũng có thể thêm phần Dropout để tránh overfit.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Nếu tập dữ liệu của bạn không giống một tí nào so với taapk ImageNet, không nên dùng pre-train model.&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;p&gt;Luôn luôn sử dụng lớp chuẩn hoá trong mô hình. Nếu bạn huấn luyện mô hình với batch-size lớn ( ví dụ lớn hơn 10), hãy sử dụng BatchNormalization Layer trong keras. Nếu bạn sử dụng batch-size nhỏ (ví dụ 1), thì hãy sử dụng InstanceNormalization. Hai layer này đã có sẵn trong Keras, trong các framework khác thì mình không rõ lắm. Có nhiều tác giả đã chỉ ra rằng sử dụng BatchNormalization  sẽ cho kết quả tốt hơn nếu tăng batch-size và hiệu năng sẽ giảm khi batch-size nhỏ, và trong trường hợp batch-size nhỏ thì kết quả sẽ tốt hơn một tí khi sử dụng InstanceNormalization thay cho BatchNormalization. Ngoài ra, các bạn cũng có thể sử dụng GroupNormalization (mình chưa kiểm chứng GroupNormalization có làm tăng độ chính xác hay không).&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Nếu bạn sử dụng concatenation layer để kết hợp các feature từ nhiều convolution layers (Li), và những Li  trên rút trích thông tin từ cùng một input (F), thì bạn jay sử dụng SpatialDropout ngay sau concatenation layer trên (Xem hình bên dưới). Khi các convolution layer rút trích thông tin từ cùng một nguồn, các đặc trưng của chúng thường sẽ có mức tương quan với nhau rất lớn. SpatialDropout sẽ loại bỏ những đặc trưng có mức độ liên quan cao này và giúp bạn chống lại hiện tượng overfiting. Thông thường người ta chỉ sử dụng SpatialDropout ở các lớp gần input layer, và không sử dụng chúng ở các lớp cao bên trên.&lt;/p&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/spatialdropoutusecase.png&#34; alt=&#34;Hình ảnh&#34; /&gt;&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;p&gt;Theo andrej Karpathy, để xác định khả năng lưu trữ thông tin của mô hình, hãy rút một phần nhỏ dữ liệu trong tập train của bạn đem đi huấn luyện. Nếu mô hình không overfit, chúng ta tăng số lượng node/layer lên. Nếu mô hình bị overfit, sử dụng các kỹ thuật như L1, L2, Dropout hoăc các kỹ thuật khác để chống lại việc overfit.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Các kỹ thuật chuẩn hoá thường sẽ ràng buộc hoặc tinh gọn các trọng số của mô hình. Nó cũng đồng thời giúp chúng ta chống lại việc gradient explosion (gradient mang giá trị lớn khi tính backpropagation) (lý do là các trọng số sẽ bị giới hạn trong đoạn nào đó, ví dụ L2 giới hạn căn bậc 2 tổng bình phương các trọng số =1 chẳng hạn). Ví dụ dưới sử dụng kares và giới hạn max của L2 là 2.&lt;/p&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from keras.constraints import max_norm
+# add to Dense layers
+model.add(Dense(64, kernel_constraint=max_norm(2.)))
+# or add to Conv layers
+model.add(Conv2D(64, kernel_constraint=max_norm(2.)))
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;p&gt;Việc sử dụng mean subtraction đôi khi cho kết quả khá tệ, đặc biệt là khi sử dụng trong ảnh xám (grayscale image), hoặc các bài toán phân đoạn ảnh.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Luôn nhớ đến việc xáo trộn dữ liệu (nếu bạn có thể). Nếu được, hãy thực hiện xáo trộn dữ liệu trong quá trình huấn luyện. Việc xáo trộn ảnh sẽ giúp bạn cải thiện độ chính xác.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Nếu bài toán của bạn thuộc nhóm dense prediction (ví dụ phân đoạn ngữ nghĩa - semantic segmentation). Hãy sử dụng pre-train model là Dilated Residual Networks. Mô hình trên cực kỳ hiệu quả cho bài toán này.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Để xác định thông tin ngữ cảnh xung quanh các đối tượng, hãy sử dụng module multi-scale feature pooling. Module này sẽ giúp bạn tăng độ chính xác và thường được sử dụng trong bài toán phân đoạn ngữ nghĩa (semantic segmentation) hoặc bài toán phân đoạn nền (foreground segmentation).&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Khi bạn tính độ lỗi hoặc độ chính xác, nếu có vùng nào không trả về nhãn, hoặc nhãn trả về không chắc chắn, hãy bỏ qua việc tính toán chúng đi. Hành động này sẽ giúp mô hình của bạn chắc chắn hơn khi đưa ra quyết định.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Sử dụng trọng số cho từng class trong quá trình training nếu dữ liệu của bạn có tính bất cân bằng cao. Hãy đặt trọng số lớn cho những lớp có ít dữ liệu, và trọng số nhỏ cho những lớp có nhiều dữ liệu. Trọng số của các lớp có thể được tính toán một cách dễ dàng bằng các sử dụng thư viện skearn trong python. Ngoài ra, bạn có thể sử dụng các kỹ thuật như OverSampling hoặc UnderSampling đối với tập dữ liệu nhỏ.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Chọn đúng hàm tối ưu. Có rất nhiều hàm tối ưu như Adam, Adagrad, Adadellta, RMSprop, &amp;hellip; Trong các paper người ta thường sử dụng tổ hợp SGD + momentun. Có hai vấn đề cần được xem xét ở đây: Một là nếu bạn muốn mô hình có độ hội tụ nhanh, hãy dùng Adam ( và có khả năng cao là mô hình sẽ bị kẹt ở điểm cực tiểu cục bộ -&amp;gt; không có tính tổng quát hoá cao). Hai là sử dujg SGD + momentun để tìm cực tiểu toàn cục, mô hình này phụ thuộc rất nhiều vào giá trị khởi tạo ban đầu và mô hình thường sẽ hội tụ rất chậm. (Xem hình bên dưới)&lt;/p&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/optimal.png&#34; alt=&#34;Hình ảnh&#34; /&gt;&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;p&gt;Thông thường, chúng ta sẽ chọn learning-rate là (1e-1, 1e-3, 1e-6). Nếu bạn sử dụng pre-train model, hãy sử dụng learning rate nhỏ hơn 1e-3 (ví dụ 1e-4). Nếu bạn không sử dụng pre-train model, hãy sử dụng learning-rate lớn hơn 1e-3. Bạn có thể grid search giá trị learning-rate và chọn ra mô hình cho kết quả tốt nhất. Bạn có thể sử dụng Learing Rate Schedulers giảm giá trịn learning rate trong quá trình huấn luyện mô hình.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Bên cạnh việc sử dụng Learing Rate Schedulers để giảm giá trị learning rate, bạn có thể sử dụng một kỹ thuật khác để giảm giá trị learning-rate. Ví dụ sau 5 epochs, độ lỗi trên tập validation không thay đổi, bạn giảm learning-rate đi 10 lần (vd từ 1e-3 thành 1e-4). Trong keras, bạn có thể dễ dàng implement công thức trên bằng việc sử dụng callbacs ReduceLROnPlateau.&lt;/p&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;reduce = keras.callbacks.ReduceLROnPlateau(monitor=&#39;val_loss&#39;, factor=0.1, patience=5, mode=&#39;auto&#39;)
+early = keras.callbacks.EarlyStopping(monitor=&#39;val_loss&#39;, min_delta=1e-4, patience=10, mode=&#39;auto&#39;)
+model.fit(X, Y, callbacks=[reduce, early])
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Ví dụ trên, chúng ta sẽ giảm learning-rate đi 10 lần khi độ lỗi trên tập validation không thay đổi qua 5 lần lặp liên tiếp, và sẽ dừng việc huấn luyện khi độ lỗi không giảm qua 10 lần lặp liên tiếp.&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;p&gt;Nếu bài toán của bạn thuộc nhóm dense prediction như phân đoạn ảnh, phân đoạn ngữ nghĩa, bạn nên sử dụng skip connection để chống lại việc các biên của đối tượng hoặc các thông tin đặc trưng hữu ích của đối tượng bị mất trong max-pooling hoặc strided convolution. Skip connection cũng giúp mô hình học features map từ feature space và image space dễ dàng hơn, và nó cũng giúp cho bạn giảm bị vanish gradient ( giá trị gradient nhỏ dần và gần xấp xỉ bằng 0, nên trọng số không thay đổi nhiều, dẫn đến không hội tụ).&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Nên sử dụng data augmentation, như là horizontally flipping, rotating, zoom-croping&amp;hellip; để tăng dữ liệu của bạn lên. Việc có nhiều dữ liệu sẽ giúp mô hình có mức tổng quát hoá cao hơn.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Sử dụng Max-pooling trước Relu để giảm thiểu mức độ tính toán thay vì làm ngược lại. chúng ta biết rằng ReLU trả ra giá trị có ngưỡng cực tiểu là 0 do f(x)=max(0,x), và max-pooling tính max cho các đặc trưng f(x) = max(x1,x2,&amp;hellip;,xi). Nếu ta sử dụng &lt;em&gt;Conv &amp;gt; ReLU &amp;gt; Max-pooling&lt;/em&gt;, ta sẽ tốn i lần tính ReLu, và 1 lần tính max. Nếu ta sử dụng &lt;em&gt;Conv -&amp;gt; max-pooling &amp;gt; ReLU&lt;/em&gt;, ta tốn 1 lần tính max, 1 lần tính ReLU.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Nếu có thể, hãy thử sử dụng Depthwise Separable Convolution. Nó giúp mô hình giảm số lượng tham số so với các convolution khác, ngoài ra nó giúp mô hình chạy nhanh hơn.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Điều cuối cùng là đừng bao giờ từ bỏ. Hãy tin tưởng rằng bạn có thể làm được. Nếu bạn vẫn không thể đạt được độ chính xác như mong đợi, hãy điều chỉnh lại các tham số, kiến trúc mô hình, tập dữ liệu huấn luyện đến khi bạn đạt được mô hình với độ chính xác như bạn đề ra.&lt;/p&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;Cảm ơn các bạn đã theo dõi. Hẹn gặp bạn ở các bài viết tiếp theo. Cố lên.&lt;/p&gt;
+</description>
     </item>
     
     <item>
@@ -30,7 +114,142 @@ Kiểm tra dữ liệu  Thực chất, chúng ta phải hiểu rõ kỹ chúng t
       <pubDate>Mon, 10 Dec 2018 00:19:00 +0300</pubDate>
       <author>alexblack2202@gmail.com (Phạm Duy Tùng)</author>
       <guid>/blog/2018-12-10-design-choices-lessons-learned-and-trends-for-object-detections/</guid>
-      <description>Lời mở đầu Các thuật toán phát hiện đối tượng, như các thuật toán thuộc nhóm region proposal hoặc single shot đầu bắt đầu bởi những ý tưởng khác nhau, nhưng sau qua một vài quá trình cập nhật và nâng cấp cho đến thời điểm hiện tại, mô hình chung của chúng đã gần gần giống nhau hơn. Và hai thuật toán trên là hai thuật toán tiêu biểu cạnh tranh nhau danh hiệu thuật toán phát hiện đối tượng nhanh nhất và thuật toán nhận diện chính xác nhất.</description>
+      <description>
+
+&lt;h2 id=&#34;lời-mở-đầu&#34;&gt;Lời mở đầu&lt;/h2&gt;
+
+&lt;p&gt;Các thuật toán phát hiện đối tượng, như các thuật toán thuộc nhóm region proposal hoặc single shot đầu bắt đầu bởi những ý tưởng khác nhau, nhưng sau qua một vài quá trình cập nhật và nâng cấp cho đến thời điểm hiện tại, mô hình chung của chúng đã gần gần giống nhau hơn. Và hai thuật toán trên là hai thuật toán tiêu biểu cạnh tranh nhau danh hiệu thuật toán phát hiện đối tượng nhanh nhất và thuật toán nhận diện chính xác nhất.
+Trong bài viết này, chúng ta sẽ đề cập đến một số chiến lược lựa chọn mô hình cho bài toán object detector và một số benchmarks do team Google Research thực hiện.&lt;/p&gt;
+
+&lt;h2 id=&#34;box-encoding-và-loss-function&#34;&gt;Box encoding và loss function&lt;/h2&gt;
+
+&lt;p&gt;Có rất nhiều hàm lỗi và box encoding được sử dụng trong các thuật toán phát hiện đối tượng. Ví dụ, SSD trả ra căn bậc hai của Width và height để giảm tỷ lệ độ lỗi.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/box_encoding_architerch.jpg&#34; alt=&#34;Hình ảnh&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Các bạn có thể để ý kỹ hơn SSD phiên bản custom không sử dụng cặp toạ độ trái trên - phải dưới mà là cặp tâm - căn bậc hai của with, căn bậc hai của height. Một số thuật toán lại dùng log width, log height, một số lại dùng tâm là Wc/Wa, Wy/ha, với Wc và Wy là toạ độ tâm của đối tượng, wa và ha là chiều dài và rộng của anchor khớp nhất (matching anchor). Các bạn có thể tham khảo thêm ở &lt;a href=&#34;https://arxiv.org/pdf/1611.10012.pdf&#34;&gt;https://arxiv.org/pdf/1611.10012.pdf&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;Để huấn luyện mô hình tốt hơn, Các nhà nghiên cứu sử dụng các trọng số khác nhau cho các hàm lỗi, YOLO và một ví dụ minh hoạ.&lt;/p&gt;
+
+&lt;h2 id=&#34;feature-extraction&#34;&gt;Feature extraction&lt;/h2&gt;
+
+&lt;p&gt;Trong thực tế, Feature extraction ảnh hưởng lớn trên 2 phần tradeoff là độ chính xác và tốc độ. Nhóm thuật toán ResNet và Inception đi theo tiêu chí là độ chính xác quan trọng hơn tốc độ (và quả thật nhóm thuật toán thuộc họ này có độ chính xác khá cao). MobileNet cung cấp cho chúng ta một mô hình khá nhỏ gọn, sử dụng SSD, mục tiêu của nhóm này là có thể xử lý được trên các thiết bị di động và thời gian xử lý là realtime.&lt;/p&gt;
+
+&lt;h2 id=&#34;feature-extractor-accuracy&#34;&gt;Feature extractor accuracy&lt;/h2&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/feature_extraction_accuracy.jpg&#34; alt=&#34;Hình ảnh&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Nhìn vào hình trên, chúng ta có thể thấy rõ ràng rằng Faster R-CNN và R-FCN đều cho độ chính xác khá tốt trên feature extraction. Ngược lại SSD có kết quả khá tệ.&lt;/p&gt;
+
+&lt;h2 id=&#34;non-max-suppression-nms&#34;&gt;Non-max suppression (nms)&lt;/h2&gt;
+
+&lt;p&gt;Sau khi thu được vị trí của các đối tượng, chúng ta sẽ merge lại các vị trí bị phát hiện trùng lắp. Các thuật toán thuộc nhóm single shot thường cho ra output overlap khá nhiều.&lt;/p&gt;
+
+&lt;h2 id=&#34;data-augmentation&#34;&gt;Data augmentation&lt;/h2&gt;
+
+&lt;p&gt;Ngày nay, hầu hết các thuật toán đều sử dụng Data augmentation. Việc augment data bằng cách cắt xét ảnh, quay ảnh một góc ngẫu nhiên nào đó, giúp cho tránh được overfit trong quá trình huấn luyện, do đó gián tiếp tăng độ chính xác của mô hình.&lt;/p&gt;
+
+&lt;h2 id=&#34;feature-map-strides&#34;&gt;Feature map strides&lt;/h2&gt;
+
+&lt;p&gt;Thuật toán thuộc nhóm single shot thường có tuỳ chọn layter feature map nào được sử dụng để nhận dạng đối tượng. Feature map có stride là 2 nếu chúng ta thực hiện giảm 2 lần độ phân giải. Feature map có độ phân giải thấp thường giữ lại những thông tin đặc trưng tốt của đối tượng và giúp cho detector thực hiện tốt hơn. Tuy nhiên, những đối tượng có kính thước nhỏ sẽ bị mất thông tin trầm trọng và khó để phát hiện ra chúng.&lt;/p&gt;
+
+&lt;h2 id=&#34;speed-v-s-accuracy&#34;&gt;Speed v.s. accuracy&lt;/h2&gt;
+
+&lt;p&gt;Thật khó để trả lời rằng thuật toán nhận dạng đối tượng nào tốt hơn, mà câu trả lời phụ thuộc vào bài toán của bạn đang gặp. Nếu bài toán cần độ chính xác cao, hãy sử dụng ResNet hoặc Inception, nếu bạn cần chạy realtime và độ chính xác tạm chấp nhận, hãy sử dụng MobileNet hoặc YOLO. Không có (chưa có - ít nhất đến thời điểm hiện tại) có thuật toán nào đáp ứng cả 2 tiêu chí là vừa có độ chính xác cao, vừa chạy nhanh cả. Đó là một tradeoff giữa Speed và Accuracy.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/gpu-time-resnet-inception-mobilenet.jpg&#34; alt=&#34;Hình ảnh&#34; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;object-size&#34;&gt;Object size&lt;/h2&gt;
+
+&lt;p&gt;Với những hình ảnh có kích thước lớn, SSD thực hiện rút trích đặc trưng rất tốt (nên nhớ rằng mô hình rút trích đặc trưng của SSD rất đơn giản). Với những hình ảnh dạng này, SSD có thể so sánh với các thuật toán khác khác về độ chính xác.&lt;/p&gt;
+
+&lt;p&gt;Với nhưng hình ảnh có kích thước nhỏ, chúng ta không nên/không bao giờ xài SSD.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/object_size_compatiple.jpg&#34; alt=&#34;Hình ảnh&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Nhìn hình ở trên, chúng ta thấy rõ độ chính xác của SSD và các thuật oán khác trên các tập dữ liệu có kích thước khác nhau. Và phụ thuộc vào kích thước dữ liệu của bạn để chọn ra mô hình tối ưu nhất.&lt;/p&gt;
+
+&lt;h2 id=&#34;input-image-resolution&#34;&gt;Input image resolution&lt;/h2&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/resolution_reduce.jpg&#34; alt=&#34;Hình ảnh&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Nhìn hình trên các bạn cũng có thể nhìn thấy rõ. Ảnh có độ phân giải lớn giúp nhận dạng đối tượng tốt hơn rất nhiều so với ảnh có độ phân giải nhỏ. Khi giảm 2 lần độ phân giải trên mỗi chiều (từ 600x600 xuống còn 300x300), trung bình độ chính xác giảm 15.88% trong quá trình huấn luyện, và trung bình giảm 27.4% trong inference.&lt;/p&gt;
+
+&lt;h2 id=&#34;number-of-proposals&#34;&gt;Number of proposals&lt;/h2&gt;
+
+&lt;p&gt;Số lượng proposal được sinh ra ảnh hưởng trực tiếp đến tốc độ của nhóm R-CNN. Ví dụ, Faster R-CNN có thể tăng tốc độ nhận dạng đối tượng gấp 3 lần nếu ta chỉ sử dụng 50 proposal thay vì 300 proposal. Độ chính xác chỉ giảm 4%&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/number-proposal-f-rcnn.jpg&#34; alt=&#34;Hình ảnh&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Hình trên, đường nét liền mô tả độ chính xác khi tăng số lượng proposal. Đường nét đứt thể hiện thời gian xử láy tăng khi tăng số lượng proposal.&lt;/p&gt;
+
+&lt;h2 id=&#34;điểm-danh-danh-lại-các-bước-phát-triển-của-object-detection&#34;&gt;Điểm danh danh lại các bước phát triển của object detection&lt;/h2&gt;
+
+&lt;p&gt;Các thuật toán object detection đã phát triển trong một khoảng thời gian dài. Ý tưởng  đầu tiên, đơn giản nhất là chúng ta sẽ sử dụng cửa sổ trượt.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+# Sliding windows
+for window in windows
+    patch = get_patch(image, window)
+    results = detector(patch)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Để tăng tốc, chúng ta sẽ
+1. Giảm số lượng windows (R-CNN giảm còn khoảng 2000)
+2. Giảm các phép tính trong việc tìm ROI (Fast R-CNN sử dụng feature map thay vì toàn bộ image patchs).&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Fast R-CNN
+feature_maps = process(image)
+ROIs = region_proposal(feature_maps)
+for ROI in ROIs
+    patch = roi_pooling(feature_maps, ROI)
+    results = detector2(patch)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Việc tìm region_proposal cũng tốn khá nhiều thời gian. Faster R-CNN sử dụng một convolution network thay thế cho region proposal ở bước này (làm giảm thời gian từ 2.3s xuống còn 0.3 giây). Faster R-CNN cũng giới thiệu 1 khái nhiệm là anchor giúp cải thiện độ chính xác và việc huấn luyện trở nên dễ dàng hơn.&lt;/p&gt;
+
+&lt;p&gt;R-FCN đưa ra một điều chỉnh nhỏ, là tiến hành tìm position và sensitive score map trên mỗi ROIS độc lập. Và tính trung bình xác suất xuất hiện đối tượng&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# R-FCN
+feature_maps = process(image)
+ROIs = region_proposal(feature_maps)         
+score_maps = compute_score_map(feature_maps)
+for ROI in ROIs
+    V = pool(score_maps, ROI)     
+    class_scores = average(V)         
+    class_probabilities = softmax(class_scores)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;R-FCN chạy khá nhanh, nhưng độ chính xác thì thấp hơn một hút so với Faster R-CNN. Để ý kỹ đoạn mã giả ở trên, chúng ta phải trải qua 2 lần tính toán, một lần là tìm các ROIs, một lần là object detection. Thuật toán Single shot detector được đề xuất để sử dụng 1 lần tính toán.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;feature_maps = process(image)
+results = detector3(feature_maps) # No more separate step for ROIs
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Thuật toán SSD và YOLO đều thuộc nhóm single shot detectors. Cả hai đều sử dụng convolution layer để rút trích đặc trưng và một convolution filter để đưa quyết định. Cả hai đều dùng feature map có độ phân giải thấp (low resolution feature map) để dò tìm đối tượng =&amp;gt; chỉ phát hiện được các đối tượng có kích thước lớn. Một cách tiếp cận là sử dụng các feature map có độ phân giải cao (higher resolution feature map). Nhưng độ chính xác sẽ giảm do thông tin đặc trưng của đối tượng quá hỗn loạn. FPN đưa ra ý tưởng sử dụng feature map trung gian merge giữa feature map high resolution và low resolution. Việc này giúp cho chúng ta vẫn giữ được thông tin đặc trưng hữu ích của đối tượng, đồng thời cũng giữ được thông tin của các đối tượng có kích thước nhỏ. Do đó, độ chính xác cũng tăng lên và phát hiện các đối tượng có các tỷ lệ khác nhau (different scale) tốt hơn.&lt;/p&gt;
+
+&lt;p&gt;Trong quá trình huấn luyện, chúng ta sẽ nhận ra 1 vấn đề rằng backgroup sẽ chiếm 1 phần rất lớn trong bức ảnh. Hoặc một đối tượng nào đó có số mẫu nhiều hơn so với các đối tượng khác. Thuật toán Focal loss được sinh ra để giải quyết vấn đề này.&lt;/p&gt;
+
+&lt;h2 id=&#34;lesson-learned&#34;&gt;Lesson learned&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;Feature Pyramid Networks sử dụng các feature map nhiều thông tin hơn để cải thiện độ chính xác.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Sử dụng các mô hình như ResNet hoặc Inception ResNet nếu mô hình bạn cần độ chính xác và không quan tâm lắm về tốc độ.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Sử dụng các thuật toán thuộc nhóm Single shot detectors như MobileNet nếu bạn cần tốc độ tính toán và có thể chạy được trên mobilenet, yêu cầu về độ chính xác tạm chấp nhận được.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Sử dụng batch normaliation, nói chung là đều phải chuẩn hoá dữ liệu trước khi sử dụng.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Lựa chọn anchors cẩn thận (Cái này khá khó, đòi hỏi bạn phải am hiểu khá kỹ về dữ liệu, và nếu set nhầm thì sẽ đi tong).&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Sử dụng data augmentation.&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Cảm ơn các bạn đã theo dõi. Hẹn gặp bạn ở các bài viết tiếp theo.&lt;/p&gt;
+
+&lt;p&gt;Bài viết được lược dịch và tham khảo từ nguồn &lt;a href=&#34;https://medium.com/@jonathan_hui/design-choices-lessons-learned-and-trends-for-object-detections-4f48b59ec5ff&#34;&gt;https://medium.com/@jonathan_hui/design-choices-lessons-learned-and-trends-for-object-detections-4f48b59ec5ff&lt;/a&gt;&lt;/p&gt;
+</description>
     </item>
     
     <item>
@@ -39,7 +258,192 @@ Kiểm tra dữ liệu  Thực chất, chúng ta phải hiểu rõ kỹ chúng t
       <pubDate>Thu, 06 Dec 2018 00:19:00 +0300</pubDate>
       <author>alexblack2202@gmail.com (Phạm Duy Tùng)</author>
       <guid>/blog/2018-12-06-what-do-we-learn-from-single-shot-object-detection/</guid>
-      <description>Single Shot detectors Ở bài trước, chúng ta đã tìm hiểu về region proposal và ứng dụng của nó vào Faster R-CNN. Các thuật toán thuộc nhóm region proposal tuy cho kết quả có độ chính xác cao, nhưng chúng có một nhược điểm rất lớn là thời gian huấn luyện và đưa quyết định rất chậm. Faster R-CNN xử lý khoảng 7 FPS trên tập dữ liệu PASCAL VOC 2007.</description>
+      <description>
+
+&lt;h2 id=&#34;single-shot-detectors&#34;&gt;Single Shot detectors&lt;/h2&gt;
+
+&lt;p&gt;Ở bài trước, chúng ta đã tìm hiểu về region proposal và ứng dụng của nó vào Faster R-CNN. Các thuật toán thuộc nhóm region proposal tuy cho kết quả có độ chính xác cao, nhưng chúng có một nhược điểm rất lớn là thời gian huấn luyện và đưa quyết định rất chậm. Faster R-CNN xử lý khoảng 7 &lt;em&gt;FPS&lt;/em&gt; trên tập dữ liệu PASCAL VOC 2007. Một cách để tăng tốc quá trình tính toán là giảm số lượng tính toán trên mỗi ROI.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;feature_maps = process(image)
+ROIs = region_proposal(feature_maps)
+for ROI in ROIs
+    patch = roi_align(feature_maps, ROI)
+    results = detector2(patch)    # Giảm khối lượng tính toán ở đây
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Một ý tưởng khác, là chúng ta sẽ bỏ qua bước tìm region proposal, mà trực tiếp rút trích boundary boxes và classes trực tiếp từ feature map.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;feature_maps = process(image)
+results = detector3(feature_maps) # Không cần tìm ROI
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Dựa trên ý tưởng sử dụng cửa sổ trượt. Chúng ta sẽ trượt trên feature máp để nhận diện các đối tượng. Với mỗi loại đối tượng khác nhau, chúng ta sửa dụng các cửa sổ trượt có kích thước khác nhau. Cách này thoạt đầu trông có vẻ khá tốt, nhưng điểm yếu của nó là đã sử dụng cửa sổ trượt làm final boundary box. Do đó, giả sử chúng ta có nhiều đối tượng, và mỗi đối tượng có kích thước khác nhau, chúng ta sẽ có rất nhiều cửa sổ trượt để bao phủ hết toàn bộ đối tượng.&lt;/p&gt;
+
+&lt;p&gt;Một ý tưởng cải tiến là chúng ta sẽ định nghĩa trước các cửa sổ trượt, sau đó sẽ tiến hành dự đoán lớp và boundary box ( và Ý tưởng này, nhóm nghiên cứu phát triển thuật toán và đặt tên thuật toán là single shot detectors). Ý tưởng này tương tự như việc sử dụng anchors trong Faster R-CNN, nhưng single shot detectors thực hiện dự đoán boundary box và class đồng thời cùng nhau.&lt;/p&gt;
+
+&lt;p&gt;Ví dụ, giả sử chúng ta có một feature map 8x8 và chúng ta đưa ra k = 4 dự đoán.  Vậy ta có tổng cộng 8x8x4 = 256 dự đoán.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/single-shot-object-detectors-img-1.jpg&#34; alt=&#34;Hình ảnh&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Xét hình bên trên, ta có 4 anchors đã được định nghĩa trước ( màu xanh lá cây), và có 4 prediction( màu xanh nước biển) tương ứng với từng anchor trên.&lt;/p&gt;
+
+&lt;p&gt;Với thuật toán Faster R-CNN, chúng ta sử dụng một convolution filter trả ra 5 kết quả dự đoán: 4 giá trị là toạ độ của boundary box, và giá trị còn lại là xác suất xuất hiện đối tượng. Tổng quát hơn, ta có input là D feature map 8x8, output là 8x8x5, số convolution filter trong Faster R-CNN là 3x3xDx8.&lt;/p&gt;
+
+&lt;p&gt;Với single shot detector, input của ta cũng tương tự là 8x8xD, output là 8x8x (4 + C) ( với 4 tương ứng với 4 điểm boundary box, và C là số lượng lớp đối tượng), vậy ta cần một convolution filter là 3x3xDx(4+C)&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/single-shot-object-detectors-architech.png&#34; alt=&#34;Hình ảnh&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Thuật toán Single shot detect chạy khá nhanh, nhưng độ chính xác của nó không cao lắm (không bằng region proposal). Thuật toán có vấn đề về việc nhận dạng các đối tượng có kích thước nhỏ. Ví dụ như hình bên dưới, chúng ta có tổng cộng 9 ông già noel, nhưng thuật toán chỉ nhận diện được có 5 ông.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/single-shot-object-detectors-img-2.jpg&#34; alt=&#34;Hình ảnh&#34; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;ssd&#34;&gt;SSD&lt;/h2&gt;
+
+&lt;p&gt;SSD là mô hình single shot detector sử dụng mạng VGG16 để rút trích đặc trưng. Mô hình như hình bên dưới. Trong đó, những conv có màu xanh nước biển nhạt là những custom convolution layter (ta có thể thêm bớt bao nhiêu tuỳ thích). Convolutional filter layter (là cục màu xanh lá cây) có nhiệm vụ tổng hợp các thông tin lại để đưa quyết định.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/single-shot-object-detectors-vgg19-model.jpg&#34; alt=&#34;Hình ảnh&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Khi sử dụng mô hình như hình ở trên, chúng ta thấy rằng các custom convolution layter có nhiệm vụ làm giảm chiều và giảm độ phân giải của bức ảnh. Cho nên, mô hình chỉ có khả năng nhận ra các đối tượng có kích thước lớn. Để giải quyết vấn đề này, chúng ta sẽ sử dụng các object detector khác nhau trên mỗi feature maps (xem output của mỗi custom convolution là một feature map).&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/single-shot-object-detectors-vgg19-model1.jpg&#34; alt=&#34;Hình ảnh&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Ảnh bên dưới là sơ đồ số chiều của các feature maps.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/single-shot-object-detectors-vgg19-diagram.jpg&#34; alt=&#34;Hình ảnh&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;SSD sử dụng các layter có kích thước giảm dần theo độ sâu để nhận dạng đối tượng. Nhìn vào hình vẽ sơ đồ bên dưới của SSD, chúng ra dễ dàng nhận thấy rằng độ phân giải giảm đáng kể qua mỗi layer và có lẽ (chắc chắn) sẽ bỏ sót những đối tượng có kích thước nhỏ ở những lớp có độ phân giải thấp. Nếu trong dự án thực tế của bạn có xảy ra vấn đề này, bạn nên tăng độ phân giải của ảnh đầu vào.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/single-shot-object-detectors-SSD1-diagram.jpg&#34; alt=&#34;Hình ảnh&#34; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;yolo&#34;&gt;YOLO&lt;/h2&gt;
+
+&lt;p&gt;YOLO cũng là một thuật toán sử dụng single shot detector để dò tìm vị trí của các đối tượng trong ảnh. YOLO sử dụng DarkNet để tạo các feature cho bức ảnh (SSD sử dụng VGG16). Mô hình của YOLLO như ảnh ở bên dưới.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/single-shot-object-detectors-darknet-diagram.jpg&#34; alt=&#34;Hình ảnh&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Khác với kiến trúc mạng SSD ở trên, YOLLO không sử dụng multiple scale feature map (SSD sử dụng các custom convolution layter, qua mỗi layter thì feature maps sẽ có kích thước giảm xuống - các output của custom convolution layer chính là các feature map chúng ta thu được). Thay vào đó, YOLLO sẽ làm phẳng hoá (flatten - vd ma trận 3x3  sẽ biến thành vector 1x9, ma trận 4x5 sẽ biến thành vector 1x20 &amp;hellip;, làm phẳng nghĩa là chúng ta sẽ không dùng bộ lọc nào hết, mà sử dụng các phép biến đổi, nên không làm thay đổi giá trị, chỉ làm thay đổi hình dạng) một phần output của convolution layer và kết hợp với  convolution layer ở trong DarkNet tạo thành feature map (Xem hình ở trên sẽ rõ hơn). Ví dụ ở custom convolution layer chúng ta thu được output có kích thước 28x28x512, chúng ta sẽ flatten thành layter có kích thước 14x14x2048, kết hợp với 1 layter có kích thước 14x14x1024 ở trong darknet, chúng ta thu được feature maps có kích thước là 14x14x3072. Đem feature maps này đi đự đoán.&lt;/p&gt;
+
+&lt;p&gt;YOLOv2 đã thêm vào rất nhiều các cải tiền để cải tăng mAP từ 63.4 trong mô hình đầu tiên (YOLOv1) lên 78.6. Các cải tiền bao gồm thêm batch norm, anchor boxes,  hi-res classifier &amp;hellip; Các bạn có thể xem ở hình bên dưới. YOLO9000 có thể nhận dạng 9000 đối tượng khác nhau.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/yollo-v2-improment.jpg&#34; alt=&#34;Hình ảnh&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;YOLOv2 có thể nhận diện các đối tượng với ảnh đầu vào có độ phân giải bất kỳ. Với ảnh có độ phân giải thấp thì mô hình chạy khá nhanh, có FPS cao nhưng mAP lại thấp (tradeoff giữa FPS và mAP).&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/yollo-v2-acc.jpg&#34; alt=&#34;Hình ảnh&#34; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;yolov3&#34;&gt;YOLOv3&lt;/h2&gt;
+
+&lt;p&gt;YOLOv3 sử dụng darknet với kiến trúc phức hơn để rút trích đặc trưng của bức ảnh. YOLOv3 thêm vào đặc trưng Pyramid để dò tìm các đối tượng có kích thước nhỏ.&lt;/p&gt;
+
+&lt;p&gt;Hình bên dưới so sánh tradeoff giữa thời gian thực thi và độ chính xác giữa các mô hình. Ta thấy rằng thời gian thực thi của YOLOv3 rất nhanh, cùng phân mức mAP 28.8, thời gian YOLOv3 thực thi chỉ tốn 22ms, trong khi đó SSD321 tốn đến 61ms - gấp 3 lần.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/single-shot-object-detectors-compare.jpg&#34; alt=&#34;Hình ảnh&#34; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;feature-pyramid-networks-fpn&#34;&gt;Feature Pyramid Networks (FPN)&lt;/h2&gt;
+
+&lt;p&gt;Dò tìm các đối tượng có kích thước nhỏ là một vấn đề đáng được giải quyết để nâng cao độ chính xác. Và FPN là mô hình mạng được thiết kế ra dựa trên khái niệm pyramid để giải quyết vấn đề này.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/feature-pyramid-network-model1.jpg&#34; alt=&#34;Hình ảnh&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Mô hình FPN kết hợp thông tin của mô hình theo hướng &lt;em&gt;bottom-up&lt;/em&gt; kết hợp với &lt;em&gt;top-down&lt;/em&gt; để dò tìm đối tượng (trong khi đó, các thuật toán khác chỉ thường sử dụng &lt;em&gt;bottom-up&lt;/em&gt;). Khi chúng ta ở bottom và đi lên (up), độ phân giải sẽ giảm, nhưng giá trị ngữ nghĩa sẽ tăng lên. Xem hình mô phỏng bên dưới.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/feature-pyramid-network-model2.jpg&#34; alt=&#34;Hình ảnh&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;SSD đưa ra quyết định dựa vào nhiều feature map. Nhưng layer ở bottom không được sử dụng để nhận dạng đối tượng. Vì những layter này có độ phân giải cao nhưng giá trị ngữ nghĩa của chúng lại không đủ cao (thấp) nên những nhà nghiên cứu bỏ chúng đi để tăng tốc độ xử lý. Các nhà nghiêng cứu biện minh rằng các layer ở bottom chưa đủ mức ý nghĩa cần thiết để nâng cao độ chính xác, thêm các layer đó vào sẽ không nâng độ chính xác cao thêm bao nhiêu và họ bỏ chúng đi để có tốc độ tốt hơn. Cho nên, SSD chỉ sử dụng các layer ở lớp trên , và do đó sẽ không nhận dạng được các đối tượng có kích thước nhỏ.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/ssd-model-bottom-up.jpg&#34; alt=&#34;Hình ảnh&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Trong khi đó, FPN xây dựng thêm mô hình top-down, nhằm mục đích xây dựng các layer có độ phân giải cao từ các layer có ngữ nghĩa cao.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/fpn-top-down-model.jpg&#34; alt=&#34;Hình ảnh&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Trong quá trình xây dựng lại các layer từ top xuống bottom, chúng ta sẽ gặp một vấn đề khá nghiêm trọng là bị mất mát thông tin của các đối tượng. Ví dụ một đối tượng nhỏ khi lên top sẽ không thấy nó, và từ top đi ngược lại sẽ không thể tái tạo lại đối tượng nhỏ đó. Để giải quyết vấn đề này, chúng ta sẽ tạo các kết nối (skip connection) giữa các reconstruction layter và các feature map để giúp quá trình detector dự đoán các vị trí của đối tượng thực hiện tốt hơn (hạn chế tốt nhất việc mất mát thông tin).&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/fpn-top-down-model-with-skip-connection.jpg&#34; alt=&#34;Hình ảnh&#34; /&gt;
+&lt;em&gt;Thêm các skip connection giữa feature map và reconstruction layer&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;Đồ hình bên dưới diễn ta chi tiết đường đi theo bottom-up và top-down. P2, P3, P4, P5 là các pyramid  của các feature map.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/fpn-top-down-with-bottom-up.jpg&#34; alt=&#34;Hình ảnh&#34; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;so-sánh-feature-pyramid-networks-với-region-proposal-network&#34;&gt;So sánh Feature Pyramid Networks với Region Proposal Network&lt;/h2&gt;
+
+&lt;p&gt;FPN không phải là mô hình phát hiện đối tượng. Nó là mô hình phát hiện đặc trưng và được sử dụng trong phát hiện đối tượng. Các feature map từ P2 đến P5 trong hình bên dưới độc lập với nhau và các đặc trưng được sử dụng để phát hiện đối tượng.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/fpn-detail.jpg&#34; alt=&#34;Hình ảnh&#34; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;sử-dụng-feature-pyramid-networks-trong-fast-r-cnn-và-faster-r-cnn&#34;&gt;Sử dụng Feature Pyramid Networks trong Fast R-CNN và Faster R-CNN&lt;/h2&gt;
+
+&lt;p&gt;Chúng ta hoàn toàn có thể sử dụng FPN trong Fast và Faster R-CNN. Chúng ta sẽ tạo ra các feature map sử dụng FPN, kết quả là ta thu được các puramid (feature map). Sau đó, chúng ta sẽ rút trích các ROIs trên các feature map đó. Dựa trên kích thước của các ROI, chúng ta sẽ chọn feature map nào tốt nhất để tạo các feature patches (các hình chữ nhật nhỏ). Các bạn có thể xem chi tiết ở hình bên dưới.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/fpn-in-faster-r-cnn.jpg&#34; alt=&#34;Hình ảnh&#34; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;focal-loss-retinanet&#34;&gt;Focal loss (RetinaNet)&lt;/h2&gt;
+
+&lt;p&gt;Trong thực tế, chúng ta sẽ gặp tình trạng tỷ lệ diện tích của các đối tượng trong ảnh nhỏ hơn nhiều so với phần background còn lại, ví dụ chúng ta cần nhận dạng một quả cam có kích thước 100x100 trong ảnh 1920x1080. Vì phần background quá lớn nên chúng sẽ là thành phần &amp;ldquo;thống trị&amp;rdquo; và làm sai lệch kết quả. SSD sử dụng phương pháp lấy mẫu tỷ lệ của object class và background class trong quá trình train (nên background sẽ không còn thống trị nữa).&lt;/p&gt;
+
+&lt;p&gt;Ngoài ra, chúng ta sẽ còn gặp tình trạng là số lượng tỷ lệ object trong ảnh không đều nhau, ví dụ trong tập huấn luyệt có 1000 quả cam và 10 quả táo.&lt;/p&gt;
+
+&lt;p&gt;Focal loss (FL) được sinh ra để giải quyết tình trạng này. Để đi vào chi tiết hơn, chúng ta nhắc lại hàm lỗi cross entropy.&lt;/p&gt;
+
+&lt;p&gt;$$
+\begin{equation}
+  CE(p,y) =
+    \begin{cases}
+      -\log(p) &amp;amp; \text{if y=1} \\\&lt;br /&gt;
+      -\log(1-p) &amp;amp; \text{otherwise}
+    \end{cases}&lt;br /&gt;
+\end{equation}
+$$&lt;/p&gt;
+
+&lt;p&gt;Trong hàm trên thì y nhận giá trị 1 hoặc -1. Giá trị xác xuất nằm trong khoảng (0,1) là xác suất dự đoán cho lớp có y=1.&lt;/p&gt;
+
+&lt;p&gt;Để rõ ràng hơn, ta có thể viết lại hàm trên như sau:&lt;/p&gt;
+
+&lt;p&gt;$$
+\begin{equation}
+  p_t =
+    \begin{cases}
+      p &amp;amp; \text{if y=1} \\\&lt;br /&gt;
+      1-p &amp;amp; \text{otherwise}
+    \end{cases}&lt;br /&gt;
+\end{equation}
+$$&lt;/p&gt;
+
+&lt;p&gt;$$
+\begin{equation}
+    CE(p,y) = CE(p_t) = -\log(p_t)
+\end{equation}
+$$&lt;/p&gt;
+
+&lt;p&gt;Ta có nhận xét rằng đối với các trường hợp được phân loại tốt (có xác suất lớn hơn 0.6) thì hàm loss nhận gái trị với độ lớn lớn hơn 0. Và trong trường hợp dữ liệu có tỷ lệ lệch cao thì tổng các giá trị này sẽ cho ra kết quả loss với một con số rất lớn so với loss của các trường hợp khó phâm loại. Và nó ảnh hưởng đến quá trình huấn luyện.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/focal-lost.jpg&#34; alt=&#34;Hình ảnh&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Ý tưởng chính của focal-lost là đối với các trường hợp được phân loại tốt ( xác suất lớn hơn 0.5) thì focal lost sẽ làm giảm giá trị cross-entropy của nó xuống nhỏ hơn so với thông thường. Do đó, ta sẽ thêm trọng số cho hàm cross-entropy để biến thành hàm focal lost.&lt;/p&gt;
+
+&lt;p&gt;$$
+FL(p_t) = -(1-p_t)^\gamma\log(p_t)
+$$&lt;/p&gt;
+
+&lt;p&gt;Với nhân tử được thêm vào được gọi là modulating factor, gamma lớn hơn hoặc bằng 0 được gọi là tham số focusing.&lt;/p&gt;
+
+&lt;p&gt;Nhìn hình ở trên, ta thấy rằng khi gamma = 0 thì hàm focal lost chính là cross-entropy.&lt;/p&gt;
+
+&lt;p&gt;Đặc điểm của hàm lost trên như sau:&lt;/p&gt;
+
+&lt;p&gt;Khi mẫu bị phân loại sai, pt nhỏ, nhân tố modulating factor gần với 1 và hàm lost ít bị ảnh hưởng. Khi pt tiến gần tới 1 (mẫu phân loại tốt), moduling factor sẽ tiến gần tới 0 và hàm loss trong trường hợp này sẽ bị giảm trọng số xuống.&lt;/p&gt;
+
+&lt;p&gt;Tham số focusing sẽ điều chỉnh tỷ lệ các trường hợp được phân loại tốt được giảm trọng số. Khi gamma càng tăng thì ảnh hưởng của modulating factor cũng tăng. Trong các thí nghiệm cho thấy với gamma = 2 hì kết quả đạt được sẽ tốt nhất.&lt;/p&gt;
+
+&lt;p&gt;Hình bên dưới là đồ hình của RetinaNet được xây dựng dựa trên FPN và ResNet sử dung Focal loss.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/retina-net-fpn-resnet.jpg&#34; alt=&#34;Hình ảnh&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Cảm ơn các bạn đã theo dõi. Hẹn gặp bạn ở các bài viết tiếp theo.&lt;/p&gt;
+
+&lt;p&gt;Bài viết được lược dịch và tham khảo từ nguồn &lt;a href=&#34;https://medium.com/@jonathan_hui/what-do-we-learn-from-single-shot-object-detectors-ssd-yolo-fpn-focal-loss-3888677c5f4d&#34;&gt;https://medium.com/@jonathan_hui/what-do-we-learn-from-single-shot-object-detectors-ssd-yolo-fpn-focal-loss-3888677c5f4d&lt;/a&gt;&lt;/p&gt;
+</description>
     </item>
     
   </channel>

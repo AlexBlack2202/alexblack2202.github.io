@@ -10,9 +10,7 @@
     <webMaster>alexblack2202@gmail.com (Phạm Duy Tùng)</webMaster>
     <copyright>This work is licensed under a Creative Commons Attribution-ShareAlike 4.0 International License.</copyright>
     <lastBuildDate>Sun, 26 Jan 2020 00:19:00 +0300</lastBuildDate>
-    
-	<atom:link href="/tags/variance/index.xml" rel="self" type="application/rss+xml" />
-    
+    <atom:link href="/tags/variance/" rel="self" type="application/rss+xml" />
     
     <item>
       <title>Hai khái niệm quan trọng giúp tăng độ chính xác của các mô hình trong machine learning</title>
@@ -20,7 +18,172 @@
       <pubDate>Sun, 26 Jan 2020 00:19:00 +0300</pubDate>
       <author>alexblack2202@gmail.com (Phạm Duy Tùng)</author>
       <guid>/blog/2020-04-16-two-important-machine-learning-concepts-to-improve-every-model/</guid>
-      <description>Việc huấn luyên mô hình máy học có thể sẽ gây ra cho bạn một chút khó khăn nếu bạn không hiểu những thứ bạn dang làm là đúng hay sai. Trong hầu hết các trường hợp, các mô hình học máy là các &amp;ldquo;hộp đen&amp;rdquo;, chúng ta chỉ có thể &amp;ldquo;nhìn thấy&amp;rdquo; dữ liệu đầu vào và độ chính xác mà mô hình trả ra. Chúng ta không biết bên trong nó đang làm cái gì.</description>
+      <description>
+
+&lt;p&gt;Việc huấn luyên mô hình máy học có thể sẽ gây ra cho bạn một chút khó khăn nếu bạn không hiểu những thứ bạn dang làm là đúng hay sai. Trong hầu hết các trường hợp, các mô hình học máy là các &amp;ldquo;hộp đen&amp;rdquo;, chúng ta chỉ có thể &amp;ldquo;nhìn thấy&amp;rdquo; dữ liệu đầu vào và độ chính xác mà mô hình trả ra. Chúng ta không biết bên trong nó đang làm cái gì. Việc hiểu lý do tại sao mô hình cho ra kết quả tệ hại là chìa khóa cho cái &amp;ldquo;cách&amp;rdquo; mà bạn cải tiến nó.&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;p&gt;Tìm hiểu lý do &amp;ldquo;tại sao&amp;rdquo; mô hình cho ra kết quả tệ hại bằng cách &amp;ldquo;xác định bias và variance&amp;rdquo;.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Tìm hiểu &amp;ldquo;cách&amp;rdquo; cải tiến mô hình bằng việc thực hiện &amp;ldquo;giảm bias và variance&amp;rdquo;.&lt;/p&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h1 id=&#34;xác-định-bias-và-variance&#34;&gt;Xác định bias và variance&lt;/h1&gt;
+
+&lt;p&gt;Trước hết, chúng ta hãy bắt đầu nói về lỗi. Lỗi là phần không chính xác của mô hình trên tập test.&lt;/p&gt;
+
+&lt;p&gt;$$ error = 1 - testing accuracy $$&lt;/p&gt;
+
+&lt;p&gt;Nếu mô hình đạt độ chính xác  là 86% trên tập test, điều đó đồng nghĩa với độ lỗi là 14%. Trong 14% đó bao gồm bias và variance.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/bias_variance.png&#34; alt=&#34;Hình ảnh&#34; /&gt;
+&lt;strong&gt;Biểu đồ bias - variance. Nguồn towardsdatascience.com&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Hai ý chính của hình trên cần làm rõ ở đây:&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;p&gt;Bias là lỗi trên tập huấn luyện.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Variance  là gap giữa độ chính xác trên tập train và độ chính xác trên tập test.&lt;/p&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;Bạn hãy hình thật kỹ vào hình ở trên, nhìn đi nhìn lại 2, 3 lần. Nhắm mắt lại và nghiền ngẫm thật kỹ hai ý chính mình vừa đề cập ở trên.&lt;/p&gt;
+
+&lt;h2 id=&#34;bias&#34;&gt;Bias&lt;/h2&gt;
+
+&lt;p&gt;Bias mô tả khả năng học của mô hình. Giá trị bias lớn đồng nghĩa với việc mô hình cần phải học nhiều hơn nữa từ tập huấn luyện.&lt;/p&gt;
+
+&lt;p&gt;Nếu mô hình có độ chính xác 90% trên tập train, điều đó đồng nghĩa với việc bạn có 10% bias. Bias cũng được chia làm 2 nhóm, nhóm bias có thể tránh được (avoidable bias) và nhóm bias không thể tránh được (unavoidable bias).&lt;/p&gt;
+
+&lt;p&gt;$$ bias = 1 - trainning accuracy $$&lt;/p&gt;
+
+&lt;h3 id=&#34;unavoidable-bias&#34;&gt;Unavoidable bias&lt;/h3&gt;
+
+&lt;p&gt;Unavoidable bias hay còn được sử dụng dưới tên là optimal error rate. Đây là giới hạn trên của mô hình. Trong một số bài toán, ví dụ như là bài toán dự đoán giá chứng khoán, chúng ta - con người -  không thể dự đoán chính xác 100%. Do đó, trong điều kiện lý tưởng nhất, tại một thời điểm nào đó, mô hình của chúng ta vẫn cứ trả ra kết quả sai.&lt;/p&gt;
+
+&lt;p&gt;Nếu bạn quyết định rằng mô hình có độ sai ít nhất là 4%. Nghĩa là chúng ta có 4% unavoidable bias.&lt;/p&gt;
+
+&lt;h3 id=&#34;avoidable-bias&#34;&gt;Avoidable bias&lt;/h3&gt;
+
+&lt;p&gt;Khác với optimal error rate và trainning error. Độ lỗi này xảy ra khi mô hình chúng ta chưa đủ độ tới. Chúng ta hoàn toàn có thể cái tiến mô hình này để giảm độ lỗi này về mức 0, v&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/bias-variance-avoidable_bias.png&#34; alt=&#34;Hình ảnh&#34; /&gt;
+&lt;strong&gt;Biểu đồ bias - variance. Nguồn towardsdatascience.com&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Bạn hãy để ý kỹ phần bias ở hình trên. Bias được chia làm 2 phần. Ở trên phần nét đứt là Unavoidable bias. Nó là điểm tới hạn của mô hình. Việc cần làm của chúng ta là huấn luyện, cải tiến mô hình, để cho đường trainning accuracy  màu đỏ tiến sát với đường nét đứt.&lt;/p&gt;
+
+&lt;h2 id=&#34;variance&#34;&gt;Variance&lt;/h2&gt;
+
+&lt;p&gt;Variance ý nghĩa của nó là mô tả mức độ tổng quát hóa của mô hình của bạn đối với dữ liệu mà nó chưa được huấn luyện. Và định nghĩa của nó là phần sai lệch giữa độ chính xác trên tập huấn luyện và độ chính xác tên tập test.&lt;/p&gt;
+
+&lt;p&gt;$$ Variance = trainning accuracy - testing accuracy $$&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/variance.png&#34; alt=&#34;Hình ảnh&#34; /&gt;
+&lt;strong&gt;Biểu đồ variance. Nguồn towardsdatascience.com&lt;/strong&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;tradeoff-giữa-bias-và-variance&#34;&gt;Tradeoff giữa bias và variance&lt;/h2&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/bias_variance_tradeoff.png&#34; alt=&#34;Hình ảnh&#34; /&gt;
+&lt;strong&gt;Sự đánh đổi giữa bias và variace. Nguồn towardsdatascience.com&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Mình nghĩ hình trên đủ nói lên tất cả ý mình muốn nói. Khi mô hình cảng trở nên phức tạp, thì bias sẽ giảm, nhưng  mức độ tổng quát hóa cũng giảm theo (đồng nghĩa với việc variace sẽ tăng).&lt;/p&gt;
+
+&lt;h2 id=&#34;cách-giảm-bias-và-variance&#34;&gt;Cách giảm bias và variance&lt;/h2&gt;
+
+&lt;h3 id=&#34;cách-giảm-bias&#34;&gt;Cách giảm bias&lt;/h3&gt;
+
+&lt;p&gt;Như đã nói ở phần trên, bias được chia thành 2 nhóm là Avoidable bias và unavoidable bias. Chúng ta không thể nào giảm Avoidable bias, nhưng chúng ta có thể giảm unavoidable bias bằng một trong các cách sau.&lt;/p&gt;
+
+&lt;h4 id=&#34;tăng-kích-thước-mô-hình&#34;&gt;Tăng kích thước mô hình&lt;/h4&gt;
+
+&lt;p&gt;Việc tăng kích thước mô hình là một trong những cách làm giảm avoidable bias. Mô hình càng lớn thì có càng nhiều tham số phải điều chỉnh. Có nhiều tham sos đồng nghĩa với việc mô hình sẽ học được nhiều mối quan hệ phức tạp hơn. Chúng ta có thể tăng kích thước mô hình bằng cách thêm nhiều layer hơn nữa, hoặc thêm nhiều node hơn nữa cho mỗi layer.&lt;/p&gt;
+
+&lt;h4 id=&#34;giảm-regulation&#34;&gt;Giảm Regulation&lt;/h4&gt;
+
+&lt;p&gt;Việc giảm regulation cũng giúp mô hình tăng độ chính xác trên tập huấn luyên. Tuy nhiên, nếu chúng ta giảm regularization  quá đà, mô hình sẽ không đạt được mức độ tổng quát hóa, và làm tăng variance. Đây là ví dụ dễ thấy nhất nhất về sự đánh đổi giữa bias và variance.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/reduce_bias_reducing_regulation.png&#34; alt=&#34;Hình ảnh&#34; /&gt;
+&lt;strong&gt;Giảm Regulation . Nguồn towardsdatascience.com&lt;/strong&gt;&lt;/p&gt;
+
+&lt;h4 id=&#34;thay-đổi-kiến-trúc-mô-hình&#34;&gt;Thay đổi kiến trúc mô hình&lt;/h4&gt;
+
+&lt;p&gt;Việc thay đổi kiến trúc mô hình cũng có thể giúp chúng ta đạt được độ chính xác cao hơn.&lt;/p&gt;
+
+&lt;p&gt;Một số mục có thể thay đổi:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;Thay đổi activation function ( ví dụ tanh, ReLU, sigmoid, LeakyReLU)&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Thay đổi loại mô hình (ANN, CNN, RNN, KNNKNN, &amp;hellip;)&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Thay đổi các tham số (learning rate, image size, &amp;hellip;)&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Thay đổi thuật toán tối ưu (Adam, SGD, RMSprop, …)&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&#34;thêm-đặc-trưng-mới&#34;&gt;Thêm đặc trưng mới&lt;/h4&gt;
+
+&lt;p&gt;Việc thêm đặc trưng mới giúp chúng ta cung cấp cho mô hình nhiều thông tin hơn. Chúng ta có thể thực hiện điều này thông qua kỹ thuật feature engineering.&lt;/p&gt;
+
+&lt;h3 id=&#34;giảm-variance&#34;&gt;Giảm variance&lt;/h3&gt;
+
+&lt;h4 id=&#34;thêm-nhiều-dữ-liệu&#34;&gt;Thêm nhiều dữ liệu&lt;/h4&gt;
+
+&lt;p&gt;Thêm dữ liệu là cách đơn giản nhất, thường gặp nhất để tăng độ chính xác của mô hình trong trường hợp mô hình huấn luyện của chúng ta bị hight variance. Hiệu quả của việc thêm nhiều dữ liệu vào mô hình đã được đề cập ở bài báo có tựa đề là  &lt;em&gt;The Unreasonable Effectiveness of Recurrent Neural Networks&lt;/em&gt; của Andrej Karpathy (link: &lt;a href=&#34;http://karpathy.github.io/2015/05/21/rnn-effectiveness/&#34;&gt;http://karpathy.github.io/2015/05/21/rnn-effectiveness/&lt;/a&gt;). Việc thêm dữ liệu thường không ảnh hưởng đến độ lỗi bias, giúp làm giảm variance, nên đây là cách thường được sử dụng nhất.&lt;/p&gt;
+
+&lt;h4 id=&#34;tăng-regularization&#34;&gt;Tăng Regularization&lt;/h4&gt;
+
+&lt;p&gt;Việc tăng Regularization giúp mô hình chống overfitting. Qua đó giúp giảm variance, và tăng bias :(. Một só cách Regularization hot ở thời điểm hiện lại là dropout ( với biến thể là Monte Carlo Dropout), BatchNorm&amp;hellip;&lt;/p&gt;
+
+&lt;h4 id=&#34;giảm-kích-thước-mô-hình&#34;&gt;Giảm kích thước mô hình&lt;/h4&gt;
+
+&lt;p&gt;Việc giảm kích thước mô hình giúp cho chúng ta giảm overfitting trên tập train. Mục tiêu của Việc này làm giảm khả năng liên kết những pattern của dữ liệu. Bởi vậy, mục tiêu của nó hoàn toàn tương tự như tăng Regularization. Trong thực tế, chúng ta thường sử dụng tăng thêm Regularization hơn là giảm kích thước mô hình để chống variace.&lt;/p&gt;
+
+&lt;h4 id=&#34;lựa-chọn-đặc-trưng-feature-selection&#34;&gt;Lựa chọn đặc trưng (feature selection)&lt;/h4&gt;
+
+&lt;p&gt;Giảm chiều dữ liệu, bằng cách bỏ đi các đặc trưng thừa, giúp giảm nhiễu, là cách thường được sử dụng để giảm variace. Chúng ta có thể sử dụng PCA (Principal Component Analysis) để lọc ra các đặc trưng tốt hoặc kết hợp chúng với nhau để tạo các đặc trưng tốt hơn.&lt;/p&gt;
+
+&lt;h2 id=&#34;bức-tranh-tổng-quát&#34;&gt;Bức tranh tổng quát&lt;/h2&gt;
+
+&lt;p&gt;Sau tất cả, chúng ta sẽ xây dựng được một bức tranh tổng quan về lỗi chúng ta đang mắc phải là gì và chúng ta nên làm gì để giảm độ lỗi đó.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/bias_variance_overview.png&#34; alt=&#34;Hình ảnh&#34; /&gt;
+&lt;strong&gt;Tổng quan . Nguồn towardsdatascience.com&lt;/strong&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;tổng-kết&#34;&gt;Tổng kết&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;Reducing Bias&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;Increase model size&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Reduce regularization&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Change model architecture&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Add features&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Reducing Variance&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;Add More data&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Decrease model size&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Add regularization&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Feature selection&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Cảm ơn các bạn đã quan tâm và theo dõi bài viết, hẹn gặp bạn ở các bài viết tiếp theo.&lt;/p&gt;
+
+&lt;p&gt;Bài viết được lược dịch từ link &lt;a href=&#34;https://towardsdatascience.com/two-important-machine-learning-concepts-to-improve-every-model-62fd058916b&#34;&gt;https://towardsdatascience.com/two-important-machine-learning-concepts-to-improve-every-model-62fd058916b&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;Nguồn tự liệu từ bài viết được sử dụng trong cuốn sách Machine Learning Yearning của Andrew Ng. Các bạn có thể search theo từ khóa trên hoặc đăng ký trên site &lt;a href=&#34;http://deeplearning.net/&#34;&gt;http://deeplearning.net/&lt;/a&gt;&lt;/p&gt;
+</description>
     </item>
     
   </channel>

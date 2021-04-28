@@ -10,9 +10,7 @@
     <webMaster>alexblack2202@gmail.com (Phạm Duy Tùng)</webMaster>
     <copyright>This work is licensed under a Creative Commons Attribution-ShareAlike 4.0 International License.</copyright>
     <lastBuildDate>Fri, 24 May 2019 00:12:00 +0300</lastBuildDate>
-    
-	<atom:link href="/tags/x%E1%BB%A7-l%C3%BD-%E1%BA%A3nh/index.xml" rel="self" type="application/rss+xml" />
-    
+    <atom:link href="/tags/x%E1%BB%A7-l%C3%BD-%E1%BA%A3nh/" rel="self" type="application/rss+xml" />
     
     <item>
       <title>Contour</title>
@@ -20,7 +18,105 @@
       <pubDate>Fri, 24 May 2019 00:12:00 +0300</pubDate>
       <author>alexblack2202@gmail.com (Phạm Duy Tùng)</author>
       <guid>/blog/2019-05-26-contours/</guid>
-      <description>Contour là gì Các bạn có thể hiểu contour là &amp;ldquo;tập các điểm-liên-tục tạo thành một đường cong (curve) (boundary), và không có khoảng hở trong đường cong đó, đặc điểm chung trong một contour là các các điểm có cùng /gần xấu xỉ một giá trị màu, hoặc cùng mật độ. Contour là một công cụ hữu ích được dùng để phân tích hình dạng đối tượng, phát hiện đối tượng và nhận dạng đối tượng&amp;rdquo;.</description>
+      <description>
+
+&lt;h1 id=&#34;contour-là-gì&#34;&gt;Contour là gì&lt;/h1&gt;
+
+&lt;p&gt;Các bạn có thể hiểu contour là &amp;ldquo;tập các điểm-liên-tục tạo thành một đường cong (curve) (boundary), và không có khoảng hở trong đường cong đó, đặc điểm chung trong một contour là các các điểm có cùng /gần xấu xỉ một giá trị màu, hoặc cùng mật độ. Contour là một công cụ hữu ích được dùng để phân tích hình dạng đối tượng, phát hiện đối tượng và nhận dạng đối tượng&amp;rdquo;.&lt;/p&gt;
+
+&lt;p&gt;Để tìm contour chính xác, chúng ta cần phải &lt;em&gt;nhị phân hóa bức ảnh&lt;/em&gt; (nhớ là ảnh nhị phân nha các bạn, không phải ảnh grayscale đâu). Các kỹ thuật nhị phân hóa ảnh ở xử lý ảnh cơ bản có thể liệt kê đến là đặt ngưỡng, hoặc candy edge detection. Chúng ta sẽ không bàn kỹ về các cách đặt ngưỡng ( mặc dù có khá nhiều cách đặt ngưỡng, và trong opencv cũng có implement một vài phương pháp, nhưng nó không phải là mục tiêu của bài này, nên mình không đề cập ở đây) hoặc edge detection ở bài viết này, mà chúng ta sẽ đi vào các tìm contours bằng các sử dụng opencv luôn.&lt;/p&gt;
+
+&lt;p&gt;Trong opencv, việc tìm một contour là việc &lt;em&gt;tìm một đối tượng có màu trắng trên nền đen&lt;/em&gt;. Cho nên, các bạn hãy nhớ rằng hãy set đối tượng thành màu trắng và để nền là màu đen, đừng làm ngược lại nha.&lt;/p&gt;
+
+&lt;p&gt;Một lưu ý nhỏ là tại thời điểm mình viết bài viết này, mình sử dụng phiên bản opencv3.6. Các bạn có thể sử dụng phiên bản opencv mới hơn, nhưng có thể những sample code mình để bên dưới sẽ không work, do không tương thích.&lt;/p&gt;
+
+&lt;h1 id=&#34;sử-dụng-contour-trong-opencv&#34;&gt;Sử dụng contour trong opencv&lt;/h1&gt;
+
+&lt;p&gt;Opencv hỗ trợ cho chúng ta hàm để tìm contour của một bức ảnh&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;modifiedImage, contours, hierarchy = cv2.findContours(binaryImage, typeofContour, methodofContour)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Trong đó:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;contours: Danh sách các contour có trong bức ảnh nhị phân. Mỗi một contour được lưu trữ dưới dạng vector các điểm&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;hierarchy: Danh sách các vector, chứa mối quan hệ giữa các contour.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;modifiedImage: Ảnh sau khi sử dụng contour, thường chúng ta không xài đối số này&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;binaryImage: Ảnh nhị phân gốc. Một chú ý quan trọng ở đây là sau khi sử dụng hàm findContours thì giá trị của binaryImage cũng thay đổi theo, nên khi sử dụng bạn có thể áp dụng binaryImage.copy() để không làm thay đổi giá trị của binaryImage&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;typeofContour: có các dạng sau: RETR_EXTERNAL, RETR_LIST, RETR_CCOMP, RETR_TREE, RETR_FLOODFILL.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;methodofContour: Có các phương thức sau: CHAIN_APPROX_NONE, CHAIN_APPROX_SIMPLE, CHAIN_APPROX_TC89_L1, CHAIN_APPROX_TC89_KCOS.&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Ví dụ về các sử dụng hàm&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+import numpy as np
+import cv2
+
+im = cv2.imread(&#39;test.jpg&#39;) # đọc ảnh màu
+imgray = cv2.cvtColor(im,cv2.COLOR_BGR2GRAY)  # chuyển ảnh màu sang dạng grayscale
+ret,thresh = cv2.threshold(imgray,127,255,0) # nhị phân hóa bức ảnh bằng cách đặt ngưỡng, với giá trị của ngưỡng là 127
+im2, contours, hierarchy = cv2.findContours(thresh,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE) # tìm contour
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Opencv hỗ trợ chúng ta hàm để vẽ contor lên bức ảnh, giúp chúng ta nhìn rõ ràng hơn&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;cv2.drawContours(image, contours, contourIndex, colorCode, thickness)
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Với:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;imgage: ảnh, có thể là ảnh grayscale hoặc ảnh màu.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;contours: danh sách các contour, là vector, nếu bạn muốn vẽ một contour, thì bạn phải cho nó vào trong một list.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;contourIndex Vị trí của contor, thông thường chúng ta để -1&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;colorCode: Giá trị màu của contour chúng ta muốn vẽ, ở dạng BGR, nếu bạn muốn vẽ contour màu xanh lá cây thì set là (0,255,0).&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;thickness : độ dày của đường contour cần vẽ, giá trị thickness càng lớn thì đường contor vẽ càng bự&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1 id=&#34;ví-dụ-đếm-số-lượng-quả-bóng-bay-trong-hình&#34;&gt;Ví dụ: Đếm số lượng quả bóng bay trong hình&lt;/h1&gt;
+
+&lt;p&gt;Giả sử chúng ta có bức ảnh
+&lt;img src=&#34;/post_image/colorfull_ballon.jpg&#34; alt=&#34;Hình ảnh&#34; /&gt;
+&lt;strong&gt;Bong bóng bay&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Chúng ta thực hiện tìm contour của ảnh trên bằng cách&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+import numpy as np
+import cv2
+
+im = cv2.imread(&#39;colorfull_ballon.jpg&#39;)
+imgray = cv2.cvtColor(im,cv2.COLOR_BGR2GRAY) # chuyển ảnh xám thành ảnh grayscale
+thresh = cv2.Canny(imgray, 127, 255) # nhị phân hóa ảnh
+_, contours, _ = cv2.findContours(thresh,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+
+cv2.drawContours(im, contours, -1, (0, 255, 0), 2) # vẽ lại ảnh contour vào ảnh gốc
+
+# show ảnh lên
+cv2.imshow(&amp;quot;ballons&amp;quot;, im)
+cv2.waitKey(0)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Kết quả:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/vietnam_coins_set_contours.jpg&#34; alt=&#34;Hình ảnh&#34; /&gt;
+&lt;strong&gt;Contour màu xanh là đường curve bao quanh dữ liệu được rút trích được&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Cảm ơn các bạn đã theo dõi. Hẹn gặp bạn ở những bài viết tiếp theo.&lt;/p&gt;
+</description>
     </item>
     
   </channel>

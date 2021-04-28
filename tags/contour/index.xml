@@ -10,9 +10,7 @@
     <webMaster>alexblack2202@gmail.com (Phạm Duy Tùng)</webMaster>
     <copyright>This work is licensed under a Creative Commons Attribution-ShareAlike 4.0 International License.</copyright>
     <lastBuildDate>Fri, 25 Dec 2020 00:19:00 +0300</lastBuildDate>
-    
-	<atom:link href="/tags/contour/index.xml" rel="self" type="application/rss+xml" />
-    
+    <atom:link href="/tags/contour/" rel="self" type="application/rss+xml" />
     
     <item>
       <title>Ngưỡng (thresholding) trong opencv</title>
@@ -20,7 +18,161 @@
       <pubDate>Fri, 25 Dec 2020 00:19:00 +0300</pubDate>
       <author>alexblack2202@gmail.com (Phạm Duy Tùng)</author>
       <guid>/blog/2020-12-24-thresholding/</guid>
-      <description>Giá trị ngưỡng: Nói theo kiểu lúa hóa, trong opencv, ngưỡng là một số nằm trong đoạn từ 0 đến 255. Giá trị ngưỡng sẽ chia tách giá trị độ xám của ảnh thành 2 miền riêng biệt. Miền thứ nhất là tập hợp các điểm ảnh có giá trị nhỏ hơn giá trị ngưỡng. Miền thứ hai là tập hợp các các điểm ảnh có giá trị lớn hơn hoặc bằng giá trị ngưỡng.</description>
+      <description>
+
+&lt;h1 id=&#34;giá-trị-ngưỡng&#34;&gt;Giá trị ngưỡng:&lt;/h1&gt;
+
+&lt;p&gt;Nói theo kiểu lúa hóa, trong opencv, ngưỡng là một số nằm trong đoạn từ 0 đến 255. Giá trị ngưỡng sẽ chia tách giá trị độ xám của ảnh thành 2 miền riêng biệt. Miền thứ nhất là tập hợp các điểm ảnh có giá trị nhỏ hơn giá trị ngưỡng. Miền thứ hai là tập hợp các các điểm ảnh có giá trị lớn hơn hoặc bằng giá trị ngưỡng.&lt;/p&gt;
+
+&lt;p&gt;Đầu vào của một thuật toán phân ngưỡng trong opencv thường có input là ảnh nguồn (source image) và giá trị ngưỡng. Đầu ra là ảnh đích đã được phân ngưỡng (destination image). Một số thuật toán phân ngưỡng sẽ kèm thêm vài giá trị râu ria khác nữa, chúng ta sẽ không quan tâm đến chúng&lt;/p&gt;
+
+&lt;p&gt;Mã giải của thuật toán phân ngưỡng:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python-cpp/&#34;&gt;if src[i] &amp;gt;= T:
+    dest[i] = MAXVAL
+else:
+    dest [i] = 0
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Có rất nhiều thuật toán phân ngưỡng dựa trên cách chúng ta xác định ngưỡng. Chúng ta sẽ tìm hiểu lần lượt các thuật toán trên.&lt;/p&gt;
+
+&lt;h1 id=&#34;thuật-toán-simple-thresholding&#34;&gt;Thuật toán Simple Thresholding&lt;/h1&gt;
+
+&lt;p&gt;Simple Thresholding thực hiện phân ngưỡng bằng cách thay thế giá trị lớn hơn hoặc bằng và giá trị bé hơn giá trị ngưỡng bằng một giá trị mới. Cụ thể chúng ta có thể xem mã nguồn bên dưới&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python-cpp/&#34;&gt;
+import cv2
+import numpy as np
+from matplotlib import pyplot as plt
+
+img = cv2.imread(&#39;gradient.png&#39;,0)
+ret,thresh1 = cv2.threshold(img,127,255,cv2.THRESH_BINARY)
+ret,thresh2 = cv2.threshold(img,127,255,cv2.THRESH_BINARY_INV)
+ret,thresh3 = cv2.threshold(img,127,255,cv2.THRESH_TRUNC)
+ret,thresh4 = cv2.threshold(img,127,255,cv2.THRESH_TOZERO)
+ret,thresh5 = cv2.threshold(img,127,255,cv2.THRESH_TOZERO_INV)
+
+titles = [&#39;Original Image&#39;,&#39;BINARY&#39;,&#39;BINARY_INV&#39;,&#39;TRUNC&#39;,&#39;TOZERO&#39;,&#39;TOZERO_INV&#39;]
+images = [img, thresh1, thresh2, thresh3, thresh4, thresh5]
+
+for i in xrange(6):
+    plt.subplot(2,3,i+1),plt.imshow(images[i],&#39;gray&#39;)
+    plt.title(titles[i])
+    plt.xticks([]),plt.yticks([])
+
+plt.show()
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://opencv-python-tutroals.readthedocs.io/en/latest/_images/threshold.jpg&#34; alt=&#34;Hình ảnh&#34; /&gt;
+&lt;strong&gt;Hình ảnh và thuật toán của mô hình được lấy từ trang opencv-python-tutroals.readthedocs.io&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Ở đoạn code trên, chúng ta thiết lập giá trị ngưỡng là 127, với các điểm ảnh có giá trị lớn hơn hoặc bằng 127, chúng ta sẽ gán lại giá trị của nó thành 255. Và các điểm ảnh có giá trị bé hơn 127 sẽ được gán bằng 0 (mặc định).&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python-cpp/&#34;&gt;
+
+double cv::threshold    (   InputArray  src,
+OutputArray     dst,
+double  thresh,
+double  maxval,
+int     type 
+)   
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Thuật toán sample thresholding của opencv còn có 1 tham số nữa khá quan trọng nữa là loại ngưỡng (type). Hiện tại lúc mình viết bài viết này thì opencv hỗ trợ  8 loại là: THRESH_BINARY,  THRESH_BINARY_INV, THRESH_TRUNC, THRESH_TOZERO, THRESH_TOZERO_INV, THRESH_MASK, THRESH_OTSU, THRESH_TRIANGLE. Ý nghĩa của từng loại như sau:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;THRESH_BINARY: Có thể dịch là ngưỡng nhị phân. Ý nghĩa y hệt những gì mình đề cập ở trên.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;THRESH_BINARY_INV: Ngưỡng nhị phân đảo ngược. Có thể hiểu là nó sẽ đảo ngược lại kết quả của THRESH_BINARY.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;THRESH_TRUNC: Những giá trị điểm ảnh  bé hơn ngưỡng sẽ giữ nguyên giá trị, những điểm ảnh lớn hơn hoặc ngưỡng sẽ được gán lại là maxvalue.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;THRESH_TOZERO: Những điểm ảnh bé hơn ngưỡng sẽ bị gán thành 0, những điểm còn lại giữ nguyên.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;THRESH_TOZERO_INV: Những điểm ảnh nhỏ hơn giá trị ngưỡng sẽ được giữ nguyên, những điểm ảnh còn lại sẽ bị gán thành 0.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;THRESH_MASK: Ở bạn opencv4, hầu như không được xài.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;THRESH_OTSU: Sử dụng thuật toán Otsu để xác định giá trị ngưỡng.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;THRESH_TRIANGLE: Sử dụng thuật toán Triangle  để xác định giá trị ngưỡng.&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Giá trị 127 là giá trị trung bình cộng của 0 và 255 làm tròn xuống. Giá trị ngưỡng của thuật toán này đòi hỏi người sử dụng phải có mức độ hiểu biết nhất định về các loại ảnh mình đang xử lý để chọn ngưỡng cho phù hợp.&lt;/p&gt;
+
+&lt;h1 id=&#34;adaptive-thresholding&#34;&gt;Adaptive Thresholding&lt;/h1&gt;
+
+&lt;p&gt;Thuật toán simple thresholding hoạt động khá tốt. Tuy nhiên, nó có 1 nhược điểm là giá trị ngưỡng bị/được gán toàn cục. Thực tế khi chụp, hình ảnh chúng ta nhận được thường bị ảnh hưởng của nhiễu, ví dụ như là bị phơi sáng, bị đèn flask, &amp;hellip;&lt;/p&gt;
+
+&lt;p&gt;Một trong những cách được sử dụng để giải quyết vấn đề trên là chia nhỏ bức ảnh thành những vùng nhỏ (region), và đặt giá trị ngưỡng trên những vùng nhỏ đó -&amp;gt; adaptive thresholding ra đời. Opencv cung cấp cho chúng ta hai cách xác định những vùng nhỏ&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python-cpp/&#34;&gt;import cv2 as cv
+import numpy as np
+from matplotlib import pyplot as plt
+img = cv.imread(&#39;sudoku.png&#39;,0)
+img = cv.medianBlur(img,5)
+ret,th1 = cv.threshold(img,127,255,cv.THRESH_BINARY)
+th2 = cv.adaptiveThreshold(img,255,cv.ADAPTIVE_THRESH_MEAN_C,\
+            cv.THRESH_BINARY,11,2)
+th3 = cv.adaptiveThreshold(img,255,cv.ADAPTIVE_THRESH_GAUSSIAN_C,\
+            cv.THRESH_BINARY,11,2)
+titles = [&#39;Original Image&#39;, &#39;Global Thresholding (v = 127)&#39;,
+            &#39;Adaptive Mean Thresholding&#39;, &#39;Adaptive Gaussian Thresholding&#39;]
+images = [img, th1, th2, th3]
+for i in xrange(4):
+    plt.subplot(2,2,i+1),plt.imshow(images[i],&#39;gray&#39;)
+    plt.title(titles[i])
+    plt.xticks([]),plt.yticks([])
+plt.show()
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://docs.opencv.org/master/ada_threshold.jpg&#34; alt=&#34;Hình ảnh&#34; /&gt;
+&lt;strong&gt;Hình ảnh và thuật toán của mô hình được lấy từ trang docs.opencv.org&lt;/strong&gt;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python-cpp/&#34;&gt;
+
+void cv::adaptiveThreshold  (   InputArray  src,
+OutputArray     dst,
+double  maxValue,
+int     adaptiveMethod,
+int     thresholdType,
+int     blockSize,
+double  C 
+)   
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Ở đây:&lt;/p&gt;
+
+&lt;p&gt;blockSize: Kích thước của vùng, bắt buộc phải là một số lẻ lớn hơn 0.&lt;/p&gt;
+
+&lt;p&gt;C: hằng số, giá trị từ -255 đến 255. Có thể gán C bằng 0 để đỡ rối.&lt;/p&gt;
+
+&lt;p&gt;adaptiveMethod nhận vào một trong hai giá trị là cv.ADAPTIVE_THRESH_MEAN_C và cv.ADAPTIVE_THRESH_GAUSSIAN_C, đó là các phương pháp tính ngưỡng.&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;ADAPTIVE_THRESH_MEAN_C: Tính trung bình các láng giềng xung quanh điểm cần xét trong vùng blockSize * blockSize trừ đi giá trị hằng số C.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;ADAPTIVE_THRESH_GAUSSIAN_C: Nhân giá trị xung quanh điểm cần xét với trọng số gauss rồi tính trung bình của nó, sau đó trừ đi giá trị hằng số C.&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;thresholdType: Tương tự như Simple Thresholding đã trình bày ở trên.&lt;/p&gt;
+
+&lt;p&gt;Cảm ơn các bạn đã quan tâm và theo dõi bài viết, hẹn gặp bạn ở các bài viết tiếp theo.&lt;/p&gt;
+
+&lt;p&gt;Tham khảo&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;&lt;a href=&#34;https://www.geeksforgeeks.org/python-thresholding-techniques-using-opencv-set-1-simple-thresholding/&#34;&gt;https://www.geeksforgeeks.org/python-thresholding-techniques-using-opencv-set-1-simple-thresholding/&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;&lt;a href=&#34;https://www.learnopencv.com/opencv-threshold-python-cpp/&#34;&gt;https://www.learnopencv.com/opencv-threshold-python-cpp/&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;&lt;a href=&#34;https://medium.com/@anupriyam/basic-image-thresholding-in-opencv-5af9020f2472&#34;&gt;https://medium.com/@anupriyam/basic-image-thresholding-in-opencv-5af9020f2472&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</description>
     </item>
     
   </channel>

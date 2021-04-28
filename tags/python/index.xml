@@ -10,9 +10,7 @@
     <webMaster>alexblack2202@gmail.com (Phạm Duy Tùng)</webMaster>
     <copyright>This work is licensed under a Creative Commons Attribution-ShareAlike 4.0 International License.</copyright>
     <lastBuildDate>Sun, 11 Apr 2021 00:19:00 +0300</lastBuildDate>
-    
-	<atom:link href="/tags/python/index.xml" rel="self" type="application/rss+xml" />
-    
+    <atom:link href="/tags/python/" rel="self" type="application/rss+xml" />
     
     <item>
       <title>Tinh chỉnh thuật toán XGBoost  với Learning Curves</title>
@@ -20,7 +18,112 @@
       <pubDate>Sun, 11 Apr 2021 00:19:00 +0300</pubDate>
       <author>alexblack2202@gmail.com (Phạm Duy Tùng)</author>
       <guid>/blog/2021-04-11-xgboost_learning_curves/</guid>
-      <description>Giới thiệu Trong quá trình giải các bài toán có sử dụng machine learning, vì để làm nhanh nên đôi khi mình sẽ sử dụng các tham số mặc định của mô hình để train. Một phần vì lý do chúng ta không biết cách chỉnh các tham só như thế nào, so với cái gì để có mô hình huấn luyện là tốt nhất. Ở bài viết này, mình sẽ sử dụng Learning Curves để tối ưu hóa các tham số của XGBoost.</description>
+      <description>
+
+&lt;h1 id=&#34;giới-thiệu&#34;&gt;Giới thiệu&lt;/h1&gt;
+
+&lt;p&gt;Trong quá trình giải các bài toán có sử dụng machine learning, vì để làm nhanh nên đôi khi mình sẽ sử dụng các tham số mặc định của mô hình để train. Một phần vì lý do chúng ta không biết cách chỉnh các tham só như thế nào, so với cái gì để có mô hình huấn luyện là tốt nhất. Ở bài viết này, mình sẽ sử dụng Learning Curves để tối ưu hóa các tham số của XGBoost. Các mô hình khác cũng làm tương tự thôi. Mình chọn XGBoost vì mô hình này thường cho kết quả khá tốt trên các cuộc thi ở Kaggle.&lt;/p&gt;
+
+&lt;h1 id=&#34;bắt-đầu&#34;&gt;Bắt đầu&lt;/h1&gt;
+
+&lt;p&gt;Để bắt đầu thí nghiệm, chúng ta sẽ sinh ngẫu nhiên 60 ngàn dữ liệu có 1 ngàn thuộc tính bằng cách sử dụng hàm make_classification, sau đó sẽ chia dữ liệu thành 2 tập train và test với tỷ lệ 10% là tập test&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;X, y = make_classification(n_samples=60000, n_features=1000, n_informative=50, n_redundant=0, random_state=1)
+#  split data into train and test sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.10, random_state=1)
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Load mô hình XGBClassifier với các tham số là mặc định. Mô hình này được xem như là baseline và các cải tiến tham số ở sau sẽ so sánh kết quả trên mô hình này.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+
+model = XGBClassifier()
+
+evalset = [(X_train, y_train), (X_test, y_test)]
+
+model.fit(X_train, y_train, eval_metric=&#39;logloss&#39;, eval_set=evalset)
+# evaluate performance
+yhat = model.predict(X_test)
+score = accuracy_score(y_test, yhat)
+print(&#39;Accuracy: %.3f&#39; % score)
+# retrieve performance metrics
+results = model.evals_result()
+# plot learning curves
+pyplot.plot(results[&#39;validation_0&#39;][&#39;logloss&#39;], label=&#39;train&#39;)
+pyplot.plot(results[&#39;validation_1&#39;][&#39;logloss&#39;], label=&#39;test&#39;)
+# show the legend
+pyplot.legend()
+# show the plot
+pyplot.show()
+
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Độ chính xác: Accuracy: 0.962. Lưu ý ràng độ chính xác khi thực nghiệm của mỗi lần chạy sẽ khác nhau, do data sinh ngẫu nhiên và một phần do sự ngẫu nhiên trong XGBoost.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/xgboost_learning_cruver.jpg&#34; alt=&#34;Hình ảnh Learning Curves&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Nhìn vào hình trên, chúng ta thấy rằng đường cong của tập train (đường màu xanh) có độ lỗi tốt hơn so với đường cong của tập test( đường màu đỏ)&lt;/p&gt;
+
+&lt;h1 id=&#34;tiến-hành-turning&#34;&gt;Tiến hành turning&lt;/h1&gt;
+
+&lt;p&gt;Đầu tiên, nhìn vào đồ thị, ta thấy rằng đường cong vẫn còn có độ dốc, nên việc tăng số lần lặp có thể sẽ làm tăng thêm độ chính xác, thử thay đổi số lần lặp lên 500 xem sao.&lt;/p&gt;
+
+&lt;p&gt;Trong XGBoost số lần lặp được tham số hóa bởi tham số n_estimators, chỉnh lại đoạn mã lệnh ở trên với một thay đổi nhỏ rồi chạy lại&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+model = XGBClassifier(n_estimators=500)
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Độ chính xác của mô hình tăng lên 1 chút, đối với thực nghiệm của mình là Accuracy: 0.981&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/xgboost_learning_cruver_n500.jpg&#34; alt=&#34;Hình ảnh Learning Curves với số lần lặp 500&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Quan sát đường cong của hình trên, ta thấy phần đuôi đoạn số lần lặp từ 270 đến 500 có độ dốc nhỏ, hầu như là bằng phẳng, có thể kết luận là việc huấn luyện ở đoạn này hầu như không cải tiến gì nhiều.&lt;/p&gt;
+
+&lt;p&gt;Một nhận xét nữa là đoạn trước 150 có độ dốc khá lớn, có khả năng là hệ số học (learning reate) quá lớn, làm cho mô hình chưa đạt được cực tiểu, thử điều chỉnh hệ số học này nhỏ hơn là 0.01, thay vì 0.3 như giá trị mặc định xem sao.&lt;/p&gt;
+
+&lt;p&gt;Một lưu ý là hệ số học nhỏ thì sẽ lâu hội tụ, nên chúng ta phải tăng số lần lặp lên. Ở đây đồng thời với việc giảm hệ số học xuống 0.01, mình còn tăng số lần lặp lên 1000.&lt;/p&gt;
+
+&lt;p&gt;Trong XGBoost hệ số học được tham số hóa bởi tham số eta&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+model = XGBClassifier(n_estimators=1000, eta=0.01)
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Độ chính xác đạt được: Accuracy: 0.954&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/xgboost_learning_cruver_n1000.jpg&#34; alt=&#34;Hình ảnh Learning Curves với số lần lặp 1000,  eta=0.01&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Tuy mô hình có độ chính xác giảm, nhưng nhìn vào đồ thị thì ta thấy mô hình vẫn còn độ dốc, nghĩa là mô hình sẽ cho kết quả tốt hơn nữa nếu ta tăng số vòng lặp.&lt;/p&gt;
+
+&lt;p&gt;Một cách khách là thay đổi các chuẩn hóa (regularization ) bằng cách giảm các tham số số mẫu ( samples) và số đặc trưng (features) được dùng để xây dựng cây trong tập hợp. Hai tham số này được tham số hóa bởi tham số subsample và colsample_bytree. Giá trị mặc định của chúng là 1. Chúng ta sẽ thay đổi thành 0.35 xem sao nhé&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+model = XGBClassifier(n_estimators=5000, eta=0.01, subsample=0.35, colsample_bytree=0.35)
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Kết quả Accuracy: 0.970
+&lt;img src=&#34;/post_image/xgboost_learning_cruver_n5k.jpg&#34; alt=&#34;Hình ảnh Learning Curves với số lần lặp 5000,  eta=0.01&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Ở hai lần thí nghiệm trên, mình có các hướng xử lý có thể đi tiếp, một là tăng số lần lặp lên, vì độ dốc của mô hình vẫn còn, nên chúng ta hoàn toàn có thể thu được kết quả tốt hơn. Một cách khác là tăng learning rate lên để quá trình hội tụ được xảy ra nhanh hơn, ví dụ để eta = 0.05 hoặc 0.75 chẳn hạn.&lt;/p&gt;
+
+&lt;p&gt;Quá trình này có thể tiếp tục, dựa vào quan sát của các bạn trên đường cong và hơn hết là sự hiệu biết thấu đáo của các bạn trên các tham số mà mô hình của bạn đang sử dụng. Chúc các bạn sẽ có một hướng đi tốt để giảm thiểu thời gian mò mẫm.&lt;/p&gt;
+
+&lt;p&gt;Cảm ơn các bạn đã chú ý theo dõi. Hẹn gặp lại ở các bài viết tiếp theo.&lt;/p&gt;
+
+&lt;p&gt;Nguồn tham khảo&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://xgboost.readthedocs.io/en/latest/python/python_api.html#xgboost.XGBClassifier&#34;&gt;https://xgboost.readthedocs.io/en/latest/python/python_api.html#xgboost.XGBClassifier&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://machinelearningmastery.com/tune-xgboost-performance-with-learning-curves/&#34;&gt;https://machinelearningmastery.com/tune-xgboost-performance-with-learning-curves/&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://machinelearningmastery.com/learning-curves-for-diagnosing-machine-learning-model-performance/&#34;&gt;https://machinelearningmastery.com/learning-curves-for-diagnosing-machine-learning-model-performance/&lt;/a&gt;&lt;/p&gt;
+</description>
     </item>
     
     <item>
@@ -29,8 +132,123 @@
       <pubDate>Fri, 15 Jan 2021 00:19:00 +0300</pubDate>
       <author>alexblack2202@gmail.com (Phạm Duy Tùng)</author>
       <guid>/blog/2021-01-15---adabelief-optimizer/</guid>
-      <description>Giới thiệu Hi các bạn, lại là mình đây, hôm nay mình sẽ cùng các bạn tìm hiểu thuật toán tối ưu hóa AdaBelief. Thuật toán này được sử dụng để thay cho thuật toán Adam optimizer mà các bạn hiện đang xài để huấn luyện mô hình Deep learning. Nào, chúng ta cùng bắt đầu tìm hiểu nhé.
-Ẩn sâu bên trong các thuật toán sử dụng Neural Network và một vài thuật toán machine learning đều sử dụng các hàm tối ưu hóa.</description>
+      <description>
+
+&lt;h1 id=&#34;giới-thiệu&#34;&gt;Giới thiệu&lt;/h1&gt;
+
+&lt;p&gt;Hi các bạn, lại là mình đây, hôm nay mình sẽ cùng các bạn tìm hiểu thuật toán tối ưu hóa AdaBelief. Thuật toán này được sử dụng để thay cho thuật toán Adam optimizer mà các bạn hiện đang xài để huấn luyện mô hình Deep learning. Nào, chúng ta cùng bắt đầu tìm hiểu nhé.&lt;/p&gt;
+
+&lt;p&gt;Ẩn sâu bên trong các thuật toán sử dụng Neural Network  và một vài thuật toán machine learning đều sử dụng các hàm tối ưu hóa. Chúng ta có thể liệt kê ra một vài cái tên như RMSprop, SGD (Stochastic Gradient Descent), Adam (Adaptive Moment Estimation).&lt;/p&gt;
+
+&lt;p&gt;Một vài các yếu tố hay được sử dụng để đánh giá một thuật toán optimizer:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;Hội tụ nhanh (trong quá trình train)&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Sự tổng quát hóa cao (vẫn nhận dạng được những mẫu chưa từng được huấn luyện)&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Độ chính xác cao&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Các thuật toán tối ưu thuộc họ Adaptive thường có tốc độ hội tụ nhanh. Trong khi đó, các thuật toán thuộc họ SGD thường có sự tổng quát hóa cao. Gần đây, Juntang Zhuang và các cộng sự thuộc đại học Yale đã nghiên cứu và tạo ra thuật toán AdaBelief Optimizer: Adapting Stepsizes by the Belief in Observed Gradients. Thuật toán này theo lời tác giả, hội tụ cả hai ưu điểm của họ Adaptive và SGD, là vừa có tốc độ hội tụ nhanh, vừa có tính tổng quát hóa cao Mã nguồn được tác giả công bố ở link &lt;a href=&#34;https://github.com/juntang-zhuang/Adabelief-Optimizer&#34;&gt;https://github.com/juntang-zhuang/Adabelief-Optimizer&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;Lời của tác giả:&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;We propose the AdaBelief optimizer, which adaptively scales the stepsize by the difference betweenpredicted gradient and observed gradient.  To our knowledge, AdaBelief is the first optimizer toachieve three goals simultaneously: fast convergence as in adaptive methods, good generalization asin SGD, and training stability in complex settings such as GANs. Furthermore, Adabelief has the same parameters as Adam, hence is easy to tune. We validate the benefits of AdaBelief with intuitive examples, theoretical convergence analysis in both convex and non-convex cases, and extensiveexperiments on real-world datasets&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;Để hiểu về AdaBelief, trước tiên, chúng ta phải có một ít kiến thức cơ bản về SGD và Adam, nên chúng ta sẽ bắt đầu nói về SGD trước&lt;/p&gt;
+
+&lt;h1 id=&#34;sgd-stochastic-gradient-descent&#34;&gt;SGD - Stochastic Gradient Descent&lt;/h1&gt;
+
+&lt;p&gt;Thuật toán SGD là thuật toán tối ưu hóa cơ bản theo họ gradient. Thuật toán này rất triển khai, có nền tảng lý thuyết vững chắc, cực kỳ ổn định trong quá trình huấn luyện, kết quả đạt được có thể so sánh với các thuật toán khác. Ý tưởng của thuật toán khá đơn giản, đó là &amp;ldquo;tính giá trị gradient của mỗi tham số, và đi một bước nhỏ theo chiều của gradient&amp;rdquo;. Nếu chúng ta lặp đi lặp lại quá trình này, và ngẫu nhiên chọn (stochastic) một tập batch trong tập huấn luyện, mô hình chúng ta sẽ được cải tiến dần đến đểm hội tụ.&lt;/p&gt;
+
+&lt;p&gt;Trong quá khứ, phần khó nhất của SGD là việc tính lại giá trị gradient cho toàn bộ các tham số trong mô hình. Nhưng hiện nay, các framwork máy học như Tensorflow, PyTouch, Caffee, Theano, &amp;hellip;. đã giúp chúng ta tính các giá trị gradient một cách tự động. Do đó, công việc của chúng ta hiện thời đơn giản hơn&lt;/p&gt;
+
+&lt;p&gt;$$for \text{ }  i \text{ } in \text{ } range (m): $$
+  $$\theta_i = \theta_i - \alpha ( \hat y^{i} - y^i) x^i_j$$&lt;/p&gt;
+
+&lt;p&gt;Một vấn đề chúng ta gặp phải trong quá trình huấn luyện DL với SGD là chậm, siêu chậm. Do thuật toán phải cập nhật toàn bộ các tham số, nên số lượng phép tính và lượng tài nguyên phần cứng được sử dụng rất là nhiều. Rất nhiều các biến thể của SGD đã được đề xuất để giải quyết vấn đề trên.&lt;/p&gt;
+
+&lt;h1 id=&#34;adam-adaptive-moment-estimation&#34;&gt;Adam - Adaptive Moment Estimation&lt;/h1&gt;
+
+&lt;p&gt;Adam optimizer là một thuật toán kết hợp kỹ thuật  của RMS prop và momentum. Thuật toán sử dụng hai internal states momentum (m) và  squared momentum (v) của gradient cho các tham số. Sau mỗi batch huấn luyện, giá trị của m và v được cập nhật lại sử dụng exponential weighted averaging.&lt;/p&gt;
+
+&lt;p&gt;Mã giải của việc cập nhật m và v&lt;/p&gt;
+
+&lt;p&gt;$$m_t = \beta_1m_t-_1 + (1-\beta_1)g_t $$
+ $$v_t  = \beta_2v_t-_1 + (1-\beta_2)g^2_t$$&lt;/p&gt;
+
+&lt;p&gt;trong đó, beta được xem như là một siêu tham số. Công thức cập nhật theta như sau:&lt;/p&gt;
+
+&lt;p&gt;$$\theta_t = \theta_t-_1 - \alpha\frac{m_t}{\sqrt{v_t}+ \epsilon }$$&lt;/p&gt;
+
+&lt;p&gt;trong đó, alpha là learning rate, epsion là giá trị được thêm vào để ngăng việc chia cho 0&lt;/p&gt;
+
+&lt;p&gt;Để việc descent  được thực hiện nhanh hơn, thuật toán đã sử dụng hai kỹ thuật:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;Tính  exponential moving average của giá trị đạo hàm lưu vào biến m và sử dụng nó là tử số của việc  cập nhật hướng. Với ý nghĩa là nếu m có giá trị lớn, thì việc descent đang đi đúng hướng và chúng ta cần bước nhảy lớn hơn để đi nhanh hơn. Tương tự, nếu giá trị m nhỏ, phần descent có thể không đi về hướng tối tiểu và chúng ta nên đi 1 bước nhỏ để thăm dò. Đây là phần momentum của thuật toán.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Tính exponential moving average của bình phương gía trị đạo hàm lưu vào biến v và sử dụng nó là phần mẫu số của việc cập nhật hướng. Với ý nghĩa như sau: Giả sử gradient mang các giá trị dương, âm lẫn lộn, thì khi cộng các giá trị lại theo công thức tính m ta sẽ được  giá trị m gần số 0. Do âm dương lẫn lộn nên nó bị triệt tiêu lẫn nhau. Nhưng trong trường hợp này thì v sẽ mang giá trị lớn. Do đó, trong trường hợp này, chúng ta sẽ không hướng tới cực tiểu, chúng ta sẽ không muốn đi theo hướng đạo hàm trong trường hợp này. Chúng ta để v ở phần mẫu vì khi chia cho một giá trị cao, giá trị của  các phần cập nhật sẽ nhỏ, và khi v có giá trị thấp, phần cập nhật sẽ lớn. Đây chính là phần tối ưu RMSProp  của thuật toán.&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Ở đây, m được xem như là moment thứ nhất, v xem như là moment thứ hai, nên thuật toán có tên là &amp;ldquo;Adaptive moment estimation&amp;rdquo;.&lt;/p&gt;
+
+&lt;p&gt;Để lý giải vì sao Adam lại hội tụ nhanh hơn so với SGD, chúng ta có thể giải thích như sau: Exponential weighted averaging cho chúng ta giá trị xấp xỉ gradient mượt hơn qua mỗi lần lặp, dẫn tới tăng tínhs dừng. Sau đó, việc chia cho căng bậc 2 của giá trị v làm số lước của chúng ta giảm mạnh khi phương sai của giá trị gradient tăng lên. Điều này , như giải thích ở trên, có nghĩa là, khi hướng đi của mô hình chỉ ra không rõ ràng, thuật toán Adam thực hiện các bước đi nhỏ coi như là thăm dò thôi. Và sẽ thực hiện các bước đi lớn, nhanh khi hướng đi rõ ràng.&lt;/p&gt;
+
+&lt;p&gt;Thuật toán Adam hoạt động khá hiệu quả, nhưng bản thân nó cũng có những vấn đề. Tác giả của AdaBelief  đã chỉ ra một vài điểm không hiệu quả của thuật toán&lt;/p&gt;
+
+&lt;h1 id=&#34;adabelief-optimizer-adapting-stepsizes-by-the-belief-in-observed-gradients&#34;&gt;AdaBelief Optimizer: Adapting Stepsizes by the Belief in Observed Gradients&lt;/h1&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/adam_error.jpg&#34; alt=&#34;Hình ảnh AdaBelief - Nguồn https://arxiv.org/pdf/2010.07468v5.pdf &#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Hãy nhìn vào hình trên, ở mục đánh dấu là số 3, giá trị G lớn vì đường cong ở đoạn đó dốc. Giá trị v cũng lớn. Do đó, nếu sử dụng thuật toán Adam ở đây, bước đi sẽ rất nhỏ. Việc di chuyển một bước đi nhỏ ở đây sẽ làm chậm quá trình hội tụ và không cần thiết. Bởi vì chúng ta tin tưởng rằng chúng ta đang đi đúng hướng, và chúng ta cần một bước đi dài hơn.&lt;/p&gt;
+
+&lt;p&gt;AdaBelief sửa lỗi này bằng một thay đổi nhỏ trong thuật toán của adam. Thay vì tính bình phương của gradient, AdaBelief  sẽ tính phương sai của gradient. Một sự thay đổi nhỏ nhưng mang lại giá trị to lớn.&lt;/p&gt;
+
+&lt;p&gt;$$v_t  = \beta_2v_t-_1 + (1-\beta_2)g^2_t $$
+$$s_t  = \beta_2v_t-_1 + (1-\beta_2)(g_t-m_t)^2$$&lt;/p&gt;
+
+&lt;p&gt;Tác giả không dùng biến v nữa, mà thay bằng biến s.&lt;/p&gt;
+
+&lt;p&gt;Với việc dùng biến s. Trong trường hợp trên, g lớn và m lớn, thì s sẽ nhỏ. Và khi s ở phần mẫu nhỏ, chúng ta sẽ có bước đi xa hơn. Ở đây, AdaBelief  đã giải quyết vấn đề&lt;/p&gt;
+
+&lt;p&gt;Qua đây, chúng ta cũng có thể giải thích vì sao có chữ &amp;ldquo;belief&amp;rdquo; trong từ AdaBelief. Giá trị phương sai được tính dựa vào kỳ vọng của giá trị gradient.&lt;/p&gt;
+
+&lt;p&gt;Một chú ý nhỏ ở đây là mục số 1 và mục số 3 được coi là cải tiến của Adam  so với momentum và SGD. Tất nhiên, AdaBelief cũng kế thừa mấy cái này.&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;Ở mục đánh dấu số 1 trên hình, đường cong khá phẳng và giá trị đạo hàm gần như bằng 0. Nếu sử dụng SGD, chúng ta sẽ có một bước đi nhỏ. Trong khi đó, họ Adam sẽ cho chúng ta bước đi lớn hơn vì giá trị căng bậc hai của s hoặc v ở mẫu số sẽ cho ra một kết quả rất nhỏ.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Ở mục đánh dấu số 2, đường cong ở đây rất dốc và hẹp, g và delta g ở đây rất lớn, cho nên ở đây chúng ta cần một bước di chuyển nhỏ. Nếu sử dụng SGD hoặc momentum thì sẽ đi một bước đi rất lớn do nhân với một lượng moving averages lớn. Trong khi đó, với Adam hoặc AdaBelief, chúng ta sẽ có giá trị căng bậc hai của s hoặc v ở mẫu số lớn nên bước đi sẽ nhỏ hơn.&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Về tốc độ hội tụ, tác giả có đề cập rõ và chi tiết trong bài báo, mình không đề cập lại nó nữa ở đây. Các bạn tự xem nhé.&lt;/p&gt;
+
+&lt;h1 id=&#34;kết-luận&#34;&gt;Kết luận&lt;/h1&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;AdaBelief là thuật toán tối ưu hóa có nguồn gốc từ thuật toán Adam, không có thêm tham số ngoài, chỉ thay đổi 1 dòng code.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Thuật toán đã tăng tốc độ hội tụ cũng như mức tổng quát hóa.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Thuật toán thực hiện các bước đi dựa vào &amp;ldquo;belief&amp;rdquo; của hướng gradient ở thời điểm hiện tại.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Thuật toán giải quyết vấn đề &amp;ldquo;Large gradient, small curvature&amp;rdquo; bằng cách xem xét biên độ và dấu của gradient.&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Nguồn:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;&lt;a href=&#34;https://arxiv.org/abs/2010.07468&#34;&gt;https://arxiv.org/abs/2010.07468&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;&lt;a href=&#34;https://medium.com/the-dl/understanding-the-new-adabelief-optimizer-2db70ef6de1e&#34;&gt;https://medium.com/the-dl/understanding-the-new-adabelief-optimizer-2db70ef6de1e&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;&lt;a href=&#34;https://towardsdatascience.com/adabelief-optimizer-fast-as-adam-generalizes-as-good-as-sgd-71a919597af&#34;&gt;https://towardsdatascience.com/adabelief-optimizer-fast-as-adam-generalizes-as-good-as-sgd-71a919597af&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</description>
     </item>
     
     <item>
@@ -39,7 +257,637 @@
       <pubDate>Sun, 27 Dec 2020 00:19:00 +0300</pubDate>
       <author>alexblack2202@gmail.com (Phạm Duy Tùng)</author>
       <guid>/blog/2020-12-26---tic-tac-toe/</guid>
-      <description>Advantages of Reinforcement Learning Trong khi trong các phương pháp lý thuyết trò chơi nói chung, ví dụ thuật toán min-max, thuật toán luôn giả định chúng ta có một đối thủ hoàn hảo, công việc phải thực hiện là tối đa hóa phần thưởng của mình và giảm thiểu phần thưởng của đối thủ ( tối đa hóa điểm của mình và tối thiểu hóa điểm của đối thủ), trong học củng cố, chúng ta không cần giả định đối thủ của chúng ta là 1 thiên tài xuất chúng, nhưng chung ta vẫn thu được mô hình với kết quả rất tốt.</description>
+      <description>
+
+&lt;h1 id=&#34;advantages-of-reinforcement-learning&#34;&gt;Advantages of Reinforcement Learning&lt;/h1&gt;
+
+&lt;p&gt;Trong khi trong các phương pháp lý thuyết trò chơi nói chung, ví dụ thuật toán min-max, thuật toán luôn giả định chúng ta có một đối thủ hoàn hảo, công việc phải thực hiện là tối đa hóa phần thưởng của mình và giảm thiểu phần thưởng của đối thủ ( tối đa hóa điểm của mình và tối thiểu hóa điểm của đối thủ), trong học củng cố, chúng ta không cần giả định đối thủ của chúng ta là 1 thiên tài xuất chúng, nhưng chung ta vẫn thu được mô hình với kết quả rất tốt.&lt;/p&gt;
+
+&lt;p&gt;Bằng cách coi đối thủ là một phần của môi trường mà chúng ta có thể tương tác, sau một số lần lặp lại nhất định, đối thủ có thể lập kế hoạch trước mà không cần chúng ta phải làm gì cả. Ưu điểm của phương pháp này là giảm số lượng không gian tìm kiếm và giảm số phép toán suy luận phải thực hiện, nhưng nó có thể đạt được kỹ năng hiện đại chỉ bằng cách thử và học.&lt;/p&gt;
+
+&lt;p&gt;Trong bài viết này, chúng ta sẽ làm các công việc sau:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;Thứ nhất, huấn luyện mô hình cho 2 máy đấu với nhau mà thu được các trọng số cần thiết.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Thứ hai, cho người đánh với máy&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Để hình thành bài toán học củng cố Reinforcement Learning , chúng ta cần  phải xác định rõ 3 thành phần chính:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;State&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Action&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Reward&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Với:&lt;/p&gt;
+
+&lt;p&gt;State chính là bàn cờ với các nước đi của các người chơi. Chúng ta sẽ tạo một bàn cờ có kích thước 3x3, giá trị của mỗi ô cờ đều là 0. Vị trí người chơi 1 đặt quân sẽ được gán là 1. Vị trí người chơi 2 đặt quân sẽ được gán là -1.&lt;/p&gt;
+
+&lt;p&gt;Action là vị trí người chơi sẽ đi quân khi biết state hiện tại (nghĩa là biết đối thủ đi nước nào, và có những nước nào hiện đang trên bàn cờ).&lt;/p&gt;
+
+&lt;p&gt;Reward: mang giá trị 0 hoặc 1. Khi kết thúc game sẽ trả về giá trị cho reward.&lt;/p&gt;
+
+&lt;p&gt;Ở phần dưới đây, mình sẽ note lại code và sẽ comment trong code để cho rõ ý&lt;/p&gt;
+
+&lt;h1 id=&#34;thiết-lập-bàn-cờ&#34;&gt;Thiết lập bàn cờ&lt;/h1&gt;
+
+&lt;h2 id=&#34;khởi-tạo-bàn-cờ&#34;&gt;Khởi tạo bàn cờ&lt;/h2&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+def __init__(self, p1, p2):
+        self.board = np.zeros((BOARD_ROWS, BOARD_COLS))
+        self.p1 = p1
+        self.p2 = p2
+        self.isEnd = False
+        self.boardHash = None
+        # init p1 plays first
+        self.playerSymbol = 1
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Chúng ta sẽ tạo một bàn cờ có kích thước 3x3, 2 biến người chơi. Người 1 là người chơi đầu tiên.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+# Trả về danh sách các nước có thể đi
+def availablePositions(self):
+        positions = []
+        for i in range(BOARD_ROWS):
+            for j in range(BOARD_COLS):
+                if self.board[i, j] == 0:
+                    positions.append((i, j))  # need to be tuple
+        return positions
+
+# Cập nhật lại lên bàn cờ vị trí của người chơi đặt quân
+
+def updateState(self, position):
+    self.board[position] = self.playerSymbol
+    # switch to another player
+    self.playerSymbol = -1 if self.playerSymbol == 1 else 1
+    
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;kiểm-tra-reward&#34;&gt;Kiểm tra Reward&lt;/h2&gt;
+
+&lt;p&gt;Sau mỗi nước đi của các kỳ thủ, chúng ta cần 1 hàm để kiểm tra xem kỳ thủ thắng hay thua và trả về kết quả cho reward như đề cập ở trên&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+def winner(self):
+
+    # Kiểm tra theo dòng
+    
+    for i in range(BOARD_ROWS):
+        if sum(self.board[i, :]) == 3:
+            self.isEnd = True
+            return 1
+        if sum(self.board[i, :]) == -3:
+            self.isEnd = True
+            return -1
+    # kiểm tra theo cột
+    
+    for i in range(BOARD_COLS):
+        if sum(self.board[:, i]) == 3:
+            self.isEnd = True
+            return 1
+        if sum(self.board[:, i]) == -3:
+            self.isEnd = True
+            return -1
+            
+    # kiểm tra theo đường chéo chính và theo đường chéo phụ
+    
+    diag_sum1 = sum([self.board[i, i] for i in range(BOARD_COLS)]) # đường chéo chính
+    
+    diag_sum2 = sum([self.board[i, BOARD_COLS - i - 1] for i in range(BOARD_COLS)]) # đường chéo phụ
+    
+    diag_sum = max(abs(diag_sum1), abs(diag_sum2)) # lấy trị tuyệt đối của các nước đi, nếu bằng 3 nghĩa là có người chơi chiến thắng
+    
+    if diag_sum == 3:
+        self.isEnd = True
+        if diag_sum1 == 3 or diag_sum2 == 3:
+            return 1
+        else:
+            return -1
+
+    # Kiểm tra xem còn nước đi hay không
+    if len(self.availablePositions()) == 0:
+        self.isEnd = True
+        return 0
+        
+    # not end
+    self.isEnd = False
+    return None
+
+# only when game ends
+def giveReward(self):
+    result = self.winner()
+    # backpropagate reward
+    if result == 1:
+        self.p1.feedReward(1)
+        self.p2.feedReward(0)
+    elif result == -1:
+        self.p1.feedReward(0)
+        self.p2.feedReward(1)
+    else:
+        self.p1.feedReward(0.1)
+        self.p2.feedReward(0.5)
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Ở đây có một lưu ý. Khi cờ hòa thì chúng ta cũng xem rằng người đi trước thua, nên hệ số lúc cờ hòa sẽ là 0.1-0.5. Các bạn có thể thiết lập một giá trị khác, ví dụ 0.2-0.5 hoặc 0.5-0.5 tùy thích.&lt;/p&gt;
+
+&lt;h1 id=&#34;thiết-lập-người-chơi&#34;&gt;Thiết lập người chơi&lt;/h1&gt;
+
+&lt;p&gt;Người chơi cần có các phương thức sau:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;Chọn nước đi dựa trên trạng thái hiện tại của bàn cờ.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Lưu lại trạng thái của ván cờ.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Cập nhật lại giá trị trạng thái sau mỗi ván.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Lưu và load các trọng số lên.&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&#34;khởi-tạo&#34;&gt;Khởi tạo&lt;/h2&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+def __init__(self, name, exp_rate=0.2):
+        self.name = name
+        self.states = []  # record all positions taken
+        self.lr = 0.2
+        self.exp_rate = exp_rate
+        self.decay_gamma = 0.9
+        self.states_value = {}  # state -&amp;gt; value
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;chọn-nước-đi&#34;&gt;Chọn nước đi&lt;/h2&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+def chooseAction(self, positions, current_board, symbol):
+    randValue = np.random.uniform(0, 1)
+    value_max = value = -999
+    if  randValue&amp;gt; self.exp_rate:
+        
+        for p in positions:
+            next_board = current_board.copy()
+            next_board[p] = symbol
+            next_boardHash = self.getHash(next_board)
+            value = -999 if self.states_value.get(next_boardHash) is None else self.states_value.get(next_boardHash)
+            # print(&amp;quot;value&amp;quot;, value)
+            if value &amp;gt;= value_max:
+                value_max = value
+                action = p
+
+    if  value_max == -999 :
+        # take random action
+        idx = np.random.choice(len(positions))
+        action = positions[idx]
+    
+    # print(&amp;quot;{} takes action {}&amp;quot;.format(self.name, action))
+    return action
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;cập-nhật-trạng-thái&#34;&gt;Cập nhật trạng thái&lt;/h2&gt;
+
+&lt;p&gt;Chúng ta sẽ cập nhật trạng thái với công thức sau&lt;/p&gt;
+
+&lt;p&gt;$$ V(S_t) = V(S&lt;em&gt;t) + \alpha [V(S&lt;/em&gt;{t+1}) - V(S_t)]   $$&lt;/p&gt;
+
+&lt;p&gt;Diễn giải ra tiếng việt, giá trị của trạng thái tại thời điểm t bằng giá trị tại thời điểm hiện tại cộng với độ lệch của trạng thái hiện tại và trạng thái tiếp theo nhân với một hệ số học alpha.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+# at the end of game, backpropagate and update states value
+def feedReward(self, reward):
+        for st in reversed(self.states):
+            if self.states_value.get(st) is None:
+                self.states_value[st] = 0
+            self.states_value[st] += self.lr * (self.decay_gamma * reward - self.states_value[st])
+            reward = self.states_value[st]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;huấn-luyện-mô-hình&#34;&gt;Huấn luyện mô hình&lt;/h2&gt;
+
+&lt;p&gt;Phần này nằm trong lớp State. Chúng ta sẽ lần lượt đi qua các quá trình luân phiên nhau giữa người chơi 1 và người chơi 2&lt;/p&gt;
+
+&lt;p&gt;người chơi chọn nước có thể đi -&amp;gt; cập nhật trạng thái -&amp;gt; kiểm tra thắng/thua -&amp;gt; người chơi chọn nước có thể đi &amp;hellip;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+def play(self, rounds=100):
+    for i in range(rounds):
+        if i % 1000 == 0:
+            print(&amp;quot;Rounds {}&amp;quot;.format(i))
+        while not self.isEnd:
+            # Player 1
+            positions = self.availablePositions()
+            p1_action = self.p1.chooseAction(positions, self.board, self.playerSymbol)
+            # take action and upate board state
+            self.updateState(p1_action)
+            board_hash = self.getHash()
+            self.p1.addState(board_hash)
+            # check board status if it is end
+
+            win = self.winner()
+            if win is not None:
+                # self.showBoard()
+                # ended with p1 either win or draw
+                self.giveReward()
+                self.p1.reset()
+                self.p2.reset()
+                self.reset()
+                break
+
+            else:
+                # Player 2
+                positions = self.availablePositions()
+                p2_action = self.p2.chooseAction(positions, self.board, self.playerSymbol)
+                self.updateState(p2_action)
+                board_hash = self.getHash()
+                self.p2.addState(board_hash)
+
+                win = self.winner()
+                if win is not None:
+                    # self.showBoard()
+                    # ended with p2 either win or draw
+                    self.giveReward()
+                    self.p1.reset()
+                    self.p2.reset()
+                    self.reset()
+                    break
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Sau khi huấn luyện 100 ngàn lần, chúng ta sẽ chơi với máy, chỉ là 1 thay đổi nhỏ trong hàm chooseAction là thay vì lấy nước đi có trọng số lớn nhất, chúng ta sẽ cho người dùng nhập từ bàn phím dòng và cột vào&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+
+def chooseAction(self, positions):
+        while True:
+            row = int(input(&amp;quot;Input your action row:&amp;quot;))
+            col = int(input(&amp;quot;Input your action col:&amp;quot;))
+            action = (row, col)
+            if action in positions:
+                return action
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Và sửa lại hàm play một chút, bỏ loop 100k lần đi, bỏ gọi hàm cập nhật thưởng và bỏ các hàm reset đi&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+
+# play with human
+def play2(self):
+    while not self.isEnd:
+        # Player 1
+        positions = self.availablePositions()
+        p1_action = self.p1.chooseAction(positions, self.board, self.playerSymbol)
+        # take action and upate board state
+        self.updateState(p1_action)
+        self.showBoard()
+        # check board status if it is end
+        win = self.winner()
+        if win is not None:
+            if win == 1:
+                print(self.p1.name, &amp;quot;wins!&amp;quot;)
+            else:
+                print(&amp;quot;tie!&amp;quot;)
+            self.reset()
+            break
+
+        else:
+            # Player 2
+            positions = self.availablePositions()
+            p2_action = self.p2.chooseAction(positions)
+
+            self.updateState(p2_action)
+            self.showBoard()
+            win = self.winner()
+            if win is not None:
+                if win == -1:
+                    print(self.p2.name, &amp;quot;wins!&amp;quot;)
+                else:
+                    print(&amp;quot;tie!&amp;quot;)
+                self.reset()
+                break
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Mã nguồn hoàn chỉnh của chương trình&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+import numpy as np
+import pickle
+
+BOARD_ROWS = 3
+BOARD_COLS = 3
+
+
+class State:
+    def __init__(self, p1, p2):
+        self.board = np.zeros((BOARD_ROWS, BOARD_COLS))
+        self.p1 = p1
+        self.p2 = p2
+        self.isEnd = False
+        self.boardHash = None
+        # init p1 plays first
+        self.playerSymbol = 1
+
+    # get unique hash of current board state
+    def getHash(self):
+        self.boardHash = str(self.board.reshape(BOARD_COLS * BOARD_ROWS))
+        return self.boardHash
+
+    def winner(self):
+        # row
+        for i in range(BOARD_ROWS):
+            if sum(self.board[i, :]) == 3:
+                self.isEnd = True
+                return 1
+            if sum(self.board[i, :]) == -3:
+                self.isEnd = True
+                return -1
+        # col
+        for i in range(BOARD_COLS):
+            if sum(self.board[:, i]) == 3:
+                self.isEnd = True
+                return 1
+            if sum(self.board[:, i]) == -3:
+                self.isEnd = True
+                return -1
+        # diagonal
+        diag_sum1 = sum([self.board[i, i] for i in range(BOARD_COLS)])
+        diag_sum2 = sum([self.board[i, BOARD_COLS - i - 1] for i in range(BOARD_COLS)])
+        diag_sum = max(abs(diag_sum1), abs(diag_sum2))
+        if diag_sum == 3:
+            self.isEnd = True
+            if diag_sum1 == 3 or diag_sum2 == 3:
+                return 1
+            else:
+                return -1
+
+        # tie
+        # no available positions
+        if len(self.availablePositions()) == 0:
+            self.isEnd = True
+            return 0
+        # not end
+        self.isEnd = False
+        return None
+
+    def availablePositions(self):
+        positions = []
+        for i in range(BOARD_ROWS):
+            for j in range(BOARD_COLS):
+                if self.board[i, j] == 0:
+                    positions.append((i, j))  # need to be tuple
+        return positions
+
+    def updateState(self, position):
+        self.board[position] = self.playerSymbol
+        # switch to another player
+        self.playerSymbol = -1 if self.playerSymbol == 1 else 1
+
+    # only when game ends
+    def giveReward(self):
+        result = self.winner()
+        # backpropagate reward
+        if result == 1:
+            self.p1.feedReward(1)
+            self.p2.feedReward(0)
+        elif result == -1:
+            self.p1.feedReward(0)
+            self.p2.feedReward(1)
+        else:
+            self.p1.feedReward(0.1)
+            self.p2.feedReward(0.5)
+
+    # board reset
+    def reset(self):
+        self.board = np.zeros((BOARD_ROWS, BOARD_COLS))
+        self.boardHash = None
+        self.isEnd = False
+        self.playerSymbol = 1
+
+    def play(self, rounds=100):
+        for i in range(rounds):
+            if i % 1000 == 0:
+                print(&amp;quot;Rounds {}&amp;quot;.format(i))
+            while not self.isEnd:
+                # Player 1
+                positions = self.availablePositions()
+                p1_action = self.p1.chooseAction(positions, self.board, self.playerSymbol)
+                # take action and upate board state
+                self.updateState(p1_action)
+                board_hash = self.getHash()
+                self.p1.addState(board_hash)
+                # check board status if it is end
+
+                win = self.winner()
+                if win is not None:
+                    # self.showBoard()
+                    # ended with p1 either win or draw
+                    self.giveReward()
+                    self.p1.reset()
+                    self.p2.reset()
+                    self.reset()
+                    break
+
+                else:
+                    # Player 2
+                    positions = self.availablePositions()
+                    p2_action = self.p2.chooseAction(positions, self.board, self.playerSymbol)
+                    self.updateState(p2_action)
+                    board_hash = self.getHash()
+                    self.p2.addState(board_hash)
+
+                    win = self.winner()
+                    if win is not None:
+                        # self.showBoard()
+                        # ended with p2 either win or draw
+                        self.giveReward()
+                        self.p1.reset()
+                        self.p2.reset()
+                        self.reset()
+                        break
+            
+
+    # play with human
+    def play2(self):
+        while not self.isEnd:
+            # Player 1
+            positions = self.availablePositions()
+            p1_action = self.p1.chooseAction(positions, self.board, self.playerSymbol)
+            # take action and upate board state
+            self.updateState(p1_action)
+            self.showBoard()
+            # check board status if it is end
+            win = self.winner()
+            if win is not None:
+                if win == 1:
+                    print(self.p1.name, &amp;quot;wins!&amp;quot;)
+                else:
+                    print(&amp;quot;tie!&amp;quot;)
+                self.reset()
+                break
+
+            else:
+                # Player 2
+                positions = self.availablePositions()
+                p2_action = self.p2.chooseAction(positions)
+
+                self.updateState(p2_action)
+                self.showBoard()
+                win = self.winner()
+                if win is not None:
+                    if win == -1:
+                        print(self.p2.name, &amp;quot;wins!&amp;quot;)
+                    else:
+                        print(&amp;quot;tie!&amp;quot;)
+                    self.reset()
+                    break
+        
+
+    def showBoard(self):
+        # p1: x  p2: o
+        for i in range(0, BOARD_ROWS):
+            print(&#39;-------------&#39;)
+            out = &#39;| &#39;
+            for j in range(0, BOARD_COLS):
+                token = &amp;quot;&amp;quot;
+                if self.board[i, j] == 1:
+                    token = &#39;x&#39;
+                if self.board[i, j] == -1:
+                    token = &#39;o&#39;
+                if self.board[i, j] == 0:
+                    token = &#39; &#39;
+                out += token + &#39; | &#39;
+            print(out)
+        print(&#39;-------------&#39;)
+
+
+class Player:
+    def __init__(self, name, exp_rate=0.3):
+        self.name = name
+        self.states = []  # record all positions taken
+        self.lr = 0.3
+        self.exp_rate = exp_rate
+        self.decay_gamma = 0.9
+        self.states_value = {}  # state -&amp;gt; value
+
+    def getHash(self, board):
+        boardHash = str(board.reshape(BOARD_COLS * BOARD_ROWS))
+        return boardHash
+
+    def chooseAction(self, positions, current_board, symbol):
+        randValue = np.random.uniform(0, 1)
+        value_max = value = -999
+        if  randValue&amp;gt; self.exp_rate:
+            
+            for p in positions:
+                next_board = current_board.copy()
+                next_board[p] = symbol
+                next_boardHash = self.getHash(next_board)
+                value = -999 if self.states_value.get(next_boardHash) is None else self.states_value.get(next_boardHash)
+                # print(&amp;quot;value&amp;quot;, value)
+                if value &amp;gt;= value_max:
+                    value_max = value
+                    action = p
+
+        if  value_max == -999 :
+            # take random action
+            idx = np.random.choice(len(positions))
+            action = positions[idx]
+        
+        # print(&amp;quot;{} takes action {}&amp;quot;.format(self.name, action))
+        return action
+
+    # append a hash state
+    def addState(self, state):
+        self.states.append(state)
+
+    # at the end of game, backpropagate and update states value
+    def feedReward(self, reward):
+        for st in reversed(self.states):
+            if self.states_value.get(st) is None:
+                self.states_value[st] = 0
+            self.states_value[st] += self.lr * (self.decay_gamma * reward - self.states_value[st])
+            reward = self.states_value[st]
+
+    def reset(self):
+        self.states = []
+
+    def savePolicy(self):
+        fw = open(&#39;policy_&#39; + str(self.name), &#39;wb&#39;)
+        pickle.dump(self.states_value, fw)
+        fw.close()
+
+    def loadPolicy(self, file):
+        fr = open(file, &#39;rb&#39;)
+        self.states_value = pickle.load(fr)
+        fr.close()
+
+
+class HumanPlayer:
+    def __init__(self, name):
+        self.name = name
+
+    def chooseAction(self, positions):
+        while True:
+            row = int(input(&amp;quot;Input your action row:&amp;quot;))
+            col = int(input(&amp;quot;Input your action col:&amp;quot;))
+            action = (row, col)
+            if action in positions:
+                return action
+
+    # append a hash state
+    def addState(self, state):
+        pass
+
+    # at the end of game, backpropagate and update states value
+    def feedReward(self, reward):
+        pass
+
+    def reset(self):
+        pass
+
+
+if __name__ == &amp;quot;__main__&amp;quot;:
+    # training
+    p1 = Player(&amp;quot;p1&amp;quot;)
+    p2 = Player(&amp;quot;p2&amp;quot;)
+
+    st = State(p1, p2)
+    print(&amp;quot;training...&amp;quot;)
+    st.play(100000)
+
+    p1.savePolicy()
+
+    # play with human
+    p1 = Player(&amp;quot;computer&amp;quot;, exp_rate=0)
+    p1.loadPolicy(&amp;quot;policy_p1&amp;quot;)
+
+    p2 = HumanPlayer(&amp;quot;human&amp;quot;)
+
+    st = State(p1, p2)
+    st.play2()
+
+
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Nguồn&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;Reinforcement Learning: An Introduction phiên bản 2 của Richard S. Sutton and Andrew G. Barto&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;&lt;a href=&#34;https://towardsdatascience.com/reinforcement-learning-implement-tictactoe-189582bea542&#34;&gt;https://towardsdatascience.com/reinforcement-learning-implement-tictactoe-189582bea542&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</description>
     </item>
     
     <item>
@@ -48,7 +896,291 @@
       <pubDate>Sat, 26 Dec 2020 00:19:00 +0300</pubDate>
       <author>alexblack2202@gmail.com (Phạm Duy Tùng)</author>
       <guid>/blog/2020-12-25---tetric/</guid>
-      <description>Mã nguồn import cv2 import numpy as np from random import choice def getColor(): lstColor = [[255,64,64],[255,165,0],[255,244,79],[102,255,0],[172,229,238],[148,87,235],[148,87,235],[241,156,187]] return choice(lstColor) def getInfo(piece): if piece == &amp;quot;&amp;quot;: coords = np.array([[0, 0]]) elif piece == &amp;quot;I&amp;quot;: coords = np.array([[0, 3], [0, 4], [0, 5], [0, 6]]) elif piece == &amp;quot;T&amp;quot;: coords = np.array([[1, 3], [1, 4], [1, 5], [0, 4]]) elif piece == &amp;quot;L&amp;quot;: coords = np.array([[1, 3], [1, 4], [1, 5], [0, 5]]) elif piece == &amp;quot;J&amp;quot;: coords = np.</description>
+      <description>
+
+&lt;h1 id=&#34;mã-nguồn&#34;&gt;Mã nguồn&lt;/h1&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+import cv2
+import numpy as np
+from random import choice
+
+def getColor():
+    lstColor = [[255,64,64],[255,165,0],[255,244,79],[102,255,0],[172,229,238],[148,87,235],[148,87,235],[241,156,187]]
+    return choice(lstColor)
+
+def getInfo(piece):
+    if piece == &amp;quot;&amp;quot;:
+        coords = np.array([[0, 0]])
+    elif piece == &amp;quot;I&amp;quot;:
+        coords = np.array([[0, 3], [0, 4], [0, 5], [0, 6]])
+    elif piece == &amp;quot;T&amp;quot;:
+        coords = np.array([[1, 3], [1, 4], [1, 5], [0, 4]])
+    elif piece == &amp;quot;L&amp;quot;:
+        coords = np.array([[1, 3], [1, 4], [1, 5], [0, 5]])
+    elif piece == &amp;quot;J&amp;quot;:
+        coords = np.array([[1, 3], [1, 4], [1, 5], [0, 3]])
+    elif piece == &amp;quot;S&amp;quot;:
+        coords = np.array([[1, 5], [1, 4], [0, 3], [0, 4]])
+    elif piece == &amp;quot;Z&amp;quot;:
+        coords = np.array([[1, 3], [1, 4], [0, 4], [0, 5]])
+    else:
+        coords = np.array([[0, 4], [0, 5], [1, 4], [1, 5]])
+    
+    return coords, getColor()
+
+def display(board, coords, color, next_info, held_info, score, SPEED):
+    # Generates the display
+    
+    border = np.uint8(127 - np.zeros([20, 1, 3]))
+    border_ = np.uint8(127 - np.zeros([1, 23, 3]))
+    
+    dummy = board.copy()
+    dummy[coords[:,0], coords[:,1]] = color
+    
+    right = np.uint8(np.zeros([20, 10, 3]))
+    right[next_info[0][:,0] + 2, next_info[0][:,1]] = next_info[1]
+    
+    dummy = np.concatenate(( border, dummy, border, right, border), 1)
+    dummy = np.concatenate((border_, dummy, border_), 0)
+    dummy = dummy.repeat(20, 0).repeat(20, 1)
+    dummy = cv2.putText(dummy, str(score), (325, 150), cv2.FONT_HERSHEY_DUPLEX, 1, [0, 0, 255], 2)
+    
+    # Instructions for the player
+    index_pos = 300
+    x_index_pos = 300
+    dummy = cv2.putText(dummy, &amp;quot;A - left&amp;quot;, (x_index_pos, index_pos), cv2.FONT_HERSHEY_DUPLEX, 0.6, [0, 0, 234])
+    dummy = cv2.putText(dummy, &amp;quot;D - right&amp;quot;, (x_index_pos, index_pos+25), cv2.FONT_HERSHEY_DUPLEX, 0.6, [0, 0, 234])
+    dummy = cv2.putText(dummy, &amp;quot;S - drain&amp;quot;, (x_index_pos, index_pos+50), cv2.FONT_HERSHEY_DUPLEX, 0.6, [0, 0, 234])
+    dummy = cv2.putText(dummy, &amp;quot;W - rotate&amp;quot;, (x_index_pos, index_pos+75), cv2.FONT_HERSHEY_DUPLEX, 0.6, [0, 0, 234])
+    # dummy = cv2.putText(dummy, &amp;quot;J - rotate left&amp;quot;, (45, 300), cv2.FONT_HERSHEY_DUPLEX, 0.6, [0, 0, 255])
+    # dummy = cv2.putText(dummy, &amp;quot;L - rotate right&amp;quot;, (45, 325), cv2.FONT_HERSHEY_DUPLEX, 0.6, [0, 0, 255])
+    # dummy = cv2.putText(dummy, &amp;quot;I - hold&amp;quot;, (45, 350), cv2.FONT_HERSHEY_DUPLEX, 0.6, [0, 0, 255])
+    
+    cv2.imshow(&amp;quot;Tetris&amp;quot;, dummy)
+    key = cv2.waitKey(int(1000/SPEED))
+    
+    return key
+
+def getNextPiece():
+    next_piece = choice([&amp;quot;O&amp;quot;, &amp;quot;I&amp;quot;, &amp;quot;S&amp;quot;, &amp;quot;Z&amp;quot;, &amp;quot;L&amp;quot;, &amp;quot;J&amp;quot;, &amp;quot;T&amp;quot;])
+
+    return next_piece
+
+SPEED = 1 # Controls the speed of the tetris pieces
+
+# Make a board
+
+board = np.uint8(np.zeros([20, 10, 3]))
+
+# Initialize some variables
+
+quit = False
+place = False
+drop = False
+switch = False
+held_piece = &amp;quot;&amp;quot;
+flag = 0
+score = 0
+next_piece =&amp;quot;&amp;quot;
+current_piece = &amp;quot;&amp;quot;
+# All the tetris pieces
+
+
+
+if __name__ == &amp;quot;__main__&amp;quot;:
+    next_piece = getNextPiece()
+    while not quit:
+        # Check if user wants to swap held and current pieces
+        if switch:
+           # swap held_piece and current_piece
+            held_piece, current_piece = current_piece, held_piece
+            switch = False
+        else:
+            # Generates the next piece and updates the current piece
+            current_piece = next_piece
+            next_piece = getNextPiece()
+
+        if flag &amp;gt; 0:
+            flag -= 1
+
+        # Determines the color and position of the current, next, and held pieces
+        
+        held_info = getInfo(held_piece)
+
+        next_info = getInfo(next_piece)
+
+        coords, color = getInfo(current_piece)
+        if current_piece == &amp;quot;I&amp;quot;:
+            top_left = [-2, 3]
+
+        if not np.all(board[coords[:,0], coords[:,1]] == 0):
+            break
+
+        while True:
+            # Shows the board and gets the key press
+            key = display(board, coords, color, next_info, held_info, score, SPEED)
+            # Create a copy of the position
+            dummy = coords.copy()
+            print(&amp;quot;speed &amp;quot;,SPEED, &amp;quot;key &amp;quot;,key,&amp;quot; &amp;quot;, ord(&amp;quot;s&amp;quot;))
+
+            if key == ord(&amp;quot;s&amp;quot;):
+                drop = True
+
+            elif key == ord(&amp;quot;a&amp;quot;):
+                # Moves the piece left if it isn&#39;t against the left wall
+                if np.min(coords[:,1]) &amp;gt; 0:
+                    coords[:,1] -= 1
+                if current_piece == &amp;quot;I&amp;quot;:
+                    top_left[1] -= 1
+            elif key == ord(&amp;quot;d&amp;quot;):
+                # Moves the piece right if it isn&#39;t against the right wall
+                if np.max(coords[:,1]) &amp;lt; 9:
+                    coords[:,1] += 1
+                    if current_piece == &amp;quot;I&amp;quot;:
+                        top_left[1] += 1
+            # elif key == ord(&amp;quot;j&amp;quot;) or key == ord(&amp;quot;l&amp;quot;):
+            #         # Rotation mechanism
+            #     # arr is the array of nearby points which get rotated and pov is the indexes of the blocks within arr
+                
+            #     if current_piece != &amp;quot;I&amp;quot; and current_piece != &amp;quot;O&amp;quot;:
+            #         if coords[1,1] &amp;gt; 0 and coords[1,1] &amp;lt; 9:
+            #             arr = coords[1] - 1 + np.array([[[x, y] for y in range(3)] for x in range(3)])
+            #             pov = coords - coords[1] + 1
+                        
+            #     elif current_piece == &amp;quot;I&amp;quot;:
+            #         # The straight piece has a 4x4 array, so it needs seperate code
+                    
+            #         arr = top_left + np.array([[[x, y] for y in range(4)] for x in range(4)])
+            #         pov = np.array([np.where(np.logical_and(arr[:,:,0] == pos[0], arr[:,:,1] == pos[1])) for pos in coords])
+            #         pov = np.array([k[0] for k in np.swapaxes(pov, 1, 2)])
+                
+            #     # Rotates the array and repositions the piece to where it is now
+                
+            #     if current_piece != &amp;quot;O&amp;quot;:
+            #         if key == ord(&amp;quot;j&amp;quot;):
+            #             arr = np.rot90(arr, -1)
+            #         else:
+            #             arr = np.rot90(arr)
+            #         coords = arr[pov[:,0], pov[:,1]]
+            
+            elif key == ord(&amp;quot;w&amp;quot;):
+                        # Rotation mechanism
+                # arr is the array of nearby points which get rotated and pov is the indexes of the blocks within arr
+                
+                if current_piece != &amp;quot;I&amp;quot; and current_piece != &amp;quot;O&amp;quot;:
+                    if coords[1,1] &amp;gt; 0 and coords[1,1] &amp;lt; 9:
+                        arr = coords[1] - 1 + np.array([[[x, y] for y in range(3)] for x in range(3)])
+                        pov = coords - coords[1] + 1
+                        
+                elif current_piece == &amp;quot;I&amp;quot;:
+                    # The straight piece has a 4x4 array, so it needs seperate code
+                    
+                    arr = top_left + np.array([[[x, y] for y in range(4)] for x in range(4)])
+                    pov = np.array([np.where(np.logical_and(arr[:,:,0] == pos[0], arr[:,:,1] == pos[1])) for pos in coords])
+                    pov = np.array([k[0] for k in np.swapaxes(pov, 1, 2)])
+                
+                # Rotates the array and repositions the piece to where it is now
+                
+                if current_piece != &amp;quot;O&amp;quot;:
+                    if key == ord(&amp;quot;j&amp;quot;):
+                        arr = np.rot90(arr, -1)
+                    else:
+                        arr = np.rot90(arr)
+                    coords = arr[pov[:,0], pov[:,1]]
+                # Hard drop set to true
+                # drop = True
+            # elif key == ord(&amp;quot;i&amp;quot;):
+            #     # Goes out of the loop and tells the program to switch held and current pieces
+            #     if flag == 0:
+            #         if held_piece == &amp;quot;&amp;quot;:
+            #             held_piece = current_piece
+            #         else:
+            #             switch = True
+            #         flag = 2
+            #         break
+            elif key == 8 or key == 27:
+                quit = True
+                break
+
+            # Checks if the piece is overlapping with other pieces or if it&#39;s outside the board, and if so, changes the position to the position before anything happened
+            
+            if np.max(coords[:,0]) &amp;lt; 20 and np.min(coords[:,0]) &amp;gt;= 0:
+                if not (current_piece == &amp;quot;I&amp;quot; and (np.max(coords[:,1]) &amp;gt;= 10 or np.min(coords[:,1]) &amp;lt; 0)):
+                    if not np.all(board[coords[:,0], coords[:,1]] == 0):
+                        coords = dummy.copy()
+                else:
+                    coords = dummy.copy()
+            else:
+                coords = dummy.copy()
+            
+            if drop:
+                    # Every iteration of the loop moves the piece down by 1 and if the piece is resting on the ground or another piece, then it stops and places it
+                
+                while not place:
+                    if np.max(coords[:,0]) != 19:
+                        # Checks if the piece is resting on something
+                        for pos in coords:
+                            if not np.array_equal(board[pos[0] + 1, pos[1]], [0, 0, 0]):
+                                place = True
+                                break
+                    else:
+                        # If the position of the piece is at the ground level, then it places
+                        place = True
+                    
+                    if place:
+                        break
+                    
+                    # Keeps going down and checking when the piece needs to be placed
+                    
+                    coords[:,0] += 1
+                    
+                    if current_piece == &amp;quot;I&amp;quot;:
+                        top_left[0] += 1
+                        
+                drop = False
+
+            else:
+                    # Checks if the piece needs to be placed
+                if np.max(coords[:,0]) != 19:
+                    for pos in coords:
+                        if not np.array_equal(board[pos[0] + 1, pos[1]], [0, 0, 0]):
+                            place = True
+                            break
+                else:
+                    place = True
+                
+            if place:
+                # Places the piece where it is on the board
+                for pos in coords:
+                    board[tuple(pos)] = color
+                    
+                # Resets place to False
+                place = False
+                break
+
+            # Moves down by 1
+
+            coords[:,0] += 1
+            if current_piece == &amp;quot;I&amp;quot;:
+                top_left[0] += 1
+
+        # Clears lines and also counts how many lines have been cleared and updates the score
+        
+        lines = 0
+                
+        for line in range(20):
+            if np.all([np.any(pos != 0) for pos in board[line]]):
+                lines += 1
+                board[1:line+1] = board[:line]
+                        
+        
+        score += lines*10
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Mã nguồn này được kế thừa từ bài viết &lt;a href=&#34;https://www.learnopencv.com/tetris-with-opencv-python/&#34;&gt;https://www.learnopencv.com/tetris-with-opencv-python/&lt;/a&gt; và mình có modify lại theo sở thích cá nhân của mình. Còn một số bug mà mình chưa fix hết. Bạn đọc nào ghé ngang có đóng góp gì thì để lại comment giúp mình hen.&lt;/p&gt;
+</description>
     </item>
     
     <item>
@@ -57,7 +1189,161 @@
       <pubDate>Fri, 25 Dec 2020 00:19:00 +0300</pubDate>
       <author>alexblack2202@gmail.com (Phạm Duy Tùng)</author>
       <guid>/blog/2020-12-24-thresholding/</guid>
-      <description>Giá trị ngưỡng: Nói theo kiểu lúa hóa, trong opencv, ngưỡng là một số nằm trong đoạn từ 0 đến 255. Giá trị ngưỡng sẽ chia tách giá trị độ xám của ảnh thành 2 miền riêng biệt. Miền thứ nhất là tập hợp các điểm ảnh có giá trị nhỏ hơn giá trị ngưỡng. Miền thứ hai là tập hợp các các điểm ảnh có giá trị lớn hơn hoặc bằng giá trị ngưỡng.</description>
+      <description>
+
+&lt;h1 id=&#34;giá-trị-ngưỡng&#34;&gt;Giá trị ngưỡng:&lt;/h1&gt;
+
+&lt;p&gt;Nói theo kiểu lúa hóa, trong opencv, ngưỡng là một số nằm trong đoạn từ 0 đến 255. Giá trị ngưỡng sẽ chia tách giá trị độ xám của ảnh thành 2 miền riêng biệt. Miền thứ nhất là tập hợp các điểm ảnh có giá trị nhỏ hơn giá trị ngưỡng. Miền thứ hai là tập hợp các các điểm ảnh có giá trị lớn hơn hoặc bằng giá trị ngưỡng.&lt;/p&gt;
+
+&lt;p&gt;Đầu vào của một thuật toán phân ngưỡng trong opencv thường có input là ảnh nguồn (source image) và giá trị ngưỡng. Đầu ra là ảnh đích đã được phân ngưỡng (destination image). Một số thuật toán phân ngưỡng sẽ kèm thêm vài giá trị râu ria khác nữa, chúng ta sẽ không quan tâm đến chúng&lt;/p&gt;
+
+&lt;p&gt;Mã giải của thuật toán phân ngưỡng:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python-cpp/&#34;&gt;if src[i] &amp;gt;= T:
+    dest[i] = MAXVAL
+else:
+    dest [i] = 0
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Có rất nhiều thuật toán phân ngưỡng dựa trên cách chúng ta xác định ngưỡng. Chúng ta sẽ tìm hiểu lần lượt các thuật toán trên.&lt;/p&gt;
+
+&lt;h1 id=&#34;thuật-toán-simple-thresholding&#34;&gt;Thuật toán Simple Thresholding&lt;/h1&gt;
+
+&lt;p&gt;Simple Thresholding thực hiện phân ngưỡng bằng cách thay thế giá trị lớn hơn hoặc bằng và giá trị bé hơn giá trị ngưỡng bằng một giá trị mới. Cụ thể chúng ta có thể xem mã nguồn bên dưới&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python-cpp/&#34;&gt;
+import cv2
+import numpy as np
+from matplotlib import pyplot as plt
+
+img = cv2.imread(&#39;gradient.png&#39;,0)
+ret,thresh1 = cv2.threshold(img,127,255,cv2.THRESH_BINARY)
+ret,thresh2 = cv2.threshold(img,127,255,cv2.THRESH_BINARY_INV)
+ret,thresh3 = cv2.threshold(img,127,255,cv2.THRESH_TRUNC)
+ret,thresh4 = cv2.threshold(img,127,255,cv2.THRESH_TOZERO)
+ret,thresh5 = cv2.threshold(img,127,255,cv2.THRESH_TOZERO_INV)
+
+titles = [&#39;Original Image&#39;,&#39;BINARY&#39;,&#39;BINARY_INV&#39;,&#39;TRUNC&#39;,&#39;TOZERO&#39;,&#39;TOZERO_INV&#39;]
+images = [img, thresh1, thresh2, thresh3, thresh4, thresh5]
+
+for i in xrange(6):
+    plt.subplot(2,3,i+1),plt.imshow(images[i],&#39;gray&#39;)
+    plt.title(titles[i])
+    plt.xticks([]),plt.yticks([])
+
+plt.show()
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://opencv-python-tutroals.readthedocs.io/en/latest/_images/threshold.jpg&#34; alt=&#34;Hình ảnh&#34; /&gt;
+&lt;strong&gt;Hình ảnh và thuật toán của mô hình được lấy từ trang opencv-python-tutroals.readthedocs.io&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Ở đoạn code trên, chúng ta thiết lập giá trị ngưỡng là 127, với các điểm ảnh có giá trị lớn hơn hoặc bằng 127, chúng ta sẽ gán lại giá trị của nó thành 255. Và các điểm ảnh có giá trị bé hơn 127 sẽ được gán bằng 0 (mặc định).&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python-cpp/&#34;&gt;
+
+double cv::threshold    (   InputArray  src,
+OutputArray     dst,
+double  thresh,
+double  maxval,
+int     type 
+)   
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Thuật toán sample thresholding của opencv còn có 1 tham số nữa khá quan trọng nữa là loại ngưỡng (type). Hiện tại lúc mình viết bài viết này thì opencv hỗ trợ  8 loại là: THRESH_BINARY,  THRESH_BINARY_INV, THRESH_TRUNC, THRESH_TOZERO, THRESH_TOZERO_INV, THRESH_MASK, THRESH_OTSU, THRESH_TRIANGLE. Ý nghĩa của từng loại như sau:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;THRESH_BINARY: Có thể dịch là ngưỡng nhị phân. Ý nghĩa y hệt những gì mình đề cập ở trên.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;THRESH_BINARY_INV: Ngưỡng nhị phân đảo ngược. Có thể hiểu là nó sẽ đảo ngược lại kết quả của THRESH_BINARY.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;THRESH_TRUNC: Những giá trị điểm ảnh  bé hơn ngưỡng sẽ giữ nguyên giá trị, những điểm ảnh lớn hơn hoặc ngưỡng sẽ được gán lại là maxvalue.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;THRESH_TOZERO: Những điểm ảnh bé hơn ngưỡng sẽ bị gán thành 0, những điểm còn lại giữ nguyên.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;THRESH_TOZERO_INV: Những điểm ảnh nhỏ hơn giá trị ngưỡng sẽ được giữ nguyên, những điểm ảnh còn lại sẽ bị gán thành 0.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;THRESH_MASK: Ở bạn opencv4, hầu như không được xài.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;THRESH_OTSU: Sử dụng thuật toán Otsu để xác định giá trị ngưỡng.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;THRESH_TRIANGLE: Sử dụng thuật toán Triangle  để xác định giá trị ngưỡng.&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Giá trị 127 là giá trị trung bình cộng của 0 và 255 làm tròn xuống. Giá trị ngưỡng của thuật toán này đòi hỏi người sử dụng phải có mức độ hiểu biết nhất định về các loại ảnh mình đang xử lý để chọn ngưỡng cho phù hợp.&lt;/p&gt;
+
+&lt;h1 id=&#34;adaptive-thresholding&#34;&gt;Adaptive Thresholding&lt;/h1&gt;
+
+&lt;p&gt;Thuật toán simple thresholding hoạt động khá tốt. Tuy nhiên, nó có 1 nhược điểm là giá trị ngưỡng bị/được gán toàn cục. Thực tế khi chụp, hình ảnh chúng ta nhận được thường bị ảnh hưởng của nhiễu, ví dụ như là bị phơi sáng, bị đèn flask, &amp;hellip;&lt;/p&gt;
+
+&lt;p&gt;Một trong những cách được sử dụng để giải quyết vấn đề trên là chia nhỏ bức ảnh thành những vùng nhỏ (region), và đặt giá trị ngưỡng trên những vùng nhỏ đó -&amp;gt; adaptive thresholding ra đời. Opencv cung cấp cho chúng ta hai cách xác định những vùng nhỏ&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python-cpp/&#34;&gt;import cv2 as cv
+import numpy as np
+from matplotlib import pyplot as plt
+img = cv.imread(&#39;sudoku.png&#39;,0)
+img = cv.medianBlur(img,5)
+ret,th1 = cv.threshold(img,127,255,cv.THRESH_BINARY)
+th2 = cv.adaptiveThreshold(img,255,cv.ADAPTIVE_THRESH_MEAN_C,\
+            cv.THRESH_BINARY,11,2)
+th3 = cv.adaptiveThreshold(img,255,cv.ADAPTIVE_THRESH_GAUSSIAN_C,\
+            cv.THRESH_BINARY,11,2)
+titles = [&#39;Original Image&#39;, &#39;Global Thresholding (v = 127)&#39;,
+            &#39;Adaptive Mean Thresholding&#39;, &#39;Adaptive Gaussian Thresholding&#39;]
+images = [img, th1, th2, th3]
+for i in xrange(4):
+    plt.subplot(2,2,i+1),plt.imshow(images[i],&#39;gray&#39;)
+    plt.title(titles[i])
+    plt.xticks([]),plt.yticks([])
+plt.show()
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://docs.opencv.org/master/ada_threshold.jpg&#34; alt=&#34;Hình ảnh&#34; /&gt;
+&lt;strong&gt;Hình ảnh và thuật toán của mô hình được lấy từ trang docs.opencv.org&lt;/strong&gt;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python-cpp/&#34;&gt;
+
+void cv::adaptiveThreshold  (   InputArray  src,
+OutputArray     dst,
+double  maxValue,
+int     adaptiveMethod,
+int     thresholdType,
+int     blockSize,
+double  C 
+)   
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Ở đây:&lt;/p&gt;
+
+&lt;p&gt;blockSize: Kích thước của vùng, bắt buộc phải là một số lẻ lớn hơn 0.&lt;/p&gt;
+
+&lt;p&gt;C: hằng số, giá trị từ -255 đến 255. Có thể gán C bằng 0 để đỡ rối.&lt;/p&gt;
+
+&lt;p&gt;adaptiveMethod nhận vào một trong hai giá trị là cv.ADAPTIVE_THRESH_MEAN_C và cv.ADAPTIVE_THRESH_GAUSSIAN_C, đó là các phương pháp tính ngưỡng.&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;ADAPTIVE_THRESH_MEAN_C: Tính trung bình các láng giềng xung quanh điểm cần xét trong vùng blockSize * blockSize trừ đi giá trị hằng số C.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;ADAPTIVE_THRESH_GAUSSIAN_C: Nhân giá trị xung quanh điểm cần xét với trọng số gauss rồi tính trung bình của nó, sau đó trừ đi giá trị hằng số C.&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;thresholdType: Tương tự như Simple Thresholding đã trình bày ở trên.&lt;/p&gt;
+
+&lt;p&gt;Cảm ơn các bạn đã quan tâm và theo dõi bài viết, hẹn gặp bạn ở các bài viết tiếp theo.&lt;/p&gt;
+
+&lt;p&gt;Tham khảo&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;&lt;a href=&#34;https://www.geeksforgeeks.org/python-thresholding-techniques-using-opencv-set-1-simple-thresholding/&#34;&gt;https://www.geeksforgeeks.org/python-thresholding-techniques-using-opencv-set-1-simple-thresholding/&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;&lt;a href=&#34;https://www.learnopencv.com/opencv-threshold-python-cpp/&#34;&gt;https://www.learnopencv.com/opencv-threshold-python-cpp/&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;&lt;a href=&#34;https://medium.com/@anupriyam/basic-image-thresholding-in-opencv-5af9020f2472&#34;&gt;https://medium.com/@anupriyam/basic-image-thresholding-in-opencv-5af9020f2472&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</description>
     </item>
     
     <item>
@@ -66,7 +1352,98 @@
       <pubDate>Sun, 26 Jan 2020 00:19:00 +0300</pubDate>
       <author>alexblack2202@gmail.com (Phạm Duy Tùng)</author>
       <guid>/blog/2020-01-26-simhash/</guid>
-      <description>Đặt vấn đề Giả sử bạn và tôi đều thích nghe nhạc trên trang mp3.zing.vn. Mỗi người đều nghe khoảng 100 bài nhạc khác nhau. Để đo sự giống nhau giữa danh sách bài hát bạn nghe và danh sách bài hát tôi nghe, thông thường chúng ta sẽ dùng độ đo Jaccard Similarity, được đo bằng cách lấy phần giao (intersection ) chia cho phần hợp (union). Nghĩa là đếm số lượng bài hát cả hai cùng nghe (phần giao) chia cho tổng số bài hát không lặp của cả hai.</description>
+      <description>
+
+&lt;h1 id=&#34;đặt-vấn-đề&#34;&gt;Đặt vấn đề&lt;/h1&gt;
+
+&lt;p&gt;Giả sử bạn và tôi đều thích nghe nhạc trên trang mp3.zing.vn. Mỗi người đều nghe khoảng 100 bài nhạc khác nhau. Để đo sự giống nhau giữa danh sách bài hát bạn nghe và danh sách bài hát tôi nghe, thông thường chúng ta sẽ dùng độ đo Jaccard Similarity, được đo bằng cách lấy phần giao (intersection ) chia cho phần hợp (union). Nghĩa là đếm số lượng bài hát cả hai cùng nghe (phần giao) chia cho tổng số bài hát không lặp của cả hai.&lt;/p&gt;
+
+&lt;p&gt;Trong trường hợp bạn và tôi đều nghe 100 bài, trong đó có 30 bài giống nhau, vậy phần giao là 30, phần hợp là 170, giá trị Jaccard Similarity sẽ là &lt;sup&gt;30&lt;/sup&gt;&amp;frasl;&lt;sub&gt;170&lt;/sub&gt;.&lt;/p&gt;
+
+&lt;p&gt;Độ đo Jaccard Similarity được sử dụng ở phương pháp apriori , FP Growth, &amp;hellip; mà các bạn đã có dịp học trong môn khai phá dữ liệu ở Đại học.&lt;/p&gt;
+
+&lt;h1 id=&#34;bài-toán-tìm-kiếm-văn-bản-tương-đồng&#34;&gt;Bài toán tìm kiếm văn bản tương đồng&lt;/h1&gt;
+
+&lt;p&gt;Giả sử bạn quản lý một số lượng lớn văn bản (N= 1 tỷ), và xếp của bạn có nhu cầu nhóm những bài viết giống nhau thành từng cụm. Để:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;Loại bỏ bớt những kết quả trùng trong khung search.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Nhóm những bài viết vào từng nhóm sự kiện theo dòng thời gian, ví dụ sự kiện &amp;lsquo;cô gái giao gà&amp;rsquo;, sự kiện &amp;lsquo;dịch cúm corona&amp;rsquo;, &amp;hellip;&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Vì một bất kể lý do nào đó mà trong lúc viết bài này tác giả chưa nghĩ ra.&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Khi đó, các vấn đều sau có thể sẽ phát sinh:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;Nhiều phần nhỏ của văn bản này xuất hiện ở một vị trí lộn xộn nào ở  một hoặc nhiều văn bản khác.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Văn bản quá dài nên không thể lưu trữ hết lên bộ nhớ chính (RAM).&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Có quá nhiều cặp văn bản cần phải so sánh.&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Để giải quyết bài toán trên, chúng ta sẽ tiếp cận theo hướng sau:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;Shingling: Chuyển văn bản thành tập ký tự, tập từ &amp;hellip;.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Min-Hashing: Chuyển tập ký tự thành 1 chuỗi số hash định danh.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Locality-Sensitive Hashing: Tìm các văn bản tương đồng dựa vào chuỗi số định danh.&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Ở bài viết này, mình chỉ đề cập bước thứ 2 là Min-Hashing. Bước 1 và bước 3 bạn có thể tham khảo thêm trong khóa học, mình có để link bên dưới.&lt;/p&gt;
+
+&lt;h2 id=&#34;vì-sao-phải-dùng-min-hashing&#34;&gt;Vì sao phải dùng Min-Hashing&lt;/h2&gt;
+
+&lt;p&gt;Như bài toán đặt ra ở trên, chúng ta có 1 tỷ văn bản, chúng ta cần N(N-1)/2 = 5*10^17 phép tính Jaccard Similarity. Chúng ta có một server có thể thực hiện 5x10^6 phép so sánh, thì chúng ta phải mất 10^11 giây tương đương 31,710 năm để thực hiện xong.&lt;/p&gt;
+
+&lt;p&gt;Thuật toán MinHash sẽ giúp chúng ta một giá trị xấp xỉ giá trị của Jaccard Similarity của hai tập dữ liệu. Ưu điểm của MinHash:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;Có chiều dài đầu ra cố định&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Không phụ thuộc vào chiều dài đầu vào.&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Để tính giá trị xấp xỉ Jaccard Similarity (MinHash signatures), đầu tiên ta sẽ tính MinHash của hai tập data, được 2 giá trị hash, sau đó đếm giá trị trùng nhau của 2 chuỗi hash và chia chiều dài gía trị hash, chúng ta sẽ được một giá trị xấp xỉ giá trị Jaccard Similarity.&lt;/p&gt;
+
+&lt;p&gt;Ví dụ ta có hai tập tập dữ liệu {a,x,c,d} và {a,x,d,e} hai giá trị hash ta có tương ứng là 1234 và 1235, số ký tự trùng nhau là 3 (1,2,3), chiều dài là 4, vậy ta có giá trị Jaccard Similarity là &lt;sup&gt;3&lt;/sup&gt;&amp;frasl;&lt;sub&gt;4&lt;/sub&gt;.&lt;/p&gt;
+
+&lt;p&gt;Phép tính này sẽ hơn việc tính  Jaccard Similarity truyền thống, lý do là chúng ta không cần phải tính phần giao và phần hợp của hai tập dữ liệu ( trong trường hợp hai tập có nhiều giá trị thì việc tính càng lâu), và giá trị hash thường có chiều dài ngắn hơn so với số lượng phần trử trong tập dữ liệu, ngoài ra phép so sánh cũng đơn giản hơn nhiều.&lt;/p&gt;
+
+&lt;h2 id=&#34;thuật-toán-minhash&#34;&gt;Thuật toán MinHash&lt;/h2&gt;
+
+&lt;p&gt;Ý tưởng của thuật toán khá đơn giản:&lt;/p&gt;
+
+&lt;p&gt;ta có hàm hash:&lt;/p&gt;
+
+&lt;p&gt;$$ h(x) = (ax+b)%c $$&lt;/p&gt;
+
+&lt;p&gt;Trong đó:
+- x là số nguyên đầu vào,  a và b là hai số được chọn ngẫu nhiên với điều kiện a và b &amp;lt; x&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;c là số nguyên tố được chọn ngẫu nhiên, với điều kiện c lớn hơn x.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Cách thuật toán thực hiện như sau:&lt;/p&gt;
+
+&lt;p&gt;Với 1 văn bản, chạy thuật toán hash 10 lần, do ta có số a và b là ngẫu nhiên nên 10 lần chạy sẽ cho ra các kết quả khác nhau, lấy giá trị hash nhỏ nhất (do đó thuật toán có tên là min hash) làm thành phần đầu tiên của MinHash signature. Lặp lại quá trình trên 10 lần, chúng ta có MinHash signature  với 10 giá trị.&lt;/p&gt;
+
+&lt;p&gt;Xong thuật toán, quá dễ.&lt;/p&gt;
+
+&lt;p&gt;Cảm ơn các bạn đã quan tâm và theo dõi bài viết, hẹn gặp bạn ở các bài viết tiếp theo.&lt;/p&gt;
+
+&lt;p&gt;Tham khảo
+- Khóa học Mining of Massive Datasets chương 3 &lt;a href=&#34;http://www.mmds.org/&#34;&gt;http://www.mmds.org/&lt;/a&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://mccormickml.com/2015/06/12/minhash-tutorial-with-python-code/&#34;&gt;https://mccormickml.com/2015/06/12/minhash-tutorial-with-python-code/&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</description>
     </item>
     
     <item>
@@ -75,9 +1452,189 @@
       <pubDate>Sat, 25 Jan 2020 00:19:00 +0300</pubDate>
       <author>alexblack2202@gmail.com (Phạm Duy Tùng)</author>
       <guid>/blog/2020-01-13-hash-in-python/</guid>
-      <description>Built-In Hashing Python có xây dựng sẵn cho chúng ta một hàm hash, chúng ta cứ việc gọi ra và sử dụng.
-hash(&amp;quot;pham duy tung&amp;quot;) -7141560399917772220  Một lưu ý nhỏ là giá trị của hàm hash sẽ khác nhau giữa các phiên bản python. Ví dụ ở trên mình xài python 3.8, với bản 3.6 sẽ là
-hash(&amp;quot;pham duy tung&amp;quot;) 1568935795476364190  Checksums Chúng ta có thể sử dụng checksums để hash dữ liệu.</description>
+      <description>
+
+&lt;h1 id=&#34;built-in-hashing&#34;&gt;Built-In Hashing&lt;/h1&gt;
+
+&lt;p&gt;Python có xây dựng sẵn cho chúng ta một hàm hash, chúng ta cứ việc gọi ra và sử dụng.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;hash(&amp;quot;pham duy tung&amp;quot;)
+-7141560399917772220
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Một lưu ý nhỏ là giá trị của hàm hash  sẽ khác nhau giữa các phiên bản python. Ví dụ ở trên mình xài python 3.8, với bản 3.6 sẽ là&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;hash(&amp;quot;pham duy tung&amp;quot;)
+1568935795476364190
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h1 id=&#34;checksums&#34;&gt;Checksums&lt;/h1&gt;
+
+&lt;p&gt;Chúng ta có thể sử dụng checksums để hash dữ liệu. Checksum được sử dụng trong thuật toán nén file ZIP để đảm bảo toàn vẹn dữ liệu sau khi nén. Thư viện zlib của python hỗ trợ 2 hàm tính checksum là adler32 và crc32. Để đảm bảo tốc độ chương trình và chỉ cần lấy hash đơn giản, chúng ta có thể sử dụng hàm Adler32. Tuy nhiên, nếu bạn muốn chương trình có độ tin cậy cao hoặc đơn giản là checksums, hãy sử dụng crc32. Các bạn có thể đọc bài viết ở đây &lt;a href=&#34;https://www.leviathansecurity.com/blog/analysis-of-adler32&#34;&gt;https://www.leviathansecurity.com/blog/analysis-of-adler32&lt;/a&gt; để hiểu hơn.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;&amp;gt;&amp;gt;&amp;gt; import zlib
+&amp;gt;&amp;gt;&amp;gt; zlib.adler32(b&amp;quot;Pham Duy Tung&amp;quot;)
+524616855
+&amp;gt;&amp;gt;&amp;gt; zlib.crc32(b&amp;quot;Pham Duy Tung&amp;quot;)
+3750031252
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h1 id=&#34;secure-hashing&#34;&gt;Secure Hashing&lt;/h1&gt;
+
+&lt;p&gt;Mã hóa an toàn (Secure Hashing) và bảo mật dữ liệu đã được nghiên cứu và ứng dụng từ nhiều năm về trước. Tiền thân là thuật toán MD5 đến SHA1, SHA256, SHA512&amp;hellip;. Mỗi thuật toán ra đời sau sẽ cải tiến độ bảo mật và giảm đụng độ của các thuật toán trước đó.&lt;/p&gt;
+
+&lt;p&gt;Một số hàm hash phổ biến:&lt;/p&gt;
+
+&lt;h2 id=&#34;md5-16-bytes-128-bit&#34;&gt;MD5– 16 bytes/128 bit&lt;/h2&gt;
+
+&lt;p&gt;Chuỗi đầu ra của  MD5 có kích thước 16 bytes hay 16*8 = 128 bits. Ở thời điểm hiện tại MD5 không còn là thuật toán phổ biến và không được khuyến khích dùng bởi các tổ chức bảo mật.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;&amp;gt;&amp;gt;&amp;gt; import hashlib
+&amp;gt;&amp;gt;&amp;gt; hashlib.md5(b&amp;quot;Pham Duy Tung&amp;quot;).hexdigest()
+&#39;58067430b9caa44f5ac1220b171f45c8&#39;
+&amp;gt;&amp;gt;&amp;gt; len(hashlib.md5(b&amp;quot;Pham Duy Tung&amp;quot;).digest()) # Chiều dài của đầu ra là 16 bytes
+16
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Chú ý:
+Hàm hexdigest biểu diễn một byte thành một ký tự hex (2 ký tự  đầu 58 của ví dụ trên là giá trị hex của số 88 trong hệ thập phân)&lt;/p&gt;
+
+&lt;h2 id=&#34;sha1-20-bytes-160-bits&#34;&gt;SHA1–20 bytes/160 bits&lt;/h2&gt;
+
+&lt;p&gt;Đầu ra của SHA1 có chiều dài là 20 bytes tương ứng với 160 bit. Cũng giống như MD5, SHA1 cũng không được khuyến khích sử dụng ở trong các ứng dụng bảo mật.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;&amp;gt;&amp;gt;&amp;gt; import hashlib
+&amp;gt;&amp;gt;&amp;gt; hashlib.sha1(b&amp;quot;Pham Duy Tung&amp;quot;).hexdigest()
+&#39;b95b8716f15d89b6db67e2e788dea42d3fba5ee8&#39;
+&amp;gt;&amp;gt;&amp;gt; len(hashlib.sha1(b&amp;quot;Pham Duy Tung&amp;quot;).digest())
+20
+
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;sha256-32-bytes-256-bit-và-sha512-64-bytes-512-bit&#34;&gt;SHA256–32 bytes/256 bit và SHA512–64 bytes/512 bit&lt;/h2&gt;
+
+&lt;p&gt;Đây là hai hàm hash được khuyên là nên dùng ở thời điểm hiện tại&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;&amp;gt;&amp;gt;&amp;gt; hashlib.sha256(b&amp;quot;Pham Duy Tung&amp;quot;).hexdigest()
+&#39;611b322b6b8ee570831c6061408ac5aa77fcdb572206d5d443855f5d3c1383c6&#39;
+&amp;gt;&amp;gt;&amp;gt; len(hashlib.sha256(b&amp;quot;Pham Duy Tung&amp;quot;).digest())
+32
+&amp;gt;&amp;gt;&amp;gt; hashlib.sha512(b&amp;quot;Pham Duy Tung&amp;quot;).hexdigest()
+&#39;ac1f6a2dd234bc15c1fa2be1db4e55ad4af8c476abb8e3d9ac3d4c74d3e151c23314e20925616e90a0bcb13a38b5531e064c586d65fed54504d713fdabee03f9&#39;
+&amp;gt;&amp;gt;&amp;gt; len(hashlib.sha512(b&amp;quot;Pham Duy Tung&amp;quot;).digest())
+64
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h1 id=&#34;near-duplicate-detection&#34;&gt;Near-Duplicate Detection&lt;/h1&gt;
+
+&lt;p&gt;Các thuật toán được giới thiệu ở trên, khi chúng ta thay đổi giá trị đầu vào, dù chỉ một giá trị nhỏ thôi ở một vài vị trí nào đó, thì kết quả trả ra lại khác nhau khá lớn. Tuy nhiên, đôi khi chúng ta gặp những bài toán tìm nội dung tương tự nhau hoặc gần như tương tự nhau. Ví dụ giống như google crawler dữ liệu xác định những bài văn copy paste từ những trang web khác nhau, hoặc phát hiện đạo văn, phát hiện đạo nhạc &amp;hellip;&lt;/p&gt;
+
+&lt;p&gt;Một thuật toán khá phổ biến nằm trong nhóm này là SimHash. Thuật toán được google sử dụng  để tìm ra các trang gần trùng nhau (theo wiki &lt;a href=&#34;https://en.wikipedia.org/wiki/SimHash&#34;&gt;https://en.wikipedia.org/wiki/SimHash&lt;/a&gt;). Tác giả của thuật toán là Moses Charikar.&lt;/p&gt;
+
+&lt;p&gt;Để dùng Simhash, chúng ta phải cài đặt package từ kho của python&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from simhash import Simhash
+
+&amp;gt;&amp;gt;&amp;gt; Simhash(&amp;quot;Pham Duy Tung&amp;quot;).value
+17022061268703429674
+&amp;gt;&amp;gt;&amp;gt; Simhash(&amp;quot;Pham Duy Tung1&amp;quot;).value
+17184261516160517290
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Một trong những lưu ý quan trọng khi sử dụng SimHash  ( tham khảo &lt;a href=&#34;https://stackoverflow.com/questions/49820228/how-to-compare-the-similarity-of-documents-with-simhash-algorithm/49831194#49831194&#34;&gt;https://stackoverflow.com/questions/49820228/how-to-compare-the-similarity-of-documents-with-simhash-algorithm/49831194#49831194&lt;/a&gt;)&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;SimHash thật sự hữu ích trong bài toán phát hiện văn bản trùng lắp.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Để tìm văn bản trùng lắp chính xác, dúng ta có thể sử dụng các thuật toán đơn giản mà hiệu quả như md5, sha1sha1.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Thuật toán phù hợp các văn bản lớn, không phù hợp cho các câu văn nhỏ.&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Đoạn code bên dưới là một ví dụ được dùng để tìm các văn bản có đạo nội dung.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt; #assuming that you have a dictionary with document id as the key and the document as the value: 
+# documents = { doc_id: doc } you can do:
+
+from simhash import simhash
+
+def split_hash(str, num):
+    return [ str[start:start+num] for start in range(0, len(str), num) ]
+
+hashes = {}
+for doc_id, doc in documents.items():
+    hash = simhash(doc)
+
+    # you can either use the whole hash for higher precision or split into chunks for higher recall
+    hash_chunks = split_hash(hash, 4)
+
+    for chunk in hash_chunks:
+        if chunk not in hashes:
+            hashes[chunk] = []
+        hashes[chunk].append(doc_id)
+
+# now you can print the duplicate documents:
+for hash, doc_list in hashes:
+    if doc_list &amp;gt; 1:
+        print(&amp;quot;Duplicates documents: &amp;quot;, doc_list)
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Ngoài SimHash, còn một thuật toán hash khá nổi tiếng nữa cũng được google sử dụng trong việc cá nhân hóa người dùng, đó là MinHash. Ở các bài viết tiếp theo mình sẽ viết về thuật toán này.&lt;/p&gt;
+
+&lt;h1 id=&#34;perceptual-hashing&#34;&gt;Perceptual Hashing&lt;/h1&gt;
+
+&lt;p&gt;Loại hash cuối cùng chúng ta đề cập ở đây là  perceptual hashing. Loại hash này được sử dụng để phát hiện sự khác nhau trong tập hình ảnh hoặc trong video.&lt;/p&gt;
+
+&lt;p&gt;Một ví dụ của các thuật toán thuộc nhóm là là được dùng để phát hiện các frame ảnh trùng lắp trong video. Thuật toán được dùng để loại bỏ những nội dung trùng lắp, giúp tiết kiệm lưu trữ. Hoặc dùng trong các thuật toán tóm tắt video.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/google_free_ds_1.png&#34; alt=&#34;Ảnh 1&#34; /&gt;
+&lt;strong&gt;Ảnh 1&lt;/strong&gt;
+&lt;img src=&#34;/post_image/google_free_ds_2.png&#34; alt=&#34;Ảnh 2&#34; /&gt;
+&lt;strong&gt;Ảnh 2&lt;/strong&gt;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;&amp;gt;&amp;gt;&amp;gt; import hashlib
+&amp;gt;&amp;gt;&amp;gt; from PIL import Image
+&amp;gt;&amp;gt;&amp;gt; image1 = Image.open(&amp;quot;google_free_ds1.png&amp;quot;)
+&amp;gt;&amp;gt;&amp;gt; image1 = Image.open(&amp;quot;google_free_ds_1.png&amp;quot;)
+&amp;gt;&amp;gt;&amp;gt; image2 = Image.open(&amp;quot;google_free_ds_2.png&amp;quot;)
+&amp;gt;&amp;gt;&amp;gt; hashlib.sha256(image1.tobytes()).hexdigest()
+&#39;c57d0b5b1ca64077b45bdb65f817497834675232a2fc2ed76d6b8aa7955126b9&#39;
+&amp;gt;&amp;gt;&amp;gt; hashlib.sha256(image2.tobytes()).hexdigest()
+&#39;02ea5e51b19cf3748f91f9bbe26976e9e14dca4b47e0aaff88ab20030a695f44&#39;
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Giá trị hash khác xa nhau, có vẻ chúng ta không thể nào sử dụng SHA256 trong bài toán này được. Lúc này, chúng ta sẽ tìm tới các thư viện thuộc nhóm Perceptual Hashing, một trong số chúng là ImageHash.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;&amp;gt;&amp;gt;&amp;gt; import imagehash
+&amp;gt;&amp;gt;&amp;gt; hash1 = imagehash.average_hash(image1)
+&amp;gt;&amp;gt;&amp;gt; hash2 = imagehash.average_hash(image2)
+&amp;gt;&amp;gt;&amp;gt; hash1-hash2
+24
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Giá trị hash của hai ảnh trên là khác nhau, nhưng sự khác nhau là rất ít. Chứng tỏ hai ảnh trên có thể là bản sao của nhau.&lt;/p&gt;
+
+&lt;h1 id=&#34;kết-luận&#34;&gt;Kết luận&lt;/h1&gt;
+
+&lt;p&gt;Trong bài viết này, chúng ta đã đề cập qua các cách khác nhau để hash dữ liệu trong Python. Phụ thuộc vào bài toán, chúng ta sẽ sử dụng các thuật toán với các tham số phù hợp. Hi vọng bài viết này sẽ ít nhiều giúp ích được cho các bạn.&lt;/p&gt;
+
+&lt;p&gt;Chú thích:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;Ảnh cover của bài viết là ảnh của chùm sao thất tinh bắc đẩu mình chụp từ trang &lt;a href=&#34;https://stellarium-web.org/&#34;&gt;https://stellarium-web.org/&lt;/a&gt;.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;hash collision : Khi cho 2 input khác nhau vào hàm hash mà cùng ra một output -&amp;gt; collision.&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Nguồn bài viết:&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://medium.com/better-programming/how-to-hash-in-python-8bf181806141&#34;&gt;https://medium.com/better-programming/how-to-hash-in-python-8bf181806141&lt;/a&gt;&lt;/p&gt;
+</description>
     </item>
     
     <item>
@@ -86,7 +1643,294 @@ hash(&amp;quot;pham duy tung&amp;quot;) 1568935795476364190  Checksums Chúng ta
       <pubDate>Wed, 06 Feb 2019 00:20:00 +0300</pubDate>
       <author>alexblack2202@gmail.com (Phạm Duy Tùng)</author>
       <guid>/blog/2019-02-06-choosing-the-right-hyperparameters-for-a-simple-lstm-using-keras/</guid>
-      <description>Mở đầu Việc xây dựng một mô hình machine learning chưa bao giờ thật sự dễ dàng. Rất nhiều bài báo chỉ &amp;ldquo;show hàng&amp;rdquo; những thứ cao siêu, những thứ chỉ nằm trong sự tưởng tượng của chính các nhà báo. Còn khi đọc các bài báo khoa học về machine learning, tác giả công bố cho chúng ta những mô hình rất tốt, giải quyết một domain nhỏ vấn đề của họ.</description>
+      <description>
+
+&lt;h2 id=&#34;mở-đầu&#34;&gt;Mở đầu&lt;/h2&gt;
+
+&lt;p&gt;Việc xây dựng một mô hình machine learning chưa bao giờ thật sự dễ dàng. Rất nhiều bài báo chỉ &amp;ldquo;show hàng&amp;rdquo; những thứ cao siêu, những thứ chỉ nằm trong sự tưởng tượng của chính các nhà báo. Còn khi đọc các bài báo khoa học về machine learning, tác giả công bố cho chúng ta những mô hình rất tốt, giải quyết một domain nhỏ vấn đề của họ. Tuy nhiên, có một thứ họ không/ chưa công bố. Đó là cách thức họ lựa chọn số lượng note ẩn, số lượng layer trong mô hình neural network. Trong bài viết này, chúng ta sẽ xây dựng mô hình LSTM đơn giản để dự đoán giới tính khi biết tên một người, và thử tìm xem công thức để chọn ra tham số &amp;ldquo;đủ tốt&amp;rdquo; là như thế nào.&lt;/p&gt;
+
+&lt;h2 id=&#34;chẩn-bị-dữ-liệu&#34;&gt;Chẩn bị dữ liệu&lt;/h2&gt;
+
+&lt;p&gt;Tập dữ liệu ở đây có khoảng 500000 tên kèm giới tính. Đầu tiên mình sẽ làm sạch dữ liệu bằng cách chỉ lấy giới tính là &amp;rsquo;m&amp;rsquo; và &amp;lsquo;f&amp;rsquo;, loại bỏ những tên quá ngắn (có ít hơn 3 ký tự)&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;filepath = &#39;firstnames.csv&#39;
+max_rows = 500000 # Reduction due to memory limitations
+
+df = (pd.read_csv(filepath, usecols=[&#39;name&#39;, &#39;gender&#39;],sep=&amp;quot;;&amp;quot;)
+        .dropna(subset=[&#39;name&#39;, &#39;gender&#39;])
+        .assign(name = lambda x: x.name.str.strip())
+        .assign(gender = lambda x: x.gender.str.lower())
+        .head(max_rows))
+
+df= df[df.gender.isin([&#39;m&#39;,&#39;f&#39;])]
+
+# In the case of a middle name, we will simply use the first name only
+df[&#39;name&#39;] = df[&#39;name&#39;].apply(lambda x: str(x).split(&#39; &#39;, 1)[0])
+
+# Sometimes people only but the first letter of their name into the field, so we drop all name where len &amp;lt;3
+df.drop(df[df[&#39;name&#39;].str.len() &amp;lt; 3].index, inplace=True)
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Tiếp theo, chúng ta sử dụng một kỹ thuật khá cũ trong NLP là one-hot encoding. Mỗi ký tự được biểu diễn bởi một vector nhị phân. Ví dụ có 26 ký tự trong bảng chữ cái tiếng anh, vector đại diện cho chữ a là [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], ký tự b được biểu diễn là [0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], &amp;hellip; tương tự cho đến z.&lt;/p&gt;
+
+&lt;p&gt;Một từ được encode là một tập các vector. Ví dụ chữ hello được biểu diễn là&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;[[0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] #h,
+ [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] #e,
+ [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] #l,
+ [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] #l,
+ [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] #o]
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Đọc đến đây, chắc các bạn đã mườn tượng ra rằng một từ sẽ được encode như thế nào rồi phải không. Tiếp theo, chúng ta sẽ xây dựng hàm encode cho tập dữ liệu&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt; # Define a mapping of chars to integers
+char_to_int = dict((c, i) for i, c in enumerate(accepted_chars))
+int_to_char = dict((i, c) for i, c in enumerate(accepted_chars))
+
+# Removes all non accepted characters
+def normalize(line):
+    return [c.lower() for c in line if c.lower() in accepted_chars]
+
+# Returns a list of n lists with n = word_vec_length
+def name_encoding(name):
+
+    # Encode input data to int, e.g. a-&amp;gt;1, z-&amp;gt;26
+    integer_encoded = [char_to_int[char] for i, char in enumerate(name) if i &amp;lt; word_vec_length]
+    
+    # Start one-hot-encoding
+    onehot_encoded = list()
+    
+    for value in integer_encoded:
+        # create a list of n zeros, where n is equal to the number of accepted characters
+        letter = [0 for _ in range(char_vec_length)]
+        letter[value] = 1
+        onehot_encoded.append(letter)
+        
+    # Fill up list to the max length. Lists need do have equal length to be able to convert it into an array
+    for _ in range(word_vec_length - len(name)):
+        onehot_encoded.append([0 for _ in range(char_vec_length)])
+        
+    return onehot_encoded
+
+# Encode the output labels
+def lable_encoding(gender_series):
+    labels = np.empty((0, 2))
+    for i in gender_series:
+        if i == &#39;m&#39;:
+            labels = np.append(labels, [[1,0]], axis=0)
+        else:
+            labels = np.append(labels, [[0,1]], axis=0)
+    return labels
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Và tiến hành chia tập dữ liệu thành train, val, và test set&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt; 
+# Split dataset in 60% train, 20% test and 20% validation
+train, validate, test = np.split(df.sample(frac=1), [int(.6*len(df)), int(.8*len(df))])
+
+# Convert both the input names as well as the output lables into the discussed machine readable vector format
+train_x =  np.asarray([np.asarray(name_encoding(normalize(name))) for name in train[predictor_col]])
+train_y = lable_encoding(train.gender)
+
+validate_x = np.asarray([name_encoding(normalize(name)) for name in validate[predictor_col]])
+validate_y = lable_encoding(validate.gender)
+
+test_x = np.asarray([name_encoding(normalize(name)) for name in test[predictor_col]])
+test_y = lable_encoding(test.gender)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Vậy là chúng ta đã có chuẩn bị xong dữ liệu đầy đủ rồi đó. Bây giờ chúng ta xây dựng mô hình thôi.&lt;/p&gt;
+
+&lt;h2 id=&#34;xây-dựng-mô-hình&#34;&gt;Xây dựng mô hình&lt;/h2&gt;
+
+&lt;p&gt;Có rất nhiều cách để chọn tham số cho mô hình, ví dụ như ở &lt;a href=&#34;https://stats.stackexchange.com/questions/95495/guideline-to-select-the-hyperparameters-in-deep-learning&#34;&gt;https://stats.stackexchange.com/questions/95495/guideline-to-select-the-hyperparameters-in-deep-learning&lt;/a&gt;
+ liệt kê ra 4 cách là Manual Search, Grid Search, Random Search, Bayesian Optimization. Tuy nhiên,  những cách trên đều khá tốn thời gian và đòi hỏi người kỹ sư phải có am hiểu nhất định.&lt;/p&gt;
+
+&lt;p&gt;Ở đây, chúng ta sử dụng một công thức được đưa ra trong link &lt;a href=&#34;https://stats.stackexchange.com/questions/181/how-to-choose-the-number-of-hidden-layers-and-nodes-in-a-feedforward-neural-netw/136542#136542&#34;&gt;https://stats.stackexchange.com/questions/181/how-to-choose-the-number-of-hidden-layers-and-nodes-in-a-feedforward-neural-netw/136542#136542&lt;/a&gt;, cụ thể&lt;/p&gt;
+
+&lt;p&gt;$$ N_h = \frac{N_s}{(\alpha * (N_i + N_o))}$$&lt;/p&gt;
+
+&lt;p&gt;Trong đó Ni là số lượng input neural, No là số lượng output neural, Ns là số lượng element trong tập dữ liệu train. alpha là một con số trade-off đại diện cho tỷ lệ thuộc đoạn [2-10].&lt;/p&gt;
+
+&lt;p&gt;Một lưu ý ở đây là bạn có thể dựa vào công thức và số alpha mà ước lượng xem rằng bạn đã có đủ dữ liệu mẫu hay chưa. Một ví dụ đơn giản là giả sử bạn có 10,000 mẫu dữ liệu, input số từ 0 đến 9, output là 64, chọn alpha ở mức nhỏ nhất là 2, vậy theo công thức số neural ẩn là 10000/(2*64*10) = 7.8 ~ 8. Nếu bạn tăng số alpha lên thì số hidden layer còn ít nữa. Điều trên chứng tỏ rằng số lượng mẫu của bạn chưa đủ, còn thiếu quá nhiều.  Nếu bạn tăng gấp 100 lần số dữ liệu mẫu, thì con số có vẻ hợp lý hơn.&lt;/p&gt;
+
+&lt;p&gt;Trong tập dữ liệu, mình có:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;The input vector will have the shape  {17} x {82}
+Train len:  (21883, 17, 82) 36473
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Tổng cộng N_s là 21883, Ni là 17, No là 82, chọn alpha là 2 thì mình có 21883/(2*17*82) = 7.8 ~ 8. Một con số khá nhỏ, chứng tỏ dữ liệu của mình còn quá ít.&lt;/p&gt;
+
+&lt;p&gt;Đối với tập dữ liệu nhỏ như thế này, mình thường sẽ áp dụng công thức sau:&lt;/p&gt;
+
+&lt;p&gt;$$ N_h= \beta* (N_i + N_o) $$&lt;/p&gt;
+
+&lt;p&gt;Với beta là một con số thực thuộc nửa đoạn (0,1]. Thông thường sẽ là &lt;sup&gt;2&lt;/sup&gt;&amp;frasl;&lt;sub&gt;3&lt;/sub&gt;. Kết quả là số lượng neural của mình khoảng 929.333 node. Thông thường, mình sẽ chọn số neural là một con số là bội số của 2, ở đây 929 gần với 2^10 nhất, nên mình chọn số neural là 2^10.&lt;/p&gt;
+
+&lt;p&gt;Tóm lại, mình sẽ theo quy tắc&lt;/p&gt;
+
+&lt;p&gt;Nếu dữ liệu nhiều:&lt;/p&gt;
+
+&lt;p&gt;$$ N_h = \frac{N_s}{(\alpha * (N_i + N_o))}$$&lt;/p&gt;
+
+&lt;p&gt;Nếu dữ liệu ít&lt;/p&gt;
+
+&lt;p&gt;$$ N_h= \frac{2}{3}* (N_i + N_o) $$&lt;/p&gt;
+
+&lt;p&gt;Làm tròn lên bằng với bội số của 2 mũ gần nhất.&lt;/p&gt;
+
+&lt;p&gt;Một lưu ý nhỏ là số lượng node càng nhiều thì tỷ lệ overfit càng cao, và thời gian huấn luyện càng lâu. Do đó, bạn nên trang bị máy có cấu hình kha khá một chút, tốt hơn hết là nên có GPU đi kèm. Ngoài ra, bạn nên chuẩn bị càng nhiều dữ liệu càng tốt. Một kinh nghiệm của mình rút ra trong quá trình làm Machine Learning là nếu không có nhiều dữ liệu, thì đừng cố thử áp dụng các phương pháp ML trên nó.&lt;/p&gt;
+
+&lt;p&gt;Mô hình mình xây dựng như sau:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt; 
+hidden_nodes = 1024
+
+
+# Build the model
+print(&#39;Build model...&#39;)
+model = Sequential()
+model.add(LSTM(hidden_nodes, return_sequences=False, input_shape=(word_vec_length, char_vec_length)))
+model.add(Dropout(0.2))
+model.add(Dense(units=output_labels))
+model.add(Activation(&#39;softmax&#39;))
+model.compile(loss=&#39;categorical_crossentropy&#39;, optimizer=&#39;adam&#39;, metrics=[&#39;acc&#39;])
+
+batch_size=1000
+model.fit(train_x, train_y, batch_size=batch_size, epochs=50, validation_data=(validate_x, validate_y))
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Do bài viết chỉ tập trung vào vấn đề lựa chọn số lượng node, nên mình sẽ bỏ qua những phần phụ như là early stoping, save each epochs &amp;hellip;, Các vấn đề trên ít nhiều mình đã đề cập ở các bài viết trước.&lt;/p&gt;
+
+&lt;p&gt;Kết quả của việc huấn luyện mô hình&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt; 21883/21883 [==============================] - 34s 2ms/step - loss: 0.6602 - acc: 0.6171 - val_loss: 0.6276 - val_acc: 0.7199
+Epoch 2/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.5836 - acc: 0.7056 - val_loss: 0.5625 - val_acc: 0.7193
+Epoch 3/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.5531 - acc: 0.7353 - val_loss: 0.5506 - val_acc: 0.7389
+Epoch 4/50
+21883/21883 [==============================] - 31s 1ms/step - loss: 0.5480 - acc: 0.7446 - val_loss: 0.5664 - val_acc: 0.7313
+Epoch 5/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.5406 - acc: 0.7420 - val_loss: 0.5247 - val_acc: 0.7613
+Epoch 6/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.5077 - acc: 0.7686 - val_loss: 0.4918 - val_acc: 0.7790
+Epoch 7/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.4825 - acc: 0.7837 - val_loss: 0.4939 - val_acc: 0.7740
+Epoch 8/50
+21883/21883 [==============================] - 31s 1ms/step - loss: 0.4611 - acc: 0.7887 - val_loss: 0.4407 - val_acc: 0.8037
+Epoch 9/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.4421 - acc: 0.7987 - val_loss: 0.4657 - val_acc: 0.8005
+Epoch 10/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.4293 - acc: 0.8055 - val_loss: 0.4183 - val_acc: 0.8141
+Epoch 11/50
+21883/21883 [==============================] - 31s 1ms/step - loss: 0.4129 - acc: 0.8128 - val_loss: 0.4171 - val_acc: 0.8212
+Epoch 12/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.4153 - acc: 0.8141 - val_loss: 0.4031 - val_acc: 0.8188
+Epoch 13/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.3978 - acc: 0.8191 - val_loss: 0.3918 - val_acc: 0.8280
+Epoch 14/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.3910 - acc: 0.8268 - val_loss: 0.3831 - val_acc: 0.8276
+Epoch 15/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.3848 - acc: 0.8272 - val_loss: 0.3772 - val_acc: 0.8314
+Epoch 16/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.3751 - acc: 0.8354 - val_loss: 0.3737 - val_acc: 0.8363
+Epoch 17/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.3708 - acc: 0.8345 - val_loss: 0.3717 - val_acc: 0.8374
+Epoch 18/50
+21883/21883 [==============================] - 31s 1ms/step - loss: 0.3688 - acc: 0.8375 - val_loss: 0.3768 - val_acc: 0.8330
+Epoch 19/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.3704 - acc: 0.8375 - val_loss: 0.3621 - val_acc: 0.8392
+Epoch 20/50
+21883/21883 [==============================] - 31s 1ms/step - loss: 0.3608 - acc: 0.8444 - val_loss: 0.3656 - val_acc: 0.8422
+Epoch 21/50
+21883/21883 [==============================] - 31s 1ms/step - loss: 0.3548 - acc: 0.8459 - val_loss: 0.3670 - val_acc: 0.8417
+Epoch 22/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.3521 - acc: 0.8452 - val_loss: 0.3555 - val_acc: 0.8462
+Epoch 23/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.3432 - acc: 0.8504 - val_loss: 0.3591 - val_acc: 0.8402
+Epoch 24/50
+21883/21883 [==============================] - 31s 1ms/step - loss: 0.3415 - acc: 0.8524 - val_loss: 0.3471 - val_acc: 0.8470
+Epoch 25/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.3355 - acc: 0.8555 - val_loss: 0.3577 - val_acc: 0.8436
+Epoch 26/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.3320 - acc: 0.8552 - val_loss: 0.3602 - val_acc: 0.8430
+Epoch 27/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.3294 - acc: 0.8578 - val_loss: 0.3565 - val_acc: 0.8485
+Epoch 28/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.3235 - acc: 0.8602 - val_loss: 0.3427 - val_acc: 0.8514
+Epoch 29/50
+21883/21883 [==============================] - 31s 1ms/step - loss: 0.3138 - acc: 0.8651 - val_loss: 0.3523 - val_acc: 0.8470
+Epoch 30/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.3095 - acc: 0.8683 - val_loss: 0.3457 - val_acc: 0.8487
+Epoch 31/50
+21883/21883 [==============================] - 31s 1ms/step - loss: 0.3064 - acc: 0.8701 - val_loss: 0.3538 - val_acc: 0.8531
+Epoch 32/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.2985 - acc: 0.8717 - val_loss: 0.3555 - val_acc: 0.8455
+Epoch 33/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.2930 - acc: 0.8741 - val_loss: 0.3430 - val_acc: 0.8525
+Epoch 34/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.2901 - acc: 0.8786 - val_loss: 0.3457 - val_acc: 0.8503
+Epoch 35/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.2852 - acc: 0.8776 - val_loss: 0.3458 - val_acc: 0.8510
+Epoch 36/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.2817 - acc: 0.8811 - val_loss: 0.3445 - val_acc: 0.8568
+Epoch 37/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.2780 - acc: 0.8816 - val_loss: 0.3356 - val_acc: 0.8540
+Epoch 38/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.2734 - acc: 0.8852 - val_loss: 0.3442 - val_acc: 0.8559
+Epoch 39/50
+21883/21883 [==============================] - 31s 1ms/step - loss: 0.2579 - acc: 0.8904 - val_loss: 0.3552 - val_acc: 0.8540
+Epoch 40/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.2551 - acc: 0.8927 - val_loss: 0.3677 - val_acc: 0.8532
+Epoch 41/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.2558 - acc: 0.8921 - val_loss: 0.3496 - val_acc: 0.8588
+Epoch 42/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.2472 - acc: 0.8963 - val_loss: 0.3534 - val_acc: 0.8587
+Epoch 43/50
+21883/21883 [==============================] - 31s 1ms/step - loss: 0.2486 - acc: 0.8948 - val_loss: 0.3490 - val_acc: 0.8537
+Epoch 44/50
+21883/21883 [==============================] - 31s 1ms/step - loss: 0.2503 - acc: 0.8965 - val_loss: 0.3594 - val_acc: 0.8552
+Epoch 45/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.2391 - acc: 0.8993 - val_loss: 0.3793 - val_acc: 0.8566
+Epoch 46/50
+21883/21883 [==============================] - 31s 1ms/step - loss: 0.2244 - acc: 0.9048 - val_loss: 0.3815 - val_acc: 0.8543
+Epoch 47/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.2203 - acc: 0.9095 - val_loss: 0.3848 - val_acc: 0.8554
+Epoch 48/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.2221 - acc: 0.9051 - val_loss: 0.3892 - val_acc: 0.8558
+Epoch 49/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.2117 - acc: 0.9124 - val_loss: 0.3654 - val_acc: 0.8544
+Epoch 50/50
+21883/21883 [==============================] - 30s 1ms/step - loss: 0.2141 - acc: 0.9118 - val_loss: 0.3726 - val_acc: 0.8547
+
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Độ chính xác trên tập train là hơn 90%, trên tập val là hơn 85%. Nhìn kỹ hơn vào những từ sai ta thấy rằng&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;             name gender predicted_gender
+6750       Chiaki      f                m
+28599      Naheed      f                m
+11448  Espiridión      m                f
+895       Akmaral      f                m
+33778         Ros      f                m
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Có một sự nhập nhằng ở ngôn ngữ giữa tên nam và tên nữ ở những từ này. Có lẽ một tập dữ liệu với đầy đủ họ và tên sẽ cho ra một kết quả có độ chính xác cao hơn. Ví dụ, ở Việt Nam, tên Ngọc thì có thể đặt được cho cả Nam lẫn Nữ.&lt;/p&gt;
+
+&lt;p&gt;Mình sẽ cố gắng kiếm một bộ dataset tên tiếng việt và thực hiện việc xây dựng mô hình xác định giới tính thông qua tên người dựa vào mô hình LSTM.&lt;/p&gt;
+
+&lt;p&gt;Cảm ơn các bạn đã theo dõi. Hẹn gặp bạn ở các bài viết tiếp theo.&lt;/p&gt;
+</description>
     </item>
     
     <item>
@@ -95,9 +1939,236 @@ hash(&amp;quot;pham duy tung&amp;quot;) 1568935795476364190  Checksums Chúng ta
       <pubDate>Wed, 06 Feb 2019 00:19:00 +0300</pubDate>
       <author>alexblack2202@gmail.com (Phạm Duy Tùng)</author>
       <guid>/blog/2019-02-06-how-to-reduce-memory-consumption-by-half-by-adding-just-one-line-of-code/</guid>
-      <description>Mở đầu Bắt đầu bằng một class đơn giản như sau:
-class DataItem(object): def __init__(self, name, age, address): self.name = name self.age = age self.address = address  Bạn nghĩ một đối tượng của class trên sẽ chiếm bao nhiêu bộ nhớ. Chúng ta cùng tiến hành một vài thí nghiệm nho nhỏ bên dưới.
-dx = DataItem(&amp;quot;Alex Black&amp;quot;, 42, &amp;quot;-&amp;quot;) print (&amp;quot;sys.getsizeof(dx):&amp;quot;, sys.getsizeof(dx)) &amp;gt;&amp;gt; sys.getsizeof(dx): 56  Kết quả ra là 56 bytes, khá hợp lý phải không các bạn.</description>
+      <description>
+
+&lt;h2 id=&#34;mở-đầu&#34;&gt;Mở đầu&lt;/h2&gt;
+
+&lt;p&gt;Bắt đầu bằng một class đơn giản như sau:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;class DataItem(object):
+    def __init__(self, name, age, address):
+        self.name = name
+        self.age = age
+        self.address = address
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Bạn nghĩ một đối tượng của class trên sẽ chiếm bao nhiêu bộ nhớ. Chúng ta cùng tiến hành một vài thí nghiệm nho nhỏ bên dưới.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;dx = DataItem(&amp;quot;Alex Black&amp;quot;, 42, &amp;quot;-&amp;quot;)
+print (&amp;quot;sys.getsizeof(dx):&amp;quot;, sys.getsizeof(dx))
+&amp;gt;&amp;gt; sys.getsizeof(dx): 56
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Kết quả ra là &lt;em&gt;56 bytes&lt;/em&gt;, khá hợp lý phải không các bạn. Thử với một ví dụ khác xem sao nhỉ.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;dy = DataItem(&amp;quot;Alex Black&amp;quot;, 42, &amp;quot;I am working at MWG&amp;quot;)
+print (&amp;quot;sys.getsizeof(dy):&amp;quot;, sys.getsizeof(dy))
+&amp;gt;&amp;gt; sys.getsizeof(dy): 56
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Kết quả vẫn là &lt;em&gt;56 bytes&lt;/em&gt;. Có cái gì đó sai sai ở đây không nhỉ?&lt;/p&gt;
+
+&lt;p&gt;Chúng ta thực nghiệm một vài thí nghiệm khác để chứng thực.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;print (sys.getsizeof(&amp;quot;&amp;quot;))
+&amp;gt;&amp;gt; 49
+print (sys.getsizeof(&amp;quot;1&amp;quot;))
+&amp;gt;&amp;gt; 50
+print (sys.getsizeof(1))
+&amp;gt;&amp;gt; 28
+print (sys.getsizeof(dict()))
+&amp;gt;&amp;gt; 240
+print (sys.getsizeof({}))
+&amp;gt;&amp;gt; 240
+print (sys.getsizeof(list()))
+&amp;gt;&amp;gt; 64
+print (sys.getsizeof([]))
+&amp;gt;&amp;gt; 64
+print (sys.getsizeof(()))
+&amp;gt;&amp;gt; 48
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Một điều cực kỳ bất ngờ đã xuất hiện ở đây. Một chuỗi rỗng chiếm đến tận &lt;em&gt;49 bytes&lt;/em&gt;, một dictionary rỗng, không chứa phần tử nào chiếm đến &lt;em&gt;240 bytes&lt;/em&gt;, và một list rỗng chiếm tới &lt;em&gt;64 bytes&lt;/em&gt;. Rõ ràng, python đã lưu một số thứ gì đó ngoài dữ liệu của mình.&lt;/p&gt;
+
+&lt;p&gt;Đi sâu vào thử tìm hiểu những thứ &amp;lsquo;linh kiện&amp;rsquo; linh tinh mà python đã kèm theo cho chúng ta là gì nhé.&lt;/p&gt;
+
+&lt;p&gt;Đầu tiên, chúng ta sẽ cần một hàm in ra những thứ mà python đã &amp;lsquo;nhúng&amp;rsquo; thêm vào class DataItem chúng ta khai báo ở trên.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def dump(obj):
+  for attr in dir(obj):
+    print(&amp;quot;  obj.%s = %r&amp;quot; % (attr, getattr(obj, attr)))
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;và dump biến dy ra thôi&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;dump(dy)
+
+obj.__class__ = &amp;lt;class &#39;__main__.DataItem&#39;&amp;gt;
+  obj.__delattr__ = &amp;lt;method-wrapper &#39;__delattr__&#39; of DataItem object at 0x000001A64A6DD0F0&amp;gt;
+  obj.__dict__ = {&#39;name&#39;: &#39;Alex Black&#39;, &#39;age&#39;: 42, &#39;address&#39;: &#39;i am working at MWG&#39;}
+  obj.__dir__ = &amp;lt;built-in method __dir__ of DataItem object at 0x000001A64A6DD0F0&amp;gt;
+  obj.__doc__ = None
+  obj.__eq__ = &amp;lt;method-wrapper &#39;__eq__&#39; of DataItem object at 0x000001A64A6DD0F0&amp;gt;
+  obj.__format__ = &amp;lt;built-in method __format__ of DataItem object at 0x000001A64A6DD0F0&amp;gt;
+  obj.__ge__ = &amp;lt;method-wrapper &#39;__ge__&#39; of DataItem object at 0x000001A64A6DD0F0&amp;gt;
+  obj.__getattribute__ = &amp;lt;method-wrapper &#39;__getattribute__&#39; of DataItem object at 0x000001A64A6DD0F0&amp;gt;
+  obj.__gt__ = &amp;lt;method-wrapper &#39;__gt__&#39; of DataItem object at 0x000001A64A6DD0F0&amp;gt;
+  obj.__hash__ = &amp;lt;method-wrapper &#39;__hash__&#39; of DataItem object at 0x000001A64A6DD0F0&amp;gt;
+  obj.__init__ = &amp;lt;bound method DataItem.__init__ of &amp;lt;__main__.DataItem object at 0x000001A64A6DD0F0&amp;gt;&amp;gt;
+  obj.__init_subclass__ = &amp;lt;built-in method __init_subclass__ of type object at 0x000001A64A5DE738&amp;gt;
+  obj.__le__ = &amp;lt;method-wrapper &#39;__le__&#39; of DataItem object at 0x000001A64A6DD0F0&amp;gt;
+  obj.__lt__ = &amp;lt;method-wrapper &#39;__lt__&#39; of DataItem object at 0x000001A64A6DD0F0&amp;gt;
+  obj.__module__ = &#39;__main__&#39;
+  obj.__ne__ = &amp;lt;method-wrapper &#39;__ne__&#39; of DataItem object at 0x000001A64A6DD0F0&amp;gt;
+  obj.__new__ = &amp;lt;built-in method __new__ of type object at 0x000000005C2DC580&amp;gt;
+  obj.__reduce__ = &amp;lt;built-in method __reduce__ of DataItem object at 0x000001A64A6DD0F0&amp;gt;
+  obj.__reduce_ex__ = &amp;lt;built-in method __reduce_ex__ of DataItem object at 0x000001A64A6DD0F0&amp;gt;
+  obj.__repr__ = &amp;lt;method-wrapper &#39;__repr__&#39; of DataItem object at 0x000001A64A6DD0F0&amp;gt;
+  obj.__setattr__ = &amp;lt;method-wrapper &#39;__setattr__&#39; of DataItem object at 0x000001A64A6DD0F0&amp;gt;
+  obj.__sizeof__ = &amp;lt;built-in method __sizeof__ of DataItem object at 0x000001A64A6DD0F0&amp;gt;
+  obj.__str__ = &amp;lt;method-wrapper &#39;__str__&#39; of DataItem object at 0x000001A64A6DD0F0&amp;gt;
+  obj.__subclasshook__ = &amp;lt;built-in method __subclasshook__ of type object at 0x000001A64A5DE738&amp;gt;
+  obj.__weakref__ = None
+  obj.address = &#39;i am working at MWG&#39;
+  obj.age = 42
+  obj.name = &#39;Alex Black&#39;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Wow, có vẻ khá là đồ sộ nhỉ.&lt;/p&gt;
+
+&lt;p&gt;Trên github, có một hàm có sẵn tính toán số lượng bộ nhớ mà object chiếm được dựa vào cách truy xuất trực tiếp từng trường dữ liệu của đối tượng và tính toán kích thước&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;import sys
+
+def get_size(obj, seen=None):
+    &amp;quot;&amp;quot;&amp;quot;Recursively finds size of objects&amp;quot;&amp;quot;&amp;quot;
+    size = sys.getsizeof(obj)
+    if seen is None:
+        seen = set()
+    obj_id = id(obj)
+    if obj_id in seen:
+        return 0
+    # Important mark as seen *before* entering recursion to gracefully handle
+    # self-referential objects
+    seen.add(obj_id)
+    if isinstance(obj, dict):
+        size += sum([get_size(v, seen) for v in obj.values()])
+        size += sum([get_size(k, seen) for k in obj.keys()])
+    elif hasattr(obj, &#39;__dict__&#39;):
+        size += get_size(obj.__dict__, seen)
+    elif hasattr(obj, &#39;__iter__&#39;) and not isinstance(obj, (str, bytes, bytearray)):
+        size += sum([get_size(i, seen) for i in obj])
+    return size
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;thử với 2 biến dx và dy của chúng ta xem sao&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;&amp;gt;&amp;gt;&amp;gt; print (&amp;quot;get_size(d1):&amp;quot;, get_size(dx))
+get_size(d1): 466
+&amp;gt;&amp;gt;&amp;gt; print (&amp;quot;get_size(d1):&amp;quot;, get_size(dy))
+get_size(d1): 484
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Chúng tốn lần lượt là 466 và 484 bytes. Có vẻ đúng đó nhỉ.&lt;/p&gt;
+
+&lt;p&gt;Điều chúng ta quan tâm lúc này là có cách nào để giảm bộ nhớ tiêu thụ của một object hay không?&lt;/p&gt;
+
+&lt;h2 id=&#34;giảm-bộ-nhớ-tiêu-thụ-của-một-đối-tượng-trong-python&#34;&gt;Giảm bộ nhớ tiêu thụ của một đối tượng trong python&lt;/h2&gt;
+
+&lt;p&gt;Tất nhiên là sẽ có cách giảm. Python là một ngôn ngữ thông dịch, và nó cho phép chúng ta mở rộng lớp bất kể lúc nào bằng cách thêm một/ nhiều trường dữ liệu.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;dz = DataItem(&amp;quot;Alex Black&amp;quot;, 42, &amp;quot;-&amp;quot;)
+dz.height = 1.80
+print ( get_size(dz))
+&amp;gt;&amp;gt; 484
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Chính vì lý do này, trình biên dịch sẽ tốn thêm một đống bộ nhớ tạm để chúng ta có thể dễ dàng mở rộng một lớp trong tương lai. Nếu chúng ta &amp;ldquo;ép buộc&amp;rdquo; trình biên dịch, nói rằng chúng ta chỉ có nhiêu đó trường, và bỏ phần dư thừa đi.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;class DataItem(object):
+    __slots__ = [&#39;name&#39;, &#39;age&#39;, &#39;address&#39;]
+    def __init__(self, name, age, address):
+        self.name = name
+        self.age = age
+        self.address = address
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Và thử lại&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+dz = DataItem(&amp;quot;Alex Black&amp;quot;, 42, &amp;quot;i am working at MWG&amp;quot;)
+print (&amp;quot;sys.getsizeof(dz):&amp;quot;, get_size(dz))
+
+&amp;gt;&amp;gt;sys.getsizeof(dz): 64
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Các bạn thấy gì không, bộ nhớ tiêu thụ chỉ là &amp;ldquo;64 bytes&amp;rdquo;. Dung lượng đã giảm đi hơn &amp;ldquo;7 lần&amp;rdquo; so với model class ban đầu. Tuy nhiên, chúng ta sẽ không thể mở rộng class dễ dàng như xưa nữa.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;&amp;gt;&amp;gt;&amp;gt; dz.height = 1.80
+Traceback (most recent call last):
+  File &amp;quot;&amp;lt;stdin&amp;gt;&amp;quot;, line 1, in &amp;lt;module&amp;gt;
+AttributeError: &#39;DataItem&#39; object has no attribute &#39;height&#39;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Thử tạo một đối tượng có 1000 phần tử và kiểm tra thử.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;class DataItem(object):
+    __slots__ = [&#39;name&#39;, &#39;age&#39;, &#39;address&#39;]
+    def __init__(self, name, age, address):
+        self.name = name
+        self.age = age
+        self.address = address
+
+
+data = []
+
+tracemalloc.start()
+start =datetime.datetime.now()
+for p in range(100000):
+    data.append(DataItem(&amp;quot;Alex&amp;quot;, 42, &amp;quot;middle of nowhere&amp;quot;))
+    
+end =datetime.datetime.now()
+snapshot = tracemalloc.take_snapshot()
+top_stats = snapshot.statistics(&#39;lineno&#39;)
+total = sum(stat.size for stat in top_stats)
+print(&amp;quot;Total allocated size: %.1f MB&amp;quot; % (total / (1024*1024)))
+print(&amp;quot;Total execute time:&amp;quot;,(end-start).microseconds)
+
+&amp;gt;&amp;gt; Total allocated size: 6.9 MB
+&amp;gt;&amp;gt; Total execute time: 232565
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Bỏ dòng &lt;strong&gt;slots&lt;/strong&gt; = [&amp;lsquo;name&amp;rsquo;, &amp;lsquo;age&amp;rsquo;, &amp;lsquo;address&amp;rsquo;] đi thử&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+class DataItem(object):
+    def __init__(self, name, age, address):
+        self.name = name
+        self.age = age
+        self.address = address
+
+
+data = []
+
+tracemalloc.start()
+start =datetime.datetime.now()
+for p in range(100000):
+    data.append(DataItem(&amp;quot;Alex&amp;quot;, 42, &amp;quot;middle of nowhere&amp;quot;))
+end =datetime.datetime.now()
+snapshot = tracemalloc.take_snapshot()
+top_stats = snapshot.statistics(&#39;lineno&#39;)
+total = sum(stat.size for stat in top_stats)
+print(&amp;quot;Total allocated size: %.1f MB&amp;quot; % (total / (1024*1024)))
+print(&amp;quot;Total execute time:&amp;quot;,(end-start).microseconds)
+
+&amp;gt;&amp;gt; Total allocated size: 16.8 MB
+&amp;gt;&amp;gt; Total execute time: 240772
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;So sánh thử, chúng ta thấy rằng số lượng RAM giảm đi khá nhiều, thời gian thực thi khá tương đương nhau (có giảm một chút).&lt;/p&gt;
+
+&lt;p&gt;Cảm ơn các bạn đã theo dõi. Hẹn gặp bạn ở các bài viết tiếp theo.&lt;/p&gt;
+</description>
     </item>
     
     <item>
@@ -106,7 +2177,183 @@ dx = DataItem(&amp;quot;Alex Black&amp;quot;, 42, &amp;quot;-&amp;quot;) print (
       <pubDate>Tue, 05 Feb 2019 00:19:00 +0300</pubDate>
       <author>alexblack2202@gmail.com (Phạm Duy Tùng)</author>
       <guid>/blog/2019-02-05-5-python-tricks-you-need-to-know-today/</guid>
-      <description>Mở đầu Hiện nay, có rất nhiều thư viện do cộng đồng đóng góp và xây dựng. Ví dụ như biopython trong tin sinh học, pandas (data science), keras/tensorflow (machine learning), astropy ( cho thiên văn học - astronomy). Trước khi bắt đầu đọc bài viết này, bạn đên đọc &amp;ldquo;Python Tricks Book&amp;rdquo; của Dan Bader trước (https://dbader.org/products/python-tricks-book/). Trong sách, anh ấy đã chia sẻ một số lời khuyên và mẹo về các code python hiệu quả hơn.</description>
+      <description>
+
+&lt;h2 id=&#34;mở-đầu&#34;&gt;Mở đầu&lt;/h2&gt;
+
+&lt;p&gt;Hiện nay, có rất nhiều thư viện do cộng đồng đóng góp và xây dựng. Ví dụ như biopython trong tin sinh học, pandas (data science), keras/tensorflow (machine learning), astropy ( cho thiên văn học - astronomy). Trước khi bắt đầu đọc bài viết này, bạn đên đọc &amp;ldquo;Python Tricks Book&amp;rdquo; của Dan Bader trước (&lt;a href=&#34;https://dbader.org/products/python-tricks-book/&#34;&gt;https://dbader.org/products/python-tricks-book/&lt;/a&gt;). Trong sách, anh ấy đã chia sẻ một số lời khuyên và mẹo về các code python hiệu quả hơn.&lt;/p&gt;
+
+&lt;h2 id=&#34;mẹo-số-1-sức-mạnh-của-một-dòng&#34;&gt;Mẹo số 1: Sức mạnh của một dòng&lt;/h2&gt;
+
+&lt;p&gt;Khi bạn đọc một đoạn giải thuật với nhiều dòng code, có thể bạn sẽ bị quên thông tin những dòng trước đó đã viết gì, đặc biệt là trong những câu lệnh điều kiện. Ví dụ:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+if alpha &amp;gt; 7:
+     beta = 999
+elif alpha == 7:
+    beta = 99
+else:
+   beta =0
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Chóng ta có thể viết đơn giản hơn chỉ với một dòng code như sau.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;beta = 999 if alpha &amp;gt; 7 else 99 if alpha == 7 else 0
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;thật đơn giản phải không. Bạn chỉ cần nhìn đúng một dòng là nằm được nội dung ý nghĩa của đoạn code bạn cần. Một ví dụ khác về vòng lặp for.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;lst = [1, 2, 3, 4] 
+lst_double = []
+
+for num in lst:
+    lst_double.append(num * 2)
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Đoạn code trên có thể viết lại dưới dạng 1 dòng như sau.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;lst_double = [num * 2 for num in lst]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Tất nhiên, bạn không nên &amp;ldquo;lạm dụng&amp;rdquo; one line một cách thái quá, ví dụ&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;import pprint; pprint.pprint(zip((&#39;Byte&#39;, &#39;KByte&#39;, &#39;MByte&#39;, &#39;GByte&#39;, &#39;TByte&#39;), (1 &amp;lt;&amp;lt; 10*i for i in xrange(5))))
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Trông nó có vẻ hơi &amp;ldquo;lố bịch&amp;rdquo; phải không.&lt;/p&gt;
+
+&lt;h2 id=&#34;mẹo-2-các-thao-tác-nhanh-trên-chuỗi&#34;&gt;Mẹo 2: Các thao tác nhanh trên chuỗi&lt;/h2&gt;
+
+&lt;p&gt;Python cung cấp cho chúng ta một số cách viết ngắn gọn giúp chúng ta có thể dể dàng thao tác trên chuỗi. Để reverse một chuỗi, chúng ta sử dụng toán tử ::-1&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+str = &#39;i am alex&#39;
+print(str[::-1])
+&amp;gt;&amp;gt; xela ma i
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Mẹo trên cũng có thể sử dụng đối với list số nguyên.&lt;/p&gt;
+
+&lt;p&gt;Để nối các phần tử trong một list thành một chuỗi, chúng ta có thể dùng hàm join()&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+str1 = [&amp;quot;pig&amp;quot;, &amp;quot;year&amp;quot; , &amp;quot;2019&amp;quot;]
+str2 = &amp;quot;happy &amp;quot;
+str3 = &amp;quot;new &amp;quot;
+
+
+print( &#39; &#39;.join(str1))
+&amp;gt;&amp;gt; pig year 2019
+
+print(str2+str3+&#39; &#39;.join(str1))
+&amp;gt;&amp;gt; happy new year 2019
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Thật tuyệt vời phải không các bạn.&lt;/p&gt;
+
+&lt;p&gt;Ngoài ra các bạn có thể sử dụng biếu thức chính quy để tìm kiếm chuỗi và pattern. Về biểu thức chính quy trong python, các bạn có thể tìm hiểu ở &lt;a href=&#34;https://docs.python.org/3/library/re.html&#34;&gt;https://docs.python.org/3/library/re.html&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h2 id=&#34;mẹo-số-3-chuỗi-lồng-nhau&#34;&gt;Mẹo số 3: Chuỗi lồng nhau&lt;/h2&gt;
+
+&lt;p&gt;Thử tưởng tượng rằng bạn có hàng tá các list, và sau một mớ các thao tác, kết quả của bạn là một list các list. Chúng ta sẽ sử dụng itertools - một thư viện được cung cấp sẵn trong python để giải quyết vấn đề này giúp chúng ta.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+import itertools
+flatten = lambda x: list(itertools.chain.from_iterable(x))
+s =[[&amp;quot;this&amp;quot;,&amp;quot;is&amp;quot;],[&amp;quot;the&amp;quot;,&amp;quot;year&amp;quot;], [&amp;quot;of&amp;quot;, &amp;quot;pig&amp;quot;], [&amp;quot;in&amp;quot;], [&amp;quot;Việt&amp;quot;, &amp;quot;Nam&amp;quot;]]
+
+print(&#39; &#39;,join(flatten(s)))
+&amp;gt;&amp;gt; this is the year of pig in Việt Nam
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Nếu bạn chạy dòng code trên bị lỗi, rất có thể là do terminal của bạn không hỗ trợ tiếng việt font unicode. Hãy chuyển qua font unicode trên terminal hoặc dùng terminal của ubuntu, bash (trên window 10).&lt;/p&gt;
+
+&lt;p&gt;Ngoài ra, itertools còn hỗ trợ rất nhiều hàm khác để giúp chúng ta thao tác trên chuỗi lồng dễ dàng hơn. Các bạn có thể tham khảo thêm ở &lt;a href=&#34;https://docs.python.org/2/library/itertools.html&#34;&gt;https://docs.python.org/2/library/itertools.html&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h2 id=&#34;mẹo-4-cấu-trúc-dữ-liệu-đơn-giản&#34;&gt;Mẹo 4: Cấu trúc dữ liệu đơn giản.&lt;/h2&gt;
+
+&lt;p&gt;Chúng ta có thể xây dựng một cây đơn giản chỉ với một dòng mã lệnh:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;def tree(): return defaultdict(tree)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Một ví dụ đơn giản khác là hàm tạo số nguyên chỉ với 1 dòng code ngắn gọn&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;reduce( (lambda r,x: r-set(range(x**2,N,x)) if (x in r) else r), 
+        range(2,N), set(range(2,N)))
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Python có hỗ trợ nhiều thư viện rất mạnh trong việc giải quyết các vấn đề trong thế giới thực. Ví dụ thư viện Collections&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;from collections import Counter
+myList = [1,1,2,3,4,5,3,2,3,4,2,1,2,3]
+print(Counter(myList))
+Counter({2: 4, 3: 4, 1: 3, 4: 2, 5: 1})
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Một lưu ý nhỏ là các thư viện này chỉ nên sử dụng khi tập dữ liệu của bạn nhỏ, nếu tập dữ liệu lớn, ví dụ bạn cần đếm số lần xuất hiện của các từ trong tập văn bản với 100GB dữ liệu. Bạn hãy dùng cách khác, ví dụ hadoop, hoặc tăng bộ nhớ ram của bạn lên, ví dụ 1 Tb chẳng hạn :)&lt;/p&gt;
+
+&lt;h2 id=&#34;mẹo-5-xuất-dữ-liệu-ra-command-line-dễ-dàng&#34;&gt;Mẹo 5: Xuất dữ liệu ra command line dễ dàng&lt;/h2&gt;
+
+&lt;p&gt;Để xuất dữ liệu của một list int ra command line, theo như mẹo ở trên, ta sẽ dùng hàm .join() và vòng lặp.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python`&#34;&gt;lst_row = [1,2,3,4,5]
+print(&#39;,&#39;.join([str(x) for x in lst_row])
+1,2,3,4,5
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Cách đơn giản hơn chỉ với một dòng code (Ước gì mình biết cách này sớm hơn, hix).&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;print(*lst_row, sep=&#39;,&#39;)
+1,2,3,4,5
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Một mẹo khác là trong một số trường hợp duyệt mảng, bạn cần lấy giá trị và chỉ số của mảng đó để làm một số thao tác khác&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+lst_arr = [&#39;a&#39;,&#39;b&#39;,&#39;c&#39;,&#39;d&#39;]
+
+int_index = 0
+
+for item in lst_arr:
+    print(int_index, item)
+    int_index = int_index + 1
+    
+&amp;gt;&amp;gt; 0 a
+1 b
+2 c
+3 d
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;hoặc cách viết giống c/c++&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+for int_index in len(lst_arr):
+    print(int_index, lst_arr[int_index])
+    
+&amp;gt;&amp;gt; 0 a
+1 b
+2 c
+3 d
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Một cách khác là sử dụng hàm có sẵn enumerate của python&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;for int_index, item in enumerate(lst_arr):
+    print(int_index, item)
+    
+&amp;gt;&amp;gt; 0 a
+1 b
+2 c
+3 d
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Có rất nhiều mẹo hay để đơn giản hoá việc xuất dữ liệu ra terminal. Hãy thông tin cho mình biết nếu bạn có nhiều mẹo hay khác cần chia sẻ nhé.&lt;/p&gt;
+
+&lt;p&gt;Cảm ơn các bạn đã theo dõi. Hẹn gặp bạn ở các bài viết tiếp theo.&lt;/p&gt;
+</description>
     </item>
     
   </channel>

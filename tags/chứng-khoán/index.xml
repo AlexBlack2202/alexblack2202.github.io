@@ -10,9 +10,7 @@
     <webMaster>alexblack2202@gmail.com (Phạm Duy Tùng)</webMaster>
     <copyright>This work is licensed under a Creative Commons Attribution-ShareAlike 4.0 International License.</copyright>
     <lastBuildDate>Sat, 10 Nov 2018 00:19:00 +0300</lastBuildDate>
-    
-	<atom:link href="/tags/ch%E1%BB%A9ng-kho%C3%A1n/index.xml" rel="self" type="application/rss+xml" />
-    
+    <atom:link href="/tags/ch%E1%BB%A9ng-kho%C3%A1n/" rel="self" type="application/rss+xml" />
     
     <item>
       <title>Dự đoán giá chứng khoán SP500 sử dụng LSTM</title>
@@ -20,7 +18,264 @@
       <pubDate>Sat, 10 Nov 2018 00:19:00 +0300</pubDate>
       <author>alexblack2202@gmail.com (Phạm Duy Tùng)</author>
       <guid>/blog/2018-11-10-stock-prediction_v1/</guid>
-      <description>Lời mở đầu Ở bài viết này, mình sẽ xây dựng mô hình hơn giản để áp dụng vào tập dữ liệu giá chứng khoáng. Mục tiêu của bài này là chúng ta sẽ dự đoán chỉ số S&amp;amp;P 500 sử dụng LSTM. Các bạn có nhu cầu tìm hiểu thêm về chỉ số sp 500 có thể đọc thêm ở https://vi.wikipedia.org/wiki/S%26P_500. Đây là một ứng dụng nhỏ, không có ý nghĩa nhiều ở thực tế do khi phân tích chứng khoán, ta còn xét thêm rất nhiều yếu tố phụ nữa.</description>
+      <description>
+
+&lt;h2 id=&#34;lời-mở-đầu&#34;&gt;Lời mở đầu&lt;/h2&gt;
+
+&lt;p&gt;Ở bài viết này, mình sẽ xây dựng mô hình hơn giản để áp dụng vào tập dữ liệu giá chứng khoáng. Mục tiêu của bài này là chúng ta sẽ dự đoán chỉ số S&amp;amp;P 500 sử dụng LSTM. Các bạn có nhu cầu tìm hiểu thêm về chỉ số sp 500 có thể đọc thêm ở &lt;a href=&#34;https://vi.wikipedia.org/wiki/S%26P_500&#34;&gt;https://vi.wikipedia.org/wiki/S%26P_500&lt;/a&gt;. Đây là một ứng dụng nhỏ, không có ý nghĩa nhiều ở thực tế do khi phân tích chứng khoán, ta còn xét thêm rất nhiều yếu tố phụ nữa. Mô hình này thực chất chỉ là một trong những mô hình chơi chơi.&lt;/p&gt;
+
+&lt;h2 id=&#34;dẫn-nhập&#34;&gt;Dẫn nhập&lt;/h2&gt;
+
+&lt;h3 id=&#34;phân-tích-dữ-liệu&#34;&gt;Phân tích dữ liệu&lt;/h3&gt;
+
+&lt;p&gt;Các bạn có thể download dữ liệu ở &lt;a href=&#34;https://github.com/AlexBlack2202/alexmodel/blob/master/GSPC.csv&#34;&gt;https://github.com/AlexBlack2202/alexmodel/blob/master/GSPC.csv&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;Đầu tiên, như thường lệ, chúng ta sẽ import các thư viện cần thiết để sử dụng.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;import numpy as np # linear algebra
+import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
+
+from subprocess import check_output
+from keras.layers.core import Dense, Activation, Dropout
+from keras.layers.recurrent import LSTM
+from keras.models import Sequential
+from sklearn.cross_validation import  train_test_split
+import time #helper libraries
+from sklearn.preprocessing import MinMaxScaler
+import matplotlib.pyplot as plt
+from numpy import newaxis
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Đọc dữ liệu lên:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+file_name =&#39;GSPC.csv&#39;
+
+prices_dataset =  pd.read_csv(file_name, header=0)
+
+``
+
+Xem kích thước của dữ liệu:
+
+```python
+print(prices_dataset.shape)
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;(17114, 7)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Kết quả là ta có  17114 ngàn dòng và 7 cột. Thử show 10 row đầu tiên của dữ liệu lên xem như thế nào.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;print(prices_dataset.head())
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;         Date       Open       High        Low      Close  Adj Close   Volume
+0  1950-11-09  19.790001  19.790001  19.790001  19.790001  19.790001  1760000
+1  1950-11-10  19.940001  19.940001  19.940001  19.940001  19.940001  1640000
+2  1950-11-13  20.010000  20.010000  20.010000  20.010000  20.010000  1630000
+3  1950-11-14  19.860001  19.860001  19.860001  19.860001  19.860001  1780000
+4  1950-11-15  19.820000  19.820000  19.820000  19.820000  19.820000  1620000
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Cột đầu tiên là ngày, sau đó là giá mở cửa, giá giao dịch cao nhất, giá giao dịch thấp nhât, giá đóng cử, giá đóng cửa đã điều chỉnh, khối lượng giao dịch.&lt;/p&gt;
+
+&lt;p&gt;Plot đồ thị của mã SP500 lên:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;import matplotlib.pyplot as plt
+
+plt.plot(prices_dataset.Open.values, color=&#39;red&#39;, label=&#39;open&#39;)
+plt.plot(prices_dataset.Close.values, color=&#39;green&#39;, label=&#39;close&#39;)
+plt.plot(prices_dataset.Low.values, color=&#39;blue&#39;, label=&#39;low&#39;)
+plt.plot(prices_dataset.High.values, color=&#39;black&#39;, label=&#39;high&#39;)
+plt.title(&#39;stock price&#39;)
+plt.xlabel(&#39;time [days]&#39;)
+plt.ylabel(&#39;price&#39;)
+plt.legend(loc=&#39;best&#39;)
+plt.show()
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/sp500indexv1.png&#34; alt=&#34;Hình ảnh đừng đồ thị của chỉ số sp 500&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Hình với số lượng hơi nhiều nên khó phân biệt được giá trị của dữ liệu, chúng ta thử show đồ thị của 50 ngày cuối cùng trong dữ liệu.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;prices_dataset_tail_50 = prices_dataset.tail(50)
+
+plt.plot(prices_dataset_tail_50.Open.values, color=&#39;red&#39;, label=&#39;open&#39;)
+plt.plot(prices_dataset_tail_50.Close.values, color=&#39;green&#39;, label=&#39;close&#39;)
+plt.plot(prices_dataset_tail_50.Low.values, color=&#39;blue&#39;, label=&#39;low&#39;)
+plt.plot(prices_dataset_tail_50.High.values, color=&#39;black&#39;, label=&#39;high&#39;)
+plt.title(&#39;stock price&#39;)
+plt.xlabel(&#39;time [days]&#39;)
+plt.ylabel(&#39;price&#39;)
+plt.legend(loc=&#39;best&#39;)
+plt.show()
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/sp500index_tail_50.png&#34; alt=&#34;Hình ảnh đừng đồ thị của chỉ số sp 500&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Hình ảnh trông khá rõ ràng và trực quan hơn rất nhiều.&lt;/p&gt;
+
+&lt;p&gt;Chúng ta sẽ bỏ đi cột DATE,Adj Close,Volume đi. Các cột đó không cần thiết cho quá trình dự đoán.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+prices_dataset_dropout = prices_dataset.drop([&#39;Date&#39;,&#39;Adj Close&#39;,&#39;Volume&#39;], 1)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;scale-dữ-liệu&#34;&gt;Scale dữ liệu&lt;/h3&gt;
+
+&lt;p&gt;Khi sử dụng ANN, chúng ta thông thường sẽ scale dữ liệu input về đoạn [-1,1]. Trong python, thư viện sklearn đã hỗ trợ cho chúng ta sẵn các hàm scale dữ liệu cần thiết.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Scale data
+def normalize_data(df):
+    min_max_scaler = MinMaxScaler()
+    df[&#39;Open&#39;] = min_max_scaler.fit_transform(df.Open.values.reshape(-1,1))
+    df[&#39;High&#39;] = min_max_scaler.fit_transform(df.High.values.reshape(-1,1))
+    df[&#39;Low&#39;] = min_max_scaler.fit_transform(df.Low.values.reshape(-1,1))
+    df[&#39;Close&#39;] = min_max_scaler.fit_transform(df.Close.values.reshape(-1,1))
+    return df
+
+prices_dataset_norm = normalize_data(prices_dataset_dropout)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;phân-chia-tập-train-và-test&#34;&gt;Phân chia tập train và test.&lt;/h3&gt;
+
+&lt;p&gt;Chúng ta sẽ chia dữ liệu thành 2 phần với 80% là train và 20% còn lại là test. Chọn seq_len=20, các bạn có thể test với các seq len khác, và sau đó chuyển dữ liệu về dạng numpy array để dễ dàng thực hiện các phép chuyển đổi.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+def generate_data(stock_ds, seq_len):
+    data_raw = stock_ds.as_matrix()
+    data = []
+    
+    # create all possible sequences of length seq_len
+    for index in range(len(data_raw) - seq_len): 
+        data.append(data_raw[index: index + seq_len])
+    return data
+
+#data as numpy array
+def generate_train_test(data_ds,split_percent=0.8):
+    print(len(data_ds))
+    data = np.asarray(data_ds)
+   
+    data_size = len(data)
+    train_end = int(np.floor(split_percent*data_size))
+    
+    x_train = data[:train_end,:-1,:]
+    y_train = data[:train_end,-1,:]
+    
+ 
+    
+    x_test = data[train_end:,:-1,:]
+    y_test = data[train_end:,-1,:]
+    
+    return [x_train, y_train, x_test, y_test]
+
+
+
+seq_len = 20 # choose sequence length
+
+seq_prices_dataset = generate_data(prices_dataset_norm,seq_len)
+
+x_train, y_train, x_test, y_test = generate_train_test(seq_prices_dataset, 0.8)
+
+print(&#39;x_train.shape = &#39;,x_train.shape)
+print(&#39;y_train.shape = &#39;, y_train.shape)
+print(&#39;x_test.shape = &#39;, x_test.shape)
+print(&#39;y_test.shape = &#39;,y_test.shape)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Kết quả:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt; x_train.shape =  (13675, 19, 4)
+y_train.shape =  (13675, 4)
+x_test.shape =  (3419, 19, 4)
+y_test.shape =  (3419, 4)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;xây-dựng-mô-hình-sử-dụng-keras&#34;&gt;Xây dựng mô hình sử dụng keras&lt;/h3&gt;
+
+&lt;p&gt;Ở đây mình sử dụng keras xây dựng mô hình ANN. Mô hình của mình xây dựng gồm:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;model = Sequential()
+
+model.add(LSTM(
+    input_dim=4,
+    output_dim=50,
+    return_sequences=True))
+model.add(Dropout(0.2))
+
+model.add(LSTM(
+    100,
+    return_sequences=False))
+model.add(Dropout(0.2))
+
+model.add(Dense(
+    output_dim=4))
+model.add(Activation(&#39;linear&#39;))
+
+
+
+model.compile(loss=&#39;mean_squared_error&#39;, optimizer=&#39;adam&#39;, metrics=[&#39;accuracy&#39;])
+checkpoint = ModelCheckpoint(filepath=&#39;my_model_stock.h5&#39;, verbose=1, save_best_only=True)
+hist = model.fit(x_train, y_train, epochs=300, batch_size=128, verbose=1, callbacks=[checkpoint], validation_split=0.2)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Sau một thời gian chạy, mình cũng thu được model. Các bạn quan tâm có thể download model của mình huấn luyện được tại &lt;a href=&#34;https://drive.google.com/open?id=1ImHQM9yWmOjpF5tjmSI9oqAi5BORa9Rs&#34;&gt;https://drive.google.com/open?id=1ImHQM9yWmOjpF5tjmSI9oqAi5BORa9Rs&lt;/a&gt; . Tiến hành plot dữ liệu tập test lên xem kết quả như thế nào.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+model =load_model(&#39;sp500_stockperdict.h5&#39;)
+
+
+y_hat = model.predict(x_test)
+
+ft = 3 # 0 = open, 1 = highest, 2 =lowest , 3 = close
+
+plt.plot( y_test[:,ft], color=&#39;blue&#39;, label=&#39;target&#39;)
+
+plt.plot( y_hat[:,ft], color=&#39;red&#39;, label=&#39;prediction&#39;)
+
+plt.title(&#39;future stock prices&#39;)
+plt.xlabel(&#39;time [days]&#39;)
+plt.ylabel(&#39;normalized price&#39;)
+plt.legend(loc=&#39;best&#39;)
+
+plt.show()
+
+from sklearn.metrics import mean_squared_error
+
+# 0 = open, 1 = highest, 2 =lowest , 3 = close
+print(&amp;quot;open error: &amp;quot;)
+print(mean_squared_error(y_test[:,0], y_hat[ :,0]))
+
+print(&amp;quot;highest error: &amp;quot;)
+print(mean_squared_error(y_test[:,1], y_hat[ :,1]))
+
+print(&amp;quot;lowest error: &amp;quot;)
+print(mean_squared_error(y_test[:,2], y_hat[ :,2]))
+
+print(&amp;quot;close error: &amp;quot;)
+print(mean_squared_error(y_test[:,3], y_hat[ :,3]))
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/sp500index_predict.png&#34; alt=&#34;hình chứng khoán&#34; /&gt;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;open error:
+0.0009739211460315127
+highest error:
+0.0010539412808401607
+lowest error:
+0.0010066509540756113
+close error:
+0.0010840500965408758
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Kết quả của mô hình trông khá tốt, về hình dạng thì khá tương đồng với kết quả. Chúng ta có thể cải tiến model bằng cách nâng số lượng layter/ hidden node.&lt;/p&gt;
+
+&lt;p&gt;Cảm ơn các bạn đã theo dõi. Hẹn gặp bạn ở các bài viết tiếp theo.&lt;/p&gt;
+</description>
     </item>
     
   </channel>

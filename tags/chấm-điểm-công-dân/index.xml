@@ -10,9 +10,7 @@
     <webMaster>alexblack2202@gmail.com (Phạm Duy Tùng)</webMaster>
     <copyright>This work is licensed under a Creative Commons Attribution-ShareAlike 4.0 International License.</copyright>
     <lastBuildDate>Fri, 08 Feb 2019 00:12:00 +0300</lastBuildDate>
-    
-	<atom:link href="/tags/ch%E1%BA%A5m-%C4%91i%E1%BB%83m-c%C3%B4ng-d%C3%A2n/index.xml" rel="self" type="application/rss+xml" />
-    
+    <atom:link href="/tags/ch%E1%BA%A5m-%C4%91i%E1%BB%83m-c%C3%B4ng-d%C3%A2n/" rel="self" type="application/rss+xml" />
     
     <item>
       <title>Tối ưu hoá ngẫu nhiên - Bài toán người giao hàng</title>
@@ -20,7 +18,123 @@
       <pubDate>Fri, 08 Feb 2019 00:12:00 +0300</pubDate>
       <author>alexblack2202@gmail.com (Phạm Duy Tùng)</author>
       <guid>/blog/2019-02-08-randomized-optimization-in-python-v1/</guid>
-      <description>Bài toán người giao hàng là gì Người giao hàng là bài toán cơ bản trong nhóm bài toán tối ưu. Bài toán được phát biểu như sau: Có một người giao hàng cần đi giao hàng tại n thành phố. Xuất phát từ một thành phố nào đó, đi qua các thành phố khác để giao hàng và trở về thành phố ban đầu. Mỗi thành phố chỉ đến một lần, khoảng cách từ một thành phố đến các thành phố khác là xác định được.</description>
+      <description>
+
+&lt;h2 id=&#34;bài-toán-người-giao-hàng-là-gì&#34;&gt;Bài toán người giao hàng là gì&lt;/h2&gt;
+
+&lt;p&gt;Người giao hàng là bài toán cơ bản trong nhóm bài toán tối ưu. Bài toán được phát biểu như sau: Có một người giao hàng cần đi giao hàng tại n thành phố. Xuất phát từ một thành phố nào đó, đi qua các thành phố khác để giao hàng và trở về thành phố ban đầu. Mỗi thành phố chỉ đến một lần, khoảng cách từ một thành phố đến các thành phố khác là xác định được. Hãy tìm một chu trình (một đường đi khép kín thỏa mãn điều kiện trên) sao cho tổng độ dài các cạnh là nhỏ nhất.&lt;/p&gt;
+
+&lt;p&gt;Có rất nhiều cách để giải bài toán này, các bạn đọc có thể search google để tìm thêm cách giải khác, ở đây, mình sẽ trình bày cách sử dụng thư viện mlrose của python để giải quyết bài toán trên.&lt;/p&gt;
+
+&lt;h2 id=&#34;cài-đặt-chương-trình-và-thực-thi&#34;&gt;Cài đặt chương trình và thực thi&lt;/h2&gt;
+
+&lt;p&gt;Chúng ta giả định rằng người giao hàng sẽ đi qua 5 thành phố, và mỗi thành phố sẽ có 2 giá trị x và y tương ứng với toạ độ của các thành phố đó trên bản đồ.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;input = [
+[9, 12],
+[24, 15],
+[12 ,30],
+[4 ,3],
+[13, 27],
+]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Theo phần trước, chúng ta sẽ xây dựng 4 phần&lt;/p&gt;
+
+&lt;h3 id=&#34;xây-dựng-vector-state&#34;&gt;Xây dựng vector state&lt;/h3&gt;
+
+&lt;p&gt;Đơn giản là một vector x có số lượng phần tử bằng số lượng thành phố  mà người giao hàng sẽ viết thăm&lt;/p&gt;
+
+&lt;p&gt;x = [x0,x1,2,x3,x4], trong đó, giá trị x1 là chỉ số của thành phố người giao hàng sẽ ghé đầu tiên, x0 là toạ độ thành phố bắt đầu&lt;/p&gt;
+
+&lt;h3 id=&#34;xây-dựng-hàm-fitness-function&#34;&gt;Xây dựng hàm fitness function&lt;/h3&gt;
+
+&lt;p&gt;Mục tiêu của bài toán là tìm đường đi ngăn nhất, nên chúng ta có thể dễ dàng xây dựng hàn fitness bằng cách tính khoảng cách euclide giữa các thành phố.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+def fitness_fun(state):
+    distance = 0
+
+    for index in range(1, len(state)):
+        dist = np.linalg.norm(input[state[index-1]]-input[state[index]])
+
+        distance = distance + dist
+
+    dist = np.linalg.norm(input[state[0]]-input[state[len(state)-1]])
+    distance = distance + dist
+
+    return distance
+    
+fitness_cust = mlrose.CustomFitness(fitness_fun,&#39;tsp&#39;)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;xác-định-loại-bài-toán&#34;&gt;Xác định loại bài toán&lt;/h3&gt;
+
+&lt;p&gt;Đây là bài toán rời rạc không lặp, nên ta sẽ sử dụng hàm TSPOpt, length = 5 do số lượng phần tử của state là 5, maximize=False do bài toán tìm đường đi ngắn nhất .&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;problem_fit = mlrose.TSPOpt(length = 5, fitness_fn = fitness_cust,
+                            maximize=False)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;xác-định-thuật-toán-tối-ưu&#34;&gt;Xác định thuật toán tối ưu&lt;/h3&gt;
+
+&lt;p&gt;Chúng ta vẫn tiếp tục sử dụng thuật toán simulated_annealing như trước xem kết quả như thế nào&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;#Define decay schedule
+schedule = mlrose.ExpDecay()
+
+# Define initial state
+init_state = np.array([0, 1, 2, 3, 4])
+
+# Set random seed
+np.random.seed(1)
+
+# Solve problem using simulated annealing
+best_state, best_fitness = mlrose.simulated_annealing(problem, schedule = schedule,
+                                                      max_attempts = 10, max_iters = 500,
+                                                      init_state = init_state)
+
+print(&#39;The best state found is: &#39;, best_state)
+print(&#39;The fitness at the best state is: &#39;, best_fitness)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Kết quả&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;The best state found is:  [1 4 2 0 3]
+The fitness at the best state is:  71.30882356753094
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Đây là kết quả tối ưu của bài toán.&lt;/p&gt;
+
+&lt;p&gt;Thử thay bằng giải thuật di truyền GA, với tỷ lệ đột biến là 0.2&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;best_state, best_fitness = mlrose.genetic_alg(problem,mutation_prob = 0.2)
+
+print(&#39;The best state found is: &#39;, best_state)
+print(&#39;The fitness at the best state is: &#39;, best_fitness)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Kết quả&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+The best state found is:  [0 2 4 1 3]
+The fitness at the best state is:  71.30882356753094
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Thử thay đổi tập dữ liệu input có nhiều số phần tử hơn&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;input =[(1, 1), (4, 2), (5, 2), (6, 4), (4, 4), (3, 6), (1, 5), (2, 3)]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Kết quả&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;The best state found is:  [3 4 5 6 7 0 1 2]
+The fitness at the best state is:  17.34261754766733
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Cảm ơn các bạn đã theo dõi. Hẹn gặp bạn ở các bài viết tiếp theo.&lt;/p&gt;
+</description>
     </item>
     
     <item>
@@ -29,8 +143,81 @@
       <pubDate>Thu, 07 Feb 2019 00:09:00 +0300</pubDate>
       <author>alexblack2202@gmail.com (Phạm Duy Tùng)</author>
       <guid>/blog/2019-02-07-china-social-creadit-system/</guid>
-      <description>Chính quyền Trung Quốc đang xây dựng một hệ thống xếp hạng có tên là &amp;ldquo; Hệ thống tín dụng xã hội - social credit system&amp;rdquo;. Hệ thống được xây dựng nhằm mục đích theo dõi hành vi của công dân và xếp hạng tất cả các hành vi trên.
-Theo một tài liệu cho biết,&amp;ldquo;Hệ thống tín dụng xã hội&amp;rdquo;, lần đầu tiên được công bố vào năm 2014, nhằm mục đích củng cố ý tưởng rằng &amp;ldquo;giữ niềm tin là vinh quang và phá vỡ niềm tin là ô nhục&amp;rdquo;.</description>
+      <description>
+
+&lt;p&gt;Chính quyền Trung Quốc đang xây dựng một hệ thống xếp hạng có tên là &amp;ldquo; Hệ thống tín dụng xã hội - social credit system&amp;rdquo;. Hệ thống được xây dựng nhằm mục đích theo dõi hành vi của công dân và xếp hạng tất cả các hành vi trên.&lt;/p&gt;
+
+&lt;p&gt;Theo một tài liệu cho biết,&amp;ldquo;Hệ thống tín dụng xã hội&amp;rdquo;, lần đầu tiên được công bố vào năm 2014, nhằm mục đích củng cố ý tưởng rằng &amp;ldquo;giữ niềm tin là vinh quang và phá vỡ niềm tin là ô nhục&amp;rdquo;.&lt;/p&gt;
+
+&lt;p&gt;Hệ thống sẽ được vận hành hoàn toàn trên toàn quốc vào năm 2020, nhưng đã được thí điểm ở một số vùng trên đất nước, và mang lại kết quả khá khả quan.&lt;/p&gt;
+
+&lt;p&gt;Tại thời điểm hiện tại, hệ thống đang được điều hành bởi chính phủ, một số công ty tư nhân cũng được cấp phép tham gia xây dựng và phát triển hệ thống, như alibaba, tencent.&lt;/p&gt;
+
+&lt;p&gt;Giống như điểm tín dụng tư nhân, điểm xã hội của một người có thể đi lên xuống tùy theo hành vi của họ. Cách thức tính điểm và các hành vi được cho là tốt/xấu hiện thời vẫn chưa được công bố. Nhưng các ví dụ về vi phạm đã bị trừ điểm bao gồm lái xe ẩu, hút thuốc trong khu vực cấm hút thuốc, mua quá nhiều trò chơi video và đăng tin tức giả lên mạng.&lt;/p&gt;
+
+&lt;h4 id=&#34;1-cấm-bay-máy-bay-hoặc-đi-tàu-điện-ngầm&#34;&gt;1. Cấm bay máy bay hoặc đi tàu điện ngầm&lt;/h4&gt;
+
+&lt;p&gt;Chính phủ Trung Quốc đã bắt đầu trừng phạt người dân bằng cách hạn chế việc đi lại của họ.&lt;/p&gt;
+
+&lt;p&gt;Chín triệu người có điểm thấp đã bị chặn mua vé cho các chuyến bay nội địa, Channel News Asia đưa tin vào 16/Mar/2018 nguồn &lt;a href=&#34;https://www.channelnewsasia.com/news/asia/china-bad-social-credit-barred-from-buying-train-plane-tickets-10050390&#34;&gt;https://www.channelnewsasia.com/news/asia/china-bad-social-credit-barred-from-buying-train-plane-tickets-10050390&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;Người dân cũng có thể bị giới hạn sử dụng các dịch vụ nâng cao, ví dụ ba triệu người không được mua vé hạng thương gia (trích cùng nguồn trên).&lt;/p&gt;
+
+&lt;blockquote class=&#34;twitter-tweet&#34;&gt;&lt;p lang=&#34;en&#34; dir=&#34;ltr&#34;&gt;Here&amp;#39;s a dystopian vision of the future: A real announcement I recorded on the Beijing-Shanghai bullet train. (I&amp;#39;ve subtitled it so you can watch in silence.) &lt;a href=&#34;https://t.co/ZoRWtdcSMy&#34;&gt;pic.twitter.com/ZoRWtdcSMy&lt;/a&gt;&lt;/p&gt;&amp;mdash; James O&amp;#39;Malley (@Psythor) &lt;a href=&#34;https://twitter.com/Psythor/status/1056811593177227264?ref_src=twsrc%5Etfw&#34;&gt;October 29, 2018&lt;/a&gt;&lt;/blockquote&gt;
+&lt;script async src=&#34;https://platform.twitter.com/widgets.js&#34; charset=&#34;utf-8&#34;&gt;&lt;/script&gt;
+
+
+&lt;p&gt;video trên, được đăng bởi nhà báo James O&amp;rsquo;Malley, cho thấy một thông báo trên một chuyến tàu cao tốc từ Bắc Kinh đến Thượng Hải cảnh báo mọi người không nên có những hành vi sai trái - nếu không thì &amp;ldquo;hành vi của họ sẽ được ghi lại trong hệ thống thông tin tín dụng cá nhân&amp;rdquo;.&lt;/p&gt;
+
+&lt;h4 id=&#34;2-điều-chỉnh-tốc-độ-internet&#34;&gt;2. Điều chỉnh tốc độ internet&lt;/h4&gt;
+
+&lt;p&gt;Theo nghiên cứu của  Rachel Botsman (nguồn &lt;a href=&#34;https://www.wired.co.uk/article/chinese-government-social-credit-score-privacy-invasion&#34;&gt;https://www.wired.co.uk/article/chinese-government-social-credit-score-privacy-invasion&lt;/a&gt;) chính quyền sẽ giới hạn tốc độ, băng thông của các dịch vụ internet, 3G, 4G, &amp;hellip; của những công dân có điểm tính dụng xã hội thấp.&lt;/p&gt;
+
+&lt;p&gt;Trong nghiên cứu của tác giả, một số hành vi sẽ  bị trừng phạt, bao gồm:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Công dân có thanh toán hóa đơn đúng hạn hay không.&lt;/li&gt;
+&lt;li&gt;Dành quá nhiều thời gian để chơi trò chơi video&lt;/li&gt;
+&lt;li&gt;Lãng phí tiền mua hàng tào lao và đăng lên phương tiện truyền thông xã hội (dạng như tự sướng ở Việt Nam mình á).&lt;/li&gt;
+&lt;li&gt;Truyền bá tin tức giả mạo, cụ thể là về các cuộc tấn công khủng bố hoặc an ninh sân bay.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&#34;3-cấm-bạn-hoặc-con-cái-của-bạn-được-học-ở-những-trường-tốt&#34;&gt;3. Cấm bạn, hoặc con cái của bạn được học ở những trường tốt&lt;/h4&gt;
+
+&lt;p&gt;Theo Beijing News reported(nguồn &lt;a href=&#34;http://www.bjnews.com.cn/news/2018/03/19/479533.html&#34;&gt;http://www.bjnews.com.cn/news/2018/03/19/479533.html&lt;/a&gt;), 17 người đã từ chối thực hiện nghĩa vụ quân sự vào năm ngoái (2017) đã bị cấm đăng ký vào giáo dục đại học, nộp đơn vào trường trung học hoặc tiếp tục việc học tập của họ.&lt;/p&gt;
+
+&lt;p&gt;Theo nguồn &lt;a href=&#34;https://www.businessinsider.com/china-social-credit-affects-childs-university-enrolment-2018-7?r=UK&#34;&gt;https://www.businessinsider.com/china-social-credit-affects-childs-university-enrolment-2018-7?r=UK&lt;/a&gt;, vào tháng &lt;sup&gt;7&lt;/sup&gt;&amp;frasl;&lt;sub&gt;2018&lt;/sub&gt;, một trường đại học ở Trung Quốc, đã cấm một sinh viên nhập học (dù anh ấy đã thi đậu), vì lý do là điểm tín dụng xã hội của bố anh ấy &amp;ldquo;xấu&amp;rdquo;.&lt;/p&gt;
+
+&lt;h4 id=&#34;4-không-cho-bạn-có-một-công-việc-tốt&#34;&gt;4. Không cho bạn có một công việc tốt&lt;/h4&gt;
+
+&lt;p&gt;Theo nguồn của Botsman, các cá nhân có điểm tín nhiệm thấp sẽ bị cấm làm quản lý ở các công ty nhà nước, các ngân hàng lớn.&lt;/p&gt;
+
+&lt;p&gt;Các hành vi như gian lận thuế, tham ô, &amp;hellip; cũng ảnh hưởng đến điểm xã hội.&lt;/p&gt;
+
+&lt;h4 id=&#34;5-không-được-thuê-những-khách-sạn-tốt&#34;&gt;5. Không được thuê những khách sạn tốt&lt;/h4&gt;
+
+&lt;p&gt;Theo Botsman, những người gian lận nghĩa vụ quân sự sẽ bị cấm thuê khách sạn tốt khi đi du lịch.&lt;/p&gt;
+
+&lt;p&gt;Những công dân có điểm tín dụng tốt sẽ được thuê khách sạn mà không cần phải đặt cọc, có thể kéo dài thời gian du lịch hơn.&lt;/p&gt;
+
+&lt;h4 id=&#34;6-cấm-nuôi-chó&#34;&gt;6. Cấm nuôi chó&lt;/h4&gt;
+
+&lt;p&gt;Thành phố Tế Nam đã bắt đầu thực thi một hệ thống tín dụng xã hội cho các chủ sở hữu chó vào năm 2017. Theo đó, chủ vật nuôi sẽ bị trừ điểm nếu nuôi chó mà không xích, không rọ mõm, hoặc để cho chó đi bậy nơi công cộng.&lt;/p&gt;
+
+&lt;p&gt;Những người bị zero điểm sẽ bị cấm nuôi chó, con vật sẽ bị tịch thu, người sở hữu phải làm bài kiểm tra. Nguồn &lt;a href=&#34;http://uk.businessinsider.com/china-dog-owners-social-credit-score-2018-10&#34;&gt;http://uk.businessinsider.com/china-dog-owners-social-credit-score-2018-10&lt;/a&gt;&lt;/p&gt;
+
+&lt;h4 id=&#34;7-bị-bêu-tên-trước-công-chúng&#34;&gt;7. Bị bêu tên trước công chúng&lt;/h4&gt;
+
+&lt;p&gt;Chính phủ đã và đang xây dựng một danh sách các cá nhân có điểm tín nhiệm xấu và sẵn sàng đăng tên kèm hình ảnh của họ trên các phương tiện thông tin đại chúng. Các công ty cũng được khuyến khích tham khảo các thông tin của công dân trong hệ thống trước khi thuê họ.&lt;/p&gt;
+
+&lt;p&gt;Được biết, toà án sẽ thông báo cho công dân về hành vi của họ trước khi tên của họ được đưa vào danh sách đen. Công dân có 10 ngày kháng cáo kể từ khi nhận được thông báo.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://media.giphy.com/media/7TkE4ojDQ0WIqEkiYt/giphy.gif&#34; alt=&#34;Hình ảnh danh sách&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Nguồn &lt;a href=&#34;https://www.hrw.org/news/2017/12/12/chinas-chilling-social-credit-blacklist&#34;&gt;https://www.hrw.org/news/2017/12/12/chinas-chilling-social-credit-blacklist&lt;/a&gt;, &lt;a href=&#34;http://zxgk.court.gov.cn/&#34;&gt;http://zxgk.court.gov.cn/&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;Cảm ơn các bạn đã theo dõi. Hẹn gặp bạn ở các bài viết tiếp theo.&lt;/p&gt;
+</description>
     </item>
     
   </channel>

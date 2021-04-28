@@ -10,9 +10,7 @@
     <webMaster>alexblack2202@gmail.com (Phạm Duy Tùng)</webMaster>
     <copyright>This work is licensed under a Creative Commons Attribution-ShareAlike 4.0 International License.</copyright>
     <lastBuildDate>Sun, 27 Dec 2020 00:19:00 +0300</lastBuildDate>
-    
-	<atom:link href="/tags/tetris/index.xml" rel="self" type="application/rss+xml" />
-    
+    <atom:link href="/tags/tetris/" rel="self" type="application/rss+xml" />
     
     <item>
       <title>Reinforcement Learning và tictactoe</title>
@@ -20,7 +18,637 @@
       <pubDate>Sun, 27 Dec 2020 00:19:00 +0300</pubDate>
       <author>alexblack2202@gmail.com (Phạm Duy Tùng)</author>
       <guid>/blog/2020-12-26---tic-tac-toe/</guid>
-      <description>Advantages of Reinforcement Learning Trong khi trong các phương pháp lý thuyết trò chơi nói chung, ví dụ thuật toán min-max, thuật toán luôn giả định chúng ta có một đối thủ hoàn hảo, công việc phải thực hiện là tối đa hóa phần thưởng của mình và giảm thiểu phần thưởng của đối thủ ( tối đa hóa điểm của mình và tối thiểu hóa điểm của đối thủ), trong học củng cố, chúng ta không cần giả định đối thủ của chúng ta là 1 thiên tài xuất chúng, nhưng chung ta vẫn thu được mô hình với kết quả rất tốt.</description>
+      <description>
+
+&lt;h1 id=&#34;advantages-of-reinforcement-learning&#34;&gt;Advantages of Reinforcement Learning&lt;/h1&gt;
+
+&lt;p&gt;Trong khi trong các phương pháp lý thuyết trò chơi nói chung, ví dụ thuật toán min-max, thuật toán luôn giả định chúng ta có một đối thủ hoàn hảo, công việc phải thực hiện là tối đa hóa phần thưởng của mình và giảm thiểu phần thưởng của đối thủ ( tối đa hóa điểm của mình và tối thiểu hóa điểm của đối thủ), trong học củng cố, chúng ta không cần giả định đối thủ của chúng ta là 1 thiên tài xuất chúng, nhưng chung ta vẫn thu được mô hình với kết quả rất tốt.&lt;/p&gt;
+
+&lt;p&gt;Bằng cách coi đối thủ là một phần của môi trường mà chúng ta có thể tương tác, sau một số lần lặp lại nhất định, đối thủ có thể lập kế hoạch trước mà không cần chúng ta phải làm gì cả. Ưu điểm của phương pháp này là giảm số lượng không gian tìm kiếm và giảm số phép toán suy luận phải thực hiện, nhưng nó có thể đạt được kỹ năng hiện đại chỉ bằng cách thử và học.&lt;/p&gt;
+
+&lt;p&gt;Trong bài viết này, chúng ta sẽ làm các công việc sau:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;Thứ nhất, huấn luyện mô hình cho 2 máy đấu với nhau mà thu được các trọng số cần thiết.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Thứ hai, cho người đánh với máy&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Để hình thành bài toán học củng cố Reinforcement Learning , chúng ta cần  phải xác định rõ 3 thành phần chính:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;State&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Action&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Reward&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Với:&lt;/p&gt;
+
+&lt;p&gt;State chính là bàn cờ với các nước đi của các người chơi. Chúng ta sẽ tạo một bàn cờ có kích thước 3x3, giá trị của mỗi ô cờ đều là 0. Vị trí người chơi 1 đặt quân sẽ được gán là 1. Vị trí người chơi 2 đặt quân sẽ được gán là -1.&lt;/p&gt;
+
+&lt;p&gt;Action là vị trí người chơi sẽ đi quân khi biết state hiện tại (nghĩa là biết đối thủ đi nước nào, và có những nước nào hiện đang trên bàn cờ).&lt;/p&gt;
+
+&lt;p&gt;Reward: mang giá trị 0 hoặc 1. Khi kết thúc game sẽ trả về giá trị cho reward.&lt;/p&gt;
+
+&lt;p&gt;Ở phần dưới đây, mình sẽ note lại code và sẽ comment trong code để cho rõ ý&lt;/p&gt;
+
+&lt;h1 id=&#34;thiết-lập-bàn-cờ&#34;&gt;Thiết lập bàn cờ&lt;/h1&gt;
+
+&lt;h2 id=&#34;khởi-tạo-bàn-cờ&#34;&gt;Khởi tạo bàn cờ&lt;/h2&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+def __init__(self, p1, p2):
+        self.board = np.zeros((BOARD_ROWS, BOARD_COLS))
+        self.p1 = p1
+        self.p2 = p2
+        self.isEnd = False
+        self.boardHash = None
+        # init p1 plays first
+        self.playerSymbol = 1
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Chúng ta sẽ tạo một bàn cờ có kích thước 3x3, 2 biến người chơi. Người 1 là người chơi đầu tiên.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+# Trả về danh sách các nước có thể đi
+def availablePositions(self):
+        positions = []
+        for i in range(BOARD_ROWS):
+            for j in range(BOARD_COLS):
+                if self.board[i, j] == 0:
+                    positions.append((i, j))  # need to be tuple
+        return positions
+
+# Cập nhật lại lên bàn cờ vị trí của người chơi đặt quân
+
+def updateState(self, position):
+    self.board[position] = self.playerSymbol
+    # switch to another player
+    self.playerSymbol = -1 if self.playerSymbol == 1 else 1
+    
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;kiểm-tra-reward&#34;&gt;Kiểm tra Reward&lt;/h2&gt;
+
+&lt;p&gt;Sau mỗi nước đi của các kỳ thủ, chúng ta cần 1 hàm để kiểm tra xem kỳ thủ thắng hay thua và trả về kết quả cho reward như đề cập ở trên&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+def winner(self):
+
+    # Kiểm tra theo dòng
+    
+    for i in range(BOARD_ROWS):
+        if sum(self.board[i, :]) == 3:
+            self.isEnd = True
+            return 1
+        if sum(self.board[i, :]) == -3:
+            self.isEnd = True
+            return -1
+    # kiểm tra theo cột
+    
+    for i in range(BOARD_COLS):
+        if sum(self.board[:, i]) == 3:
+            self.isEnd = True
+            return 1
+        if sum(self.board[:, i]) == -3:
+            self.isEnd = True
+            return -1
+            
+    # kiểm tra theo đường chéo chính và theo đường chéo phụ
+    
+    diag_sum1 = sum([self.board[i, i] for i in range(BOARD_COLS)]) # đường chéo chính
+    
+    diag_sum2 = sum([self.board[i, BOARD_COLS - i - 1] for i in range(BOARD_COLS)]) # đường chéo phụ
+    
+    diag_sum = max(abs(diag_sum1), abs(diag_sum2)) # lấy trị tuyệt đối của các nước đi, nếu bằng 3 nghĩa là có người chơi chiến thắng
+    
+    if diag_sum == 3:
+        self.isEnd = True
+        if diag_sum1 == 3 or diag_sum2 == 3:
+            return 1
+        else:
+            return -1
+
+    # Kiểm tra xem còn nước đi hay không
+    if len(self.availablePositions()) == 0:
+        self.isEnd = True
+        return 0
+        
+    # not end
+    self.isEnd = False
+    return None
+
+# only when game ends
+def giveReward(self):
+    result = self.winner()
+    # backpropagate reward
+    if result == 1:
+        self.p1.feedReward(1)
+        self.p2.feedReward(0)
+    elif result == -1:
+        self.p1.feedReward(0)
+        self.p2.feedReward(1)
+    else:
+        self.p1.feedReward(0.1)
+        self.p2.feedReward(0.5)
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Ở đây có một lưu ý. Khi cờ hòa thì chúng ta cũng xem rằng người đi trước thua, nên hệ số lúc cờ hòa sẽ là 0.1-0.5. Các bạn có thể thiết lập một giá trị khác, ví dụ 0.2-0.5 hoặc 0.5-0.5 tùy thích.&lt;/p&gt;
+
+&lt;h1 id=&#34;thiết-lập-người-chơi&#34;&gt;Thiết lập người chơi&lt;/h1&gt;
+
+&lt;p&gt;Người chơi cần có các phương thức sau:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;Chọn nước đi dựa trên trạng thái hiện tại của bàn cờ.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Lưu lại trạng thái của ván cờ.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Cập nhật lại giá trị trạng thái sau mỗi ván.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Lưu và load các trọng số lên.&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&#34;khởi-tạo&#34;&gt;Khởi tạo&lt;/h2&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+def __init__(self, name, exp_rate=0.2):
+        self.name = name
+        self.states = []  # record all positions taken
+        self.lr = 0.2
+        self.exp_rate = exp_rate
+        self.decay_gamma = 0.9
+        self.states_value = {}  # state -&amp;gt; value
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;chọn-nước-đi&#34;&gt;Chọn nước đi&lt;/h2&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+def chooseAction(self, positions, current_board, symbol):
+    randValue = np.random.uniform(0, 1)
+    value_max = value = -999
+    if  randValue&amp;gt; self.exp_rate:
+        
+        for p in positions:
+            next_board = current_board.copy()
+            next_board[p] = symbol
+            next_boardHash = self.getHash(next_board)
+            value = -999 if self.states_value.get(next_boardHash) is None else self.states_value.get(next_boardHash)
+            # print(&amp;quot;value&amp;quot;, value)
+            if value &amp;gt;= value_max:
+                value_max = value
+                action = p
+
+    if  value_max == -999 :
+        # take random action
+        idx = np.random.choice(len(positions))
+        action = positions[idx]
+    
+    # print(&amp;quot;{} takes action {}&amp;quot;.format(self.name, action))
+    return action
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;cập-nhật-trạng-thái&#34;&gt;Cập nhật trạng thái&lt;/h2&gt;
+
+&lt;p&gt;Chúng ta sẽ cập nhật trạng thái với công thức sau&lt;/p&gt;
+
+&lt;p&gt;$$ V(S_t) = V(S&lt;em&gt;t) + \alpha [V(S&lt;/em&gt;{t+1}) - V(S_t)]   $$&lt;/p&gt;
+
+&lt;p&gt;Diễn giải ra tiếng việt, giá trị của trạng thái tại thời điểm t bằng giá trị tại thời điểm hiện tại cộng với độ lệch của trạng thái hiện tại và trạng thái tiếp theo nhân với một hệ số học alpha.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+# at the end of game, backpropagate and update states value
+def feedReward(self, reward):
+        for st in reversed(self.states):
+            if self.states_value.get(st) is None:
+                self.states_value[st] = 0
+            self.states_value[st] += self.lr * (self.decay_gamma * reward - self.states_value[st])
+            reward = self.states_value[st]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;huấn-luyện-mô-hình&#34;&gt;Huấn luyện mô hình&lt;/h2&gt;
+
+&lt;p&gt;Phần này nằm trong lớp State. Chúng ta sẽ lần lượt đi qua các quá trình luân phiên nhau giữa người chơi 1 và người chơi 2&lt;/p&gt;
+
+&lt;p&gt;người chơi chọn nước có thể đi -&amp;gt; cập nhật trạng thái -&amp;gt; kiểm tra thắng/thua -&amp;gt; người chơi chọn nước có thể đi &amp;hellip;&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+def play(self, rounds=100):
+    for i in range(rounds):
+        if i % 1000 == 0:
+            print(&amp;quot;Rounds {}&amp;quot;.format(i))
+        while not self.isEnd:
+            # Player 1
+            positions = self.availablePositions()
+            p1_action = self.p1.chooseAction(positions, self.board, self.playerSymbol)
+            # take action and upate board state
+            self.updateState(p1_action)
+            board_hash = self.getHash()
+            self.p1.addState(board_hash)
+            # check board status if it is end
+
+            win = self.winner()
+            if win is not None:
+                # self.showBoard()
+                # ended with p1 either win or draw
+                self.giveReward()
+                self.p1.reset()
+                self.p2.reset()
+                self.reset()
+                break
+
+            else:
+                # Player 2
+                positions = self.availablePositions()
+                p2_action = self.p2.chooseAction(positions, self.board, self.playerSymbol)
+                self.updateState(p2_action)
+                board_hash = self.getHash()
+                self.p2.addState(board_hash)
+
+                win = self.winner()
+                if win is not None:
+                    # self.showBoard()
+                    # ended with p2 either win or draw
+                    self.giveReward()
+                    self.p1.reset()
+                    self.p2.reset()
+                    self.reset()
+                    break
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Sau khi huấn luyện 100 ngàn lần, chúng ta sẽ chơi với máy, chỉ là 1 thay đổi nhỏ trong hàm chooseAction là thay vì lấy nước đi có trọng số lớn nhất, chúng ta sẽ cho người dùng nhập từ bàn phím dòng và cột vào&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+
+def chooseAction(self, positions):
+        while True:
+            row = int(input(&amp;quot;Input your action row:&amp;quot;))
+            col = int(input(&amp;quot;Input your action col:&amp;quot;))
+            action = (row, col)
+            if action in positions:
+                return action
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Và sửa lại hàm play một chút, bỏ loop 100k lần đi, bỏ gọi hàm cập nhật thưởng và bỏ các hàm reset đi&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+
+# play with human
+def play2(self):
+    while not self.isEnd:
+        # Player 1
+        positions = self.availablePositions()
+        p1_action = self.p1.chooseAction(positions, self.board, self.playerSymbol)
+        # take action and upate board state
+        self.updateState(p1_action)
+        self.showBoard()
+        # check board status if it is end
+        win = self.winner()
+        if win is not None:
+            if win == 1:
+                print(self.p1.name, &amp;quot;wins!&amp;quot;)
+            else:
+                print(&amp;quot;tie!&amp;quot;)
+            self.reset()
+            break
+
+        else:
+            # Player 2
+            positions = self.availablePositions()
+            p2_action = self.p2.chooseAction(positions)
+
+            self.updateState(p2_action)
+            self.showBoard()
+            win = self.winner()
+            if win is not None:
+                if win == -1:
+                    print(self.p2.name, &amp;quot;wins!&amp;quot;)
+                else:
+                    print(&amp;quot;tie!&amp;quot;)
+                self.reset()
+                break
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Mã nguồn hoàn chỉnh của chương trình&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+import numpy as np
+import pickle
+
+BOARD_ROWS = 3
+BOARD_COLS = 3
+
+
+class State:
+    def __init__(self, p1, p2):
+        self.board = np.zeros((BOARD_ROWS, BOARD_COLS))
+        self.p1 = p1
+        self.p2 = p2
+        self.isEnd = False
+        self.boardHash = None
+        # init p1 plays first
+        self.playerSymbol = 1
+
+    # get unique hash of current board state
+    def getHash(self):
+        self.boardHash = str(self.board.reshape(BOARD_COLS * BOARD_ROWS))
+        return self.boardHash
+
+    def winner(self):
+        # row
+        for i in range(BOARD_ROWS):
+            if sum(self.board[i, :]) == 3:
+                self.isEnd = True
+                return 1
+            if sum(self.board[i, :]) == -3:
+                self.isEnd = True
+                return -1
+        # col
+        for i in range(BOARD_COLS):
+            if sum(self.board[:, i]) == 3:
+                self.isEnd = True
+                return 1
+            if sum(self.board[:, i]) == -3:
+                self.isEnd = True
+                return -1
+        # diagonal
+        diag_sum1 = sum([self.board[i, i] for i in range(BOARD_COLS)])
+        diag_sum2 = sum([self.board[i, BOARD_COLS - i - 1] for i in range(BOARD_COLS)])
+        diag_sum = max(abs(diag_sum1), abs(diag_sum2))
+        if diag_sum == 3:
+            self.isEnd = True
+            if diag_sum1 == 3 or diag_sum2 == 3:
+                return 1
+            else:
+                return -1
+
+        # tie
+        # no available positions
+        if len(self.availablePositions()) == 0:
+            self.isEnd = True
+            return 0
+        # not end
+        self.isEnd = False
+        return None
+
+    def availablePositions(self):
+        positions = []
+        for i in range(BOARD_ROWS):
+            for j in range(BOARD_COLS):
+                if self.board[i, j] == 0:
+                    positions.append((i, j))  # need to be tuple
+        return positions
+
+    def updateState(self, position):
+        self.board[position] = self.playerSymbol
+        # switch to another player
+        self.playerSymbol = -1 if self.playerSymbol == 1 else 1
+
+    # only when game ends
+    def giveReward(self):
+        result = self.winner()
+        # backpropagate reward
+        if result == 1:
+            self.p1.feedReward(1)
+            self.p2.feedReward(0)
+        elif result == -1:
+            self.p1.feedReward(0)
+            self.p2.feedReward(1)
+        else:
+            self.p1.feedReward(0.1)
+            self.p2.feedReward(0.5)
+
+    # board reset
+    def reset(self):
+        self.board = np.zeros((BOARD_ROWS, BOARD_COLS))
+        self.boardHash = None
+        self.isEnd = False
+        self.playerSymbol = 1
+
+    def play(self, rounds=100):
+        for i in range(rounds):
+            if i % 1000 == 0:
+                print(&amp;quot;Rounds {}&amp;quot;.format(i))
+            while not self.isEnd:
+                # Player 1
+                positions = self.availablePositions()
+                p1_action = self.p1.chooseAction(positions, self.board, self.playerSymbol)
+                # take action and upate board state
+                self.updateState(p1_action)
+                board_hash = self.getHash()
+                self.p1.addState(board_hash)
+                # check board status if it is end
+
+                win = self.winner()
+                if win is not None:
+                    # self.showBoard()
+                    # ended with p1 either win or draw
+                    self.giveReward()
+                    self.p1.reset()
+                    self.p2.reset()
+                    self.reset()
+                    break
+
+                else:
+                    # Player 2
+                    positions = self.availablePositions()
+                    p2_action = self.p2.chooseAction(positions, self.board, self.playerSymbol)
+                    self.updateState(p2_action)
+                    board_hash = self.getHash()
+                    self.p2.addState(board_hash)
+
+                    win = self.winner()
+                    if win is not None:
+                        # self.showBoard()
+                        # ended with p2 either win or draw
+                        self.giveReward()
+                        self.p1.reset()
+                        self.p2.reset()
+                        self.reset()
+                        break
+            
+
+    # play with human
+    def play2(self):
+        while not self.isEnd:
+            # Player 1
+            positions = self.availablePositions()
+            p1_action = self.p1.chooseAction(positions, self.board, self.playerSymbol)
+            # take action and upate board state
+            self.updateState(p1_action)
+            self.showBoard()
+            # check board status if it is end
+            win = self.winner()
+            if win is not None:
+                if win == 1:
+                    print(self.p1.name, &amp;quot;wins!&amp;quot;)
+                else:
+                    print(&amp;quot;tie!&amp;quot;)
+                self.reset()
+                break
+
+            else:
+                # Player 2
+                positions = self.availablePositions()
+                p2_action = self.p2.chooseAction(positions)
+
+                self.updateState(p2_action)
+                self.showBoard()
+                win = self.winner()
+                if win is not None:
+                    if win == -1:
+                        print(self.p2.name, &amp;quot;wins!&amp;quot;)
+                    else:
+                        print(&amp;quot;tie!&amp;quot;)
+                    self.reset()
+                    break
+        
+
+    def showBoard(self):
+        # p1: x  p2: o
+        for i in range(0, BOARD_ROWS):
+            print(&#39;-------------&#39;)
+            out = &#39;| &#39;
+            for j in range(0, BOARD_COLS):
+                token = &amp;quot;&amp;quot;
+                if self.board[i, j] == 1:
+                    token = &#39;x&#39;
+                if self.board[i, j] == -1:
+                    token = &#39;o&#39;
+                if self.board[i, j] == 0:
+                    token = &#39; &#39;
+                out += token + &#39; | &#39;
+            print(out)
+        print(&#39;-------------&#39;)
+
+
+class Player:
+    def __init__(self, name, exp_rate=0.3):
+        self.name = name
+        self.states = []  # record all positions taken
+        self.lr = 0.3
+        self.exp_rate = exp_rate
+        self.decay_gamma = 0.9
+        self.states_value = {}  # state -&amp;gt; value
+
+    def getHash(self, board):
+        boardHash = str(board.reshape(BOARD_COLS * BOARD_ROWS))
+        return boardHash
+
+    def chooseAction(self, positions, current_board, symbol):
+        randValue = np.random.uniform(0, 1)
+        value_max = value = -999
+        if  randValue&amp;gt; self.exp_rate:
+            
+            for p in positions:
+                next_board = current_board.copy()
+                next_board[p] = symbol
+                next_boardHash = self.getHash(next_board)
+                value = -999 if self.states_value.get(next_boardHash) is None else self.states_value.get(next_boardHash)
+                # print(&amp;quot;value&amp;quot;, value)
+                if value &amp;gt;= value_max:
+                    value_max = value
+                    action = p
+
+        if  value_max == -999 :
+            # take random action
+            idx = np.random.choice(len(positions))
+            action = positions[idx]
+        
+        # print(&amp;quot;{} takes action {}&amp;quot;.format(self.name, action))
+        return action
+
+    # append a hash state
+    def addState(self, state):
+        self.states.append(state)
+
+    # at the end of game, backpropagate and update states value
+    def feedReward(self, reward):
+        for st in reversed(self.states):
+            if self.states_value.get(st) is None:
+                self.states_value[st] = 0
+            self.states_value[st] += self.lr * (self.decay_gamma * reward - self.states_value[st])
+            reward = self.states_value[st]
+
+    def reset(self):
+        self.states = []
+
+    def savePolicy(self):
+        fw = open(&#39;policy_&#39; + str(self.name), &#39;wb&#39;)
+        pickle.dump(self.states_value, fw)
+        fw.close()
+
+    def loadPolicy(self, file):
+        fr = open(file, &#39;rb&#39;)
+        self.states_value = pickle.load(fr)
+        fr.close()
+
+
+class HumanPlayer:
+    def __init__(self, name):
+        self.name = name
+
+    def chooseAction(self, positions):
+        while True:
+            row = int(input(&amp;quot;Input your action row:&amp;quot;))
+            col = int(input(&amp;quot;Input your action col:&amp;quot;))
+            action = (row, col)
+            if action in positions:
+                return action
+
+    # append a hash state
+    def addState(self, state):
+        pass
+
+    # at the end of game, backpropagate and update states value
+    def feedReward(self, reward):
+        pass
+
+    def reset(self):
+        pass
+
+
+if __name__ == &amp;quot;__main__&amp;quot;:
+    # training
+    p1 = Player(&amp;quot;p1&amp;quot;)
+    p2 = Player(&amp;quot;p2&amp;quot;)
+
+    st = State(p1, p2)
+    print(&amp;quot;training...&amp;quot;)
+    st.play(100000)
+
+    p1.savePolicy()
+
+    # play with human
+    p1 = Player(&amp;quot;computer&amp;quot;, exp_rate=0)
+    p1.loadPolicy(&amp;quot;policy_p1&amp;quot;)
+
+    p2 = HumanPlayer(&amp;quot;human&amp;quot;)
+
+    st = State(p1, p2)
+    st.play2()
+
+
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Nguồn&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;Reinforcement Learning: An Introduction phiên bản 2 của Richard S. Sutton and Andrew G. Barto&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;&lt;a href=&#34;https://towardsdatascience.com/reinforcement-learning-implement-tictactoe-189582bea542&#34;&gt;https://towardsdatascience.com/reinforcement-learning-implement-tictactoe-189582bea542&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</description>
     </item>
     
     <item>
@@ -29,7 +657,291 @@
       <pubDate>Sat, 26 Dec 2020 00:19:00 +0300</pubDate>
       <author>alexblack2202@gmail.com (Phạm Duy Tùng)</author>
       <guid>/blog/2020-12-25---tetric/</guid>
-      <description>Mã nguồn import cv2 import numpy as np from random import choice def getColor(): lstColor = [[255,64,64],[255,165,0],[255,244,79],[102,255,0],[172,229,238],[148,87,235],[148,87,235],[241,156,187]] return choice(lstColor) def getInfo(piece): if piece == &amp;quot;&amp;quot;: coords = np.array([[0, 0]]) elif piece == &amp;quot;I&amp;quot;: coords = np.array([[0, 3], [0, 4], [0, 5], [0, 6]]) elif piece == &amp;quot;T&amp;quot;: coords = np.array([[1, 3], [1, 4], [1, 5], [0, 4]]) elif piece == &amp;quot;L&amp;quot;: coords = np.array([[1, 3], [1, 4], [1, 5], [0, 5]]) elif piece == &amp;quot;J&amp;quot;: coords = np.</description>
+      <description>
+
+&lt;h1 id=&#34;mã-nguồn&#34;&gt;Mã nguồn&lt;/h1&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+import cv2
+import numpy as np
+from random import choice
+
+def getColor():
+    lstColor = [[255,64,64],[255,165,0],[255,244,79],[102,255,0],[172,229,238],[148,87,235],[148,87,235],[241,156,187]]
+    return choice(lstColor)
+
+def getInfo(piece):
+    if piece == &amp;quot;&amp;quot;:
+        coords = np.array([[0, 0]])
+    elif piece == &amp;quot;I&amp;quot;:
+        coords = np.array([[0, 3], [0, 4], [0, 5], [0, 6]])
+    elif piece == &amp;quot;T&amp;quot;:
+        coords = np.array([[1, 3], [1, 4], [1, 5], [0, 4]])
+    elif piece == &amp;quot;L&amp;quot;:
+        coords = np.array([[1, 3], [1, 4], [1, 5], [0, 5]])
+    elif piece == &amp;quot;J&amp;quot;:
+        coords = np.array([[1, 3], [1, 4], [1, 5], [0, 3]])
+    elif piece == &amp;quot;S&amp;quot;:
+        coords = np.array([[1, 5], [1, 4], [0, 3], [0, 4]])
+    elif piece == &amp;quot;Z&amp;quot;:
+        coords = np.array([[1, 3], [1, 4], [0, 4], [0, 5]])
+    else:
+        coords = np.array([[0, 4], [0, 5], [1, 4], [1, 5]])
+    
+    return coords, getColor()
+
+def display(board, coords, color, next_info, held_info, score, SPEED):
+    # Generates the display
+    
+    border = np.uint8(127 - np.zeros([20, 1, 3]))
+    border_ = np.uint8(127 - np.zeros([1, 23, 3]))
+    
+    dummy = board.copy()
+    dummy[coords[:,0], coords[:,1]] = color
+    
+    right = np.uint8(np.zeros([20, 10, 3]))
+    right[next_info[0][:,0] + 2, next_info[0][:,1]] = next_info[1]
+    
+    dummy = np.concatenate(( border, dummy, border, right, border), 1)
+    dummy = np.concatenate((border_, dummy, border_), 0)
+    dummy = dummy.repeat(20, 0).repeat(20, 1)
+    dummy = cv2.putText(dummy, str(score), (325, 150), cv2.FONT_HERSHEY_DUPLEX, 1, [0, 0, 255], 2)
+    
+    # Instructions for the player
+    index_pos = 300
+    x_index_pos = 300
+    dummy = cv2.putText(dummy, &amp;quot;A - left&amp;quot;, (x_index_pos, index_pos), cv2.FONT_HERSHEY_DUPLEX, 0.6, [0, 0, 234])
+    dummy = cv2.putText(dummy, &amp;quot;D - right&amp;quot;, (x_index_pos, index_pos+25), cv2.FONT_HERSHEY_DUPLEX, 0.6, [0, 0, 234])
+    dummy = cv2.putText(dummy, &amp;quot;S - drain&amp;quot;, (x_index_pos, index_pos+50), cv2.FONT_HERSHEY_DUPLEX, 0.6, [0, 0, 234])
+    dummy = cv2.putText(dummy, &amp;quot;W - rotate&amp;quot;, (x_index_pos, index_pos+75), cv2.FONT_HERSHEY_DUPLEX, 0.6, [0, 0, 234])
+    # dummy = cv2.putText(dummy, &amp;quot;J - rotate left&amp;quot;, (45, 300), cv2.FONT_HERSHEY_DUPLEX, 0.6, [0, 0, 255])
+    # dummy = cv2.putText(dummy, &amp;quot;L - rotate right&amp;quot;, (45, 325), cv2.FONT_HERSHEY_DUPLEX, 0.6, [0, 0, 255])
+    # dummy = cv2.putText(dummy, &amp;quot;I - hold&amp;quot;, (45, 350), cv2.FONT_HERSHEY_DUPLEX, 0.6, [0, 0, 255])
+    
+    cv2.imshow(&amp;quot;Tetris&amp;quot;, dummy)
+    key = cv2.waitKey(int(1000/SPEED))
+    
+    return key
+
+def getNextPiece():
+    next_piece = choice([&amp;quot;O&amp;quot;, &amp;quot;I&amp;quot;, &amp;quot;S&amp;quot;, &amp;quot;Z&amp;quot;, &amp;quot;L&amp;quot;, &amp;quot;J&amp;quot;, &amp;quot;T&amp;quot;])
+
+    return next_piece
+
+SPEED = 1 # Controls the speed of the tetris pieces
+
+# Make a board
+
+board = np.uint8(np.zeros([20, 10, 3]))
+
+# Initialize some variables
+
+quit = False
+place = False
+drop = False
+switch = False
+held_piece = &amp;quot;&amp;quot;
+flag = 0
+score = 0
+next_piece =&amp;quot;&amp;quot;
+current_piece = &amp;quot;&amp;quot;
+# All the tetris pieces
+
+
+
+if __name__ == &amp;quot;__main__&amp;quot;:
+    next_piece = getNextPiece()
+    while not quit:
+        # Check if user wants to swap held and current pieces
+        if switch:
+           # swap held_piece and current_piece
+            held_piece, current_piece = current_piece, held_piece
+            switch = False
+        else:
+            # Generates the next piece and updates the current piece
+            current_piece = next_piece
+            next_piece = getNextPiece()
+
+        if flag &amp;gt; 0:
+            flag -= 1
+
+        # Determines the color and position of the current, next, and held pieces
+        
+        held_info = getInfo(held_piece)
+
+        next_info = getInfo(next_piece)
+
+        coords, color = getInfo(current_piece)
+        if current_piece == &amp;quot;I&amp;quot;:
+            top_left = [-2, 3]
+
+        if not np.all(board[coords[:,0], coords[:,1]] == 0):
+            break
+
+        while True:
+            # Shows the board and gets the key press
+            key = display(board, coords, color, next_info, held_info, score, SPEED)
+            # Create a copy of the position
+            dummy = coords.copy()
+            print(&amp;quot;speed &amp;quot;,SPEED, &amp;quot;key &amp;quot;,key,&amp;quot; &amp;quot;, ord(&amp;quot;s&amp;quot;))
+
+            if key == ord(&amp;quot;s&amp;quot;):
+                drop = True
+
+            elif key == ord(&amp;quot;a&amp;quot;):
+                # Moves the piece left if it isn&#39;t against the left wall
+                if np.min(coords[:,1]) &amp;gt; 0:
+                    coords[:,1] -= 1
+                if current_piece == &amp;quot;I&amp;quot;:
+                    top_left[1] -= 1
+            elif key == ord(&amp;quot;d&amp;quot;):
+                # Moves the piece right if it isn&#39;t against the right wall
+                if np.max(coords[:,1]) &amp;lt; 9:
+                    coords[:,1] += 1
+                    if current_piece == &amp;quot;I&amp;quot;:
+                        top_left[1] += 1
+            # elif key == ord(&amp;quot;j&amp;quot;) or key == ord(&amp;quot;l&amp;quot;):
+            #         # Rotation mechanism
+            #     # arr is the array of nearby points which get rotated and pov is the indexes of the blocks within arr
+                
+            #     if current_piece != &amp;quot;I&amp;quot; and current_piece != &amp;quot;O&amp;quot;:
+            #         if coords[1,1] &amp;gt; 0 and coords[1,1] &amp;lt; 9:
+            #             arr = coords[1] - 1 + np.array([[[x, y] for y in range(3)] for x in range(3)])
+            #             pov = coords - coords[1] + 1
+                        
+            #     elif current_piece == &amp;quot;I&amp;quot;:
+            #         # The straight piece has a 4x4 array, so it needs seperate code
+                    
+            #         arr = top_left + np.array([[[x, y] for y in range(4)] for x in range(4)])
+            #         pov = np.array([np.where(np.logical_and(arr[:,:,0] == pos[0], arr[:,:,1] == pos[1])) for pos in coords])
+            #         pov = np.array([k[0] for k in np.swapaxes(pov, 1, 2)])
+                
+            #     # Rotates the array and repositions the piece to where it is now
+                
+            #     if current_piece != &amp;quot;O&amp;quot;:
+            #         if key == ord(&amp;quot;j&amp;quot;):
+            #             arr = np.rot90(arr, -1)
+            #         else:
+            #             arr = np.rot90(arr)
+            #         coords = arr[pov[:,0], pov[:,1]]
+            
+            elif key == ord(&amp;quot;w&amp;quot;):
+                        # Rotation mechanism
+                # arr is the array of nearby points which get rotated and pov is the indexes of the blocks within arr
+                
+                if current_piece != &amp;quot;I&amp;quot; and current_piece != &amp;quot;O&amp;quot;:
+                    if coords[1,1] &amp;gt; 0 and coords[1,1] &amp;lt; 9:
+                        arr = coords[1] - 1 + np.array([[[x, y] for y in range(3)] for x in range(3)])
+                        pov = coords - coords[1] + 1
+                        
+                elif current_piece == &amp;quot;I&amp;quot;:
+                    # The straight piece has a 4x4 array, so it needs seperate code
+                    
+                    arr = top_left + np.array([[[x, y] for y in range(4)] for x in range(4)])
+                    pov = np.array([np.where(np.logical_and(arr[:,:,0] == pos[0], arr[:,:,1] == pos[1])) for pos in coords])
+                    pov = np.array([k[0] for k in np.swapaxes(pov, 1, 2)])
+                
+                # Rotates the array and repositions the piece to where it is now
+                
+                if current_piece != &amp;quot;O&amp;quot;:
+                    if key == ord(&amp;quot;j&amp;quot;):
+                        arr = np.rot90(arr, -1)
+                    else:
+                        arr = np.rot90(arr)
+                    coords = arr[pov[:,0], pov[:,1]]
+                # Hard drop set to true
+                # drop = True
+            # elif key == ord(&amp;quot;i&amp;quot;):
+            #     # Goes out of the loop and tells the program to switch held and current pieces
+            #     if flag == 0:
+            #         if held_piece == &amp;quot;&amp;quot;:
+            #             held_piece = current_piece
+            #         else:
+            #             switch = True
+            #         flag = 2
+            #         break
+            elif key == 8 or key == 27:
+                quit = True
+                break
+
+            # Checks if the piece is overlapping with other pieces or if it&#39;s outside the board, and if so, changes the position to the position before anything happened
+            
+            if np.max(coords[:,0]) &amp;lt; 20 and np.min(coords[:,0]) &amp;gt;= 0:
+                if not (current_piece == &amp;quot;I&amp;quot; and (np.max(coords[:,1]) &amp;gt;= 10 or np.min(coords[:,1]) &amp;lt; 0)):
+                    if not np.all(board[coords[:,0], coords[:,1]] == 0):
+                        coords = dummy.copy()
+                else:
+                    coords = dummy.copy()
+            else:
+                coords = dummy.copy()
+            
+            if drop:
+                    # Every iteration of the loop moves the piece down by 1 and if the piece is resting on the ground or another piece, then it stops and places it
+                
+                while not place:
+                    if np.max(coords[:,0]) != 19:
+                        # Checks if the piece is resting on something
+                        for pos in coords:
+                            if not np.array_equal(board[pos[0] + 1, pos[1]], [0, 0, 0]):
+                                place = True
+                                break
+                    else:
+                        # If the position of the piece is at the ground level, then it places
+                        place = True
+                    
+                    if place:
+                        break
+                    
+                    # Keeps going down and checking when the piece needs to be placed
+                    
+                    coords[:,0] += 1
+                    
+                    if current_piece == &amp;quot;I&amp;quot;:
+                        top_left[0] += 1
+                        
+                drop = False
+
+            else:
+                    # Checks if the piece needs to be placed
+                if np.max(coords[:,0]) != 19:
+                    for pos in coords:
+                        if not np.array_equal(board[pos[0] + 1, pos[1]], [0, 0, 0]):
+                            place = True
+                            break
+                else:
+                    place = True
+                
+            if place:
+                # Places the piece where it is on the board
+                for pos in coords:
+                    board[tuple(pos)] = color
+                    
+                # Resets place to False
+                place = False
+                break
+
+            # Moves down by 1
+
+            coords[:,0] += 1
+            if current_piece == &amp;quot;I&amp;quot;:
+                top_left[0] += 1
+
+        # Clears lines and also counts how many lines have been cleared and updates the score
+        
+        lines = 0
+                
+        for line in range(20):
+            if np.all([np.any(pos != 0) for pos in board[line]]):
+                lines += 1
+                board[1:line+1] = board[:line]
+                        
+        
+        score += lines*10
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Mã nguồn này được kế thừa từ bài viết &lt;a href=&#34;https://www.learnopencv.com/tetris-with-opencv-python/&#34;&gt;https://www.learnopencv.com/tetris-with-opencv-python/&lt;/a&gt; và mình có modify lại theo sở thích cá nhân của mình. Còn một số bug mà mình chưa fix hết. Bạn đọc nào ghé ngang có đóng góp gì thì để lại comment giúp mình hen.&lt;/p&gt;
+</description>
     </item>
     
   </channel>

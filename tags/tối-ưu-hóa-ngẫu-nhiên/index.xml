@@ -10,9 +10,7 @@
     <webMaster>alexblack2202@gmail.com (Phạm Duy Tùng)</webMaster>
     <copyright>This work is licensed under a Creative Commons Attribution-ShareAlike 4.0 International License.</copyright>
     <lastBuildDate>Fri, 08 Feb 2019 00:09:00 +0300</lastBuildDate>
-    
-	<atom:link href="/tags/t%E1%BB%91i-%C6%B0u-h%C3%B3a-ng%E1%BA%ABu-nhi%C3%AAn/index.xml" rel="self" type="application/rss+xml" />
-    
+    <atom:link href="/tags/t%E1%BB%91i-%C6%B0u-h%C3%B3a-ng%E1%BA%ABu-nhi%C3%AAn/" rel="self" type="application/rss+xml" />
     
     <item>
       <title>Tối ưu hoá ngẫu nhiên</title>
@@ -20,9 +18,231 @@
       <pubDate>Fri, 08 Feb 2019 00:09:00 +0300</pubDate>
       <author>alexblack2202@gmail.com (Phạm Duy Tùng)</author>
       <guid>/blog/2019-02-08-getting-started-with-randomized-optimization-in-python/</guid>
-      <description>Bài toán tối ưu hoá là gì Theo Russell and Norvig bài toán tối ưu hoá là bài toán mà &amp;ldquo;the aim is to find the best state according to an objective function&amp;rdquo; (mình xin phép để nguyên câu tiếng anh).
-Trong đó, state trong từ best state phụ thuộc vào ngữ cảnh của bài toán. Ví dục
- Trong ngữ cảnh là mạng neural network, state chính là các trọng số (weight), best state là tìm các trọng số tối ưu Trong bài toán 8 hậu, state là vị trí của các con hậu, best state là vị trí tốt nhất thoả yêu cầu, cũng chính là lời giải.</description>
+      <description>
+
+&lt;h2 id=&#34;bài-toán-tối-ưu-hoá-là-gì&#34;&gt;Bài toán tối ưu hoá là gì&lt;/h2&gt;
+
+&lt;p&gt;Theo  Russell and Norvig  bài toán tối ưu hoá là bài toán mà &amp;ldquo;the aim is to find the best state according to an objective function&amp;rdquo; (mình xin phép để nguyên câu tiếng anh).&lt;/p&gt;
+
+&lt;p&gt;Trong đó, state trong từ best state phụ thuộc vào ngữ cảnh của bài toán. Ví dục&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Trong ngữ cảnh là mạng neural network, state chính là các trọng số (weight), best state là tìm các trọng số tối ưu&lt;/li&gt;
+&lt;li&gt;Trong bài toán 8 hậu, state là vị trí của các con hậu, best state là vị trí tốt nhất thoả yêu cầu, cũng chính là lời giải.&lt;/li&gt;
+&lt;li&gt;Trong bài toán người giao hàng, state là các thành phố người giao hàng đi qua.&lt;/li&gt;
+&lt;li&gt;Trong bài toán tô màu cho mỗi quốc gia trên bản đồ, state là màu được tô cho mỗi quốc gia&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Nói đến đây, các bạn chắc cũng đã hiểu được khái niệm state là gì rồi. Điều quan trọng ở đây là chúng ta có thể biểu diễn state dưới dạng một con số, hoặc một mảng các giá trị số. (nghĩa là chúng ta phải chuyển đổi màu, thành phố, &amp;hellip; dưới dạng số) thì mới có thể tính toán được.&lt;/p&gt;
+
+&lt;p&gt;Từ best trong chữ best state được biểu diễn bởi một hàm toán học (mà chúng ta quen thuộc với các từ như là objective funtion, fitness funtion, cost funtion, loss function , v.v). Cái mà chúng ta muốn là cực đại hoặc cực tiểu  hoá nó (để có được kết quả tốt nhất). Hàm này nhận đầu vào là state array và trả về &amp;ldquo;fitness&amp;rdquo; value.&lt;/p&gt;
+
+&lt;p&gt;Cho nên, chúng ta có thể định nghĩa đơn giản bài toán tối ưu là việc tìm các giá trị tối ưu để cực đại/ cực tiểu hoá một hàm toán học.&lt;/p&gt;
+
+&lt;h2 id=&#34;ví-dụ&#34;&gt;Ví dụ&lt;/h2&gt;
+
+&lt;p&gt;Một ví dụ xàm xàm như sau&lt;/p&gt;
+
+&lt;p&gt;Ta có một (state) vector x = [x0,x1,x2,x3,x4] thuộc đoạn [0,1]
+một hàm f(x) = x0 + x1 + x2 + x3 + x4, tìm các giá trị x để f đạt cực đại.&lt;/p&gt;
+
+&lt;p&gt;Rõ ràng, bằng việc tính nhẩm, chúng ta biết được rằng giá trị cực đại của hàm trên là 5, và lời giải cho bài toán trên là x = [1,1,1,1,1].&lt;/p&gt;
+
+&lt;p&gt;Còn theo toán học cấp 3, ta sẽ tính đạo hàm riêng phần của từng phần tử (cái này đơn giản, mình không nhắc lại), và cũng đạt được x = [1,1,1,1,1]&lt;/p&gt;
+
+&lt;h2 id=&#34;tại-sao-lại-dùng-randomized-optimization&#34;&gt;Tại sao lại dùng Randomized Optimization?&lt;/h2&gt;
+
+&lt;p&gt;Trong bài toán ở trên, chúng ta có thể dễ dàng nhẩm được giá trị tối ưu một cách nhanh chóng. Tuy nhiên, trong thực tế, bài toán sẽ khó hơn một chút, và có nhiều hàm chúng ta không thể dễ dàng tìm được giá trị đạo hàm một cách nhanh chóng được (tốn thời gian rất lâu để giải bài toán ). Lúc này, chúng ta sẽ dùng Randomized optimization.&lt;/p&gt;
+
+&lt;p&gt;Randomized optimization sẽ bắt đầu tại một điểm ngẫu nhiên &amp;ldquo;best&amp;rdquo; state nào đó, sau đó sẽ sinh ngẫu nhiên một state khác (thường là láng giềng của &amp;ldquo;best&amp;rdquo; state hiện tại). Nếu state mới đạt giá trị finest tốt hơn &amp;ldquo;best&amp;rdquo; state hiện tại thì gán &amp;ldquo;best&amp;rdquo; state bằng state mới. Quá trình này lặp đi lặp lại cho đến khi không thể tìm được state mới này tốt hơn &amp;ldquo;best&amp;rdquo; state hiện tại.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/global_maximin.jpg&#34; alt=&#34;Hình ảnh&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Không có gì bảo đảm rằng randomized optimization sẽ tìm được lời giải tối ưu. Ví dụ như hình trên, thuật toán chỉ có thể dừng ở local maximin, rồi đứng yên ở đó. Tuy nhiên, nếu chúng ta thiết lập số lần lặp đủ lớn, thuật toán thông thường sẽ trả về kết quả tốt hơn.&lt;/p&gt;
+
+&lt;p&gt;Ở đây, chúng ta có một sự đánh đổi trade-off giữa thời gian tìm ra lời giải tối ưu và chất lượng của lời giải.&lt;/p&gt;
+
+&lt;h2 id=&#34;giải-bài-toán-tối-ưu-bằng-thư-viện-mlrose&#34;&gt;Giải bài toán tối ưu bằng thư viện mlrose&lt;/h2&gt;
+
+&lt;p&gt;Để giải bài toán tối ưu bằng thư viện mlrose, chúng ta sẽ phải định nghĩa 4 thứ:&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;Định nghĩa state vector&lt;/li&gt;
+&lt;li&gt;Định nghĩa hàm fitness function&lt;/li&gt;
+&lt;li&gt;Xác định loại bài toán&lt;/li&gt;
+&lt;li&gt;Chọn  một thuật toán tối ưu hoá ngẫu nhiên để chạy.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;Để đơn giản, chúng ta sẽ giải quyết bài toán 8 hậu bằng thư viện mlrose.&lt;/p&gt;
+
+&lt;h3 id=&#34;bài-toán-8-hậu&#34;&gt;Bài toán 8 hậu&lt;/h3&gt;
+
+&lt;p&gt;Nhắc lại một chút về bài toán 8 hậu. Trong bàn cờ vua có kích thước 8x8, chúng ta phải chọn vị trí đặt 8 con hậu sao cho trên mỗi dòng, cột và đường chéo của một con hậu bất kỳ đang đứng không giáp mặt với con hậu khác.&lt;/p&gt;
+
+&lt;h4 id=&#34;định-nghĩa-state&#34;&gt;Định nghĩa state&lt;/h4&gt;
+
+&lt;p&gt;Đây rõ ràng là bài toán tối ưu, và bước đầu tiên ta sẽ định nghĩa một vector trạng thái x = [x0, x1, x2, x3, x4, x5, x6, x7], quy ước toạ độ 0,0 là vị trí trái dưới. Giá trị của xi là vị trị cột của con hậu dòng i đang đứng.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/8_queen.jpg&#34; alt=&#34;Hình ảnh&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Ví dụ, ở hình trên, ta có x = [6, 1, 7, 5, 0, 2, 3, 4], với x0 = 6 nghĩa là con hậu đang ở cột 0 dòng 6 (góc toạ độ chúng ta khảo sát là trái dưới)&lt;/p&gt;
+
+&lt;p&gt;Hình trên không phải là lời giải tối ưu cho bài toán, vì con hậu ở cột 5, cột 6 và cột 7 giáp mặt nhau theo đường chéo.&lt;/p&gt;
+
+&lt;h4 id=&#34;định-nghĩa-fitness-funtion&#34;&gt;Định nghĩa fitness funtion&lt;/h4&gt;
+
+&lt;p&gt;Trong thư viện mlrose đã định nghĩa sẵn hàm fitness function cho một số bài toán đơn giản, ví dụ như trong bài toán 8 hậu vừa rồi. Tuy nhiên, chúng ta sẽ không sử dụng hàm có sẵn đó, mà sẽ tự viết một hàm fitness riêng. Có nhiều cách để định nghĩa hàm fitness khác nhau cho bài toán này. Ở đay, chúng ta sẽ xây dựng một hàm có input là vị trí của các con hậu output là một con số thông báo số lượng con hậu không giáp nhau. Nếu số lượng là 8 thì input chính là lời giải của bài toán.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Define alternative N-Queens fitness function for maximization problem
+def queens_max(state):
+    
+    # Initialize counter
+    fitness = 0
+    
+    # For all pairs of queens
+    for i in range(len(state) - 1):
+        for j in range(i + 1, len(state)):
+            
+            # Check for horizontal, diagonal-up and diagonal-down attacks
+            if (state[j] == state[i]) \
+                or (state[j] == state[i] + (j - i)) \
+                or (state[j] == state[i] - (j - i)):
+                
+                # If no attacks, then increment counter
+                fitness += 1
+                break
+
+
+    return fitness
+
+fitness_cust = mlrose.CustomFitness(queens_max)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h4 id=&#34;xác-định-loại-bài-toán&#34;&gt;Xác định loại bài toán&lt;/h4&gt;
+
+&lt;p&gt;Thư viện mlrose cung cấp cho chúng ta các lớp để định nghĩa 3 loại bài toán tối ưu:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;DiscreteOpt: Lớp này được sử dụng để giải các bài toán có giá trị trạng thái là rời rạc. Và tập các trạng thái sẽ được cung cấp trước. Mỗi phần tử trong state chỉ nhận một giá trị trong tập trạng thái. và mỗi phần tử trong tập trạng thái chỉ thuộc về một phần tử trong state.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;ContinuousOpt: Lớp này được sử dụng để giải các bài toán có giá trị trạng thái là liên tục.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;TSPOpt: Lớp này được dùng để giải các bài toán về travelling. Ví dụ bài toán người giao hàng. Bài toán này khác bài toán Discrete ở chỗ chúng ta sẽ phải tìm ra thứ tự tối ưu của các con số.&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Bài toán 8 hậu được xếp vào dạng bài toán tối ưu rời rạc. Trong đó, mỗi phần tử trong state vector chỉ mang một con số từ 0 đến 7.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+problem = mlrose.DiscreteOpt(length = 8, fitness_fn = fitness,
+                             maximize = False, max_val = 8)
+                             
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;length chính là số lượng phần tử trong state vector ( chúng ta có 8 cột nên length = 8), max_val = 8 (đã nói ở trên, giá trị tối ưu là khi 8 con hậu không giáp mặt nhau). Do bài toán của mình là cực tiểu (lý do là fitness  = 0 thì không có con hậu nào giáp mặt nhau, nên chúng ta set maximize = False)&lt;/p&gt;
+
+&lt;h4 id=&#34;xác-định-thuật-toán-tối-ưu&#34;&gt;Xác định thuật toán tối ưu&lt;/h4&gt;
+
+&lt;p&gt;Thư viện mlrose cung cấp cho chúng ta các thuật toán như leo đồi (hill climbing), leo đồi ngẫu nhiên (stochastic hill climbing),simulated annealing, thuật giải di truyền (genetic algorithm), MIMIC (Mutual-Information-Maximizing Input Clustering). Với dạng bài toán rời rạc và travelling, chúng ta có thể chọn bất kỳ thuật toán tối ưu nào. Với bài toán liên tục, thì thuật toán MIMIC không hỗ trợ.&lt;/p&gt;
+
+&lt;p&gt;Ví dụ, chúng ta sẽ sử dụng simulated annealing để mô phỏng hàm tối ưu, với trạng thái init là x = [1,2,3,4,5,6,7], lặp 1000 lần để tìm trạng thái tốt nhất. Có 10 lần thử. để tìm hàng xóm tốt nhất trong mỗi lần lặp.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;# Define decay schedule
+schedule = mlrose.ExpDecay()
+
+# Define initial state
+init_state = np.array([0, 1, 2, 3, 4, 5, 6, 7])
+
+# Set random seed
+np.random.seed(1)
+
+# Solve problem using simulated annealing
+best_state, best_fitness = mlrose.simulated_annealing(problem, schedule = schedule,
+                                                      max_attempts = 10, max_iters = 1000,
+                                                      init_state = init_state)
+
+print(&#39;The best state found is: &#39;, best_state)
+print(&#39;The fitness at the best state is: &#39;, best_fitness)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Kết quả&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;The best state found is:  [0 7 6 4 7 1 3 5]
+The fitness at the best state is:  1.0
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Do best state =1 , nên có 2 con hậu có thể nhìn thấy và tấn công nhau, Chúng ta sẽ thử thay dổi số max_attempts =10 thành max_attempts = 50 xem sao.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+The best state found is:  [2 0 6 4 7 1 3 5]
+The fitness at the best state is:  0.0
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/8_queen_result.jpg&#34; alt=&#34;Hình ảnh&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Thử thay bằng bài toán 12 hậu&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;import mlrose
+
+import numpy as np
+
+# Define alternative N-Queens fitness function for maximization problem
+def queens_max(state):
+    
+    # Initialize counter
+    fitness = 0
+    
+    # For all pairs of queens
+    for i in range(len(state) - 1):
+        for j in range(i + 1, len(state)):
+            
+            # Check for horizontal, diagonal-up and diagonal-down attacks
+            if (state[j] == state[i]) \
+                or (state[j] == state[i] + (j - i)) \
+                or (state[j] == state[i] - (j - i)):
+                
+                # If no attacks, then increment counter
+                fitness += 1
+                break
+
+
+    return fitness
+
+fitness_cust = mlrose.CustomFitness(queens_max)
+
+problem = mlrose.DiscreteOpt(length = 12, fitness_fn = fitness_cust, maximize = False, max_val = 12)
+
+
+# Define decay schedule
+schedule = mlrose.ExpDecay()
+
+# Define initial state
+init_state = np.array([0, 1, 2, 3, 4, 5, 6, 7,8,9,10,11])
+
+# Set random seed
+np.random.seed(1)
+
+# Solve problem using simulated annealing
+best_state, best_fitness = mlrose.simulated_annealing(problem, schedule = schedule,
+                                                      max_attempts = 100, max_iters = 5000,
+                                                      init_state = init_state)
+
+print(&#39;The best state found is: &#39;, best_state)
+print(&#39;The fitness at the best state is: &#39;, best_fitness)
+``
+
+Kết quả
+
+```python
+The best state found is:  [ 8 10  3  6  0  9  1  5  2 11  7  4]
+The fitness at the best state is:  0.0
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/12_queen_result.jpg&#34; alt=&#34;Hình ảnh&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Tất nhiên, ở trên chỉ là 1 trong số các lời giải của bài toán trên, chúng ta còn có nhiều lời giải khác, do bài toán có nhiều nghiệm.&lt;/p&gt;
+
+&lt;p&gt;Cảm ơn các bạn đã theo dõi. Hẹn gặp bạn ở các bài viết tiếp theo.&lt;/p&gt;
+</description>
     </item>
     
   </channel>

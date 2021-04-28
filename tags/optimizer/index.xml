@@ -10,9 +10,7 @@
     <webMaster>alexblack2202@gmail.com (Phạm Duy Tùng)</webMaster>
     <copyright>This work is licensed under a Creative Commons Attribution-ShareAlike 4.0 International License.</copyright>
     <lastBuildDate>Fri, 15 Jan 2021 00:19:00 +0300</lastBuildDate>
-    
-	<atom:link href="/tags/optimizer/index.xml" rel="self" type="application/rss+xml" />
-    
+    <atom:link href="/tags/optimizer/" rel="self" type="application/rss+xml" />
     
     <item>
       <title>Tìm hiểu thuật toán tối ưu hóa Adabelief Optimizer</title>
@@ -20,8 +18,123 @@
       <pubDate>Fri, 15 Jan 2021 00:19:00 +0300</pubDate>
       <author>alexblack2202@gmail.com (Phạm Duy Tùng)</author>
       <guid>/blog/2021-01-15---adabelief-optimizer/</guid>
-      <description>Giới thiệu Hi các bạn, lại là mình đây, hôm nay mình sẽ cùng các bạn tìm hiểu thuật toán tối ưu hóa AdaBelief. Thuật toán này được sử dụng để thay cho thuật toán Adam optimizer mà các bạn hiện đang xài để huấn luyện mô hình Deep learning. Nào, chúng ta cùng bắt đầu tìm hiểu nhé.
-Ẩn sâu bên trong các thuật toán sử dụng Neural Network và một vài thuật toán machine learning đều sử dụng các hàm tối ưu hóa.</description>
+      <description>
+
+&lt;h1 id=&#34;giới-thiệu&#34;&gt;Giới thiệu&lt;/h1&gt;
+
+&lt;p&gt;Hi các bạn, lại là mình đây, hôm nay mình sẽ cùng các bạn tìm hiểu thuật toán tối ưu hóa AdaBelief. Thuật toán này được sử dụng để thay cho thuật toán Adam optimizer mà các bạn hiện đang xài để huấn luyện mô hình Deep learning. Nào, chúng ta cùng bắt đầu tìm hiểu nhé.&lt;/p&gt;
+
+&lt;p&gt;Ẩn sâu bên trong các thuật toán sử dụng Neural Network  và một vài thuật toán machine learning đều sử dụng các hàm tối ưu hóa. Chúng ta có thể liệt kê ra một vài cái tên như RMSprop, SGD (Stochastic Gradient Descent), Adam (Adaptive Moment Estimation).&lt;/p&gt;
+
+&lt;p&gt;Một vài các yếu tố hay được sử dụng để đánh giá một thuật toán optimizer:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;Hội tụ nhanh (trong quá trình train)&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Sự tổng quát hóa cao (vẫn nhận dạng được những mẫu chưa từng được huấn luyện)&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Độ chính xác cao&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Các thuật toán tối ưu thuộc họ Adaptive thường có tốc độ hội tụ nhanh. Trong khi đó, các thuật toán thuộc họ SGD thường có sự tổng quát hóa cao. Gần đây, Juntang Zhuang và các cộng sự thuộc đại học Yale đã nghiên cứu và tạo ra thuật toán AdaBelief Optimizer: Adapting Stepsizes by the Belief in Observed Gradients. Thuật toán này theo lời tác giả, hội tụ cả hai ưu điểm của họ Adaptive và SGD, là vừa có tốc độ hội tụ nhanh, vừa có tính tổng quát hóa cao Mã nguồn được tác giả công bố ở link &lt;a href=&#34;https://github.com/juntang-zhuang/Adabelief-Optimizer&#34;&gt;https://github.com/juntang-zhuang/Adabelief-Optimizer&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;Lời của tác giả:&lt;/p&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;We propose the AdaBelief optimizer, which adaptively scales the stepsize by the difference betweenpredicted gradient and observed gradient.  To our knowledge, AdaBelief is the first optimizer toachieve three goals simultaneously: fast convergence as in adaptive methods, good generalization asin SGD, and training stability in complex settings such as GANs. Furthermore, Adabelief has the same parameters as Adam, hence is easy to tune. We validate the benefits of AdaBelief with intuitive examples, theoretical convergence analysis in both convex and non-convex cases, and extensiveexperiments on real-world datasets&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;Để hiểu về AdaBelief, trước tiên, chúng ta phải có một ít kiến thức cơ bản về SGD và Adam, nên chúng ta sẽ bắt đầu nói về SGD trước&lt;/p&gt;
+
+&lt;h1 id=&#34;sgd-stochastic-gradient-descent&#34;&gt;SGD - Stochastic Gradient Descent&lt;/h1&gt;
+
+&lt;p&gt;Thuật toán SGD là thuật toán tối ưu hóa cơ bản theo họ gradient. Thuật toán này rất triển khai, có nền tảng lý thuyết vững chắc, cực kỳ ổn định trong quá trình huấn luyện, kết quả đạt được có thể so sánh với các thuật toán khác. Ý tưởng của thuật toán khá đơn giản, đó là &amp;ldquo;tính giá trị gradient của mỗi tham số, và đi một bước nhỏ theo chiều của gradient&amp;rdquo;. Nếu chúng ta lặp đi lặp lại quá trình này, và ngẫu nhiên chọn (stochastic) một tập batch trong tập huấn luyện, mô hình chúng ta sẽ được cải tiến dần đến đểm hội tụ.&lt;/p&gt;
+
+&lt;p&gt;Trong quá khứ, phần khó nhất của SGD là việc tính lại giá trị gradient cho toàn bộ các tham số trong mô hình. Nhưng hiện nay, các framwork máy học như Tensorflow, PyTouch, Caffee, Theano, &amp;hellip;. đã giúp chúng ta tính các giá trị gradient một cách tự động. Do đó, công việc của chúng ta hiện thời đơn giản hơn&lt;/p&gt;
+
+&lt;p&gt;$$for \text{ }  i \text{ } in \text{ } range (m): $$
+  $$\theta_i = \theta_i - \alpha ( \hat y^{i} - y^i) x^i_j$$&lt;/p&gt;
+
+&lt;p&gt;Một vấn đề chúng ta gặp phải trong quá trình huấn luyện DL với SGD là chậm, siêu chậm. Do thuật toán phải cập nhật toàn bộ các tham số, nên số lượng phép tính và lượng tài nguyên phần cứng được sử dụng rất là nhiều. Rất nhiều các biến thể của SGD đã được đề xuất để giải quyết vấn đề trên.&lt;/p&gt;
+
+&lt;h1 id=&#34;adam-adaptive-moment-estimation&#34;&gt;Adam - Adaptive Moment Estimation&lt;/h1&gt;
+
+&lt;p&gt;Adam optimizer là một thuật toán kết hợp kỹ thuật  của RMS prop và momentum. Thuật toán sử dụng hai internal states momentum (m) và  squared momentum (v) của gradient cho các tham số. Sau mỗi batch huấn luyện, giá trị của m và v được cập nhật lại sử dụng exponential weighted averaging.&lt;/p&gt;
+
+&lt;p&gt;Mã giải của việc cập nhật m và v&lt;/p&gt;
+
+&lt;p&gt;$$m_t = \beta_1m_t-_1 + (1-\beta_1)g_t $$
+ $$v_t  = \beta_2v_t-_1 + (1-\beta_2)g^2_t$$&lt;/p&gt;
+
+&lt;p&gt;trong đó, beta được xem như là một siêu tham số. Công thức cập nhật theta như sau:&lt;/p&gt;
+
+&lt;p&gt;$$\theta_t = \theta_t-_1 - \alpha\frac{m_t}{\sqrt{v_t}+ \epsilon }$$&lt;/p&gt;
+
+&lt;p&gt;trong đó, alpha là learning rate, epsion là giá trị được thêm vào để ngăng việc chia cho 0&lt;/p&gt;
+
+&lt;p&gt;Để việc descent  được thực hiện nhanh hơn, thuật toán đã sử dụng hai kỹ thuật:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;Tính  exponential moving average của giá trị đạo hàm lưu vào biến m và sử dụng nó là tử số của việc  cập nhật hướng. Với ý nghĩa là nếu m có giá trị lớn, thì việc descent đang đi đúng hướng và chúng ta cần bước nhảy lớn hơn để đi nhanh hơn. Tương tự, nếu giá trị m nhỏ, phần descent có thể không đi về hướng tối tiểu và chúng ta nên đi 1 bước nhỏ để thăm dò. Đây là phần momentum của thuật toán.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Tính exponential moving average của bình phương gía trị đạo hàm lưu vào biến v và sử dụng nó là phần mẫu số của việc cập nhật hướng. Với ý nghĩa như sau: Giả sử gradient mang các giá trị dương, âm lẫn lộn, thì khi cộng các giá trị lại theo công thức tính m ta sẽ được  giá trị m gần số 0. Do âm dương lẫn lộn nên nó bị triệt tiêu lẫn nhau. Nhưng trong trường hợp này thì v sẽ mang giá trị lớn. Do đó, trong trường hợp này, chúng ta sẽ không hướng tới cực tiểu, chúng ta sẽ không muốn đi theo hướng đạo hàm trong trường hợp này. Chúng ta để v ở phần mẫu vì khi chia cho một giá trị cao, giá trị của  các phần cập nhật sẽ nhỏ, và khi v có giá trị thấp, phần cập nhật sẽ lớn. Đây chính là phần tối ưu RMSProp  của thuật toán.&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Ở đây, m được xem như là moment thứ nhất, v xem như là moment thứ hai, nên thuật toán có tên là &amp;ldquo;Adaptive moment estimation&amp;rdquo;.&lt;/p&gt;
+
+&lt;p&gt;Để lý giải vì sao Adam lại hội tụ nhanh hơn so với SGD, chúng ta có thể giải thích như sau: Exponential weighted averaging cho chúng ta giá trị xấp xỉ gradient mượt hơn qua mỗi lần lặp, dẫn tới tăng tínhs dừng. Sau đó, việc chia cho căng bậc 2 của giá trị v làm số lước của chúng ta giảm mạnh khi phương sai của giá trị gradient tăng lên. Điều này , như giải thích ở trên, có nghĩa là, khi hướng đi của mô hình chỉ ra không rõ ràng, thuật toán Adam thực hiện các bước đi nhỏ coi như là thăm dò thôi. Và sẽ thực hiện các bước đi lớn, nhanh khi hướng đi rõ ràng.&lt;/p&gt;
+
+&lt;p&gt;Thuật toán Adam hoạt động khá hiệu quả, nhưng bản thân nó cũng có những vấn đề. Tác giả của AdaBelief  đã chỉ ra một vài điểm không hiệu quả của thuật toán&lt;/p&gt;
+
+&lt;h1 id=&#34;adabelief-optimizer-adapting-stepsizes-by-the-belief-in-observed-gradients&#34;&gt;AdaBelief Optimizer: Adapting Stepsizes by the Belief in Observed Gradients&lt;/h1&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/adam_error.jpg&#34; alt=&#34;Hình ảnh AdaBelief - Nguồn https://arxiv.org/pdf/2010.07468v5.pdf &#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Hãy nhìn vào hình trên, ở mục đánh dấu là số 3, giá trị G lớn vì đường cong ở đoạn đó dốc. Giá trị v cũng lớn. Do đó, nếu sử dụng thuật toán Adam ở đây, bước đi sẽ rất nhỏ. Việc di chuyển một bước đi nhỏ ở đây sẽ làm chậm quá trình hội tụ và không cần thiết. Bởi vì chúng ta tin tưởng rằng chúng ta đang đi đúng hướng, và chúng ta cần một bước đi dài hơn.&lt;/p&gt;
+
+&lt;p&gt;AdaBelief sửa lỗi này bằng một thay đổi nhỏ trong thuật toán của adam. Thay vì tính bình phương của gradient, AdaBelief  sẽ tính phương sai của gradient. Một sự thay đổi nhỏ nhưng mang lại giá trị to lớn.&lt;/p&gt;
+
+&lt;p&gt;$$v_t  = \beta_2v_t-_1 + (1-\beta_2)g^2_t $$
+$$s_t  = \beta_2v_t-_1 + (1-\beta_2)(g_t-m_t)^2$$&lt;/p&gt;
+
+&lt;p&gt;Tác giả không dùng biến v nữa, mà thay bằng biến s.&lt;/p&gt;
+
+&lt;p&gt;Với việc dùng biến s. Trong trường hợp trên, g lớn và m lớn, thì s sẽ nhỏ. Và khi s ở phần mẫu nhỏ, chúng ta sẽ có bước đi xa hơn. Ở đây, AdaBelief  đã giải quyết vấn đề&lt;/p&gt;
+
+&lt;p&gt;Qua đây, chúng ta cũng có thể giải thích vì sao có chữ &amp;ldquo;belief&amp;rdquo; trong từ AdaBelief. Giá trị phương sai được tính dựa vào kỳ vọng của giá trị gradient.&lt;/p&gt;
+
+&lt;p&gt;Một chú ý nhỏ ở đây là mục số 1 và mục số 3 được coi là cải tiến của Adam  so với momentum và SGD. Tất nhiên, AdaBelief cũng kế thừa mấy cái này.&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;Ở mục đánh dấu số 1 trên hình, đường cong khá phẳng và giá trị đạo hàm gần như bằng 0. Nếu sử dụng SGD, chúng ta sẽ có một bước đi nhỏ. Trong khi đó, họ Adam sẽ cho chúng ta bước đi lớn hơn vì giá trị căng bậc hai của s hoặc v ở mẫu số sẽ cho ra một kết quả rất nhỏ.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Ở mục đánh dấu số 2, đường cong ở đây rất dốc và hẹp, g và delta g ở đây rất lớn, cho nên ở đây chúng ta cần một bước di chuyển nhỏ. Nếu sử dụng SGD hoặc momentum thì sẽ đi một bước đi rất lớn do nhân với một lượng moving averages lớn. Trong khi đó, với Adam hoặc AdaBelief, chúng ta sẽ có giá trị căng bậc hai của s hoặc v ở mẫu số lớn nên bước đi sẽ nhỏ hơn.&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Về tốc độ hội tụ, tác giả có đề cập rõ và chi tiết trong bài báo, mình không đề cập lại nó nữa ở đây. Các bạn tự xem nhé.&lt;/p&gt;
+
+&lt;h1 id=&#34;kết-luận&#34;&gt;Kết luận&lt;/h1&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;AdaBelief là thuật toán tối ưu hóa có nguồn gốc từ thuật toán Adam, không có thêm tham số ngoài, chỉ thay đổi 1 dòng code.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Thuật toán đã tăng tốc độ hội tụ cũng như mức tổng quát hóa.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Thuật toán thực hiện các bước đi dựa vào &amp;ldquo;belief&amp;rdquo; của hướng gradient ở thời điểm hiện tại.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Thuật toán giải quyết vấn đề &amp;ldquo;Large gradient, small curvature&amp;rdquo; bằng cách xem xét biên độ và dấu của gradient.&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Nguồn:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;&lt;a href=&#34;https://arxiv.org/abs/2010.07468&#34;&gt;https://arxiv.org/abs/2010.07468&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;&lt;a href=&#34;https://medium.com/the-dl/understanding-the-new-adabelief-optimizer-2db70ef6de1e&#34;&gt;https://medium.com/the-dl/understanding-the-new-adabelief-optimizer-2db70ef6de1e&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;&lt;a href=&#34;https://towardsdatascience.com/adabelief-optimizer-fast-as-adam-generalizes-as-good-as-sgd-71a919597af&#34;&gt;https://towardsdatascience.com/adabelief-optimizer-fast-as-adam-generalizes-as-good-as-sgd-71a919597af&lt;/a&gt;&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</description>
     </item>
     
   </channel>

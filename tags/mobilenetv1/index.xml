@@ -10,9 +10,7 @@
     <webMaster>alexblack2202@gmail.com (Phạm Duy Tùng)</webMaster>
     <copyright>This work is licensed under a Creative Commons Attribution-ShareAlike 4.0 International License.</copyright>
     <lastBuildDate>Sat, 25 May 2019 00:12:00 +0300</lastBuildDate>
-    
-	<atom:link href="/tags/mobilenetv1/index.xml" rel="self" type="application/rss+xml" />
-    
+    <atom:link href="/tags/mobilenetv1/" rel="self" type="application/rss+xml" />
     
     <item>
       <title>Tìm hiểu mạng MobileNetV1</title>
@@ -20,7 +18,163 @@
       <pubDate>Sat, 25 May 2019 00:12:00 +0300</pubDate>
       <author>alexblack2202@gmail.com (Phạm Duy Tùng)</author>
       <guid>/blog/2019-05-26-mobilenetv1/</guid>
-      <description>Trong bài viết này, chúng ta sẽ tìm hiểu mô hình MobileNetV1 từ nhóm tác giả đến từ Google. Điểm cải tiến (chắc là cải tiến :) của mô hình là sử dụng một cách tính tích chập có tên là Depthwise Separable Convolution để giảm kích thước mô hình và giảm độ phức tạp tính toán. Do đó, mô hình sẽ hữu ích khi chạy các ứng dụng trên di động và các thiết bị nhúng.</description>
+      <description>
+
+&lt;p&gt;Trong bài viết này, chúng ta sẽ tìm hiểu mô hình MobileNetV1 từ nhóm tác giả đến từ Google. Điểm cải tiến (chắc là cải tiến :) của mô hình là sử dụng một cách tính tích chập có tên là &lt;em&gt;Depthwise Separable Convolution&lt;/em&gt; để giảm kích thước mô hình và giảm độ phức tạp tính toán. Do đó, mô hình sẽ hữu ích khi chạy các ứng dụng trên di động và các thiết bị nhúng.&lt;/p&gt;
+
+&lt;p&gt;Lý do:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;Mô hình có ít tham số hơn -&amp;gt; kích thước model sẽ nhỏ hơn.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Mô hình có ít phép tính cộng trừ nhân chia hơn -&amp;gt; độ phức tạp sẽ nhỏ hơn.&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Hiện tại (2019-05-26), tại thời điểm viết bài, bài viết gốc của tác giả đã được 1594 lượt trích dẫn. Các bạn có thể tìm đọc bài báo gốc của tác giả tại trang &lt;a href=&#34;https://arxiv.org/abs/1704.04861&#34;&gt;https://arxiv.org/abs/1704.04861&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/cimobilenetv1_citations.jpg&#34; alt=&#34;Hình ảnh&#34; /&gt;
+&lt;strong&gt;Số lượt trích dẫn bài báo MobileNets Efficient Convolutional Neural Networks for Mobile Vision Applications&lt;/strong&gt;&lt;/p&gt;
+
+&lt;h1 id=&#34;chi-tiết-về-mạng-mobilenet&#34;&gt;Chi tiết về mạng MobileNet&lt;/h1&gt;
+
+&lt;h2 id=&#34;mô-hình-kiến-trúc&#34;&gt;Mô hình kiến trúc&lt;/h2&gt;
+
+&lt;p&gt;Kiến trúc mạng MobileNet được trình bày bên dưới. Hình bên dưới được trích từ bài báo gốc của tác giả&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/mobilenetv1_architecture.png&#34; alt=&#34;Hình ảnh&#34; /&gt;
+&lt;strong&gt;Mô hình kiến trúc mạng MobileNet&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Diễn dịch ra ngôn ngữ tự nhiên, chúng ta thấy rằng mô hình có 30 lớp với các đặc điểm sau:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;Lớp 1:  Convolution layer với stride bằng 2&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Lớp 2: Depthwise layer&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Lớp 3: Pointwise layer&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Lớp 4: Depthwise layer với stride bằng 2 (khác với bước 2, dw lớp 2 có stride size bằng 1)&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Lớp 5: Pointwise layer&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Lớp 30: Softmax, dùng để phân lớp.&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&#34;depthwise-separable-convolution&#34;&gt;Depthwise Separable Convolution&lt;/h2&gt;
+
+&lt;p&gt;Depthwise separable convolution  là một &lt;em&gt;depthwise convolution theo sau bởi một pointwise convolution&lt;/em&gt; như hình bên dưới:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/depthwise_separable_convolution.png&#34; alt=&#34;Hình ảnh&#34; /&gt;
+&lt;strong&gt;Cấu trúc của một Depthwise Separable Convolution&lt;/strong&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;Depthwise convolution: là một &lt;em&gt;channel-wise DK×DK spatial convolution&lt;/em&gt;. Ví dụ ở hình trên, ta có 5 channels (các bạn để ý cục đầu tiên có 5 khối hộp, cục thứ 2 là phân tách 5 khối hộp ra thành ma trận mxn, cục thứ 3 là spatial convolution có kích thước kxk, cục thứ 4 là kết quả sau khi convolution, cục thứ 5 là ráp 5 cái kết quả của convolution lại ), do đó chúng ta sẽ có 5 DK×DK spatial convolution tương ứng với 5 channel trên.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Pointwise convolution: đơn giản là một convolution có kích thước 1x1 (như hình ở trên).&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Với M là số lượng input channel, N là số lượng output channel, Dk là kernel size, Df là feature map size (với dataset ImageNet thì input có kích thước là 224, do đó feature map ban đầu có Df = 224), chúng ta có thể tính được:&lt;/p&gt;
+
+&lt;p&gt;Chi phí tính toán của Depthwise convolution là :&lt;/p&gt;
+
+&lt;p&gt;$$D_k \cdot D_k \cdot M \cdot D_f \cdot D_f$$&lt;/p&gt;
+
+&lt;p&gt;Chi phí tính toán của Pointwise convolution là :&lt;/p&gt;
+
+&lt;p&gt;$$M \cdot N \cdot D_f \cdot D_f$$&lt;/p&gt;
+
+&lt;p&gt;Tổng chi phí tính toán của Depthwise Separable Convolution là:&lt;/p&gt;
+
+&lt;p&gt;$$D_k \cdot D_k \cdot M \cdot D_f \cdot D_f + M \cdot N \cdot D_f \cdot D_f$$&lt;/p&gt;
+
+&lt;p&gt;Nếu chúng ta không sử dụng Depthwise Separable Convolution mà sử dụng phép convolution như bình thường, chi phí tính toán là&lt;/p&gt;
+
+&lt;p&gt;$$ D_k \cdot D_k \cdot M \cdot N \cdot D_f \cdot D_f$$&lt;/p&gt;
+
+&lt;p&gt;Do đó, chi phí tính toán sẽ giảm:&lt;/p&gt;
+
+&lt;p&gt;$$\frac{D_k \cdot D_k \cdot M \cdot D_f \cdot D_f + M \cdot N \dot D_f \cdot D_f}{D_k \cdot D_k \cdot M \cdot N \cdot D_f \cdot D_f} =  \frac{1}{N} + \frac{1}{D^2_k}$$&lt;/p&gt;
+
+&lt;p&gt;Giả sử, chúng ta chọn kernel size Dk = 3, chúng ta sẽ giảm từ 8 đến 9 lần phép tính nhân =&amp;gt; giảm chi phí tính toán đi rất nhiều.&lt;/p&gt;
+
+&lt;p&gt;Một chú ý nhỏ về kiến trúc ở đây, là sau mỗi convolution MobileNet sẽ sử dụng Batch Normalization (BN) và ReLU như hình bên dưới:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/standard_convolution_vs_depthwise_seperable_convolution.png&#34; alt=&#34;Hình ảnh&#34; /&gt;
+&lt;strong&gt;Standard Convolution bên trái, Depthwise separable convolution với BN và ReLU bên phải&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;So sánh kết quả của việc sử dụng mạng 30 layer sử dụng thuần Convolution và mạng 30 layer sử dụng  Depthwise Separable Convolution (MobileNet) trên tập dữ liệu ImageNet, chúng ta có bảng kết quả bên dưới&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/standard_convolution_vs_depthwise_seperable_convolution_imagenetds.png&#34; alt=&#34;Hình ảnh&#34; /&gt;
+&lt;strong&gt;Standard Convolution bên trái, Depthwise separable convolution với BN và ReLU bên phải&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;MobileNet giảm 1% độ chính xác, nhưng số lượng tham số của mô hình và số lượng phép tính toán giảm đi rất rất nhiều, gần xấp xỉ 90%. Một con số đáng kinh ngạc.&lt;/p&gt;
+
+&lt;h2 id=&#34;làm-mô-hình-gọn-nhẹ-hơn-nữa&#34;&gt;Làm mô hình gọn nhẹ hơn nữa&lt;/h2&gt;
+
+&lt;p&gt;Với mong muốn làm mô hình gọn nhẹ hơn nữa, nhóm tác giả đã thêm vào hai tham số alpha và rho.&lt;/p&gt;
+
+&lt;p&gt;Tham số alpha: Điều khiển số lượng channel (M và N).&lt;/p&gt;
+
+&lt;p&gt;Chi phí tính toán của depthwise separable convolution khi sử dụng thêm tham số alpha.&lt;/p&gt;
+
+&lt;p&gt;$$D_k \cdot D_k \cdot \alpha M \cdot D_f \cdot D_f + \alpha M \cdot \alpha N \cdot D_f \cdot D_f$$&lt;/p&gt;
+
+&lt;p&gt;Giá trị alpha nằm trong đoạn [0,1], nhóm tác giả set giá trị alpha có bước nhảy là 0.25, các giá trị cần xét là 0.25, 0.5, 0.75, 1. Trường hợp alpha = 1 chính là mạng MobileNet baseline của mình. Trong trường hợp thay đổi alpha, số phép tính toán, số tham số, cũng giảm đi rất nhiều, và tất nhiên, độ chính xác cũng giảm đi tương ứng.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/mobilenet_alpha_changes.png&#34; alt=&#34;Hình ảnh&#34; /&gt;
+&lt;strong&gt;Mạng MobileNet với alpha thay đổi&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Phân tích kỹ hình ở trên, ta thấy rằng với alpha bằng  0.75 và 0.5 giá trị độ chính xác còn nằm ở mức miễn cưỡng có thể chấp nhận được. Nhưng với alpha bằng 0.25 thì khó mà có thể chấp nhận được kết quả đó. Việc giảm phép tính toán và số lượng tham số dẫn đến kết quả tệ như trên quả là một điều không nên. Mình nghĩ ở đây nhóm tác giả để con số để có ý nghĩa so sánh.&lt;/p&gt;
+
+&lt;p&gt;Tham số rho: Tham số này được sử dụng để điều khiển độ phân giải của ảnh input.&lt;/p&gt;
+
+&lt;p&gt;Chi phí tính toán của depthwise separable convolution khi sử dụng thêm tham số rho.&lt;/p&gt;
+
+&lt;p&gt;$$D_k \cdot D_k \cdot \alpha M \cdot \rho D_f \cdot \rho D_f + \alpha M \cdot \alpha N \cdot \rho D_f \cdot \rho D_f$$&lt;/p&gt;
+
+&lt;p&gt;Giá trị rho cũng nằm trong đoạn [0,1]. Nhóm tác giả sử dụng các giá trị độ phân giải là 224 (độ phân giải gốc, tương ứng với rho =1), 192, 160, 128.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/mobilenet_beta_changes.png&#34; alt=&#34;Hình ảnh&#34; /&gt;
+&lt;strong&gt;Mạng MobileNet với rho thay đổi&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Giá trị độ chính xác thay đổi theo hướng giảm khá mượt. Việc thay đổi rho chỉ làm giảm số lượng phép tính toán, không làm giảm số lượng tham số. Việc giảm độ chính xác có thể lý giải lý do là có một số hình có kích thước nhỏ nên khi giảm kích thước sẽ làm mất những đặc trưng cần thiết của đối tượng cần xét.&lt;/p&gt;
+
+&lt;h1 id=&#34;so-sánh-mobilenet-với-các-state-of-the-art-đương-thời&#34;&gt;So sánh MobileNet với các State-of-the-art đương thời&lt;/h1&gt;
+
+&lt;p&gt;Khi so sánh 1.0 MobileNet-224 với GoogleNet và VGG 16 (hình bên dưới), chúng ta thấy rằng độ chính xác của cả 3 thuật toán là hầu như tương đương nhau. Nhưng 1.0 MobileNet-224 có số lượng tham số ít (75% so với GoogleNet) và số lượng phép toán nhỏ hơn rất nhiều =&amp;gt; chạy nhanh hơn.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/mobilenet_compare_1.png&#34; alt=&#34;Hình ảnh&#34; /&gt;
+&lt;strong&gt;So sánh 1.0 MobileNet-224 với GoogleNet và VGG 16 trên tập ImageNet&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Với mô hình 0.50 MobileNet-160, chúng ta có thể so sánh với mô hình Squeezenet và AlexNet (mô hình thắng giải nhất cuộc thi ILSVRC 2012). Một lần nữa, mô hình 0.50 MobileNet-160 cho kết quả tốt hơn, nhưng có số lượng phép tính toán ít hơn rất nhiều (hơi đáng buồn là số lượng tham số của mô hình 0.50 MobileNet-160 khá cao, số lượng tham số gấp đôi so với AlexNet và gần bằng Squeezenet) =&amp;gt; 0.50 MobileNet-160 train nhanh hơn, predict cũng nhanh hơn so với Squeezenet và AlexNet, nhưng tốn bộ nhớ RAM hơn.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/mobilenet_compare_2.png&#34; alt=&#34;Hình ảnh&#34; /&gt;
+&lt;strong&gt;So sánh 0.50 MobileNet-160 với Squeezenet và AlexNet trên tập ImageNet&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;So với mô hình Inception-v3 (mô hình thắng giải nhất cuộc thi ILSVRC 2015), MobileNet cho kết quả khá tốt, nhưng số tham số và số lượng phép tính toán nhỏ hơn rất nhiều&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/mobilenet_compare_3.png&#34; alt=&#34;Hình ảnh&#34; /&gt;
+&lt;strong&gt;So sánh Mobile net và Inception-v3 trên tập Stanford Dog&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Các thí nghiệm ở dưới trên các tập dataset khác nhau chứng minh mức độ hiệu quả của MobileNet
+&lt;img src=&#34;/post_image/mobilenet_compare_4.png&#34; alt=&#34;Hình ảnh&#34; /&gt;
+&lt;strong&gt;GPS Localization Via Photos&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/mobilenet_compare_5.png&#34; alt=&#34;Hình ảnh&#34; /&gt;
+&lt;strong&gt;Face Attribute Classification&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/mobilenet_compare_6.png&#34; alt=&#34;Hình ảnh&#34; /&gt;
+&lt;strong&gt;MMicrosoft COCO Object Detection Dataset&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/mobilenet_compare_7.png&#34; alt=&#34;Hình ảnh&#34; /&gt;
+&lt;strong&gt;Face Recognition&lt;/strong&gt;&lt;/p&gt;
+
+&lt;h1 id=&#34;kết-luận&#34;&gt;Kết luận&lt;/h1&gt;
+
+&lt;p&gt;MobileNet cho kết quả tốt ngang ngữa các state-of-the-art thắng giải nhất ở quá khứ, nhưng với mô hình có số lượng tham số nhỏ hơn và số phép tính toán ít hơn. Điều này đạt được là nhờ vào việc sử dụng Depthwise Separable Convolution.&lt;/p&gt;
+
+&lt;p&gt;Cảm ơn các bạn đã theo dõi bài viết, có chỗ nào bạn chưa rõ hoặc mình viết bị sai, các bạn vui lòng để lại comment để mình sửa lại cho đúng.&lt;/p&gt;
+</description>
     </item>
     
   </channel>

@@ -10,9 +10,7 @@
     <webMaster>alexblack2202@gmail.com (Phạm Duy Tùng)</webMaster>
     <copyright>This work is licensed under a Creative Commons Attribution-ShareAlike 4.0 International License.</copyright>
     <lastBuildDate>Mon, 27 May 2019 00:12:00 +0300</lastBuildDate>
-    
-	<atom:link href="/tags/ilsvrc/index.xml" rel="self" type="application/rss+xml" />
-    
+    <atom:link href="/tags/ilsvrc/" rel="self" type="application/rss+xml" />
     
     <item>
       <title>Tìm hiểu mạng AlexNet, mô hình giành chiến thắng tại cuộc thi ILSVRC 2012</title>
@@ -20,7 +18,199 @@
       <pubDate>Mon, 27 May 2019 00:12:00 +0300</pubDate>
       <author>alexblack2202@gmail.com (Phạm Duy Tùng)</author>
       <guid>/blog/2019-05-27-alexnet/</guid>
-      <description>Trong bài viết này, chúng ta sẽ tìm hiểu mô hình AlexNet từ nhóm của giáo sư Hinton. Tới thời điểm hiện tại (2019-05-27), bài viết của giáo sư đã có hơn 40316 lượt trích dẫn. Bài báo này có bước đóng góp cực kỳ quan trọng, là một đột phá lớn trong lĩnh vực deep learning, mở đầu cho sự quay lại của mạng neural network và đóng góp trực tiếp vào thành công của những chương trình trí tuệ nhân tạo tại thời điểm hiện tại.</description>
+      <description>
+
+&lt;p&gt;Trong bài viết này, chúng ta sẽ tìm hiểu mô hình AlexNet từ nhóm của giáo sư Hinton. Tới thời điểm hiện tại (2019-05-27), bài viết của giáo sư đã có hơn 40316 lượt trích dẫn. Bài báo này có bước đóng góp cực kỳ quan trọng, là một đột phá lớn trong lĩnh vực deep learning, mở đầu cho sự quay lại của mạng neural network và đóng góp trực tiếp vào thành công của những chương trình trí tuệ nhân tạo tại thời điểm hiện tại.&lt;/p&gt;
+
+&lt;p&gt;Về bài báo gốc của tác giả, mình có để ở phần trích dẫn bên dưới. Các bạn có nhu cầu tìm hiểu có thể tìm và đọc. Theo ý kiến riêng của mình, đây là một bài báo &lt;em&gt;rất nên đọc và phải đọc&lt;/em&gt;. Trước đây mình đã có viết 1 bài về tập AlexNet nhưng chưa đầy đủ, bài đó mình chỉ giới thiệu phớt phớt qua mạng AlexNet. Trong bài viết này, mình sẽ trình bày kỹ hơn.&lt;/p&gt;
+
+&lt;p&gt;Sơ lược một chút, tập dữ liệu ImageNet là tập dataset có khoảng 15 triệu hình ảnh có độ phân giải cao đã được gán nhãn (có khoảng 22000 nhãn). Cuộc thi ILSVRC  sử dụng một phần nhỏ của tập ImageNet với khoảng 1.2 triệu ảnh của 1000 nhãn (trung bình mỗi nhãn có khoảng 1.2 ngàn hình ảnh) làm tập train, 50000 ảnh làm tập validation và 150000 ảnh làm tập test (tập validation và tập test đều có 1000 nhãn thuộc tập train).&lt;/p&gt;
+
+&lt;h1 id=&#34;kiến-trúc-mạng-alexnet&#34;&gt;Kiến trúc mạng AlexNet&lt;/h1&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/alexnet_architecture.jpg&#34; alt=&#34;Hình ảnh&#34; /&gt;
+&lt;strong&gt;Kiến trúc mô hình AlexNet&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Mạng AlexNet bao gồm 8 lớp (tính luôn lớp input là 9), bao gồm:&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;Input&lt;/em&gt;: có kích thước 224x224x3 (Scale ảnh đầu vào về dạng 224x224x3, thực chất ảnh của tập ImageNet có size tùy ý)&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;Lớp thứ nhất&lt;/em&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Convolution Layer có kích thước 11x11x3 với stride size = 4 và pad = 0. Kết quả sau bước này ta được tập feature map có kích thước 55x55x96 (mình nghĩ là các bạn sẽ biết cách tính sao cho ra số 55, mình cũng đã đề cập vấn đề cách tính này ở 1 bài viết trước đây).
+
+Tiếp theo là một Overlapping Max Pooling 3x3 có stride =2 =&amp;gt; feature maps = 27x27x96.
+
+Tiếp theo là Local Response Normalization =&amp;gt; feature maps = 27x27x96.
+
+Xong lớp thứ nhất
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;em&gt;Lớp thứ hai&lt;/em&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Convolutional Layer: 256 kernels có kích thước 5x5x48 (stride size = 1, pad = 2) =&amp;gt; 27x27x256 feature maps.
+
+Overlapping Max Pooling 3x3 có stride =2 =&amp;gt; feature maps = 13x13x256.
+
+Tiếp theo là Local Response Normalization =&amp;gt; feature maps = 13x13x256.
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;em&gt;Lớp thứ ba&lt;/em&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Convolutional Layer: 384 kernels có kích thước 3x3x256 (stride size = 1, pad = 1) =&amp;gt; 13x13x384 feature maps.
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;em&gt;Lớp thứ bốn&lt;/em&gt;: 384 kernels có kích thước 3x3x192 (stride size = 1, pad = 1) =&amp;gt; 13x13x384 feature maps.&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;Lớp thứ năm&lt;/em&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Convolutional Layer: 256 kernels có kích thước 3x3x192 (stride size = 1, pad = 1) =&amp;gt; 13x13x256 feature maps.
+
+Overlapping Max Pooling 3x3 có stride =2 =&amp;gt; feature maps = 6x6x256.
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;em&gt;Lớp thứ sáu&lt;/em&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Full connected (hay còn gọi là Dense layer) với 4096 neurals
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;em&gt;Lớp thứ bảy&lt;/em&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Full connected  với 4096 neurals
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;em&gt;Lớp thứ tám&lt;/em&gt;:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Full connected ra output 1000 neural (do có 1000 lớp)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Hàm độ lỗi được sử dụng là Softmax.&lt;/p&gt;
+
+&lt;p&gt;Tổng cộng, chúng ta có 60 triệu tham số được sử dụng để huấn luyện.&lt;/p&gt;
+
+&lt;h1 id=&#34;cải-tiến-của-mô-hình-để-giảm-error-rate&#34;&gt;Cải tiến của mô hình để giảm error rate&lt;/h1&gt;
+
+&lt;h2 id=&#34;sử-dụng-relu-thay-cho-tanh&#34;&gt;Sử dụng ReLU thay cho TanH&lt;/h2&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/relu_activation_function.png&#34; alt=&#34;Hình ảnh&#34; /&gt;
+&lt;strong&gt;Hàm kích hoạt ReLU và TanH&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Các mô hình neural network trước khi bài báo ra đời thường sử dụng hàm Tanh làm hàm kích hoạt. Mô hình AlexNet không sử dụng hàm TanH mà giới thiệu một hàm kích hoạt mới là ReLU. ReLU giúp cho quá trình huấn luyện chạy nhanh hơn gấp 6 lần so với kiến trúc tương tự sử dụng TanH, góp một phần vào việc độ lỗi trên tập huấn luyện là 25%.&lt;/p&gt;
+
+&lt;h2 id=&#34;local-response-normalization&#34;&gt;Local Response Normalization&lt;/h2&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/local_response_norm_vs_batch_norm.png&#34; alt=&#34;Hình ảnh&#34; /&gt;
+&lt;strong&gt;Local Response Normalization và Batch Normalization&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Trong mạng AlexNet, nhóm tác giả sử dụng hàm chuẩn hóa là Local Response Normalization. Hàm này không phải là Batch Normalization mà các bạn hay sử dụng ở thời điểm hiện tại (xem hình ở trên, hai hàm có công thức tính toán hoàn toàn khác nhau). Việc sử dụng chuẩn hóa (Normalization) giúp tăng tốc độ hội tụ. Ngày nay, chúng ta không còn sử dụng Local Response Normalization nữa. Thay vào đó, chúng ta sử  dụng Batch Normalization làm hàm chuẩn hóa.&lt;/p&gt;
+
+&lt;p&gt;Với việc sử dụng hàm chuẩn hóa Local Response Normalization, độ lỗi top-1 error rate giảm 1.4%, top-5 giảm 1.2%.&lt;/p&gt;
+
+&lt;h2 id=&#34;overlapping-pooling&#34;&gt;Overlapping Pooling&lt;/h2&gt;
+
+&lt;p&gt;Overlapping Pooling là pooling với stride nhỏ hơn kernel size. Một khái niệm ngược với Overlapping Pooling là Non-Overlapping Pooling với stride lớn hoăn hoặc bằng kernel.&lt;/p&gt;
+
+&lt;p&gt;Mạng AlexNet sử dụng Overlapping Pooling ở hidden layer thứ 1, 2 và 5 (Kernel size = 3x3, stride =2).&lt;/p&gt;
+
+&lt;p&gt;Với việc sử dụng overlapping pooling, top-1 error rates giảm 0.4%, top-5 error rate giảm 0.3%.&lt;/p&gt;
+
+&lt;h2 id=&#34;sử-dụng-data-augmentation&#34;&gt;Sử dụng Data Augmentation&lt;/h2&gt;
+
+&lt;p&gt;Dữ liệu của tập huấn luyện khá nhiều, 1.2 triệu mẫu. Nhưng chia ra cho 1000 lớp thì mỗi lớp có khoảng 1200, khá khiêm tốn phải không. Cho nên, tác giả đã nghĩ ra một cách khá hay để tăng số lượng hình ảnh mà vẫn giữ được tính IID của dữ liệu, đó là sử dụng các phép biến đổi affine trên dữ liệu ảnh gốc để thu thêm nhiều ảnh hơn.&lt;/p&gt;
+
+&lt;p&gt;Có hai dạng Data Augentation được tác giả sử dụng&lt;/p&gt;
+
+&lt;p&gt;Dạng thứ nhất: Image translation và horizontal reflection (mirroring)&lt;/p&gt;
+
+&lt;p&gt;Image translation được hiểu như sau: ảnh ImageNet gốc có kích thước 256x256 pixel, tác giả rút ra một ảnh con có kích thước 224x224 pixel, sau đó dịch qua trái 1 pixel và lấy 1 ảnh con tiếp theo có kích thước 224x224. Làm như vậy theo hàng, hết hàng làm theo cột. Cuối cùng tác giả có thể từ một bức hình 256x256 ban đầu rút trích thành 1024 hình có kích thước 224x224&lt;/p&gt;
+
+&lt;p&gt;horizontal reflection (mirroring) được hiểu là lấy ảnh phản chiếu của ánh gốc qua đường chéo chính. Ví dụ con báo dang có hướng tai của nó từ trái qua phải, ta lấy horizontal reflection của ảnh đó thì sẽ được con báo hướng tai từ phải qua trái.&lt;/p&gt;
+
+&lt;p&gt;Với việc kết hợp Image translation và horizontal reflection (mirroring), tác giả có thể rút tối đa 2048 bức ảnh khác nhau chỉ từ 1 bức ảnh gốc =&amp;gt; với hơn 1000 bức ảnh của 1 nhãn có thể sinh ra tối đa là 2048000 bức ảnh, một con số khá lớn phải không các bạn.&lt;/p&gt;
+
+&lt;p&gt;Ở tập test, tác giả sử dụng 4 hình 224x224 ở bốn góc cộng với 1 hình 224x224 ở trung tâm =&amp;gt; được 5 hình, đem 5 hình đó sử dụng horizontal reflection thì thu được 10 hình cho mỗi file test.&lt;/p&gt;
+
+&lt;p&gt;Dạng thứ hai: Thay đổi độ sáng&lt;/p&gt;
+
+&lt;p&gt;Thực hiện tính PCA trên tập train. Với mỗi hình trên tập train, thay đổi giá trị độ sáng&lt;/p&gt;
+
+&lt;p&gt;$$[p_1, p_2, p_3][\alpha_1 \gamma_1, \alpha_2 \gamma_2, \alpha_3 \gamma_3]^T$$&lt;/p&gt;
+
+&lt;p&gt;với pi và gammai là giá trị trị riêng và vector riêng thứ i của ma trận hiệp phương sai 3x3 của ảnh, và alpha i là một giá trị ngẫu nhiên thuộc đoạn 1 và độ lệch chuẩn 0.1..&lt;/p&gt;
+
+&lt;p&gt;Với việc sử dụng data augmentation, top-1 error rate giảm 1% độ lỗi.&lt;/p&gt;
+
+&lt;h2 id=&#34;dropout&#34;&gt;Dropout&lt;/h2&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/drop_out.png&#34; alt=&#34;Hình ảnh&#34; /&gt;
+&lt;strong&gt;Dropout&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Với mỗi layer sử dụng dropout, mỗi neural sẽ có cơ hội không đóng góp vào feed forward và backpropagation. Do đó, mỗi neural đều có cơ hội  rất lớn đóng góp vào thuật toán, và chúng ta sẽ giảm thiểu tình trạng phụ thuộc vào một vài neural.&lt;/p&gt;
+
+&lt;p&gt;Không sử dụng dropout trong tập quá trình test.&lt;/p&gt;
+
+&lt;p&gt;Mạng AlexNet sử dụng giá trị xác xuất của dropout là 0.5  ở hai fully-connected layer. &lt;em&gt;Dopout được xem như là một kỹ thuật chuẩn hóa nhằm mục đích giảm overfitting.&lt;/em&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;sử-dụng-nhiều-gpu&#34;&gt;Sử dụng nhiều GPU&lt;/h2&gt;
+
+&lt;p&gt;Tại năm 2012, nhóm tác giả sử dụng card đồ họa NIVIDIA GTX 580 có 3GB bộ nhớ RAM. Cho nên, để có thể huấn luyện được mô hình AlexNet trên GPU, mô hình cần sử dụng  2 GPU.&lt;/p&gt;
+
+&lt;p&gt;vì vậy &lt;em&gt;việc sử dụng 2 hoặc nhiều GPU là do vấn đề thiếu bộ nhớ, chứ không phải là vấn đề tăng tốc quá trình train hơn so với 1 GPU&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;Ngoài ra, do giới hạn của GPU, nên mô hình AlexNet được tách ra làm 2 phần, mỗi phần được huấn luyện trên 1 GPU. Phiên bản 1 GPU của mô hình có tên là CaffeNet, và đòi hỏi chúng ta phải sử dụng GPU có bộ nhớ RAM lớn hơn hoặc bằng 6GB.&lt;/p&gt;
+
+&lt;h1 id=&#34;một-số-chi-tiết-khác-về-các-learning-param&#34;&gt;Một số chi tiết khác về các learning param&lt;/h1&gt;
+
+&lt;p&gt;Batch size: 128&lt;/p&gt;
+
+&lt;p&gt;Momemtum: 0.9&lt;/p&gt;
+
+&lt;p&gt;Weight Decay: 0.0005&lt;/p&gt;
+
+&lt;p&gt;Learning rate: 0.01, giá trị learning rate sẽ giảm đi 10 lần nếu validation error rate không thay đổi trong 1 khoảng thời gian. Số lần giảm là 3.&lt;/p&gt;
+
+&lt;p&gt;Epoch: 90&lt;/p&gt;
+
+&lt;p&gt;Nhóm tác giả đã sử dụng 2 GPU 580 có  3GB GPU RAM và tốn 6 ngày để huấn luyện.&lt;/p&gt;
+
+&lt;h1 id=&#34;kết-quả&#34;&gt;Kết quả&lt;/h1&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/alexnet_result_1.png&#34; alt=&#34;Hình ảnh&#34; /&gt;
+&lt;strong&gt;Độ lỗi của AlexNet trên ILSVRC 2010&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Trong cuộc thi ILSVRC 2010, AlexNet đạt độ chính xác top-1 error 37.5% và top-5 error là 17.0%, kết quả này tốt hơn vượt trội so với các cách tiếp cận khác.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/alexnet_result_2.png&#34; alt=&#34;Hình ảnh&#34; /&gt;
+&lt;strong&gt;Độ lỗi của AlexNet trên ILSVRC 2012&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Đến cuộc thi ILSVRC 2012, độ lỗi của AlexNet trên tập validation giảm còn 18.2%.&lt;/p&gt;
+
+&lt;p&gt;Nếu lấy trung bình của dự đoán trên 5 mạng AlexNet được huấn luyện khác nhau, độ lỗi giảm còn 16.4%. Các lấy trung bình trên nhiều hơn 1 mạng CNN là một kỹ thuật &lt;em&gt;boosting&lt;/em&gt; và được sử dụng trước đó ở bài toán phân loại số của mạng LeNet.&lt;/p&gt;
+
+&lt;p&gt;Ở dòng số 3 là mạng AlexNet nhưng được thêm 1 convolution layer nữa (nên được ký hiệu là 1CNN*), độ lỗi trên tập validation giảm còn 16.4%.&lt;/p&gt;
+
+&lt;p&gt;Nếu lấy kết quả trung bình của 2 mạng neural net được chỉnh sửa (thêm 1 convolution layer) và 5 mạng AlexNet gốc (=&amp;gt; chúng ta có 7CNN*), độ lỗi trên tập validation giảm xuống 15.4%&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/alexnet_result_3.png&#34; alt=&#34;Hình ảnh&#34; /&gt;
+&lt;strong&gt;Demo kết quả top-5 của mạng AlexNet&lt;/strong&gt;&lt;/p&gt;
+
+&lt;h1 id=&#34;mạng-caffenet&#34;&gt;Mạng CaffeNet&lt;/h1&gt;
+
+&lt;p&gt;Mạng này là phiên bản kiến trúc 1-GPU của AlexNet. Kiến trúc của mạng caffeNet như hình bên dưới:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/caffenet.png&#34; alt=&#34;Hình ảnh&#34; /&gt;
+&lt;strong&gt;Mạng caffeNet&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Bạn thấy đó, thay vì có 2 phần trên và dưới như mô ình AlexNet ở trên, mô hình CaffeNet chỉ có 1 phần. Ví dụ lớp hidden layer thứ 7 mạng AlexNet gồm 2 phần, mỗi phần có kích thước 2048, còn ở phiên bản CaffeNet thì đã gộp lại thành 1 phần.&lt;/p&gt;
+
+&lt;p&gt;Tài liệu tham khảo&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://papers.nips.cc/paper/4824-imagenet-classification-with-deep-convolutional-neural-networks.pdf&#34;&gt;https://papers.nips.cc/paper/4824-imagenet-classification-with-deep-convolutional-neural-networks.pdf&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;http://www.image-net.org/challenges/LSVRC/&#34;&gt;http://www.image-net.org/challenges/LSVRC/&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;Cảm ơn các bạn đã theo dõi bài viết, có chỗ nào bạn chưa rõ hoặc mình viết bị sai, các bạn vui lòng để lại comment để mình sửa lại cho đúng.&lt;/p&gt;
+</description>
     </item>
     
   </channel>
