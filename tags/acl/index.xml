@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>ACL on Phạm Duy Tùng Machine Learning Blog</title>
+    <link>/tags/acl/</link>
+    <description>Recent content in ACL on Phạm Duy Tùng Machine Learning Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <managingEditor>alexblack2202@gmail.com (Phạm Duy Tùng)</managingEditor>
+    <webMaster>alexblack2202@gmail.com (Phạm Duy Tùng)</webMaster>
+    <copyright>This work is licensed under a Creative Commons Attribution-ShareAlike 4.0 International License.</copyright>
+    <lastBuildDate>Fri, 02 Jul 2021 00:19:00 +0300</lastBuildDate>
+    <atom:link href="/tags/acl/" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>Mô hình phân quyền - Access Control</title>
+      <link>/blog/2021-07-02-mo-hinh-phan-quyen/</link>
+      <pubDate>Fri, 02 Jul 2021 00:19:00 +0300</pubDate>
+      <author>alexblack2202@gmail.com (Phạm Duy Tùng)</author>
+      <guid>/blog/2021-07-02-mo-hinh-phan-quyen/</guid>
+      <description>
+
+&lt;h1 id=&#34;giới-thiệu&#34;&gt;Giới thiệu&lt;/h1&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;a href=&#34;#acl&#34;&gt;Danh sách điều khiển truy cập -  Access Control List &lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#mac&#34;&gt;Điều khiển truy cập bắt buộc - Mandatory Access Control &lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#dac&#34;&gt;Điều khiển truy cập tùy quyền -  Discretionary Access Control (DAC) &lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#rbac&#34;&gt;Điều khiển truy cập theo vai - Role Based Access Control (RBAC) &lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a href=&#34;#abac&#34;&gt;Điều khiển truy cập theo thuộc tính - Attribute Based Access Control (ABAC) &lt;/a&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h1 id=&#34;danh-sách-điều-khiển-truy-cập-access-control-list-acl-a-name-acl-a&#34;&gt;Danh sách điều khiển truy cập -  Access Control List (ACL) &lt;a name=&#34;acl&#34;&gt;&lt;/a&gt;&lt;/h1&gt;
+
+&lt;p&gt;Là mô hình cấp quyền truy cập dựa vào danh sách các quyền&lt;/p&gt;
+
+&lt;p&gt;Mô hình:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Subject được quyền ( action ) trên object
+
+Tuỳ từng bài toán khác nhau mà subject, action, object là khác nhau
+
+Ví dụ: 
+
+Trong môi trường phân quyền tập tin linux, subject là user, thread, action là READ/WRITE/ EXECUTE object là file, directory, tcp/udp port, thiết bị nhập xuất ...
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Ví dụ:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Trong hệ thống phân quyền của linux
+
+User Alice được quyền đọc/ghi/thực thi trên file alice.sh
+
+User Bob được quyền đọc trên file alice.sh
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Ứng dụng:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Mô hình được ứng dụng trong Filesystem ACLs, POSIX ACL, NFSv4 ACL, Active Directory ACLs, Networking ACLs, SQL implementations. 
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Tham khảo:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Access-control_list&#34;&gt;https://en.wikipedia.org/wiki/Access-control_list&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1 id=&#34;điều-khiển-truy-cập-bắt-buộc-mandatory-access-control-mac-a-name-mac-a&#34;&gt;Điều khiển truy cập bắt buộc - Mandatory Access Control (MAC) &lt;a name=&#34;mac&#34;&gt;&lt;/a&gt;&lt;/h1&gt;
+
+&lt;p&gt;Về cơ bản thì mô hình này cũng &amp;ldquo; là mô hình cấp quyền truy cập dựa vào danh sách các quyền&amp;rdquo;. Tuy nhiên, mô hình này sẽ kiểm soát quyền truy cập đến từng object của subject&lt;/p&gt;
+
+&lt;p&gt;Mô hình:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Subject được quyền ( action ) trên object
+
+Object được quyền (action) bởi object
+
+Vì ràng ở mức 2 đầu, nên mô hình này được ràng chặc chẽ hơn
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Ví dụ:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Ví dụ: Ở một số tổ chức, user có quyền đọc ghi file (subject - action - object), tuy nhiên, có một số file  tuyệt mật được phân quyền đọc/ ghi cho giám đốc  (object - action - subject), nên user bình thường không thể đọc được.
+
+Các bạn có thể đọc thêm 3 ví dụ trong link của cornell mình có để bên dưới
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Ứng dụng:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;SELinux
+Windows Vista và Windows Server 2008
+...
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Tham khảo:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;https://en.wikipedia.org/wiki/Mandatory_access_control
+
+http://www.cs.cornell.edu/courses/cs5430/2015sp/notes/mac.php
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h1 id=&#34;điều-khiển-truy-cập-tùy-quyền-discretionary-access-control-dac-a-name-dac-a&#34;&gt;Điều khiển truy cập tùy quyền -  Discretionary Access Control (DAC)  &lt;a name=&#34;dac&#34;&gt;&lt;/a&gt;&lt;/h1&gt;
+
+&lt;p&gt;Là mô hình cấp quyền truy cập dựa vào danh sách các quyền. Mô hình này giống với ACL, chỉ có 1 điểm khác là subject có thể chuyển quyền mình đang có cho một subject khác&lt;/p&gt;
+
+&lt;p&gt;Mô hình:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Subject được quyền ( action ) trên object
+
+Subject gán quyền (grant : action - object) cho Subject khác
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Ví dụ:
+    Alice có quyền đọc, ghi, thực thi file Alice.sh&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Alice gán quyền đọc file Alice.sh cho Bob
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Ứng dụng:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Phân quyền file trong hệ điều hành
+...
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h1 id=&#34;điều-khiển-truy-cập-theo-vai-role-based-access-control-rbac-a-name-rbac-a&#34;&gt;Điều khiển truy cập theo vai - Role Based Access Control (RBAC) &lt;a name=&#34;rbac&#34;&gt;&lt;/a&gt;&lt;/h1&gt;
+
+&lt;p&gt;Mô hình còn có tên gọi khác là Role Based Security, là mô hình cấp quyền truy cập dựa vào danh sách các quyền. Tuy nhiên, các subject sẽ được gán vào trong các Role và chúng ta sẽ cấp quyền cho các role.&lt;/p&gt;
+
+&lt;p&gt;Mô hình này có thể kết hợp với mô hình DAC (để tăng khả năng cấp quyền), hoặc MAC (để tăng tính bảo mật) mà không xung đột với 2 mô hình trên.&lt;/p&gt;
+
+&lt;p&gt;Mô hình:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Subject thuộc Roles
+
+Roles  được quyền ( action ) trên object
+
+=&amp;gt; các subject thuộc Roles được quyền (action) trên object
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Ví dụ:&lt;/p&gt;
+
+&lt;p&gt;Alice thuộc Role NhanVienTuyenDung, NhanVienIT&lt;/p&gt;
+
+&lt;p&gt;Role NhanVienTuyenDung có quyền read, execute file&lt;/p&gt;
+
+&lt;p&gt;Role NhanVienIT có quyền write file&lt;/p&gt;
+
+&lt;p&gt;=&amp;gt; Alice có quyền read, write, execute file&lt;/p&gt;
+
+&lt;p&gt;Ứng dụng:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Có rất nhiều ứng dụng của mô hình này, ví dụ các forum mã nguồn mở, cấp quyền trong hệ điều hành ....
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Để tìm hiểu kỹ hơn về mô hình RBAC, các bạn có thể đọc quyển sách tham khảo ở dưới&lt;/p&gt;
+
+&lt;p&gt;Tham khảo :&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;David F. Ferraiolo; D. Richard Kuhn; Ramaswamy Chandramouli (2007). Role-based Access Control (2nd ed.). Artech House. ISBN 978-1-59693-113-8.
+
+https://en.wikipedia.org/wiki/Role-based_access_control
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;điều-khiển-truy-cập-theo-thuộc-tính-attribute-based-access-control-abac-a-name-abac-a&#34;&gt;Điều khiển truy cập theo thuộc tính - Attribute Based Access Control (ABAC) &lt;a name=&#34;abac&#34;&gt;&lt;/a&gt;&lt;/h2&gt;
+
+&lt;p&gt;Mô hình còn có tên gọi khác là Policy Based Access Control hoặc Claims Based Access Control (CBAC), là mô hình cấp quyền truy cập dựa vào danh sách các quyền kết hợp với các thuộc tính.&lt;/p&gt;
+
+&lt;p&gt;Kiến trúc: Theo NIST đề xuất, kiến trúc của ABAC  nên có các thành phần sau:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;-  Policy Enforcement Point PEP: chịu trách nhiệm phân tích các yêu cầu truy xuất và gửi đến PDP để chứng thực.
+
+- Policy Decision Point PDP: nhận thông tin từ PEP và chịu trách nhiệm chứng thực yêu cầu có quyền truy xuất tới các tài nguyên hay không, trả về đồng ý hoặc từ chối. Nếu thiếu tông tin thì 
+
+- Policy Information Point PIP: trả về các attribute mà PDP yêu cầu.
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Thuộc tính: Bất kể thứ gì trên đời này đều có thể là thuộc tính. Tuy nhiên, chúng sẽ thường được phân làm 4 nhóm chính sau:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;- Subject attributes: Các thuộc tính về thông tin người dùng, ví dụ họ tên, ngày tháng năm sinh, quê quán, quốc tịch, địa chỉ, phòng ban, chức vụ, tên công việc, số cmnd, ....
+
+- Action attributes: Các thuộc tính về hành động như chạy , nảy, xoá, thêm, đọc, ghi ...
+
+- Object attributes: Các thuộc tính về thông tin của đối tượng muốn truy xuất, ví dụ như loại file, phần đuôi mở rộng, vị trí, ....
+
+- Contextual (environment) attributes: Các thuộc tính liên quan đến kịch bản diễn ra. Ví dụ hệ điều hành, ram, cpu, thời gian, múi giờ, ...
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Ví dụ:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Toàn bộ nhân viên không được truy xuất database sau 21h đêm
+
+Nhân viên Nguyễn Thị Lụa của GHN được quyền đổ danh sách freelancer ở Hà Nội, Hải Phòng, Hưng Yên
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Ứng dụng:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;Có thể ứng dụng ABAC vào rất nhiều ứng dụng khác nhau để kiểm soát luồng truy cập tài nguyên của hệ thống. Tuy nhiên, việc xây dựng mô hình ACBA khá tốn kém về tài nguyên và đòi hỏi người quản lý phải có tư duy hệ thống vững chắc
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Để tìm hiểu kỹ hơn về mô hình ABAC, các bạn có thể đọc quyển sách tham khảo ở dưới&lt;/p&gt;
+
+&lt;p&gt;Tham khảo :&lt;/p&gt;
+
+&lt;pre&gt;&lt;code&gt;https://nvlpubs.nist.gov/nistpubs/specialpublications/NIST.SP.800-162.pdf
+
+https://arxiv.org/pdf/1306.2401.pdf
+
+https://en.wikipedia.org/wiki/Attribute-based_access_control
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Cảm ơn các bạn đã chú ý quan tâm theo dõi. Xin chào và hẹn gặp lại ở các bài viết tiếp theo.&lt;/p&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

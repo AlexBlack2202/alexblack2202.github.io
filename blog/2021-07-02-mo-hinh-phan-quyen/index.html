@@ -1,0 +1,897 @@
+<!DOCTYPE HTML>
+
+<html>
+
+    <head>
+
+	<script defer="defer" async="async" src="https://www.googleoptimize.com/optimize.js?id=OPT-52RT2BV"></script>
+        <script type="application/ld+json">
+    {
+        "@context" : "http://schema.org",
+        "@type" : "BlogPosting",
+        "mainEntityOfPage": {
+             "@type": "WebPage",
+             "@id": "/"
+        },
+        "articleSection" : "blog",
+        "name" : "Mô hình phân quyền - Access Control",
+        "headline" : "Mô hình phân quyền - Access Control",
+        "description" : "Hiểu một cách đơn giản, chúng ta sẽ phân chia quyền cho một cá nhân được truy xuất một số tài nguyên, hoặc thực thi một số quyền.",
+        "inLanguage" : "en",
+        "author" : "alexblack2202@gmail.comPhạm Duy Tùng",
+        "creator" : "alexblack2202@gmail.comPhạm Duy Tùng",
+        "publisher": "alexblack2202@gmail.comPhạm Duy Tùng",
+        "accountablePerson" : "alexblack2202@gmail.comPhạm Duy Tùng",
+        "copyrightHolder" : "alexblack2202@gmail.comPhạm Duy Tùng",
+        "copyrightYear" : "2021",
+        "datePublished": "2021-07-02 00:19:00 &#43;0300 &#43;0300",
+        "dateModified" : "2021-07-02 00:19:00 &#43;0300 &#43;0300",
+        "url" : "/blog/2021-07-02-mo-hinh-phan-quyen/",
+        "wordCount" : "1060",
+        "keywords" : [ "ACL","mac","dac","rbac","abac","Blog" ]
+    }
+    </script>
+        
+            
+                <title>Mô hình phân quyền - Access Control</title>
+            
+        
+
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        
+		<meta name="generator" content="Phạm Duy Tùng" />
+        <meta property="fb:pages" content="1244186728962161" />
+
+        
+  
+    
+  
+
+  
+
+  
+  
+  
+  <meta name="msapplication-TileColor" content="#da532c">
+  <meta name="msapplication-TileImage" content='/favicon/mstile.png'>
+  <meta name="application-name" content="Phạm Duy Tùng Machine Learning Blog">
+  <meta name="msapplication-tooltip" content="Blog ML của Phạm Duy Tùng và Đặng Thị Hằng">
+   
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="manifest" href="/site.webmanifest">
+
+
+
+        
+            <meta name="author" content="Phạm Duy Tùng">
+        
+        
+            <meta name="description" content="Hiểu một cách đơn giản, chúng ta sẽ phân chia quyền cho một cá nhân được truy xuất một số tài nguyên, hoặc thực thi một số quyền.">
+        
+
+        <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Mô hình phân quyền - Access Control"/>
+<meta name="twitter:description" content="Hiểu một cách đơn giản, chúng ta sẽ phân chia quyền cho một cá nhân được truy xuất một số tài nguyên, hoặc thực thi một số quyền."/>
+<meta name="twitter:site" content="@example"/>
+
+        <meta property="og:title" content="Mô hình phân quyền - Access Control" />
+<meta property="og:description" content="Hiểu một cách đơn giản, chúng ta sẽ phân chia quyền cho một cá nhân được truy xuất một số tài nguyên, hoặc thực thi một số quyền." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="/blog/2021-07-02-mo-hinh-phan-quyen/" /><meta property="article:published_time" content="2021-07-02T00:19:00&#43;03:00"/>
+<meta property="article:modified_time" content="2021-07-02T00:19:00&#43;03:00"/>
+
+        <meta property="og:image" content="//images/logo.png">
+        <meta property="og:image:type" content="image/png">
+        <meta property="og:image:width" content="512">
+        <meta property="og:image:height" content="512">
+        
+<meta itemprop="name" content="Mô hình phân quyền - Access Control">
+<meta itemprop="description" content="Hiểu một cách đơn giản, chúng ta sẽ phân chia quyền cho một cá nhân được truy xuất một số tài nguyên, hoặc thực thi một số quyền.">
+
+
+<meta itemprop="datePublished" content="2021-07-02T00:19:00&#43;03:00" />
+<meta itemprop="dateModified" content="2021-07-02T00:19:00&#43;03:00" />
+<meta itemprop="wordCount" content="1060">
+
+
+
+<meta itemprop="keywords" content="ACL,mac,dac,rbac,abac," />
+
+        
+
+        
+            
+        
+
+        
+        
+          
+			 <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css">
+
+
+          
+            
+        
+
+        
+            
+                
+            
+        
+
+
+  
+    
+    <link href='//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.8/styles/xcode.min.css' rel='stylesheet' type='text/css' />
+  
+
+
+      
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+	ga('create', 'UA-114911596-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+
+	  <style>
+	  
+	  body{
+font-family: Helvetica,Arial,sans-serif;
+}
+
+.card{
+	margin-bottom: 10px;
+}
+
+#disqus_thread{
+padding: 0 5px;
+}
+
+.item-header{
+padding: 0;
+}
+
+.single-content-img{
+width: 100%;
+    max-height: 450px !important;
+    background-size: cover;
+    display: block;
+    background-position: center;
+}
+
+.thumbnail {
+    position: relative;
+}
+
+.caption {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+	background: rgba(0, 0, 0, 0.25);
+	text-align:left;
+}
+
+.caption .title{
+	font-size: 1.6em;
+    line-height: 1.4em;
+    top: 0;
+	margin-left:20px;
+	margin-top:20px;
+	
+}
+
+.caption .title-caption{
+margin-left:10px;
+}
+
+#content p{
+text-align: justify;
+    font-size: 16px;
+    <!-- color: #333;-->	
+    line-height: 28px;
+}
+
+#content img{
+	display: block;
+    margin-left: auto;
+margin-right: auto;
+max-width:98%;
+}
+
+img + strong {
+    font-style: normal;
+    display: inherit;
+    text-align: center;
+}
+.img-news{
+max-height:150px;
+width:100%;
+}
+
+.news-tittle{
+	padding-top:15px;
+	text-align:justify;
+}
+
+.author{
+	color: orange;
+}
+.author-inline{
+	color: orange;
+}
+
+.adv{
+height:18px;
+}
+
+
+.hljs{
+    white-space: pre-wrap;
+    white-space: -moz-pre-wrap;
+    white-space: -pre-wrap;
+    white-space: -o-pre-wrap;
+    word-wrap: break-word;}
+.titledetail {
+    display: block;
+    overflow: hidden;
+    line-height: 53px;
+    font-size: 45px;
+    font-family: 'Roboto Condensed',sans-serif;
+    font-weight: 600;
+
+    margin: auto;
+	padding: 0 ;
+}
+
+.newsrelate {
+    display: block;
+    overflow: hidden;
+	 list-style:none;
+}
+a ,a:hover{
+    text-decoration: none;
+}
+.newsrelate li {
+    float: left;
+    overflow: hidden;
+    width: 30%;
+    margin-left: 2.5%;
+    margin-bottom: 15px;
+}
+
+.newsrelate li a {
+    display: block;
+    overflow: hidden;
+}
+
+.userdetail {
+    display: block;
+    overflow: hidden;
+    margin: 0 10px 0 0;
+    padding: 15px 0;
+}
+.newsrelate li h3 {
+    display: block;
+    overflow: hidden;
+    line-height: 1.3em;
+    font-size: 16pt;
+    line-height: 22px;
+    font-weight: 300;
+    font-family: Arial,Helvetica,sans-serif;
+    width: auto;
+    margin: 5px auto;
+}
+
+.titlerelate {
+    overflow: hidden;
+    font-size: 18px;
+    font-weight: 600;
+    font-family: 'Roboto Condensed',sans-serif;
+    line-height: 32px;
+    text-transform: uppercase;
+}
+article .captionnews {
+    color: #999;
+    font-size: 14px;
+    font-style: italic;
+    padding: 10px;
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.bgtrans h1 {
+    display: block;
+    overflow: hidden;
+    font-size: 45px;
+    line-height: 55px;
+    margin: auto;
+    left: 0;
+    right: 0;
+    bottom: 50px;
+    font-family: 'Roboto Condensed',sans-serif;
+    font-weight: 600;
+}
+
+.bgcover {
+    display: block;
+    overflow: hidden;
+    height: 450px;
+    background: no-repeat center center;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+    position: relative;
+    margin-bottom: -65px;
+}
+.bgcover .bgtrans .userdetail {
+    width: 800px;
+    margin: auto;
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 10px;
+}
+.userdetail {
+    display: block;
+    overflow: hidden;
+    margin: 0 10px 0 0;
+    padding: 15px 0;
+}
+
+.amlich{border-collapse:collapse;font-size:14px;font-family:Roboto,sans-serif}.calendar{font-size:12px}.calendar td{background-color:#e9eff3}.calendar-month{background-color:#1e8cbe!important;color:#fff;text-shadow:0 0 3px #000;padding:6px;font-weight:700;text-transform:uppercase;font-size:14px!important}.amlich-tennam{text-align:center;font-weight:700;color:#000;background-color:#ccc;font-size:14px;font-family:Roboto,sans-serif}.amlich .calendar-month,.amlich .calendar-b-left,.amlich .calendar-b-right{text-align:center;padding:4px 0;font-size:11px}.amlich .calendar-day{text-align:center;font-weight:700}.amlich .calendar-day .day-num{font-size:80px;font-family:Roboto,sans-serif;line-height:100%;color:#31708f}.amlich .lunar-day-num{font-size:44px;line-height:100%;font-weight:700;color:#3c763d}.amlich .calendar-holiday,.amlich .calendar-hoangdao{padding:0 4px 4px;font-size:11px;text-align:center}.amlich .calendar-holiday{color:#a94442;font-weight:700}.amlich a{text-decoration:none;color:#fff}.amlich a:hover{color:red}.amlich .tenthang,.amlich .navi-l,.amlich .navi-r{text-align:center;padding:6px;background-color:#1e8cbe;color:#fff;font-weight:700}.amlich .tenthang{text-shadow:0 0 3px #000}.amlich .navi-l{font-size:12px}.amlich .navi-r{font-size:12px}.amlich .ngaytuan{text-align:center;color:#303;background-color:#ddd;padding:3px;width:14.286%;font-size:10px;font-weight:700}.amlich .ngaythang,.amlich .homnay,.amlich .tet,.amlich .leam,.amlich .leduong{cursor:pointer;border-bottom:solid 1px #eee;padding:3px;width:14.286%}.amlich .ngaythang div,.amlich .homnay div,.amlich .tet div,.amlich .leam div,.amlich .leduong div{line-height:110%}.amlich .ngaythang{color:#5a5c5b}.amlich tr:nth-child(odd) td.ngaythang:nth-child(odd){background-color:#f9f9f9}.amlich tr:nth-child(odd) td.ngaythang:nth-child(even){background-color:#fff}.amlich tr:nth-child(even) td.ngaythang:nth-child(odd){background-color:#fff}.amlich tr:nth-child(even) td.ngaythang:nth-child(even){background-color:#f9f9f9}.amlich tr td.ngaythang:hover{background-color:#f5f5f5!important}.amlich .homnay{background-color:#fcf8e3;color:#fff}.amlich .homnay:hover{background-color:#faf2cc}.amlich .tet{background-color:#f2dede}.amlich .tet:hover{background-color:#ebcccc}.amlich .leam{background-color:#d9edf7}.amlich .leam:hover{background-color:#c4e3f3}.amlich .leduong{background-color:#dff0d8}.amlich .leduong:hover{background-color:#d0e9c6}.amlich .am{text-align:right;font-size:75%;color:#554c00}.amlich .am2{text-align:right;font-size:75%;color:#337ab7;font-weight:700}.amlich .t2t6{text-align:left;color:#5a5c5b;font-weight:700}.amlich .t7{font-weight:700;text-align:left;color:blue}.amlich .cn{font-weight:700;text-align:left;color:red}
+	  </style>
+
+    </head>
+    <body class="text-dark bg-light">
+<script  async defer>
+  window.fbAsyncInit = function() {
+    FB.init({
+      appId      : '1546237302193677',
+      xfbml      : true,
+      version    : 'v5.0'
+    });
+    FB.AppEvents.logPageView();
+  };
+
+  (function(d, s, id){
+     var js, fjs = d.getElementsByTagName(s)[0];
+     if (d.getElementById(id)) {return;}
+     js = d.createElement(s); js.id = id;
+     js.src = "https://connect.facebook.net/en_US/sdk.js";
+     fjs.parentNode.insertBefore(js, fjs);
+   }(document, 'script', 'facebook-jssdk'));
+</script>
+<div id="fb-root"></div>
+<script async defer crossorigin="anonymous" src="https://connect.facebook.net/vi_VN/sdk.js#xfbml=1&version=v5.0&appId=1853483258232756&autoLogAppEvents=1"></script>
+      
+      
+
+    
+    
+<header id="header"  style="background: #790014; color: hsla(0,0%,100%,1);">
+<div class="container">
+    <nav class="navbar navbar-expand-md navbar-dark">
+	
+	<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav mr-auto">
+            
+                <li class="nav-item">
+                    <a class='nav-link' href="/blog">
+                            <i class="fa fa-home active">&nbsp;</i>Home
+                    </a>
+                </li>
+            
+        </ul>
+    </nav>
+    </div></div>
+</header>
+
+
+   
+    
+	<div class="container">
+	<div class="adv"></div>
+	<div class="row">
+    <main role="main"  class="col-md-9 border-right" >
+	
+        
+        
+          
+
+
+        
+		 <div class="header">
+           
+		<div class="bgtrans">
+		 <h1 class="titledetail">Mô hình phân quyền - Access Control</h1>
+		<div class="userdetail">
+			 
+			  <time class="published" 
+            datetime='2021-07-02'>
+            02/07/2021</time>
+		 - 
+			   <span class="author">Phạm Duy Tùng</span>
+			   
+			</div>	
+		
+			</div>
+			</div>
+  <div class="fb-like" data-share="true"  data-width="800"  data-show-faces="true">
+</div>
+			
+		
+		
+			 
+            
+        
+       
+
+
+
+  
+
+  
+ 
+  <div style="    margin: 0;
+    border-bottom: 1px dotted #d9d9d9;
+    padding-bottom: 20px;"></div>
+  <div id="content">
+    
+
+<h1 id="giới-thiệu">Giới thiệu</h1>
+
+<ol>
+<li><a href="#acl">Danh sách điều khiển truy cập -  Access Control List </a></li>
+<li><a href="#mac">Điều khiển truy cập bắt buộc - Mandatory Access Control </a></li>
+<li><a href="#dac">Điều khiển truy cập tùy quyền -  Discretionary Access Control (DAC) </a></li>
+<li><a href="#rbac">Điều khiển truy cập theo vai - Role Based Access Control (RBAC) </a></li>
+<li><a href="#abac">Điều khiển truy cập theo thuộc tính - Attribute Based Access Control (ABAC) </a></li>
+</ol>
+
+<h1 id="danh-sách-điều-khiển-truy-cập-access-control-list-acl-a-name-acl-a">Danh sách điều khiển truy cập -  Access Control List (ACL) <a name="acl"></a></h1>
+
+<p>Là mô hình cấp quyền truy cập dựa vào danh sách các quyền</p>
+
+<p>Mô hình:</p>
+
+<pre><code>Subject được quyền ( action ) trên object
+
+Tuỳ từng bài toán khác nhau mà subject, action, object là khác nhau
+
+Ví dụ: 
+
+Trong môi trường phân quyền tập tin linux, subject là user, thread, action là READ/WRITE/ EXECUTE object là file, directory, tcp/udp port, thiết bị nhập xuất ...
+</code></pre>
+
+<p>Ví dụ:</p>
+
+<pre><code>Trong hệ thống phân quyền của linux
+
+User Alice được quyền đọc/ghi/thực thi trên file alice.sh
+
+User Bob được quyền đọc trên file alice.sh
+</code></pre>
+
+<p>Ứng dụng:</p>
+
+<pre><code>Mô hình được ứng dụng trong Filesystem ACLs, POSIX ACL, NFSv4 ACL, Active Directory ACLs, Networking ACLs, SQL implementations. 
+</code></pre>
+
+<p>Tham khảo:</p>
+
+<ul>
+<li><a href="https://en.wikipedia.org/wiki/Access-control_list">https://en.wikipedia.org/wiki/Access-control_list</a></li>
+</ul>
+
+<h1 id="điều-khiển-truy-cập-bắt-buộc-mandatory-access-control-mac-a-name-mac-a">Điều khiển truy cập bắt buộc - Mandatory Access Control (MAC) <a name="mac"></a></h1>
+
+<p>Về cơ bản thì mô hình này cũng &ldquo; là mô hình cấp quyền truy cập dựa vào danh sách các quyền&rdquo;. Tuy nhiên, mô hình này sẽ kiểm soát quyền truy cập đến từng object của subject</p>
+
+<p>Mô hình:</p>
+
+<pre><code>Subject được quyền ( action ) trên object
+
+Object được quyền (action) bởi object
+
+Vì ràng ở mức 2 đầu, nên mô hình này được ràng chặc chẽ hơn
+</code></pre>
+
+<p>Ví dụ:</p>
+
+<pre><code>Ví dụ: Ở một số tổ chức, user có quyền đọc ghi file (subject - action - object), tuy nhiên, có một số file  tuyệt mật được phân quyền đọc/ ghi cho giám đốc  (object - action - subject), nên user bình thường không thể đọc được.
+
+Các bạn có thể đọc thêm 3 ví dụ trong link của cornell mình có để bên dưới
+</code></pre>
+
+<p>Ứng dụng:</p>
+
+<pre><code>SELinux
+Windows Vista và Windows Server 2008
+...
+</code></pre>
+
+<p>Tham khảo:</p>
+
+<pre><code>https://en.wikipedia.org/wiki/Mandatory_access_control
+
+http://www.cs.cornell.edu/courses/cs5430/2015sp/notes/mac.php
+</code></pre>
+
+<h1 id="điều-khiển-truy-cập-tùy-quyền-discretionary-access-control-dac-a-name-dac-a">Điều khiển truy cập tùy quyền -  Discretionary Access Control (DAC)  <a name="dac"></a></h1>
+
+<p>Là mô hình cấp quyền truy cập dựa vào danh sách các quyền. Mô hình này giống với ACL, chỉ có 1 điểm khác là subject có thể chuyển quyền mình đang có cho một subject khác</p>
+
+<p>Mô hình:</p>
+
+<pre><code>Subject được quyền ( action ) trên object
+
+Subject gán quyền (grant : action - object) cho Subject khác
+</code></pre>
+
+<p>Ví dụ:
+    Alice có quyền đọc, ghi, thực thi file Alice.sh</p>
+
+<pre><code>Alice gán quyền đọc file Alice.sh cho Bob
+</code></pre>
+
+<p>Ứng dụng:</p>
+
+<pre><code>Phân quyền file trong hệ điều hành
+...
+</code></pre>
+
+<h1 id="điều-khiển-truy-cập-theo-vai-role-based-access-control-rbac-a-name-rbac-a">Điều khiển truy cập theo vai - Role Based Access Control (RBAC) <a name="rbac"></a></h1>
+
+<p>Mô hình còn có tên gọi khác là Role Based Security, là mô hình cấp quyền truy cập dựa vào danh sách các quyền. Tuy nhiên, các subject sẽ được gán vào trong các Role và chúng ta sẽ cấp quyền cho các role.</p>
+
+<p>Mô hình này có thể kết hợp với mô hình DAC (để tăng khả năng cấp quyền), hoặc MAC (để tăng tính bảo mật) mà không xung đột với 2 mô hình trên.</p>
+
+<p>Mô hình:</p>
+
+<pre><code>Subject thuộc Roles
+
+Roles  được quyền ( action ) trên object
+
+=&gt; các subject thuộc Roles được quyền (action) trên object
+</code></pre>
+
+<p>Ví dụ:</p>
+
+<p>Alice thuộc Role NhanVienTuyenDung, NhanVienIT</p>
+
+<p>Role NhanVienTuyenDung có quyền read, execute file</p>
+
+<p>Role NhanVienIT có quyền write file</p>
+
+<p>=&gt; Alice có quyền read, write, execute file</p>
+
+<p>Ứng dụng:</p>
+
+<pre><code>Có rất nhiều ứng dụng của mô hình này, ví dụ các forum mã nguồn mở, cấp quyền trong hệ điều hành ....
+</code></pre>
+
+<p>Để tìm hiểu kỹ hơn về mô hình RBAC, các bạn có thể đọc quyển sách tham khảo ở dưới</p>
+
+<p>Tham khảo :</p>
+
+<pre><code>David F. Ferraiolo; D. Richard Kuhn; Ramaswamy Chandramouli (2007). Role-based Access Control (2nd ed.). Artech House. ISBN 978-1-59693-113-8.
+
+https://en.wikipedia.org/wiki/Role-based_access_control
+</code></pre>
+
+<h2 id="điều-khiển-truy-cập-theo-thuộc-tính-attribute-based-access-control-abac-a-name-abac-a">Điều khiển truy cập theo thuộc tính - Attribute Based Access Control (ABAC) <a name="abac"></a></h2>
+
+<p>Mô hình còn có tên gọi khác là Policy Based Access Control hoặc Claims Based Access Control (CBAC), là mô hình cấp quyền truy cập dựa vào danh sách các quyền kết hợp với các thuộc tính.</p>
+
+<p>Kiến trúc: Theo NIST đề xuất, kiến trúc của ABAC  nên có các thành phần sau:</p>
+
+<pre><code>-  Policy Enforcement Point PEP: chịu trách nhiệm phân tích các yêu cầu truy xuất và gửi đến PDP để chứng thực.
+
+- Policy Decision Point PDP: nhận thông tin từ PEP và chịu trách nhiệm chứng thực yêu cầu có quyền truy xuất tới các tài nguyên hay không, trả về đồng ý hoặc từ chối. Nếu thiếu tông tin thì 
+
+- Policy Information Point PIP: trả về các attribute mà PDP yêu cầu.
+</code></pre>
+
+<p>Thuộc tính: Bất kể thứ gì trên đời này đều có thể là thuộc tính. Tuy nhiên, chúng sẽ thường được phân làm 4 nhóm chính sau:</p>
+
+<pre><code>- Subject attributes: Các thuộc tính về thông tin người dùng, ví dụ họ tên, ngày tháng năm sinh, quê quán, quốc tịch, địa chỉ, phòng ban, chức vụ, tên công việc, số cmnd, ....
+
+- Action attributes: Các thuộc tính về hành động như chạy , nảy, xoá, thêm, đọc, ghi ...
+
+- Object attributes: Các thuộc tính về thông tin của đối tượng muốn truy xuất, ví dụ như loại file, phần đuôi mở rộng, vị trí, ....
+
+- Contextual (environment) attributes: Các thuộc tính liên quan đến kịch bản diễn ra. Ví dụ hệ điều hành, ram, cpu, thời gian, múi giờ, ...
+</code></pre>
+
+<p>Ví dụ:</p>
+
+<pre><code>Toàn bộ nhân viên không được truy xuất database sau 21h đêm
+
+Nhân viên Nguyễn Thị Lụa của GHN được quyền đổ danh sách freelancer ở Hà Nội, Hải Phòng, Hưng Yên
+</code></pre>
+
+<p>Ứng dụng:</p>
+
+<pre><code>Có thể ứng dụng ABAC vào rất nhiều ứng dụng khác nhau để kiểm soát luồng truy cập tài nguyên của hệ thống. Tuy nhiên, việc xây dựng mô hình ACBA khá tốn kém về tài nguyên và đòi hỏi người quản lý phải có tư duy hệ thống vững chắc
+</code></pre>
+
+<p>Để tìm hiểu kỹ hơn về mô hình ABAC, các bạn có thể đọc quyển sách tham khảo ở dưới</p>
+
+<p>Tham khảo :</p>
+
+<pre><code>https://nvlpubs.nist.gov/nistpubs/specialpublications/NIST.SP.800-162.pdf
+
+https://arxiv.org/pdf/1306.2401.pdf
+
+https://en.wikipedia.org/wiki/Attribute-based_access_control
+</code></pre>
+
+<p>Cảm ơn các bạn đã chú ý quan tâm theo dõi. Xin chào và hẹn gặp lại ở các bài viết tiếp theo.</p>
+
+  </div>
+  
+		
+  <footer class="col-md-10  mx-auto">
+  <ul class="stats list-unstyled">
+ 
+    
+  <li class="tags">
+    <ul class="list-inline">
+       
+            
+            
+                <i class="fa fa-tags"></i>
+                
+                
+                <li class="list-inline-item"><a class="article-category-link" href="/tags/acl">ACL</a></li>
+                
+                
+                <li class="list-inline-item"><a class="article-category-link" href="/tags/mac">mac</a></li>
+                
+                
+                <li class="list-inline-item"><a class="article-category-link" href="/tags/dac">dac</a></li>
+                
+                
+                <li class="list-inline-item"><a class="article-category-link" href="/tags/rbac">rbac</a></li>
+                
+                
+                <li class="list-inline-item"><a class="article-category-link" href="/tags/abac">abac</a></li>
+                
+            
+        
+    </ul>
+  </li>
+  
+</ul>
+
+  <div class="fb-like" data-share="true"  data-width="800"  data-show-faces="true">
+</div>
+    
+  </footer>
+  <hr/>
+<div class="infinite-container featured-task col-md-8 mx-auto">
+<div class="titlerelate">Bài viết khác</div>
+
+<div class="card-deck card-break infinite-item">
+
+
+
+    
+        <div class="card  col-md-6" style="padding-top:15px;">
+		<a href="/blog/2021-05-30-upgrade-wls-to-wls2/"
+                class="button big previous">
+		
+		<img class="card-img-top lazy" src="/thumbnails/thumbnails.jpg" width="100" />
+		<div class="card-body">
+		<h5 class="card-title">
+		Nâng cấp WSL lên bản WSL 2 trên window 10
+				</h5>
+				</div>
+				</a>
+				</div>
+    
+
+    
+
+</div>
+</div>
+
+
+
+<div class="fb-comments" data-href="" data-width="" data-numposts="5"></div>
+
+    <article class="post">
+        
+        <div class="disqus-comments">                  
+            <button id="show-comments" class="btn btn-warning" type="button">Show <span class="disqus-comment-count" data-disqus-url="blog/2021-07-02-mo-hinh-phan-quyen">comments</span></button>
+            <div id="disqus_thread"></div>
+          </div>
+    </article>
+
+
+
+
+
+		
+    </main>
+    
+<section id="sidebar" class="col-md-3">
+<br/>
+<div>
+		<ul class="list-group" id="news-contents"></ul>
+    <div id="calander">
+	</div>
+    </div>
+
+  
+   
+  
+  
+  
+  
+  
+  
+  
+  
+ 
+
+</section>
+
+</div>
+	</div>
+    
+	<hr>
+  <footer class="footer">
+  <div class="container text-center">
+    
+    <p class="copyright">
+      
+        This work is licensed under a Creative Commons Attribution-ShareAlike 4.0 International License.
+      
+     
+    </p>
+	</div>
+	
+
+      <div id="fb-root"></div>
+      <script>
+        window.fbAsyncInit = function() {
+          FB.init({
+            xfbml            : true,
+            version          : 'v10.0'
+          });
+        };
+
+        (function(d, s, id) {
+        var js, fjs = d.getElementsByTagName(s)[0];
+        if (d.getElementById(id)) return;
+        js = d.createElement(s); js.id = id;
+        js.src = 'https://connect.facebook.net/vi_VN/sdk/xfbml.customerchat.js';
+        fjs.parentNode.insertBefore(js, fjs);
+      }(document, 'script', 'facebook-jssdk'));</script>
+
+      
+      <div class="fb-customerchat"
+        attribution="setup_tool"
+        page_id="1244186728962161">
+      </div>
+  </footer>
+    
+    
+
+    
+      
+    
+
+    
+      
+      
+      
+        <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.8/highlight.min.js"></script>
+        
+        
+        
+        <script  src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.8/languages/python.min.js"></script>
+        <script defer="defer" async="async">hljs.configure({languages: []}); hljs.initHighlightingOnLoad();</script>
+      
+    
+    
+    
+    <script defer="defer" src="https://cdnjs.cloudflare.com/ajax/libs/skel/3.0.1/skel.min.js"></script>
+     
+
+   <script  src="/js/jquery-2.2.4.min.js" data-cfasync="false"></script>
+   
+    <script defer="defer" async="async" src="/js/bootstrap.min.js"></script>
+      <script defer="defer" async="async" src="/js/util.js"></script>
+	  
+      <script defer="defer"  src="/js/main.js"></script>
+     
+    
+
+    
+      
+        
+      
+    
+	
+    
+    
+      
+
+<script defer="defer" async="async" src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script  defer="defer" async="async" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+
+	  
+	  
+	   
+
+<script id="dsq-count-scr" src="//phamduytung.disqus.com/count.js" async></script>
+
+ <script defer="defer"   src="/js/jquery.amlich.js" data-cfasync="false" ></script>
+	   <script defer="defer"   type="text/javascript"  data-cfasync="false">
+
+  function getcontent(){
+ 
+
+   
+
+           
+                }
+            
+			
+			$(document).ready(function(){
+      getcontent();
+      $('#calander').amLich({
+  type: 'calendar', 
+  tableWidth: '100%' 
+});
+  
+
+			}); 
+			
+			
+			$(function(){
+  $('#show-comments').on('click', function(){
+    var disqus_shortname = 'phamduytung';
+
+    (function() {
+      var disqus = document.createElement('script'); 
+      disqus.type = 'text/javascript'; 
+      disqus.async = true;
+      disqus.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(disqus);
+    })();
+
+    $(this).hide(); 
+  });
+});
+
+var disqus_config = function () {
+  this.page.url = 'blog\/2021-07-02-mo-hinh-phan-quyen';
+};
+</script>
+
+
+ 
+
+
+  </body>
+</html>
+
