@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>china chess on Phạm Duy Tùng Machine Learning Blog</title>
+    <link>/tags/china-chess/</link>
+    <description>Recent content in china chess on Phạm Duy Tùng Machine Learning Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <managingEditor>alexblack2202@gmail.com (Phạm Duy Tùng)</managingEditor>
+    <webMaster>alexblack2202@gmail.com (Phạm Duy Tùng)</webMaster>
+    <copyright>This work is licensed under a Creative Commons Attribution-ShareAlike 4.0 International License.</copyright>
+    <lastBuildDate>Thu, 12 Aug 2021 00:19:00 +0300</lastBuildDate>
+    <atom:link href="/tags/china-chess/" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>Xây dựng chương trình AI đơn giản cho game cờ tướng</title>
+      <link>/blog/2021-08-12-china_chess_alpha_beta_ai/</link>
+      <pubDate>Thu, 12 Aug 2021 00:19:00 +0300</pubDate>
+      <author>alexblack2202@gmail.com (Phạm Duy Tùng)</author>
+      <guid>/blog/2021-08-12-china_chess_alpha_beta_ai/</guid>
+      <description>
+
+&lt;h1 id=&#34;giới-thiệu&#34;&gt;Giới thiệu&lt;/h1&gt;
+
+&lt;p&gt;Cờ tướng là một môn thể thao khá phổ biến ở Việt Nam. Các bạn có thể bắt gặp các bàn cờ ở các con hẻm của mỗi góc phố. Hoặc là khi các bộ bàn ghế đá thì người mua cũng thường nhờ thợ khắc lên bàn cờ tướng để hàng xóm láng giềng giải trí ngày cuối tuần. Trong bài viết này, mình sẽ hướng dẫn step by step ứng dụng chơi game cờ tướng đơn giản với một chút AI. Hi vọng sẽ giúp được các bạn trên con đường thực hành máy học.&lt;/p&gt;
+
+&lt;p&gt;Các việc cần làm:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;Tạo bàn cờ và sinh nước đi&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Lượng giá bàn cờ&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Áp dụng minimax&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Áp dụng cắt tỉa alpha, beta&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Bạn có thể chơi thử game cờ tướng mình có post ở đây:&lt;/p&gt;
+
+&lt;h1 id=&#34;bước-1-tạo-bàn-cờ-và-sinh-nước-đi&#34;&gt;Bước 1: Tạo bàn cờ và sinh nước đi&lt;/h1&gt;
+
+&lt;p&gt;Mình không có gỏi lắm trong việc thiết kế mấy icon cho mấy con tướng, sĩ, tượng. Ngoài ra, công việc chính của chúng ta là phần làm sao cho máy tự đánh được, nên phần này mình sẽ xài các open source có sẵn, lượn lờ một chút trên mạng thì mình đã lụm được cái bàn cờ ở link &lt;a href=&#34;https://github.com/lengyanyu258/xiangqiboardjs&#34;&gt;https://github.com/lengyanyu258/xiangqiboardjs&lt;/a&gt; và thư viện sinh nước đi xiangqi.js. Thư viện xiangqi.js đã có sẵn các hàm kiểm tra tính hợp lệ của nước đi, nên mình chỉ việc lấy ra rồi dùng thôi, khỏi mất công phải viết lại.&lt;/p&gt;
+
+&lt;p&gt;Bàn cờ được chia làm 2 đội, là đội đen (black, ký hiệu b) và đội đỏ (red , ký hiệu r), mỗi đội gồm 16 quân, bao gồm 1 con tướng (General  hoặc king , ký hiệu k), 2 con sỹ (Advisor hoặc guards,  ministers, ký hiệu là a), 2 con tượng (Elephants hoặc bishops - ký hiệu là b), 2 con mã (Horses hoặc knights - ký hiệu là n, do chữ k trùng với king là con tướng, nên người ta xài chữ n), 2 con xe (Chariot hoặc rooks - ký hiệu là r), 2 con pháo (canons, ký hiệu là c ), 5 con chốt (Soldiers , ký hiệu là p ( do con chốt ở cờ đen và cờ đỏ có phiên âm tiếng trung khác nhau, chốt cờ đen đọc gần giống chữ &amp;ldquo;zú&amp;rdquo; (&amp;ldquo;pawn&amp;rdquo; hoặc &amp;ldquo;private&amp;rdquo; - tiếng anh), còn chốt cờ đỏ đọc là bing (&amp;ldquo;soldier&amp;rdquo; - tiếng anh) )).&lt;/p&gt;
+
+&lt;p&gt;Tổng cộng, ta có tướng, sỹ, tượng, mã, xe, pháo, chốt, 7 loại quân, tương đương với 7 ký hiệu, tổ hợp với 2 đội là đỏ và đen, tổ hợp với nhau, ta xác định được&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/china_chess_base_board.png&#34; alt=&#34;AI Cờ tướng - Bàn cờ gốc&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Để bắt đầu, chúng ta sẽ code một hàm random bước đi đơn giản. Hàm có nhiệm vụ lấy ngẫu nhiên một bước đi trong danh sách các bước có thể đi, sau đó máy sẽ đánh bước đi đó.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-javascript&#34;&gt;
+
+function makeRandomMove () {
+  let possibleMoves = game.moves();
+
+  // game over
+  if (possibleMoves.length === 0) return; // Không còn nước nào có thể đi, end game
+
+  let randomIdx = Math.floor(Math.random() * possibleMoves.length); // bốc đại 1 nước đi trong danh sách các bước có thể đi
+  game.move(possibleMoves[randomIdx]);
+  board.position(game.fen());
+}
+
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/china_chess_simple_move.gif&#34; alt=&#34;AI Cờ tướng - đi ngẫu nhiên&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Do thuật toán chúng ta cho máy chạy khá là ngốc, nên nó đánh cũng hơi ngốc. :)&lt;/p&gt;
+
+&lt;h1 id=&#34;bước-2-hàm-lượng-giá&#34;&gt;Bước 2: Hàm lượng giá&lt;/h1&gt;
+
+&lt;p&gt;Dựa vào mức độ cơ động, tầm quang trọng của mỗi quân lính trên bàn cờ, chúng ta sẽ gán cho mỗi quân cờ một trọng số khác nhau thể hiện điều đó.&lt;/p&gt;
+
+&lt;p&gt;Ví dụ, chúng ta set các trọng số như sau:&lt;/p&gt;
+
+&lt;p&gt;tướng của ta là 900 điểm, tướng của đối thủ là -900 điểm&lt;/p&gt;
+
+&lt;p&gt;sỹ của ta là 20 điểm, sỹ của đối thủ là -20 điểm&lt;/p&gt;
+
+&lt;p&gt;tượng của ta là 20 điểm, tượng của đối thủ là -20 điểm&lt;/p&gt;
+
+&lt;p&gt;mã của ta là 40 điểm, mã của đối thủ là -40 điểm&lt;/p&gt;
+
+&lt;p&gt;xe của ta là 90 điểm, xe của đối thủ là -90 điểm&lt;/p&gt;
+
+&lt;p&gt;pháo của ta là 45 điểm, pháo của đối thủ là -45 điểm&lt;/p&gt;
+
+&lt;p&gt;chốt của ta là 15 điểm, chốt của đối thủ là -15 điểm&lt;/p&gt;
+
+&lt;p&gt;Hàm lượng giá ở trên khá ngây thơ, mọi quân cờ đều có điểm ngang nhau, không quan tâm vị trí đứng của nó.&lt;/p&gt;
+
+&lt;p&gt;Trên thực tế, chúng ta thấy rằng, con tướng ở vị trí trung tâm thường là an toàn nhất, một khi  tướng leo lên lầu 1 hoặc leo lầu 2, nghĩa là con tướng có khả năng bị đột tử cao hơn, nên chúng ta phải tinh chỉnh lại điểm của con tướng trong trường hợp này.&lt;/p&gt;
+
+&lt;p&gt;Một ví dụ nữa là vị trí con mã, mã gần với thành của tướng địch hơn thì khả năng con xe chiếu bí tướng địch sẽ cao hơn con mã chưa qua sông.&lt;/p&gt;
+
+&lt;p&gt;Giá trị lượng giá cho cờ tướng, các bạn có thể tham khảo ở link &lt;a href=&#34;https://github.com/markdirish/xiangqi/blob/master/evaluate.js&#34;&gt;https://github.com/markdirish/xiangqi/blob/master/evaluate.js&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;Chúng ta sẽ duyệt lần lượt từ trái qua phải, từ trên xuống dưới, tính điểm của bàn cờ hiện tại.&lt;/p&gt;
+
+&lt;p&gt;Hàm lượng giá của bàn cờ xét như sau:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-javascript&#34;&gt;
+
+
+function evaluateBoard(board) {
+  var totalEvaluation = 0;
+  for (var i = 0; i &amp;lt; 10; i++) {
+    for (var j = 0; j &amp;lt; 9; j++) {
+      totalEvaluation = totalEvaluation + getPieceValue(board[i][j], i ,j);
+    }
+  }
+  return totalEvaluation;
+}
+
+
+
+function getPieceValue(piece, x, y) {
+  if (piece === null) {
+    return 0;
+  }
+  var getAbsoluteValue = function (piece, isRed, x ,y) {
+    if (piece.type === &#39;p&#39;) { //chốt
+      return 15 + ( isRed ? pEvalRed[x][y] : pEvalBlack[x][y] );
+    } else if (piece.type === &#39;r&#39;) { //Xe
+      return 90 +( isRed ? rEvalRed[x][y] : rEvalBlack[x][y] );
+    } else if (piece.type === &#39;c&#39;) { //pháo
+      return 45 +( isRed ? cEvalRed[x][y] : cEvalBlack[x][y] );
+    } else if (piece.type === &#39;n&#39;) { // mã
+      return 40 +( isRed ? nEvalRed[x][y] : nEvalBlack[x][y] );
+    } else if (piece.type === &#39;b&#39;) { // tượng
+      return 20 +( isRed ? bEvalRed[x][y] : bEvalBlack[x][y] );
+    } else if (piece.type === &#39;a&#39;) { // sỹ
+      return 20 +( isRed ? aEvalRed[x][y] : aEvalBlack[x][y] );
+    } else if (piece.type === &#39;k&#39;) { // tướng
+      return 900 +( isRed ? kEvalRed[x][y] : kEvalBlack[x][y] );
+    }
+    throw &amp;quot;Unknown piece type: &amp;quot; + piece.type;
+  };
+
+  var absoluteValue = getAbsoluteValue(piece, piece.color === &#39;r&#39;, x ,y);
+  return piece.color === &#39;r&#39; ? absoluteValue : -absoluteValue;
+}
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Bây giờ, chúng ta chỉ cần duyệt qua toàn bộ các nước có thể đi, tính xem nước đi nào có điểm số là lớn nhất, thì máy sẽ đi theo nước đi đó.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-javascript&#34;&gt;
+
+function getBestMove(game) {
+
+var newGameMoves = game.moves();
+var bestMove = null;
+// set đại một số âm vô hạn
+var bestValue = -9999;
+
+for (var i = 0; i &amp;lt; newGameMoves.length; i++) {
+    var newGameMove = newGameMoves[i];
+    game.move(newGameMove);
+
+    var boardValue = -evaluateBoard(game.board())
+    game.undo();
+    if (boardValue &amp;gt; bestValue) {
+        bestValue = boardValue;
+        bestMove = newGameMove
+    }
+}
+
+return bestMove;
+
+};
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Vì vậy, ngoài việc xét điểm cho các loại quân, chúng ta sẽ có một bảng xét điểm cho các con&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/china_chess_evaluation.gif&#34; alt=&#34;AI Cờ tướng - Chọn nước đi tốt nhất&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Kết quả có vẻ tốt hơn so với việc random bước đi trước đó, nhưng thuật toán vẫn còn hơi dốt dốt xíu,  do máy chỉ tính 1 nước đi và chọn ra nước đi tốt nhất. Nên máy chưa có cái nhìn dài hơn. Có nhiều cách để cho máy có thể có góc nhìn xa hơn về thế cục của bàn cờ, một trong các cách được giới thiệu ở đây là sử dụng minimax&lt;/p&gt;
+
+&lt;h1 id=&#34;bước-3-tìm-kiếm-cây-sử-dụng-minimax&#34;&gt;Bước 3. Tìm kiếm cây sử dụng minimax&lt;/h1&gt;
+
+&lt;p&gt;Thuật toán minimax thuộc nhóm duyệt theo chiều sâu (depth first search). Hai người chơi, một người được gọi là MAX, người còn lại gọi là MIN. Thuật toán được thiết kế để tìm nước đi tối ưu cho người MAX. Người MAX sẽ giữ node gốc, lần lượt duyệt đệ quy qua tất cả các node con theo chiều sâu nhất định đến khi duyệt qua tất cả các node hoặc là tìm được một đường đi mà đạt MAX.&lt;/p&gt;
+
+&lt;p&gt;Chi tiết hơn, người MAX sẽ đi đầu tiên. Nhiệm vụ của MAX là tìm nước đi sao cho điểm số của mình là cao nhất, nhiệm vụ của MIN là tìm nước đi để cực tiểu hoá điểm số của MAX.&lt;/p&gt;
+
+&lt;p&gt;Các bạn có thể đọc thêm ở link &lt;a href=&#34;https://en.wikipedia.org/wiki/Minimax&#34;&gt;https://en.wikipedia.org/wiki/Minimax&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;Để triển khai minimax, đầu tiên, chúng ta sẽ sửa lại hàm getBestMove ở trên, thay vì gọi lượng giá bàn cờ evaluateBoard, chúng ta sẽ gọi hàm minimax&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-javascript&#34;&gt;
+
+function minimaxRoot(depth, game, isMaximisingPlayer) {
+  var newGameMoves = game.moves();
+  var bestMove = -9999;
+  var bestMoveFound;
+
+  for(var i = 0; i &amp;lt; newGameMoves.length; i++) {
+    var newGameMove = newGameMoves[i]
+    game.move(newGameMove);
+    var value = minimax(depth - 1, game, !isMaximisingPlayer);
+    game.undo();
+    if(value &amp;gt;= bestMove) {
+      bestMove = value;
+      bestMoveFound = newGameMove;
+    }
+  }
+  return bestMoveFound;
+}
+
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;với hàm minimax cũng cùng ý tưởng với hàm getBestMove ở trên, nhưng ta sẽ gọi đệ quy, luân phiên tính điểm máy, sau đó tính điểm người &amp;hellip; theo độ sâu ta đã thiết lập, để tìm ra đường đi có số điểm là lớn nhất.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-javascript&#34;&gt;
+function minimax (depth, game, isMaximisingPlayer) {
+    if (depth === 0) {
+        return -evaluateBoard(game.board());
+    }
+    var newGameMoves = game.moves();
+    if (isMaximisingPlayer) {
+        var bestMove = -9999;
+        for (var i = 0; i &amp;lt; newGameMoves.length; i++) {
+            game.move(newGameMoves[i]);
+            bestMove = Math.max(bestMove, minimax(depth - 1, game, !isMaximisingPlayer));
+            game.undo();
+        }
+        return bestMove;
+    } else {
+        var bestMove = 9999;
+        for (var i = 0; i &amp;lt; newGameMoves.length; i++) {
+            game.move(newGameMoves[i]);
+            bestMove = Math.min(bestMove, minimax(depth - 1, game, !isMaximisingPlayer));
+            game.undo();
+        }
+        return bestMove;
+    }
+};
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Thuật toán này hoạt động khá hiệu quả, nhưng có một điểm yếu là nó sẽ vét cạn toàn bộ các trường hợp để tìm ra đường đi tối ưu nhất. Vì vậy, với giá trị độ sâu càng lớn thì thuật toán chạy càng chậm.&lt;/p&gt;
+
+&lt;h1 id=&#34;bước-4-cắt-tỉa-alpha-beta&#34;&gt;Bước 4: Cắt tỉa Alpha - Beta&lt;/h1&gt;
+
+&lt;p&gt;Cắt tỉa Alpha - Beta là một phương pháp tối ưu hoá của thuật toán minimax, phương pháp này giúp chúng ta bỏ qua một vài nhánh trong quá trình tìm kiếm, làm giới hạn phạm vi tìm kiếm, giúp mô hình hoạt động nhanh hơn.&lt;/p&gt;
+
+&lt;p&gt;Thuật toán sẽ hoạt động hiệu quả hơn nếu những bước tìm kiếm đầu tiên là những nước đi tốt nhất :)&lt;/p&gt;
+
+&lt;p&gt;Hàm minimax với alpla, beta được viết lại như sau&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-javascript&#34;&gt;
+
+
+function minimax(depth, game, alpha, beta, isMaximisingPlayer) {
+  positionCount++;
+  if (depth === 0) {
+    return -evaluateBoard(game.board());
+  }
+
+  var newGameMoves = game.moves();
+
+  if (isMaximisingPlayer) {
+    var bestMove = -9999;
+    for (var i = 0; i &amp;lt; newGameMoves.length; i++) {
+      game.moves(newGameMoves[i]);
+      bestMove = Math.max(bestMove, minimax(depth - 1, game, alpha, beta, !isMaximisingPlayer));
+      game.undo();
+      alpha = Math.max(alpha, bestMove);
+      if (beta &amp;lt;= alpha) {
+        return bestMove;
+      }
+    }
+    return bestMove;
+  } else {
+    var bestMove = 9999;
+    for (var i = 0; i &amp;lt; newGameMoves.length; i++) {
+      game.moves(newGameMoves[i]);
+      bestMove = Math.min(bestMove, minimax(depth - 1, game, alpha, beta, !isMaximisingPlayer));
+      game.undo();
+      beta = Math.min(beta, bestMove);
+      if (beta &amp;lt;= alpha) {
+        return bestMove;
+      }
+    }
+    return bestMove;
+  }
+}
+
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/china_chess_maxmin.gif&#34; alt=&#34;AI Cờ tướng với cắt tỉa alpha-beta Minimax&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Cảm ơn các bạn đã theo dõi bài viết. Xin chào và hẹn gặp lại các bạn ở bài viết kế tiếp&lt;/p&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>

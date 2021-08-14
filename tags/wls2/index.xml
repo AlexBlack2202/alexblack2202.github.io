@@ -9,8 +9,227 @@
     <managingEditor>alexblack2202@gmail.com (Phạm Duy Tùng)</managingEditor>
     <webMaster>alexblack2202@gmail.com (Phạm Duy Tùng)</webMaster>
     <copyright>This work is licensed under a Creative Commons Attribution-ShareAlike 4.0 International License.</copyright>
-    <lastBuildDate>Sun, 30 May 2021 00:19:00 +0300</lastBuildDate>
+    <lastBuildDate>Tue, 27 Jul 2021 00:19:00 +0300</lastBuildDate>
     <atom:link href="/tags/wls2/" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>Tìm hiểu package PyCaret trong python</title>
+      <link>/blog/2021-07-28-pycaret-flaskapi/</link>
+      <pubDate>Tue, 27 Jul 2021 00:19:00 +0300</pubDate>
+      <author>alexblack2202@gmail.com (Phạm Duy Tùng)</author>
+      <guid>/blog/2021-07-28-pycaret-flaskapi/</guid>
+      <description>
+
+&lt;h1 id=&#34;giới-thiệu&#34;&gt;Giới thiệu&lt;/h1&gt;
+
+&lt;p&gt;PyCaret là thư viện open-source machinelearning trong python, Thư viện tích hợp sẵn các mô hình cần thiết, giúp chúng ta train mô hình một lần trên nhiều thuật toán máy học khác nhau. Thư viện có hỗ trợ train trên GPU. Phiên bản hiện tại lúc mình viết bài viết này là 2.3.3. Các bạn có thể tham khảo thông tin thêm của thư viện ở link github &lt;a href=&#34;https://github.com/pycaret/pycaret&#34;&gt;https://github.com/pycaret/pycaret&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://github.com/pycaret/pycaret/blob/master/pycaret2-features.png&#34; alt=&#34;Các chức năng trong pycaret&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Để cài đặt pycaret, các bạn sử dụng lệnh sau&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+pip install pycaret
+
+pip install pycaret[full]
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Bản full có cài thêm nhiều gói thư viện khác, các bạn có thể tham khảo các gói thư viện được cài thêm ở bản full qua link &lt;a href=&#34;https://github.com/pycaret/pycaret/blob/master/requirements-optional.txt&#34;&gt;https://github.com/pycaret/pycaret/blob/master/requirements-optional.txt&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;Mình quan sát sơ qua thì bàn full có cài thêm mấy cái thư viện kết nối aws và gcs khá dư thừa, mình không xài tới, với ổ cứng máy mình cũng có hạn. Nên mình chỉ cài bản cơ bản và các thư viện cần thiết như scikit-optimize, tune-sklearn, xgboost &amp;hellip;&lt;/p&gt;
+
+&lt;h1 id=&#34;vòng-đời-khi-xây-dựng-chương-trình-máy-học&#34;&gt;Vòng đời khi xây dựng chương trình máy học&lt;/h1&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/machine_learning_life_cycle.jpg&#34; alt=&#34;Machine Learning Life Cycle — Image by Author (Read from left-to-right)&#34; /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;Business Problem : Như những ứng dụng khác, một ứng dụng máy học cũng được bắt đầu bằng một vấn đề thực tế trong cuộc sống, trong công việc. Phụ thuộc vào sự phức tạp của vấn đề, và các chi phí liên quan về mặt kinh doanh, chúng ta sẽ phân tích các yếu tố liên quan để xem xét có cần thiết phải phát triển chương trình sử dụng máy học hoặc tìm một giải pháp thay thế tốt hơn theo toàn bộ tiêu chí (thuyết vị lợi).&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Data Sourcing &amp;amp; ETL : Sau khi hiểu bài toán, chúng ta sẽ thu thập các dữ liệu  cần thiết.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Exploratory Data Analysis (EDA) : Dữ liệu ở trên là dữ liệu thô, chưa qua xử lý, nên có thể sẽ bị thu thập không đủ, thu thập thiếu. Chúng ta cần phải nắm rõ dữ liệu, phân tích sự cân bằng/ độ lệch của dữ liệu, xử lý nhiễu, xem phân bố của dữ liệu, xem độ tương quan giữa các đặc trưng, &amp;hellip;&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Data Preparation : Sau khi phân tích, xào nấu dữ liệu đẹp đẽ, trơn tru, chúng ta sẽ bắt đầu chuẩn bị dữ liệu cho mô hình train, ví dụ chia dữ liệu thành tập train,test,validation, one-hot encoding, feature engineering, feature selection &amp;hellip;&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Model Training &amp;amp; Selection : Đây là phần nhàm chán nhất, thử nghiệm dữ liệu với các mô hình và tham số khác nhau, lựa chọn mô hình có kết quả tốt nhất trên tập validation. chờ mô hình train xong&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Deployment &amp;amp; Monitoring :  Sau khi có được mô hình tốt nhất, chúng ta sẽ deploy ứng dụng, và theo dõi, tương tự như những ứng dụng khác thôi.&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Trong việc phát triển phần mềm, có một khái niệm đang nổi gần đây (lúc mình đang viết bài viết này) là devops. Giúp cho một số công việc nhàm chám được thực hiện một cách tự động. Trong máy học, chúng ta sẽ có khái niệm MLOps.&lt;/p&gt;
+
+&lt;h1 id=&#34;mlops-là-gì&#34;&gt;MLOps là gì&lt;/h1&gt;
+
+&lt;p&gt;Định nghĩa theo wikipedia:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+MLOps or ML Ops is a set of practices that aims to deploy and maintain machine learning models in production reliably and efficiently
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;img src=&#34;https://en.wikipedia.org/wiki/File:ML_Ops_Venn_Diagram.svg&#34; alt=&#34;MLOps - wikipedia&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Một bức hình bằng vạn câu chữ, xem bức hình trên, các bạn chắc về cơ bản cũng hiểu công việc của MLOps là gì rồi hen.&lt;/p&gt;
+
+&lt;p&gt;À, đọc đến đây, các bạn có lẽ sẽ thắc mắc là sao đang giới thiệu Pycaret, mà sao lại lang mang qua MLOps làm gì? Thì mình cũng trả lời luôn là Pycaret là một trong những package giúp chúng ta MLOps ==&amp;gt; bớt nhàm chán khi phát triển ứng dụng machine learning rồi đó.&lt;/p&gt;
+
+&lt;h1 id=&#34;ví-dụ-sử-dụng-pycaret&#34;&gt;Ví dụ sử dụng Pycaret&lt;/h1&gt;
+
+&lt;p&gt;Mình sẽ trình bày phần này đúng theo machine learning life cycle, để đảm bảo việc giả lập sát với thực tế.&lt;/p&gt;
+
+&lt;h2 id=&#34;business-problem&#34;&gt;Business Problem&lt;/h2&gt;
+
+&lt;p&gt;Bài toán Sarah Gets a Diamond, link chi tiết của bài toán ở &lt;a href=&#34;https://hbsp.harvard.edu/product/UV0869-PDF-ENG&#34;&gt;https://hbsp.harvard.edu/product/UV0869-PDF-ENG&lt;/a&gt;. Bài toán này giúp người học khoá đó hiểu được sự khác nhau của linear-model, log-liner model, log-log mode. Nếu các bạn có nhu cầu tìm hiểu các model trên, có thể đăng ký khoá học trên hen. Ở đây, mình chỉ lấy mô tả chi tiết và data của khoá học.&lt;/p&gt;
+
+&lt;p&gt;Bối cảnh của bài toán diễn ra như sau. Grey muốn mua một chiếc nhẫn để cầu hôn Sarah. Sau một hồi tham khảo mấy thằng bạn từ thời nối khố, Grey quyết định sẽ mua nhẫn kim cương. Grey tiến hành đi thu thập thông tin của 6000 chiếc nhẫn kim cương khác nhau về giá, màu sắc, hình dạng &amp;hellip;&lt;/p&gt;
+
+&lt;p&gt;May mắn thay Grey có share dữ liệu này cho Pycaret, và chúng ta có thể sử dụng dữ liệu trên bằng cách load từ dataset của Pycaret&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+# load the dataset from pycaret
+from pycaret.datasets import get_data
+data = get_data(&#39;diamond&#39;)
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Và top 5 dữ liệu mẫu mà Grey thu thập là:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+Carat Weight    Cut Color   Clarity Polish  Symmetry    Report  Price
+0   1.10    Ideal   H   SI1 VG  EX  GIA 5169
+1   0.83    Ideal   H   VS1 ID  ID  AGSL    3470
+2   0.85    Ideal   H   SI1 EX  EX  GIA 3183
+3   0.91    Ideal   E   SI1 VG  VG  GIA 4370
+4   0.83    Ideal   G   SI1 EX  EX  GIA 3171
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;exploratory-data-analysis&#34;&gt;Exploratory Data Analysis&lt;/h2&gt;
+
+&lt;p&gt;Bước này sẽ phụ thuộc vào kinh nghiệm của người làm data. Kinh nghiệm của mình thì đầu tiên sẽ phân tích phân bố dữ liệu và phân tích mối tương quan giữa các biến liên tục trước đã, sau đó sẽ phân tích các yếu tố chuyên sâu hơn dựa vào cảm quan nhận được từ hai cái trên.&lt;/p&gt;
+
+&lt;p&gt;Quan sát dữ liệu, chúng ta thấy rằng chỉ có hai thuộc tính Carat Weight và Price thuộc nhóm numerical variable, các thuộc tính còn lại thuộc nhóm categorical variable, nên mình không cần tính độ tương quan làm gì hết.&lt;/p&gt;
+
+&lt;p&gt;Mình có học từ link ở tài liệu tham khảo phía dưới, thư viện plotly.express, mình tham khảo thử thì thấy hàm vẽ scatter của thư viện có nhiều thuộc tính khá hay. Ví dụ mình thử phân tích kích thước viên đá kim cương với giá của chiếc nhẫn, chia theo màu sắc thì như thế nào&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;fig = px.scatter(data,x=&#39;Carat Weight&#39;, y=&#39;Price&#39;, animation_group=&#39;Color&#39;,
+                 facet_col = &#39;Color&#39;, opacity = 0.25, template = &#39;plotly_dark&#39;, trendline=&#39;ols&#39;,
+             color=&amp;quot;Color&amp;quot;,   trendline_color_override = &#39;red&#39;, title = &#39;SARAH GETS A DIAMOND - A CASE STUDY&#39;)
+fig.show()
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/pycaret_ml-flow_eda_corr_color.png&#34; alt=&#34;Diamon Dataset - Phân tích kích thước đá kim cương và giá cả trên thuộc tính màu sắc&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Nhìn hình trên, mình thấy rằng cùng 1 kích thước, màu H và màu I có giá xêm xêm nhau, màu E và F cũng tương tự, màu D có mức giá cao nhất. với kích thước 2.74, giá của chiếc nhẫn kim cương màu D cao hơn gấp đôi so với giá của nhẫn kim cương có  màu H hoặc màu I&lt;/p&gt;
+
+&lt;p&gt;Các bạn có thể thay thuộc tính facet_col =  &amp;lsquo;Color&amp;rsquo; của hàm scatter  bằng  các tên cột như Cut  hoặc    Clarity hoặc    Symmetry, sẽ có vài thứ hay ho có thể rút ra đó.&lt;/p&gt;
+
+&lt;p&gt;Sau khi phân tích dữ liệu, có cái nhìn sơ lược về các thuộc tính cũng như mối tương quang giữa chúng, chúng ta thường sẽ thường thực hiện các phép biến đổi để chuẩn hoá dữ liệu. Các phép biến đổi thường được xài là:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;&lt;p&gt;Chuẩn hoá dữ liệu: Scale dữ liệu về cùng một đoạn, ví dụ [-1,1] hoặc [0-1], 2 phương pháp phổ biến hay được sử dụng:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Min-Max&lt;/li&gt;
+&lt;li&gt;Z score&lt;/li&gt;
+&lt;/ul&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Xử lý dữ liệu lệch: Các cột thuộc tính numberric sẽ được chuẩn hoá về phân phối chuẩn.&lt;/p&gt;&lt;/li&gt;
+
+&lt;li&gt;&lt;p&gt;Tổng hợp dữ liệu: Sử dụng các thuộc tính có sẵn, kết hợp lại để tạo nên các thuộc tính mới.&lt;/p&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Trước hết, chúng ta sẽ xem histogram của biến Price&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/pycaret_ml-flow_eda_histogram.png&#34; alt=&#34;Diamon Dataset - Histogram&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Ta thấy rằng,  phân phối có ít quan sát hơn ở phía bên phải =&amp;gt; mô hình bị lệch phải (right-skewed hoặc skewed right, positively skewed distribution). Với dữ liệu bị bịnh này thì chúng ta sẽ dùng thuốc chữa là căn bậc hai, căn bậc ba hoặc là log.&lt;/p&gt;
+
+&lt;p&gt;Mình sẽ xài thuốc log. Sử dụng hàm log trong thư viện numpy&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+import numpy as np
+# create a copy of data
+data_copy = data.copy()
+# create a new feature Log_Price
+data_copy[&#39;Log_Price&#39;] = np.log(data[&#39;Price&#39;])
+# plot histogram
+fig = px.histogram(data_copy, x=[&amp;quot;Log_Price&amp;quot;], title = &#39;Histgram of Log Price&#39;, template = &#39;plotly_dark&#39;)
+fig.show()
+
+
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/pycaret_ml-flow_eda_price_log.png&#34; alt=&#34;Diamon Dataset - Histogram&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Dữ liệu được đưa về dạng giống giống cái chuông úp, hình dạng của phân phối chuẩn.&lt;/p&gt;
+
+&lt;h2 id=&#34;data-preparation&#34;&gt;Data Preparation&lt;/h2&gt;
+
+&lt;p&gt;Xài thư viện PyCaret khá sướng, chúng ta chỉ cần gọi hàm setup của thư viện là đủ&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+# initialize setup
+from pycaret.regression import *
+s = setup(data, target = &#39;Price&#39;, transform_target = True,transform_target_method=&amp;quot;yeo-johnson&amp;quot;, log_experiment = True, experiment_name = &#39;diamond&#39;)
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Bài toán thuộc dạng hồi quy, nên mình sẽ load toàn bộ các hàm thuộc regression vào.&lt;/p&gt;
+
+&lt;p&gt;Mọi việc còn lại, từ việc tính log của cột Price, đến việc tiền xử lý dữ liệu , &amp;hellip; đã được PyCaret lo hết. Chúng ta chỉ cần chịu khó đọc doc của thư viện để hiểu các tham số và ứng dụng nó vào là ổn.&lt;/p&gt;
+
+&lt;p&gt;Một lưu ý là hàm transform mặc định xài box-cox, và pycaret ở thời điểm hiện tại chỉ hỗ trợ &amp;ldquo;box-cox&amp;rdquo; hoặc &amp;ldquo;yeo-johnson&amp;rdquo;. Nếu các bạn muốn xài log cho cột Price, thì phải thêm cột mới. Mình sẽ xài yeo-johnson thay cho mặc định box-cox.&lt;/p&gt;
+
+&lt;h2 id=&#34;model-training-selection&#34;&gt;Model Training &amp;amp; Selection&lt;/h2&gt;
+
+&lt;p&gt;Tiếp đến việc train model và lựa chọn model cũng hết sức đơn giản, chúng ta chỉ cần gọi 1 dòng lệnh duy nhất&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+# compare all models
+best = compare_models()
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Xong. Thư viện tự động điều chỉnh tham số, lựa chọn tham số tốt nhất và mô hình tốt nhất cho chúng ta. Chúng ta chỉ cần ngồi, đợi máy chạy, xem kết quả.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&#34;/post_image/pycaret_ml-flow_result.png&#34; alt=&#34;Diamon Dataset - Histogram&#34; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Một lưu ý là các bạn nếu không cài bản full thì nên xem file log để xem có báo lỗi thiếu thư viện hay không hen.&lt;/p&gt;
+
+&lt;p&gt;Sau khi có được thuật toán với mô hình tốt nhất , và các trọng số tốt nhất, chúng ta sẽ lưu mô hình lại vào file để sau này sử dụng.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;
+# finalize the model
+final_best = finalize_model(best)
+# save model to disk
+save_model(final_best, &#39;diamond-pipeline&#39;)
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&#34;deployment-monitoring&#34;&gt;Deployment &amp;amp; Monitoring&lt;/h2&gt;
+
+&lt;p&gt;Đến phần này thì đơn giản rồi, các bạn có thể viết webapi như flask hoặc fastapi để sử dụng.&lt;/p&gt;
+
+&lt;p&gt;Pycaret hỗ trợ mlflow&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt;!mlflow ui
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Sau khi chạy lện trên, bạn hãy mở trình duyệt web lên và nhập và địa chỉ &lt;a href=&#34;http://localhost:5000&#34;&gt;http://localhost:5000&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;Tham khảo&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://github.com/pycaret/pycaret&#34;&gt;https://github.com/pycaret/pycaret&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://towardsdatascience.com/build-with-pycaret-deploy-with-fastapi-333c710dc786&#34;&gt;https://towardsdatascience.com/build-with-pycaret-deploy-with-fastapi-333c710dc786&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&#34;https://towardsdatascience.com/easy-mlops-with-pycaret-mlflow-7fbcbf1e38c6&#34;&gt;https://towardsdatascience.com/easy-mlops-with-pycaret-mlflow-7fbcbf1e38c6&lt;/a&gt;&lt;/p&gt;
+</description>
+    </item>
     
     <item>
       <title>Nâng cấp WSL lên bản WSL 2 trên window 10</title>
