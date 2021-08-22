@@ -219,7 +219,7 @@ model.add(Activation(&#39;linear&#39;))
 
 
 model.compile(loss=&#39;mean_squared_error&#39;, optimizer=&#39;adam&#39;, metrics=[&#39;accuracy&#39;])
-checkpoint = ModelCheckpoint(filepath=&#39;my_model_stock.h5&#39;, verbose=1, save_best_only=True)
+checkpoint = ModelCheckpoint(filepath=&#39;sp500_stockperdict.h5&#39;, verbose=1, save_best_only=True)
 hist = model.fit(x_train, y_train, epochs=300, batch_size=128, verbose=1, callbacks=[checkpoint], validation_split=0.2)
 &lt;/code&gt;&lt;/pre&gt;
 
@@ -272,7 +272,133 @@ close error:
 0.0010840500965408758
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;p&gt;Kết quả của mô hình trông khá tốt, về hình dạng thì khá tương đồng với kết quả. Chúng ta có thể cải tiến model bằng cách nâng số lượng layter/ hidden node.&lt;/p&gt;
+&lt;p&gt;Hiện đã có bản tensorflow 2 có tích hợp keras, mình update lại code&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-python&#34;&gt; 
+ from re import T
+import numpy as np 
+# linear algebra 
+import pandas as pd 
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense
+from tensorflow.keras.layers import LSTM
+from sklearn.preprocessing import MinMaxScaler 
+import tensorflow as tf
+import joblib
+
+import matplotlib
+matplotlib.use(&#39;TkAgg&#39;)
+import matplotlib.pyplot as plt 
+
+
+file_name =&#39;GSPC.csv&#39;
+
+
+prices_dataset =  pd.read_csv(file_name, header=0)
+
+
+# prices_dataset_dropout = prices_dataset.drop([&#39;Date&#39;,&#39;Adj Close&#39;,&#39;Volume&#39;], 1)
+prices_dataset_dropout=prices_dataset.reset_index()[&#39;Close&#39;]
+
+
+scaler=MinMaxScaler(feature_range=(0,1))
+prices_dataset_norm=scaler.fit_transform(np.array(prices_dataset_dropout).reshape(-1,1))
+joblib.dump(scaler, &#39;scaler.alex&#39;)
+
+
+print(prices_dataset_norm[:10])
+
+
+def generate_data(stock_ds, seq_len,predict_next_t):
+    dataX, dataY = [], []
+    for i in range(len(stock_ds)-seq_len-1):
+        dataX.append(stock_ds[i:(i+seq_len)])
+        dataY.append(stock_ds[i + seq_len+predict_next_t])
+    return np.array(dataX), np.array(dataY)
+
+#data as numpy array
+def generate_train_test(data_x,data_y,split_percent=0.8):
+    
+    train_end = int(np.floor(split_percent*data_x.shape[0]))
+    
+    x_train,x_test=data_x[:train_end,:],data_x[train_end:,:]
+    y_train,y_test = data_y[:train_end],data_y[train_end:]
+    return x_train,y_train,x_test,y_test
+
+
+
+seq_len = 100 # choose sequence length
+predict_next_t = 1 # 0 is next date, 1 is 2 next date
+
+data_x, data_y = generate_data(prices_dataset_norm,seq_len,predict_next_t)
+
+x_train,y_train,x_test,y_test = generate_train_test(data_x,data_y, 0.8)
+
+
+x_train =x_train.reshape(x_train.shape[0],x_train.shape[1] , 1)
+x_test = x_test.reshape(x_test.shape[0],x_test.shape[1] , 1)
+print(&#39;x_train.shape = &#39;,x_train.shape)
+print(&#39;y_train.shape = &#39;, y_train.shape)
+print(&#39;x_test.shape = &#39;, x_test.shape)
+print(&#39;y_test.shape = &#39;,y_test.shape)
+
+
+
+model = Sequential()
+
+    # input_dim=4,
+    # output_dim=50,
+model.add(LSTM(units=100,input_shape=x_train.shape[1:],
+    return_sequences=True))
+
+model.add(LSTM(
+    100,
+    return_sequences=False))
+model.add(Dense(1))
+
+
+model.compile(loss=&#39;mean_squared_error&#39;, optimizer=&#39;adam&#39;, metrics=[&#39;accuracy&#39;])
+checkpoint = tf.keras.callbacks.ModelCheckpoint(filepath=&#39;my_model_stock.h5&#39;, verbose=1, save_best_only=True)
+hist = model.fit(x_train, y_train, epochs=3, batch_size=64, verbose=1, callbacks=[checkpoint], validation_split=0.2)
+
+from tensorflow.keras.models import load_model
+print(&#39;load model&#39;)
+model =load_model(&#39;my_model_stock.h5&#39;)
+
+print(&#39;predict&#39;)
+y_test = y_test.reshape(y_test.shape[0])
+# train_predict=model.predict(x_train)
+test_predict=model.predict(x_test)
+print(&#39;invert&#39;)
+print(y_test.shape)
+# train_predict=scaler.inverse_transform(train_predict)
+
+# scaler = joblib.load(&#39;scaler.alex&#39;)
+
+y_hat=scaler.inverse_transform(test_predict)
+y_test=scaler.inverse_transform(y_test.reshape(-1, 1))
+print(y_hat.shape)
+# y_hat = model.predict(x_test)
+# import matplotlib
+# matplotlib.use(&#39;GTKAgg&#39;) 
+# print(&#39;plot&#39;)
+
+plt.plot( y_test, color=&#39;blue&#39;, label=&#39;target&#39;)
+
+plt.plot( y_hat, color=&#39;red&#39;, label=&#39;prediction&#39;)
+print(&#39;plot complete&#39;)
+plt.title(&#39;future stock prices&#39;)
+plt.xlabel(&#39;time [days]&#39;)
+plt.ylabel(&#39;normalized price&#39;)
+plt.legend(loc=&#39;best&#39;)
+print(&#39;plot show&#39;)
+plt.savefig(&amp;quot;mygraph.png&amp;quot;)
+plt.show()
+
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Kết quả của mô hình trông khá tốt, về hình dạng thì khá tương đồng với kết quả. Chúng ta có thể cải tiến model bằng cách nâng số lượng layer/ hidden node.&lt;/p&gt;
 
 &lt;p&gt;Cảm ơn các bạn đã theo dõi. Hẹn gặp bạn ở các bài viết tiếp theo.&lt;/p&gt;
 </description>
