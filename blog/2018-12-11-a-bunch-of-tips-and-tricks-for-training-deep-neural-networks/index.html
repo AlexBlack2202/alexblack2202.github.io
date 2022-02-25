@@ -1,0 +1,520 @@
+<!doctype html><html lang="en" data-palette="blue"
+   data-mode="dark">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Một số mẹo để lựa chọn mô hình object detection - Phạm Duy Tùng Machine Learning Blog</title><link rel="apple-touch-icon" href="/images/icons/icon-180x180.png" sizes="180x180">
+<link rel="icon" href="/images/icons/icon-32x32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="/images/icons/icon-16x16.png" sizes="16x16" type="image/png">
+<link rel="icon" href="/images/icons/favicon.ico">
+<link rel="manifest" href="/manifest.json">
+<meta name="keywords" content="" />
+<meta name="description" content="Ở bài viết này, chúng ta tìm hiểu một số mẹo khi huấn luyện mô hình sử dụng deep learning." /><meta name="robots" content="index, follow" /><meta itemprop="name" content="Một số mẹo để lựa chọn mô hình object detection">
+<meta itemprop="description" content="Ở bài viết này, chúng ta tìm hiểu một số mẹo khi huấn luyện mô hình sử dụng deep learning."><meta itemprop="datePublished" content="2018-12-11T00:19:00+03:00" />
+<meta itemprop="dateModified" content="2018-12-11T00:19:00+03:00" />
+<meta itemprop="wordCount" content="1746">
+<meta itemprop="keywords" content="Machine learning,Deeplearning,object detector,single shot," /><meta property="og:title" content="Một số mẹo để lựa chọn mô hình object detection" />
+<meta property="og:description" content="Ở bài viết này, chúng ta tìm hiểu một số mẹo khi huấn luyện mô hình sử dụng deep learning." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="/blog/2018-12-11-a-bunch-of-tips-and-tricks-for-training-deep-neural-networks/" /><meta property="article:section" content="blog" />
+<meta property="article:published_time" content="2018-12-11T00:19:00+03:00" />
+<meta property="article:modified_time" content="2018-12-11T00:19:00+03:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Một số mẹo để lựa chọn mô hình object detection"/>
+<meta name="twitter:description" content="Ở bài viết này, chúng ta tìm hiểu một số mẹo khi huấn luyện mô hình sử dụng deep learning."/>
+<meta property="og:image" content="/images/logo.png"/>
+  <meta name="twitter:image" content="/images/logo.png"/><link rel="stylesheet" href="/css/main.min.507afbe6e4670fa3e961a0b35816b5daeb36029866fd6bd7b9d7871fcf88faa5.css" integrity="sha256-UHr75uRnD6PpYaCzWBa12us2Aphm/WvXudeHH8&#43;I&#43;qU=" crossorigin="anonymous"><link rel="stylesheet" href="/css/katex.min.d080a89e03e1eb850f547d835c186b4273f69879aa497eb8b0e88c1578bf1f0b.css" integrity="sha256-0ICongPh64UPVH2DXBhrQnP2mHmqSX64sOiMFXi/Hws=" crossorigin="anonymous">
+<link rel="stylesheet" href="/css/viewer.min.3d228794bcedbbfa0412beb8fbc1ec6973202945e42af7004f742a4d7bd620ab.css" integrity="sha256-PSKHlLztu/oEEr64&#43;8HsaXMgKUXkKvcAT3QqTXvWIKs=" crossorigin="anonymous"></head>
+  <body><script>const items=['mode','palette'];items.forEach(function(a){const b=localStorage.getItem('hbs-'+a);b&&document.body.parentElement.setAttribute('data-'+a,b)})</script><header><nav class="navbar top-app-bar top-app-bar-expand-lg fixed-top">
+  <div class="container">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <i class="fas fa-bars"></i>
+    </button><a class="navbar-brand flex-grow-1 flex-lg-grow-0 text-center text-lg-start mx-auto me-lg-3" href="/"><img class="logo" alt="Logo" src="/images/logo.webp" loading="lazy"
+   width="400" height="400"
+   />
+HOME
+    </a>
+    <div class="offcanvas offcanvas-bottom surface" tabindex="-1" id="offcanvasSocialShare" aria-labelledby="offcanvasSocialShare">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Share</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body">
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Twitter Share Button"
+      target="_blank" href="https://twitter.com/intent/tweet?title=M%e1%bb%99t%20s%e1%bb%91%20m%e1%ba%b9o%20%c4%91%e1%bb%83%20l%e1%bb%b1a%20ch%e1%bb%8dn%20m%c3%b4%20h%c3%acnh%20object%20detection&url=%2fblog%2f2018-12-11-a-bunch-of-tips-and-tricks-for-training-deep-neural-networks%2f">
+      <i class="fab fa-fw fa-twitter"></i> Twitter
+    </a>
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Facebook Share Button"
+      target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=%2fblog%2f2018-12-11-a-bunch-of-tips-and-tricks-for-training-deep-neural-networks%2f">
+      <i class="fab fa-fw fa-facebook-f"></i> Facebook
+    </a>
+  </div>
+</div>
+    <button class="navbar-settings" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSettings"
+  aria-controls="offcanvasSettings" aria-label="Toggle settings">
+  <i class="fas fa-ellipsis-v"></i>
+</button>
+
+<div class="offcanvas offcanvas-end surface h-100" tabindex="-1" id="offcanvasSettings" aria-labelledby="offcanvasSettings">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Settings</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body d-flex flex-column">
+
+
+
+<section class="setting">
+  <form class="font-size-switcher-form row">
+    <div class="col-auto">
+      <label for="fontSize" class="form-label"><i class="fas fa-fw fa-font"></i> Font Size</label>
+    </div>
+    <div class="col-auto ms-auto">
+      <input type="range" class="form-range" min="-2" max="2" id="fontSize">
+    </div>
+  </form>
+</section>
+
+
+<section class="setting palettes">
+  <form class="row">
+    <div class="col-auto">
+      <label><i class="fas fa-fw fa-palette"></i> Palette</label>
+    </div>
+    <div class="col-auto ms-auto">
+      <a id="btnPalette" class="btn btn-sm btn-outline-primary" role="button" aria-label="palettePicker">
+        <i class="fas fa-eye-dropper"></i>
+      </a>
+    </div>
+  </form>
+  <div class="mt-2 d-flex justify-content-between visually-hidden" id="palettePicker"><button type="button" id="palette-blue" aria-label="Blue"
+        class="btn btn-sm w-100 palette" data-palette="blue">
+      </button><button type="button" id="palette-blue-gray" aria-label="Blue Gray"
+        class="btn btn-sm w-100 palette" data-palette="blue-gray">
+      </button><button type="button" id="palette-brown" aria-label="Brown"
+        class="btn btn-sm w-100 palette" data-palette="brown">
+      </button><button type="button" id="palette-cyan" aria-label="Cyan"
+        class="btn btn-sm w-100 palette" data-palette="cyan">
+      </button><button type="button" id="palette-green" aria-label="Green"
+        class="btn btn-sm w-100 palette" data-palette="green">
+      </button><button type="button" id="palette-indigo" aria-label="Indigo"
+        class="btn btn-sm w-100 palette" data-palette="indigo">
+      </button><button type="button" id="palette-orange" aria-label="Orange"
+        class="btn btn-sm w-100 palette" data-palette="orange">
+      </button><button type="button" id="palette-pink" aria-label="Pink"
+        class="btn btn-sm w-100 palette" data-palette="pink">
+      </button><button type="button" id="palette-purple" aria-label="Purple"
+        class="btn btn-sm w-100 palette" data-palette="purple">
+      </button><button type="button" id="palette-red" aria-label="Red"
+        class="btn btn-sm w-100 palette" data-palette="red">
+      </button><button type="button" id="palette-teal" aria-label="Teal"
+        class="btn btn-sm w-100 palette" data-palette="teal">
+      </button><button type="button" id="palette-yellow" aria-label="Yellow"
+        class="btn btn-sm w-100 palette" data-palette="yellow">
+      </button></div>
+</section>
+<section class="setting actions d-flex justify-content-around mt-auto overflow-auto">
+  <a role="button" class="action action-go-back" href="javascript: window.history.back();">
+    <span class="action-icon"><i class="fas fa-2x fa-arrow-left"></i></span> Go back
+  </a>
+  <a role="button" class="action action-reload-page">
+    <span class="action-icon"><i class="fas fa-2x fa-redo-alt"></i></span> Reload
+  </a>
+  <a role="button" class="action action-copy-url">
+    <span class="action-icon"><i class="fas fa-2x fa-link"></i></span> Copy URL
+  </a><a class="action action-social-share" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSocialShare"
+    aria-controls="offcanvasSocialShare" aria-label="Toggle social share">
+    <span class="action-icon"><i class="fas fa-2x fa-share-alt"></i></span> Share
+  </a></section>
+
+</div>
+</div>
+
+    <div class="collapse navbar-collapse" tabindex="-1" id="navbarSupportedContent" aria-labelledby="navbarSupportedContent">
+      <form class="search-bar my-1" action="/search">
+  <div class="input-group input-group-sm">
+    <span class="btn btn-search disabled position-absolute left-0"><i class="fas fa-fw fa-search"></i></span>
+    <input class="form-control rounded-pill" name="q" type="search" aria-label="Search">
+  </div>
+</form>
+      <ul class="navbar-nav ms-auto"><li class="nav-item">
+          <a class="nav-link" href="/series/">
+            <i class="fas fa-fw fa-columns"></i>Series
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="/archives/">
+            <i class="fas fa-fw fa-file-archive"></i>Archives
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="/categories/">
+            <i class="fas fa-fw fa-folder"></i>Categories
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="/tags/">
+            <i class="fas fa-fw fa-tags"></i>Tags
+          </a>
+        </li><li class="nav-item dropdown">
+          <a class="nav-link" id="navbarDropdownSupport" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-fw fa-chevron-circle-down"></i>Support
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdownSupport"><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Repository
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Discussions
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Features Request
+              </a>
+            </li><li><hr class="dropdown-divider"></li><li>
+              <a class="dropdown-item"
+                href="/faq/">
+                FAQs
+              </a>
+            </li></ul>
+        </li></ul>
+    </div>
+  </div>
+</nav>
+</header>
+<main role="main" class="container">
+      <div class="row content">
+<div class="col-lg-8">
+  <div class="container"><nav class="row card component" aria-label="breadcrumb">
+  <div class="card-body">
+    <ol class="breadcrumb "><li class="breadcrumb-item"><a href="/">Home</a></li><li class="breadcrumb-item"><a href="/blog/">Blogs</a></li><li class="breadcrumb-item active">Một Số Mẹo Để Lựa Chọn Mô Hình Object Detection</li></ol>
+  </div>
+</nav>
+<div class="post-panel-wrapper">
+  <div class="d-flex flex-column component rounded post-panel">
+    
+    <a class="action action-panel-toggler" role="button" title="Panel toggler">
+      <i class="fas fa-fw fa-chevron-circle-down"></i>
+    </a>
+    <a id="sidebarToggler" class="action d-none d-lg-block" role="button" title="Sidebar toggler">
+  <i class="fas fa-fw fa-expand-alt" data-fa-transform="rotate-45"></i>
+</a>
+
+    
+
+    
+    
+    <a class="action" href="#post-comments" role="button" aria-label="Comments" title="Comments">
+  <i class="fas fa-fw fa-comments"></i>
+</a>
+    <a class="action" href="#postTOC" aria-controls="Table of contents" role="button" title="Table of contents">
+  <i class="fas fa-fw fa-list-alt"></i>
+</a>
+    
+  </div>
+</div>
+<article class="row card component mb-4 post">
+  <div class="card-header ">
+    <h1 class="card-title post-title">Một Số Mẹo Để Lựa Chọn Mô Hình Object Detection
+</h1>
+  </div>
+  <div class="card-body"><div class="post-meta">
+  <span class="post-date" title="created on 2018-12-11 04:19:00 &#43;0700 &#43;07.">
+    Dec 11, 2018
+  </span><span class="post-reading-time">
+    9 min read
+  </span><span class="post-taxonomies"><a href="/tags/machine-learning/" class="badge post-taxonomy">Machine learning</a><a href="/tags/deeplearning/" class="badge post-taxonomy">Deeplearning</a><a href="/tags/object-detector/" class="badge post-taxonomy">object detector</a><a href="/tags/single-shot/" class="badge post-taxonomy">single shot</a></span>
+</div>
+<div class="post-content mb-3"><h2 id="lời-mở-đầu">Lời mở đầu<a class="anchor ms-1" href="#lời-mở-đầu"><i class="fas fa-link"></i></a></h2>
+<p>Việc huấn luyện một mô hình neural network khá đơn giản, chỉ việc download code mẫu về, quăng tập data của mình vào, rồi cho chạy, xong. Nhưng khó khăn ở đây là làm cách nào để nâng độ chính xác của mô hình lên. Ở bài viết này, chúng ta sẽ tìm hiểu một số cách giúp tăng độ chính xác của mô hình.</p>
+<h3 id="kiểm-tra-dữ-liệu">Kiểm tra dữ liệu<a class="anchor ms-1" href="#kiểm-tra-dữ-liệu"><i class="fas fa-link"></i></a></h3>
+<ol>
+<li>
+<p>Thực chất, chúng ta phải hiểu rõ kỹ chúng ta đang có những gì trong tay, thì chúng ta mới dạy cho máy học đủ và đúng được. Các bạn hãy kiểm tra thật kỹ để đảm bảo rằng tập nhãn được gán chính xác, bouding box của đối tượng được vẽ không quá dư thừa, không có missing value, v.v. Một ví dụ nhỏ là tập MNIST, có nhiều hình bị nhập nhằng giữa những con số, chúng ta không thể phân biệt được chính xác hình đó là con số nào bằng mắt thường.</p>
+</li>
+<li>
+<p>Tiếp theo, các bạn hãy quyết định xem rằng mình có nên sử dụng các pre-train model hay không.</p>
+</li>
+</ol>
+<ul>
+<li>
+<p>Nếu tập dữ liệu của bạn gần giống với tập dữ liệu ImageNet, hãy dùng pre-train model. Có các mô hình đã được huấn luyện sẵn là VGG net, ResNet, DenseNet, Xception. Với các kiến trúc khác nhau như VGG(16 và 19 layer), ResNet (50, 101, 152 layer), DenseNet(201,169,121 layer). Ban đầu, đừng sử dụng các kiến trúc có số lượng nhiều (ResNet152, DenseNet201) bởi vì nó rất tốn chi phí tính toán. Chúng ta nên bắt đầu bởi các mô hình nhỏ như VGG16, ResNet50. Hãy chọn một mô hình mà bạn nghĩ là sẽ có kết quả tốt. Sau khi huấn luyện, nếu kết quả không được như ý muốn, hãy tăng số lớp lên (ví dụ ban đầu chọn Resnet50, sau đó nâng lên Resnet101, &hellip;).</p>
+</li>
+<li>
+<p>Nếu bạn có ít dữ liệu, bạn nãy &ldquo;đóng băng&rdquo; lại trọng số của pre-train model, chỉ huấn luyện phần phân lớp. Bạn cũng có thể thêm phần Dropout để tránh overfit.</p>
+</li>
+<li>
+<p>Nếu tập dữ liệu của bạn không giống một tí nào so với taapk ImageNet, không nên dùng pre-train model.</p>
+</li>
+</ul>
+<ol start="3">
+<li>
+<p>Luôn luôn sử dụng lớp chuẩn hoá trong mô hình. Nếu bạn huấn luyện mô hình với batch-size lớn ( ví dụ lớn hơn 10), hãy sử dụng BatchNormalization Layer trong keras. Nếu bạn sử dụng batch-size nhỏ (ví dụ 1), thì hãy sử dụng InstanceNormalization. Hai layer này đã có sẵn trong Keras, trong các framework khác thì mình không rõ lắm. Có nhiều tác giả đã chỉ ra rằng sử dụng BatchNormalization  sẽ cho kết quả tốt hơn nếu tăng batch-size và hiệu năng sẽ giảm khi batch-size nhỏ, và trong trường hợp batch-size nhỏ thì kết quả sẽ tốt hơn một tí khi sử dụng InstanceNormalization thay cho BatchNormalization. Ngoài ra, các bạn cũng có thể sử dụng GroupNormalization (mình chưa kiểm chứng GroupNormalization có làm tăng độ chính xác hay không).</p>
+</li>
+<li>
+<p>Nếu bạn sử dụng concatenation layer để kết hợp các feature từ nhiều convolution layers (Li), và những Li  trên rút trích thông tin từ cùng một input (F), thì bạn jay sử dụng SpatialDropout ngay sau concatenation layer trên (Xem hình bên dưới). Khi các convolution layer rút trích thông tin từ cùng một nguồn, các đặc trưng của chúng thường sẽ có mức tương quan với nhau rất lớn. SpatialDropout sẽ loại bỏ những đặc trưng có mức độ liên quan cao này và giúp bạn chống lại hiện tượng overfiting. Thông thường người ta chỉ sử dụng SpatialDropout ở các lớp gần input layer, và không sử dụng chúng ở các lớp cao bên trên.</p>
+</li>
+</ol>
+<p><img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-11-a-bunch-of-tips-and-tricks-for-training-deep-neural-networks/spatialdropoutusecase.png" loading="lazy"
+  
+   />
+
+</p>
+<ol start="5">
+<li>
+<p>Theo andrej Karpathy, để xác định khả năng lưu trữ thông tin của mô hình, hãy rút một phần nhỏ dữ liệu trong tập train của bạn đem đi huấn luyện. Nếu mô hình không overfit, chúng ta tăng số lượng node/layer lên. Nếu mô hình bị overfit, sử dụng các kỹ thuật như L1, L2, Dropout hoăc các kỹ thuật khác để chống lại việc overfit.</p>
+</li>
+<li>
+<p>Các kỹ thuật chuẩn hoá thường sẽ ràng buộc hoặc tinh gọn các trọng số của mô hình. Nó cũng đồng thời giúp chúng ta chống lại việc gradient explosion (gradient mang giá trị lớn khi tính backpropagation) (lý do là các trọng số sẽ bị giới hạn trong đoạn nào đó, ví dụ L2 giới hạn căn bậc 2 tổng bình phương các trọng số =1 chẳng hạn). Ví dụ dưới sử dụng kares và giới hạn max của L2 là 2.</p>
+</li>
+</ol>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span><span class="kn">from</span> <span class="nn">keras.constraints</span> <span class="kn">import</span> <span class="n">max_norm</span>
+<span class="ln">2</span><span class="c1"># add to Dense layers</span>
+<span class="ln">3</span><span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Dense</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="n">kernel_constraint</span><span class="o">=</span><span class="n">max_norm</span><span class="p">(</span><span class="mf">2.</span><span class="p">)))</span>
+<span class="ln">4</span><span class="c1"># or add to Conv layers</span>
+<span class="ln">5</span><span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Conv2D</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="n">kernel_constraint</span><span class="o">=</span><span class="n">max_norm</span><span class="p">(</span><span class="mf">2.</span><span class="p">)))</span>
+</code></pre></div><ol start="7">
+<li>
+<p>Việc sử dụng mean subtraction đôi khi cho kết quả khá tệ, đặc biệt là khi sử dụng trong ảnh xám (grayscale image), hoặc các bài toán phân đoạn ảnh.</p>
+</li>
+<li>
+<p>Luôn nhớ đến việc xáo trộn dữ liệu (nếu bạn có thể). Nếu được, hãy thực hiện xáo trộn dữ liệu trong quá trình huấn luyện. Việc xáo trộn ảnh sẽ giúp bạn cải thiện độ chính xác.</p>
+</li>
+<li>
+<p>Nếu bài toán của bạn thuộc nhóm dense prediction (ví dụ phân đoạn ngữ nghĩa - semantic segmentation). Hãy sử dụng pre-train model là Dilated Residual Networks. Mô hình trên cực kỳ hiệu quả cho bài toán này.</p>
+</li>
+<li>
+<p>Để xác định thông tin ngữ cảnh xung quanh các đối tượng, hãy sử dụng module multi-scale feature pooling. Module này sẽ giúp bạn tăng độ chính xác và thường được sử dụng trong bài toán phân đoạn ngữ nghĩa (semantic segmentation) hoặc bài toán phân đoạn nền (foreground segmentation).</p>
+</li>
+<li>
+<p>Khi bạn tính độ lỗi hoặc độ chính xác, nếu có vùng nào không trả về nhãn, hoặc nhãn trả về không chắc chắn, hãy bỏ qua việc tính toán chúng đi. Hành động này sẽ giúp mô hình của bạn chắc chắn hơn khi đưa ra quyết định.</p>
+</li>
+<li>
+<p>Sử dụng trọng số cho từng class trong quá trình training nếu dữ liệu của bạn có tính bất cân bằng cao. Hãy đặt trọng số lớn cho những lớp có ít dữ liệu, và trọng số nhỏ cho những lớp có nhiều dữ liệu. Trọng số của các lớp có thể được tính toán một cách dễ dàng bằng các sử dụng thư viện skearn trong python. Ngoài ra, bạn có thể sử dụng các kỹ thuật như OverSampling hoặc UnderSampling đối với tập dữ liệu nhỏ.</p>
+</li>
+<li>
+<p>Chọn đúng hàm tối ưu. Có rất nhiều hàm tối ưu như Adam, Adagrad, Adadellta, RMSprop, &hellip; Trong các paper người ta thường sử dụng tổ hợp SGD + momentun. Có hai vấn đề cần được xem xét ở đây: Một là nếu bạn muốn mô hình có độ hội tụ nhanh, hãy dùng Adam ( và có khả năng cao là mô hình sẽ bị kẹt ở điểm cực tiểu cục bộ -&gt; không có tính tổng quát hoá cao). Hai là sử dujg SGD + momentun để tìm cực tiểu toàn cục, mô hình này phụ thuộc rất nhiều vào giá trị khởi tạo ban đầu và mô hình thường sẽ hội tụ rất chậm. (Xem hình bên dưới)</p>
+</li>
+</ol>
+<p><img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-11-a-bunch-of-tips-and-tricks-for-training-deep-neural-networks/optimal.png" loading="lazy"
+  
+   />
+
+</p>
+<ol start="14">
+<li>
+<p>Thông thường, chúng ta sẽ chọn learning-rate là (1e-1, 1e-3, 1e-6). Nếu bạn sử dụng pre-train model, hãy sử dụng learning rate nhỏ hơn 1e-3 (ví dụ 1e-4). Nếu bạn không sử dụng pre-train model, hãy sử dụng learning-rate lớn hơn 1e-3. Bạn có thể grid search giá trị learning-rate và chọn ra mô hình cho kết quả tốt nhất. Bạn có thể sử dụng Learing Rate Schedulers giảm giá trịn learning rate trong quá trình huấn luyện mô hình.</p>
+</li>
+<li>
+<p>Bên cạnh việc sử dụng Learing Rate Schedulers để giảm giá trị learning rate, bạn có thể sử dụng một kỹ thuật khác để giảm giá trị learning-rate. Ví dụ sau 5 epochs, độ lỗi trên tập validation không thay đổi, bạn giảm learning-rate đi 10 lần (vd từ 1e-3 thành 1e-4). Trong keras, bạn có thể dễ dàng implement công thức trên bằng việc sử dụng callbacs ReduceLROnPlateau.</p>
+</li>
+</ol>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span><span class="n">reduce</span> <span class="o">=</span> <span class="n">keras</span><span class="o">.</span><span class="n">callbacks</span><span class="o">.</span><span class="n">ReduceLROnPlateau</span><span class="p">(</span><span class="n">monitor</span><span class="o">=</span><span class="s1">&#39;val_loss&#39;</span><span class="p">,</span> <span class="n">factor</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">patience</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">)</span>
+<span class="ln">2</span><span class="n">early</span> <span class="o">=</span> <span class="n">keras</span><span class="o">.</span><span class="n">callbacks</span><span class="o">.</span><span class="n">EarlyStopping</span><span class="p">(</span><span class="n">monitor</span><span class="o">=</span><span class="s1">&#39;val_loss&#39;</span><span class="p">,</span> <span class="n">min_delta</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span> <span class="n">patience</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">)</span>
+<span class="ln">3</span><span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">callbacks</span><span class="o">=</span><span class="p">[</span><span class="n">reduce</span><span class="p">,</span> <span class="n">early</span><span class="p">])</span>
+</code></pre></div><p>Ví dụ trên, chúng ta sẽ giảm learning-rate đi 10 lần khi độ lỗi trên tập validation không thay đổi qua 5 lần lặp liên tiếp, và sẽ dừng việc huấn luyện khi độ lỗi không giảm qua 10 lần lặp liên tiếp.</p>
+<ol start="16">
+<li>
+<p>Nếu bài toán của bạn thuộc nhóm dense prediction như phân đoạn ảnh, phân đoạn ngữ nghĩa, bạn nên sử dụng skip connection để chống lại việc các biên của đối tượng hoặc các thông tin đặc trưng hữu ích của đối tượng bị mất trong max-pooling hoặc strided convolution. Skip connection cũng giúp mô hình học features map từ feature space và image space dễ dàng hơn, và nó cũng giúp cho bạn giảm bị vanish gradient ( giá trị gradient nhỏ dần và gần xấp xỉ bằng 0, nên trọng số không thay đổi nhiều, dẫn đến không hội tụ).</p>
+</li>
+<li>
+<p>Nên sử dụng data augmentation, như là horizontally flipping, rotating, zoom-croping&hellip; để tăng dữ liệu của bạn lên. Việc có nhiều dữ liệu sẽ giúp mô hình có mức tổng quát hoá cao hơn.</p>
+</li>
+<li>
+<p>Sử dụng Max-pooling trước Relu để giảm thiểu mức độ tính toán thay vì làm ngược lại. chúng ta biết rằng ReLU trả ra giá trị có ngưỡng cực tiểu là 0 do f(x)=max(0,x), và max-pooling tính max cho các đặc trưng f(x) = max(x1,x2,&hellip;,xi). Nếu ta sử dụng <em>Conv &gt; ReLU &gt; Max-pooling</em>, ta sẽ tốn i lần tính ReLu, và 1 lần tính max. Nếu ta sử dụng <em>Conv -&gt; max-pooling &gt; ReLU</em>, ta tốn 1 lần tính max, 1 lần tính ReLU.</p>
+</li>
+<li>
+<p>Nếu có thể, hãy thử sử dụng Depthwise Separable Convolution. Nó giúp mô hình giảm số lượng tham số so với các convolution khác, ngoài ra nó giúp mô hình chạy nhanh hơn.</p>
+</li>
+<li>
+<p>Điều cuối cùng là đừng bao giờ từ bỏ. Hãy tin tưởng rằng bạn có thể làm được. Nếu bạn vẫn không thể đạt được độ chính xác như mong đợi, hãy điều chỉnh lại các tham số, kiến trúc mô hình, tập dữ liệu huấn luyện đến khi bạn đạt được mô hình với độ chính xác như bạn đề ra.</p>
+</li>
+</ol>
+<p>Cảm ơn các bạn đã theo dõi. Hẹn gặp bạn ở các bài viết tiếp theo. Cố lên.</p>
+</div></div>
+  <div class="card-footer"><div class="post-navs d-flex justify-content-evenly"><div class="post-nav post-prev">
+    <i class="fas fa-fw fa-chevron-left"></i>
+    <a href="/blog/2018-12-10-design-choices-lessons-learned-and-trends-for-object-detections/">Lựa Chọn Mô Hình Object Detectors
+</a>
+  </div><div class="post-nav post-next">
+    <a href="/blog/2019-01-03-donor-project-matching-with-recommender-systems/">Hệ Thống Gợi Ý Khoá Học Cho Website DonorChoose.org
+</a>
+    <i class="fas fa-fw fa-chevron-right"></i>
+  </div></div></div>
+</article><div class="card component row post-comments" id="post-comments">
+  <div class="card-header">
+    <h2 class="card-title">Comments</h2>
+  </div>
+  <div class="card-body"><script src="https://utteranc.es/client.js"
+  repo="AlexBlack2202/utterances"
+  issue-term="pathname"
+  label="comment"
+  theme="github-light"
+  crossorigin="anonymous"
+  async>
+</script></div>
+</div></div>
+</div><aside class="col-lg-4 sidebar d-flex">
+  <div class="container d-flex flex-column">
+    
+    <section class="card row text-center profile component">
+  <div class="card-body">
+    <div class="col-12 d-flex align-items-center justify-content-center"><img class="profile-avatar rounded-circle" alt="Đặng Thị Hằng | Phạm Duy Tùng" src="/images/profile.webp" loading="lazy"
+   width="736" height="920"
+   />
+</div>
+    <div class="col-12 profile-meta"><div class="profile-name">Đặng Thị Hằng | Phạm Duy Tùng</div><div class="profile-bio">Gopher, CShaper, Pythoner, Full Stack Engineer.</div><div class="profile-company"><i class="fas fa-fw fa-building"></i>MWG</div><div class="profile-location"><i class="fas fa-fw fa-map-marker-alt"></i>Earth</div><div class="profile-about"><i class="fas fa-fw fa-user"></i><a href="/about/">About</a></div><div class="profile-contact"><i class="fas fa-fw fa-question-circle"></i><a href="/contact/">Contact Us</a></div>
+</div>
+  </div>
+</section>
+  <div class="post-toc row mb-4 card component" id="postTOC">
+  <div class="card-header">
+    <h2 class="card-title">Contents</h2>
+  </div>
+  <div class="card-body">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#lời-mở-đầu">Lời mở đầu</a>
+      <ul>
+        <li><a href="#kiểm-tra-dữ-liệu">Kiểm tra dữ liệu</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div><section class="recent-posts row card component">
+  <div class="card-header">
+    <h2 class="card-title">Recent Posts</h2>
+  </div>
+  <div class="card-body">
+    <ul class="post-list"><li>
+        <a href="/blog/2021-11-06-some-way-make-momey-from-web-scrapping/">Một Số Cách Kiếm Thêm Thu Nhập Từ Cách Cào Dữ Liệu
+</a>
+      </li><li>
+        <a href="/blog/2021-08-12-china_chess_alpha_beta_ai/">Xây Dựng Chương Trình AI Đơn Giản Cho Game Cờ Tướng
+</a>
+      </li><li>
+        <a href="/blog/2021-07-28-pycaret-flaskapi/">Tìm Hiểu Package PyCaret Trong Python
+</a>
+      </li><li>
+        <a href="/blog/2021-07-02-mo-hinh-phan-quyen/">Mô Hình Phân Quyền - Access Control
+</a>
+      </li><li>
+        <a href="/blog/2021-05-30-upgrade-wls-to-wls2/">Nâng Cấp WSL Lên Bản WSL 2 Trên Window 10
+</a>
+      </li></ul>
+  </div>
+</section><section class="series-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="/series">Series</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="/series/kh%C3%B3a-h%E1%BB%8Dc-c&#43;&#43;-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa học c&#43;&#43; căn bản">
+            Khóa học c&#43;&#43; căn bản<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="/series/machine-learning-dataset/" class="badge rounded post-taxonomy" title="Machine learning dataset">
+            Machine learning dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a><a href="/series/kh%C3%B3a-h%E1%BB%8Dc-python-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa học python căn bản">
+            Khóa học python căn bản<span class="badge badge-sm text-white bg-accent ms-1">1</span></a></div>
+      </div>
+    </section><section class="tags-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="/tags">Tags</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="/tags/machine-learning/" class="badge rounded post-taxonomy" title="Machine learning">
+            Machine learning<span class="badge badge-sm text-white bg-accent ms-1">38</span></a><a href="/tags/deeplearning/" class="badge rounded post-taxonomy" title="Deeplearning">
+            Deeplearning<span class="badge badge-sm text-white bg-accent ms-1">20</span></a><a href="/tags/deep-learning/" class="badge rounded post-taxonomy" title="Deep learning">
+            Deep learning<span class="badge badge-sm text-white bg-accent ms-1">15</span></a><a href="/tags/python/" class="badge rounded post-taxonomy" title="python">
+            python<span class="badge badge-sm text-white bg-accent ms-1">10</span></a><a href="/tags/opencv/" class="badge rounded post-taxonomy" title="opencv">
+            opencv<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="/tags/c&#43;&#43;/" class="badge rounded post-taxonomy" title="c&#43;&#43;">
+            c&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/object-detector/" class="badge rounded post-taxonomy" title="object detector">
+            object detector<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/alexnet/" class="badge rounded post-taxonomy" title="AlexNet">
+            AlexNet<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="/tags/d%E1%BB%B1-%C4%91o%C3%A1n/" class="badge rounded post-taxonomy" title="dự đoán">
+            dự đoán<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="/tags/forecast/" class="badge rounded post-taxonomy" title="forecast">
+            forecast<span class="badge badge-sm text-white bg-accent ms-1">3</span></a></div>
+      </div>
+    </section>
+    
+  </div>
+</aside>
+</div>
+    </main><footer class="footer mt-auto py-3 text-center container"><ul class="nav justify-content-between footer-memu mb-3"><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Support
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-github"></i>Repository
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-comments"></i>Discussions
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">Features Request
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">Bug Report
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/contact/"><i class="fas fa-fw fa-info-circle"></i>Contact Us
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/faq/"><i class="fas fa-fw fa-question-circle"></i>FAQs
+</a>
+        </li></ul></li><li class="nav-item"><li class="nav-item">
+      <a class="nav-link" target="_blank" rel="noopener noreferrer">Docs
+</a>
+    </li></li><li class="nav-item"><li class="nav-item">
+      <a class="nav-link" target="_blank" rel="noopener noreferrer">Features
+</a>
+    </li></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Demo
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">Netlify
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">China
+</a>
+        </li></ul></li></ul>
+<div class="copyright mb-2">
+  Copyright © 2016-2022 Phạm Duy Tùng. All Rights Reserved.
+</div>
+<div class="powered-by mb-2">
+  Website chia sẻ kiến thức của Phạm Duy Tùng và Đặng Thị Hằng. Vui lòng liên hệ email alexblack2202@gmail.com nếu bạn có thông tin cần trao đổi.
+</div></footer>
+<script src="/js/main.0f06b653e090cf5f3e595cc4f3150328397d377ee5b405d0803057801eb4f3e5.js" integrity="sha256-Dwa2U&#43;CQz18&#43;WVzE8xUDKDl9N37ltAXQgDBXgB608&#43;U=" crossorigin="anonymous" defer></script><script src="/js/icons.min.8ddcaafc364ff0296c2209c5495287f0de039b852da9b24847f94c198b7639b6.js" integrity="sha256-jdyq/DZP8ClsIgnFSVKH8N4Dm4UtqbJIR/lMGYt2ObY=" crossorigin="anonymous" defer></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('\/service-worker.js').then(function(reg) {
+      console.log('Successfully registered service worker', reg);
+    }).catch(function(err) {
+      console.warn('Error whilst registering service worker', err);
+    });
+  });
+}
+</script><script src="/js/viewer.min.652118a9fbf3403cdfde4026209f97ace22f9e334f0b45a33431a221b3db46a8.js" integrity="sha256-ZSEYqfvzQDzf3kAmIJ&#43;XrOIvnjNPC0WjNDGiIbPbRqg=" crossorigin="anonymous" defer></script><script defer src="/js/katex.min.a575e93a07f02f7e58ee9002aea3b4e75163d4fa8ea3a627e90e7fafd5c718fa.js" integrity="sha256-pXXpOgfwL35Y7pACrqO051Fj1PqOo6Yn6Q5/r9XHGPo=" crossorigin="anonymous"></script>
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-114911596-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+</body>
+</html>

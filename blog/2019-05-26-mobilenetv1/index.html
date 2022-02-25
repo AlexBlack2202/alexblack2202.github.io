@@ -1,0 +1,576 @@
+<!doctype html><html lang="en" data-palette="blue"
+   data-mode="dark">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Tìm hiểu mạng MobileNetV1 - Phạm Duy Tùng Machine Learning Blog</title><link rel="apple-touch-icon" href="/images/icons/icon-180x180.png" sizes="180x180">
+<link rel="icon" href="/images/icons/icon-32x32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="/images/icons/icon-16x16.png" sizes="16x16" type="image/png">
+<link rel="icon" href="/images/icons/favicon.ico">
+<link rel="manifest" href="/manifest.json">
+<meta name="keywords" content="" />
+<meta name="description" content="Trong bài viết này, chúng ta sẽ tìm hiểu mô hình MobileNetV1 của nhóm tác giả Andrew G. Howard, Menglong Zhu, Bo Chen, Dmitry Kalenichenko, Weijun Wang, Tobias Weyand, Marco Andreetto, Hartwig Adam - Google Inc từ bài báo MobileNets Efficient Convolutional Neural Networks for Mobile Vision Applications đăng năm 2017. Mục tiêu của mô hình này là xây dựng một mô hình mạnh mẽ nhưng nhỏ gọn, có thể chạy deep neural network trên các thiết bị di động như điện thoại, máy tính bảng hoặc các thiết bị nhúng." /><meta name="robots" content="index, follow" /><meta itemprop="name" content="Tìm hiểu mạng MobileNetV1">
+<meta itemprop="description" content="Trong bài viết này, chúng ta sẽ tìm hiểu mô hình MobileNetV1 của nhóm tác giả Andrew G. Howard, Menglong Zhu, Bo Chen, Dmitry Kalenichenko, Weijun Wang, Tobias Weyand, Marco Andreetto, Hartwig Adam - Google Inc từ bài báo MobileNets Efficient Convolutional Neural Networks for Mobile Vision Applications đăng năm 2017. Mục tiêu của mô hình này là xây dựng một mô hình mạnh mẽ nhưng nhỏ gọn, có thể chạy deep neural network trên các thiết bị di động như điện thoại, máy tính bảng hoặc các thiết bị nhúng."><meta itemprop="datePublished" content="2019-05-25T00:12:00+03:00" />
+<meta itemprop="dateModified" content="2019-05-25T00:12:00+03:00" />
+<meta itemprop="wordCount" content="1481">
+<meta itemprop="keywords" content="machine learning,deep learning,MobileNetV1,Depthwise Separable Convolution,Light Weight Model,Width Multiplier,Resolution Multiplier," /><meta property="og:title" content="Tìm hiểu mạng MobileNetV1" />
+<meta property="og:description" content="Trong bài viết này, chúng ta sẽ tìm hiểu mô hình MobileNetV1 của nhóm tác giả Andrew G. Howard, Menglong Zhu, Bo Chen, Dmitry Kalenichenko, Weijun Wang, Tobias Weyand, Marco Andreetto, Hartwig Adam - Google Inc từ bài báo MobileNets Efficient Convolutional Neural Networks for Mobile Vision Applications đăng năm 2017. Mục tiêu của mô hình này là xây dựng một mô hình mạnh mẽ nhưng nhỏ gọn, có thể chạy deep neural network trên các thiết bị di động như điện thoại, máy tính bảng hoặc các thiết bị nhúng." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="/blog/2019-05-26-mobilenetv1/" /><meta property="article:section" content="blog" />
+<meta property="article:published_time" content="2019-05-25T00:12:00+03:00" />
+<meta property="article:modified_time" content="2019-05-25T00:12:00+03:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Tìm hiểu mạng MobileNetV1"/>
+<meta name="twitter:description" content="Trong bài viết này, chúng ta sẽ tìm hiểu mô hình MobileNetV1 của nhóm tác giả Andrew G. Howard, Menglong Zhu, Bo Chen, Dmitry Kalenichenko, Weijun Wang, Tobias Weyand, Marco Andreetto, Hartwig Adam - Google Inc từ bài báo MobileNets Efficient Convolutional Neural Networks for Mobile Vision Applications đăng năm 2017. Mục tiêu của mô hình này là xây dựng một mô hình mạnh mẽ nhưng nhỏ gọn, có thể chạy deep neural network trên các thiết bị di động như điện thoại, máy tính bảng hoặc các thiết bị nhúng."/>
+<meta property="og:image" content="/images/logo.png"/>
+  <meta name="twitter:image" content="/images/logo.png"/><link rel="stylesheet" href="/css/main.min.507afbe6e4670fa3e961a0b35816b5daeb36029866fd6bd7b9d7871fcf88faa5.css" integrity="sha256-UHr75uRnD6PpYaCzWBa12us2Aphm/WvXudeHH8&#43;I&#43;qU=" crossorigin="anonymous"><link rel="stylesheet" href="/css/katex.min.d080a89e03e1eb850f547d835c186b4273f69879aa497eb8b0e88c1578bf1f0b.css" integrity="sha256-0ICongPh64UPVH2DXBhrQnP2mHmqSX64sOiMFXi/Hws=" crossorigin="anonymous">
+<link rel="stylesheet" href="/css/viewer.min.3d228794bcedbbfa0412beb8fbc1ec6973202945e42af7004f742a4d7bd620ab.css" integrity="sha256-PSKHlLztu/oEEr64&#43;8HsaXMgKUXkKvcAT3QqTXvWIKs=" crossorigin="anonymous"></head>
+  <body><script>const items=['mode','palette'];items.forEach(function(a){const b=localStorage.getItem('hbs-'+a);b&&document.body.parentElement.setAttribute('data-'+a,b)})</script><header><nav class="navbar top-app-bar top-app-bar-expand-lg fixed-top">
+  <div class="container">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <i class="fas fa-bars"></i>
+    </button><a class="navbar-brand flex-grow-1 flex-lg-grow-0 text-center text-lg-start mx-auto me-lg-3" href="/"><img class="logo" alt="Logo" src="/images/logo.webp" loading="lazy"
+   width="400" height="400"
+   />
+HOME
+    </a>
+    <div class="offcanvas offcanvas-bottom surface" tabindex="-1" id="offcanvasSocialShare" aria-labelledby="offcanvasSocialShare">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Share</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body">
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Twitter Share Button"
+      target="_blank" href="https://twitter.com/intent/tweet?title=T%c3%acm%20hi%e1%bb%83u%20m%e1%ba%a1ng%20MobileNetV1&url=%2fblog%2f2019-05-26-mobilenetv1%2f">
+      <i class="fab fa-fw fa-twitter"></i> Twitter
+    </a>
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Facebook Share Button"
+      target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=%2fblog%2f2019-05-26-mobilenetv1%2f">
+      <i class="fab fa-fw fa-facebook-f"></i> Facebook
+    </a>
+  </div>
+</div>
+    <button class="navbar-settings" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSettings"
+  aria-controls="offcanvasSettings" aria-label="Toggle settings">
+  <i class="fas fa-ellipsis-v"></i>
+</button>
+
+<div class="offcanvas offcanvas-end surface h-100" tabindex="-1" id="offcanvasSettings" aria-labelledby="offcanvasSettings">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Settings</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body d-flex flex-column">
+
+
+
+<section class="setting">
+  <form class="font-size-switcher-form row">
+    <div class="col-auto">
+      <label for="fontSize" class="form-label"><i class="fas fa-fw fa-font"></i> Font Size</label>
+    </div>
+    <div class="col-auto ms-auto">
+      <input type="range" class="form-range" min="-2" max="2" id="fontSize">
+    </div>
+  </form>
+</section>
+
+
+<section class="setting palettes">
+  <form class="row">
+    <div class="col-auto">
+      <label><i class="fas fa-fw fa-palette"></i> Palette</label>
+    </div>
+    <div class="col-auto ms-auto">
+      <a id="btnPalette" class="btn btn-sm btn-outline-primary" role="button" aria-label="palettePicker">
+        <i class="fas fa-eye-dropper"></i>
+      </a>
+    </div>
+  </form>
+  <div class="mt-2 d-flex justify-content-between visually-hidden" id="palettePicker"><button type="button" id="palette-blue" aria-label="Blue"
+        class="btn btn-sm w-100 palette" data-palette="blue">
+      </button><button type="button" id="palette-blue-gray" aria-label="Blue Gray"
+        class="btn btn-sm w-100 palette" data-palette="blue-gray">
+      </button><button type="button" id="palette-brown" aria-label="Brown"
+        class="btn btn-sm w-100 palette" data-palette="brown">
+      </button><button type="button" id="palette-cyan" aria-label="Cyan"
+        class="btn btn-sm w-100 palette" data-palette="cyan">
+      </button><button type="button" id="palette-green" aria-label="Green"
+        class="btn btn-sm w-100 palette" data-palette="green">
+      </button><button type="button" id="palette-indigo" aria-label="Indigo"
+        class="btn btn-sm w-100 palette" data-palette="indigo">
+      </button><button type="button" id="palette-orange" aria-label="Orange"
+        class="btn btn-sm w-100 palette" data-palette="orange">
+      </button><button type="button" id="palette-pink" aria-label="Pink"
+        class="btn btn-sm w-100 palette" data-palette="pink">
+      </button><button type="button" id="palette-purple" aria-label="Purple"
+        class="btn btn-sm w-100 palette" data-palette="purple">
+      </button><button type="button" id="palette-red" aria-label="Red"
+        class="btn btn-sm w-100 palette" data-palette="red">
+      </button><button type="button" id="palette-teal" aria-label="Teal"
+        class="btn btn-sm w-100 palette" data-palette="teal">
+      </button><button type="button" id="palette-yellow" aria-label="Yellow"
+        class="btn btn-sm w-100 palette" data-palette="yellow">
+      </button></div>
+</section>
+<section class="setting actions d-flex justify-content-around mt-auto overflow-auto">
+  <a role="button" class="action action-go-back" href="javascript: window.history.back();">
+    <span class="action-icon"><i class="fas fa-2x fa-arrow-left"></i></span> Go back
+  </a>
+  <a role="button" class="action action-reload-page">
+    <span class="action-icon"><i class="fas fa-2x fa-redo-alt"></i></span> Reload
+  </a>
+  <a role="button" class="action action-copy-url">
+    <span class="action-icon"><i class="fas fa-2x fa-link"></i></span> Copy URL
+  </a><a class="action action-social-share" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSocialShare"
+    aria-controls="offcanvasSocialShare" aria-label="Toggle social share">
+    <span class="action-icon"><i class="fas fa-2x fa-share-alt"></i></span> Share
+  </a></section>
+
+</div>
+</div>
+
+    <div class="collapse navbar-collapse" tabindex="-1" id="navbarSupportedContent" aria-labelledby="navbarSupportedContent">
+      <form class="search-bar my-1" action="/search">
+  <div class="input-group input-group-sm">
+    <span class="btn btn-search disabled position-absolute left-0"><i class="fas fa-fw fa-search"></i></span>
+    <input class="form-control rounded-pill" name="q" type="search" aria-label="Search">
+  </div>
+</form>
+      <ul class="navbar-nav ms-auto"><li class="nav-item">
+          <a class="nav-link" href="/series/">
+            <i class="fas fa-fw fa-columns"></i>Series
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="/archives/">
+            <i class="fas fa-fw fa-file-archive"></i>Archives
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="/categories/">
+            <i class="fas fa-fw fa-folder"></i>Categories
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="/tags/">
+            <i class="fas fa-fw fa-tags"></i>Tags
+          </a>
+        </li><li class="nav-item dropdown">
+          <a class="nav-link" id="navbarDropdownSupport" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-fw fa-chevron-circle-down"></i>Support
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdownSupport"><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Repository
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Discussions
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Features Request
+              </a>
+            </li><li><hr class="dropdown-divider"></li><li>
+              <a class="dropdown-item"
+                href="/faq/">
+                FAQs
+              </a>
+            </li></ul>
+        </li></ul>
+    </div>
+  </div>
+</nav>
+</header>
+<main role="main" class="container">
+      <div class="row content">
+<div class="col-lg-8">
+  <div class="container"><nav class="row card component" aria-label="breadcrumb">
+  <div class="card-body">
+    <ol class="breadcrumb "><li class="breadcrumb-item"><a href="/">Home</a></li><li class="breadcrumb-item"><a href="/blog/">Blogs</a></li><li class="breadcrumb-item active">Tìm Hiểu Mạng MobileNetV1</li></ol>
+  </div>
+</nav>
+<div class="post-panel-wrapper">
+  <div class="d-flex flex-column component rounded post-panel">
+    
+    <a class="action action-panel-toggler" role="button" title="Panel toggler">
+      <i class="fas fa-fw fa-chevron-circle-down"></i>
+    </a>
+    <a id="sidebarToggler" class="action d-none d-lg-block" role="button" title="Sidebar toggler">
+  <i class="fas fa-fw fa-expand-alt" data-fa-transform="rotate-45"></i>
+</a>
+
+    
+
+    
+    
+    <a class="action" href="#post-comments" role="button" aria-label="Comments" title="Comments">
+  <i class="fas fa-fw fa-comments"></i>
+</a>
+    <a class="action" href="#postTOC" aria-controls="Table of contents" role="button" title="Table of contents">
+  <i class="fas fa-fw fa-list-alt"></i>
+</a>
+    
+  </div>
+</div>
+<article class="row card component mb-4 post">
+  <div class="card-header ">
+    <h1 class="card-title post-title">Tìm Hiểu Mạng MobileNetV1
+</h1>
+  </div>
+  <div class="card-body"><div class="post-meta">
+  <span class="post-date" title="created on 2019-05-25 04:12:00 &#43;0700 &#43;07.">
+    May 25, 2019
+  </span><span class="post-reading-time">
+    7 min read
+  </span><span class="post-taxonomies"><a href="/tags/machine-learning/" class="badge post-taxonomy">Machine learning</a><a href="/tags/deep-learning/" class="badge post-taxonomy">Deep learning</a><a href="/tags/mobilenetv1/" class="badge post-taxonomy">MobileNetV1</a><a href="/tags/depthwise-separable-convolution/" class="badge post-taxonomy">Depthwise Separable Convolution</a><a href="/tags/light-weight-model/" class="badge post-taxonomy">Light Weight Model</a><a href="/tags/width-multiplier/" class="badge post-taxonomy">Width Multiplier</a><a href="/tags/resolution-multiplier/" class="badge post-taxonomy">Resolution Multiplier</a></span>
+</div>
+<div class="post-content mb-3"><p>Trong bài viết này, chúng ta sẽ tìm hiểu mô hình MobileNetV1 từ nhóm tác giả đến từ Google. Điểm cải tiến (chắc là cải tiến :) của mô hình là sử dụng một cách tính tích chập có tên là <em>Depthwise Separable Convolution</em> để giảm kích thước mô hình và giảm độ phức tạp tính toán. Do đó, mô hình sẽ hữu ích khi chạy các ứng dụng trên di động và các thiết bị nhúng.</p>
+<p>Lý do:</p>
+<ul>
+<li>
+<p>Mô hình có ít tham số hơn -&gt; kích thước model sẽ nhỏ hơn.</p>
+</li>
+<li>
+<p>Mô hình có ít phép tính cộng trừ nhân chia hơn -&gt; độ phức tạp sẽ nhỏ hơn.</p>
+</li>
+</ul>
+<p>Hiện tại (2019-05-26), tại thời điểm viết bài, bài viết gốc của tác giả đã được 1594 lượt trích dẫn. Các bạn có thể tìm đọc bài báo gốc của tác giả tại trang <a href="https://arxiv.org/abs/1704.04861" target="_blank" rel="noopener noreferrer">https://arxiv.org/abs/1704.04861</a></p>
+<p><img class="img-fluid" alt="Hình ảnh" src="/blog/2019-05-26-mobilenetv1/cimobilenetv1_citations.jpg" loading="lazy"
+  
+   />
+
+
+<strong>Số lượt trích dẫn bài báo MobileNets Efficient Convolutional Neural Networks for Mobile Vision Applications</strong></p>
+<h1 id="chi-tiết-về-mạng-mobilenet">Chi tiết về mạng MobileNet<a class="anchor ms-1" href="#chi-tiết-về-mạng-mobilenet"><i class="fas fa-link"></i></a></h1>
+<h2 id="mô-hình-kiến-trúc">Mô hình kiến trúc<a class="anchor ms-1" href="#mô-hình-kiến-trúc"><i class="fas fa-link"></i></a></h2>
+<p>Kiến trúc mạng MobileNet được trình bày bên dưới. Hình bên dưới được trích từ bài báo gốc của tác giả</p>
+<p><img class="img-fluid" alt="Hình ảnh" src="/blog/2019-05-26-mobilenetv1/mobilenetv1_architecture.png" loading="lazy"
+  
+   />
+
+
+<strong>Mô hình kiến trúc mạng MobileNet</strong></p>
+<p>Diễn dịch ra ngôn ngữ tự nhiên, chúng ta thấy rằng mô hình có 30 lớp với các đặc điểm sau:</p>
+<ul>
+<li>
+<p>Lớp 1:  Convolution layer với stride bằng 2</p>
+</li>
+<li>
+<p>Lớp 2: Depthwise layer</p>
+</li>
+<li>
+<p>Lớp 3: Pointwise layer</p>
+</li>
+<li>
+<p>Lớp 4: Depthwise layer với stride bằng 2 (khác với bước 2, dw lớp 2 có stride size bằng 1)</p>
+</li>
+<li>
+<p>Lớp 5: Pointwise layer</p>
+</li>
+<li>
+<p>Lớp 30: Softmax, dùng để phân lớp.</p>
+</li>
+</ul>
+<h2 id="depthwise-separable-convolution">Depthwise Separable Convolution<a class="anchor ms-1" href="#depthwise-separable-convolution"><i class="fas fa-link"></i></a></h2>
+<p>Depthwise separable convolution  là một <em>depthwise convolution theo sau bởi một pointwise convolution</em> như hình bên dưới:</p>
+<p><img class="img-fluid" alt="Hình ảnh" src="/blog/2019-05-26-mobilenetv1/depthwise_separable_convolution.png" loading="lazy"
+  
+   />
+
+
+<strong>Cấu trúc của một Depthwise Separable Convolution</strong></p>
+<ul>
+<li>
+<p>Depthwise convolution: là một <em>channel-wise DK×DK spatial convolution</em>. Ví dụ ở hình trên, ta có 5 channels (các bạn để ý cục đầu tiên có 5 khối hộp, cục thứ 2 là phân tách 5 khối hộp ra thành ma trận mxn, cục thứ 3 là spatial convolution có kích thước kxk, cục thứ 4 là kết quả sau khi convolution, cục thứ 5 là ráp 5 cái kết quả của convolution lại ), do đó chúng ta sẽ có 5 DK×DK spatial convolution tương ứng với 5 channel trên.</p>
+</li>
+<li>
+<p>Pointwise convolution: đơn giản là một convolution có kích thước 1x1 (như hình ở trên).</p>
+</li>
+</ul>
+<p>Với M là số lượng input channel, N là số lượng output channel, Dk là kernel size, Df là feature map size (với dataset ImageNet thì input có kích thước là 224, do đó feature map ban đầu có Df = 224), chúng ta có thể tính được:</p>
+<p>Chi phí tính toán của Depthwise convolution là :</p>
+<p>$$D_k \cdot D_k \cdot M \cdot D_f \cdot D_f$$</p>
+<p>Chi phí tính toán của Pointwise convolution là :</p>
+<p>$$M \cdot N \cdot D_f \cdot D_f$$</p>
+<p>Tổng chi phí tính toán của Depthwise Separable Convolution là:</p>
+<p>$$D_k \cdot D_k \cdot M \cdot D_f \cdot D_f + M \cdot N \cdot D_f \cdot D_f$$</p>
+<p>Nếu chúng ta không sử dụng Depthwise Separable Convolution mà sử dụng phép convolution như bình thường, chi phí tính toán là</p>
+<p>$$ D_k \cdot D_k \cdot M \cdot N \cdot D_f \cdot D_f$$</p>
+<p>Do đó, chi phí tính toán sẽ giảm:</p>
+<p>$$\frac{D_k \cdot D_k \cdot M \cdot D_f \cdot D_f + M \cdot N \dot D_f \cdot D_f}{D_k \cdot D_k \cdot M \cdot N \cdot D_f \cdot D_f} =  \frac{1}{N} + \frac{1}{D^2_k}$$</p>
+<p>Giả sử, chúng ta chọn kernel size Dk = 3, chúng ta sẽ giảm từ 8 đến 9 lần phép tính nhân =&gt; giảm chi phí tính toán đi rất nhiều.</p>
+<p>Một chú ý nhỏ về kiến trúc ở đây, là sau mỗi convolution MobileNet sẽ sử dụng Batch Normalization (BN) và ReLU như hình bên dưới:</p>
+<p><img class="img-fluid" alt="Hình ảnh" src="/blog/2019-05-26-mobilenetv1/standard_convolution_vs_depthwise_seperable_convolution.png" loading="lazy"
+  
+   />
+
+
+<strong>Standard Convolution bên trái, Depthwise separable convolution với BN và ReLU bên phải</strong></p>
+<p>So sánh kết quả của việc sử dụng mạng 30 layer sử dụng thuần Convolution và mạng 30 layer sử dụng  Depthwise Separable Convolution (MobileNet) trên tập dữ liệu ImageNet, chúng ta có bảng kết quả bên dưới</p>
+<p><img class="img-fluid" alt="Hình ảnh" src="/blog/2019-05-26-mobilenetv1/standard_convolution_vs_depthwise_seperable_convolution_imagenetds.png" loading="lazy"
+  
+   />
+
+
+<strong>Standard Convolution bên trái, Depthwise separable convolution với BN và ReLU bên phải</strong></p>
+<p>MobileNet giảm 1% độ chính xác, nhưng số lượng tham số của mô hình và số lượng phép tính toán giảm đi rất rất nhiều, gần xấp xỉ 90%. Một con số đáng kinh ngạc.</p>
+<h2 id="làm-mô-hình-gọn-nhẹ-hơn-nữa">Làm mô hình gọn nhẹ hơn nữa<a class="anchor ms-1" href="#làm-mô-hình-gọn-nhẹ-hơn-nữa"><i class="fas fa-link"></i></a></h2>
+<p>Với mong muốn làm mô hình gọn nhẹ hơn nữa, nhóm tác giả đã thêm vào hai tham số alpha và rho.</p>
+<p>Tham số alpha: Điều khiển số lượng channel (M và N).</p>
+<p>Chi phí tính toán của depthwise separable convolution khi sử dụng thêm tham số alpha.</p>
+<p>$$D_k \cdot D_k \cdot \alpha M \cdot D_f \cdot D_f + \alpha M \cdot \alpha N \cdot D_f \cdot D_f$$</p>
+<p>Giá trị alpha nằm trong đoạn [0,1], nhóm tác giả set giá trị alpha có bước nhảy là 0.25, các giá trị cần xét là 0.25, 0.5, 0.75, 1. Trường hợp alpha = 1 chính là mạng MobileNet baseline của mình. Trong trường hợp thay đổi alpha, số phép tính toán, số tham số, cũng giảm đi rất nhiều, và tất nhiên, độ chính xác cũng giảm đi tương ứng.</p>
+<p><img class="img-fluid" alt="Hình ảnh" src="/blog/2019-05-26-mobilenetv1/mobilenet_alpha_changes.png" loading="lazy"
+  
+   />
+
+
+<strong>Mạng MobileNet với alpha thay đổi</strong></p>
+<p>Phân tích kỹ hình ở trên, ta thấy rằng với alpha bằng  0.75 và 0.5 giá trị độ chính xác còn nằm ở mức miễn cưỡng có thể chấp nhận được. Nhưng với alpha bằng 0.25 thì khó mà có thể chấp nhận được kết quả đó. Việc giảm phép tính toán và số lượng tham số dẫn đến kết quả tệ như trên quả là một điều không nên. Mình nghĩ ở đây nhóm tác giả để con số để có ý nghĩa so sánh.</p>
+<p>Tham số rho: Tham số này được sử dụng để điều khiển độ phân giải của ảnh input.</p>
+<p>Chi phí tính toán của depthwise separable convolution khi sử dụng thêm tham số rho.</p>
+<p>$$D_k \cdot D_k \cdot \alpha M \cdot \rho D_f \cdot \rho D_f + \alpha M \cdot \alpha N \cdot \rho D_f \cdot \rho D_f$$</p>
+<p>Giá trị rho cũng nằm trong đoạn [0,1]. Nhóm tác giả sử dụng các giá trị độ phân giải là 224 (độ phân giải gốc, tương ứng với rho =1), 192, 160, 128.</p>
+<p><img class="img-fluid" alt="Hình ảnh" src="/blog/2019-05-26-mobilenetv1/mobilenet_beta_changes.png" loading="lazy"
+  
+   />
+
+
+<strong>Mạng MobileNet với rho thay đổi</strong></p>
+<p>Giá trị độ chính xác thay đổi theo hướng giảm khá mượt. Việc thay đổi rho chỉ làm giảm số lượng phép tính toán, không làm giảm số lượng tham số. Việc giảm độ chính xác có thể lý giải lý do là có một số hình có kích thước nhỏ nên khi giảm kích thước sẽ làm mất những đặc trưng cần thiết của đối tượng cần xét.</p>
+<h1 id="so-sánh-mobilenet-với-các-state-of-the-art-đương-thời">So sánh MobileNet với các State-of-the-art đương thời<a class="anchor ms-1" href="#so-sánh-mobilenet-với-các-state-of-the-art-đương-thời"><i class="fas fa-link"></i></a></h1>
+<p>Khi so sánh 1.0 MobileNet-224 với GoogleNet và VGG 16 (hình bên dưới), chúng ta thấy rằng độ chính xác của cả 3 thuật toán là hầu như tương đương nhau. Nhưng 1.0 MobileNet-224 có số lượng tham số ít (75% so với GoogleNet) và số lượng phép toán nhỏ hơn rất nhiều =&gt; chạy nhanh hơn.</p>
+<p><img class="img-fluid" alt="Hình ảnh" src="/blog/2019-05-26-mobilenetv1/mobilenet_compare_1.png" loading="lazy"
+  
+   />
+
+
+<strong>So sánh 1.0 MobileNet-224 với GoogleNet và VGG 16 trên tập ImageNet</strong></p>
+<p>Với mô hình 0.50 MobileNet-160, chúng ta có thể so sánh với mô hình Squeezenet và AlexNet (mô hình thắng giải nhất cuộc thi ILSVRC 2012). Một lần nữa, mô hình 0.50 MobileNet-160 cho kết quả tốt hơn, nhưng có số lượng phép tính toán ít hơn rất nhiều (hơi đáng buồn là số lượng tham số của mô hình 0.50 MobileNet-160 khá cao, số lượng tham số gấp đôi so với AlexNet và gần bằng Squeezenet) =&gt; 0.50 MobileNet-160 train nhanh hơn, predict cũng nhanh hơn so với Squeezenet và AlexNet, nhưng tốn bộ nhớ RAM hơn.</p>
+<p><img class="img-fluid" alt="Hình ảnh" src="/blog/2019-05-26-mobilenetv1/mobilenet_compare_2.png" loading="lazy"
+  
+   />
+
+
+<strong>So sánh 0.50 MobileNet-160 với Squeezenet và AlexNet trên tập ImageNet</strong></p>
+<p>So với mô hình Inception-v3 (mô hình thắng giải nhất cuộc thi ILSVRC 2015), MobileNet cho kết quả khá tốt, nhưng số tham số và số lượng phép tính toán nhỏ hơn rất nhiều</p>
+<p><img class="img-fluid" alt="Hình ảnh" src="/blog/2019-05-26-mobilenetv1/mobilenet_compare_3.png" loading="lazy"
+  
+   />
+
+
+<strong>So sánh Mobile net và Inception-v3 trên tập Stanford Dog</strong></p>
+<p>Các thí nghiệm ở dưới trên các tập dataset khác nhau chứng minh mức độ hiệu quả của MobileNet
+<img class="img-fluid" alt="Hình ảnh" src="/blog/2019-05-26-mobilenetv1/mobilenet_compare_4.png" loading="lazy"
+  
+   />
+
+
+<strong>GPS Localization Via Photos</strong></p>
+<p><img class="img-fluid" alt="Hình ảnh" src="/blog/2019-05-26-mobilenetv1/mobilenet_compare_5.png" loading="lazy"
+  
+   />
+
+
+<strong>Face Attribute Classification</strong></p>
+<p><img class="img-fluid" alt="Hình ảnh" src="/blog/2019-05-26-mobilenetv1/mobilenet_compare_6.png" loading="lazy"
+  
+   />
+
+
+<strong>MMicrosoft COCO Object Detection Dataset</strong></p>
+<p><img class="img-fluid" alt="Hình ảnh" src="/blog/2019-05-26-mobilenetv1/mobilenet_compare_7.png" loading="lazy"
+  
+   />
+
+
+<strong>Face Recognition</strong></p>
+<h1 id="kết-luận">Kết luận<a class="anchor ms-1" href="#kết-luận"><i class="fas fa-link"></i></a></h1>
+<p>MobileNet cho kết quả tốt ngang ngữa các state-of-the-art thắng giải nhất ở quá khứ, nhưng với mô hình có số lượng tham số nhỏ hơn và số phép tính toán ít hơn. Điều này đạt được là nhờ vào việc sử dụng Depthwise Separable Convolution.</p>
+<p>Cảm ơn các bạn đã theo dõi bài viết, có chỗ nào bạn chưa rõ hoặc mình viết bị sai, các bạn vui lòng để lại comment để mình sửa lại cho đúng.</p>
+</div></div>
+  <div class="card-footer"><div class="post-navs d-flex justify-content-evenly"><div class="post-nav post-prev">
+    <i class="fas fa-fw fa-chevron-left"></i>
+    <a href="/blog/2019-05-26-contours/">Contour
+</a>
+  </div><div class="post-nav post-next">
+    <a href="/blog/2019-05-27-alexnet/">Tìm Hiểu Mạng AlexNet, Mô Hình Giành Chiến Thắng Tại Cuộc Thi ILSVRC 2012
+</a>
+    <i class="fas fa-fw fa-chevron-right"></i>
+  </div></div></div>
+</article><div class="card component row post-comments" id="post-comments">
+  <div class="card-header">
+    <h2 class="card-title">Comments</h2>
+  </div>
+  <div class="card-body"><script src="https://utteranc.es/client.js"
+  repo="AlexBlack2202/utterances"
+  issue-term="pathname"
+  label="comment"
+  theme="github-light"
+  crossorigin="anonymous"
+  async>
+</script></div>
+</div></div>
+</div><aside class="col-lg-4 sidebar d-flex">
+  <div class="container d-flex flex-column">
+    
+    <section class="card row text-center profile component">
+  <div class="card-body">
+    <div class="col-12 d-flex align-items-center justify-content-center"><img class="profile-avatar rounded-circle" alt="Đặng Thị Hằng | Phạm Duy Tùng" src="/images/profile.webp" loading="lazy"
+   width="736" height="920"
+   />
+</div>
+    <div class="col-12 profile-meta"><div class="profile-name">Đặng Thị Hằng | Phạm Duy Tùng</div><div class="profile-bio">Gopher, CShaper, Pythoner, Full Stack Engineer.</div><div class="profile-company"><i class="fas fa-fw fa-building"></i>MWG</div><div class="profile-location"><i class="fas fa-fw fa-map-marker-alt"></i>Earth</div><div class="profile-about"><i class="fas fa-fw fa-user"></i><a href="/about/">About</a></div><div class="profile-contact"><i class="fas fa-fw fa-question-circle"></i><a href="/contact/">Contact Us</a></div>
+</div>
+  </div>
+</section>
+  <div class="post-toc row mb-4 card component" id="postTOC">
+  <div class="card-header">
+    <h2 class="card-title">Contents</h2>
+  </div>
+  <div class="card-body">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#mô-hình-kiến-trúc">Mô hình kiến trúc</a></li>
+    <li><a href="#depthwise-separable-convolution">Depthwise Separable Convolution</a></li>
+    <li><a href="#làm-mô-hình-gọn-nhẹ-hơn-nữa">Làm mô hình gọn nhẹ hơn nữa</a></li>
+  </ul>
+</nav>
+  </div>
+</div><section class="recent-posts row card component">
+  <div class="card-header">
+    <h2 class="card-title">Recent Posts</h2>
+  </div>
+  <div class="card-body">
+    <ul class="post-list"><li>
+        <a href="/blog/2021-11-06-some-way-make-momey-from-web-scrapping/">Một Số Cách Kiếm Thêm Thu Nhập Từ Cách Cào Dữ Liệu
+</a>
+      </li><li>
+        <a href="/blog/2021-08-12-china_chess_alpha_beta_ai/">Xây Dựng Chương Trình AI Đơn Giản Cho Game Cờ Tướng
+</a>
+      </li><li>
+        <a href="/blog/2021-07-28-pycaret-flaskapi/">Tìm Hiểu Package PyCaret Trong Python
+</a>
+      </li><li>
+        <a href="/blog/2021-07-02-mo-hinh-phan-quyen/">Mô Hình Phân Quyền - Access Control
+</a>
+      </li><li>
+        <a href="/blog/2021-05-30-upgrade-wls-to-wls2/">Nâng Cấp WSL Lên Bản WSL 2 Trên Window 10
+</a>
+      </li></ul>
+  </div>
+</section><section class="series-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="/series">Series</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="/series/kh%C3%B3a-h%E1%BB%8Dc-c&#43;&#43;-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa học c&#43;&#43; căn bản">
+            Khóa học c&#43;&#43; căn bản<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="/series/machine-learning-dataset/" class="badge rounded post-taxonomy" title="Machine learning dataset">
+            Machine learning dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a><a href="/series/kh%C3%B3a-h%E1%BB%8Dc-python-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa học python căn bản">
+            Khóa học python căn bản<span class="badge badge-sm text-white bg-accent ms-1">1</span></a></div>
+      </div>
+    </section><section class="tags-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="/tags">Tags</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="/tags/machine-learning/" class="badge rounded post-taxonomy" title="Machine learning">
+            Machine learning<span class="badge badge-sm text-white bg-accent ms-1">38</span></a><a href="/tags/deeplearning/" class="badge rounded post-taxonomy" title="Deeplearning">
+            Deeplearning<span class="badge badge-sm text-white bg-accent ms-1">20</span></a><a href="/tags/deep-learning/" class="badge rounded post-taxonomy" title="Deep learning">
+            Deep learning<span class="badge badge-sm text-white bg-accent ms-1">15</span></a><a href="/tags/python/" class="badge rounded post-taxonomy" title="python">
+            python<span class="badge badge-sm text-white bg-accent ms-1">10</span></a><a href="/tags/opencv/" class="badge rounded post-taxonomy" title="opencv">
+            opencv<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="/tags/c&#43;&#43;/" class="badge rounded post-taxonomy" title="c&#43;&#43;">
+            c&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/object-detector/" class="badge rounded post-taxonomy" title="object detector">
+            object detector<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/alexnet/" class="badge rounded post-taxonomy" title="AlexNet">
+            AlexNet<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="/tags/d%E1%BB%B1-%C4%91o%C3%A1n/" class="badge rounded post-taxonomy" title="dự đoán">
+            dự đoán<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="/tags/forecast/" class="badge rounded post-taxonomy" title="forecast">
+            forecast<span class="badge badge-sm text-white bg-accent ms-1">3</span></a></div>
+      </div>
+    </section>
+    
+  </div>
+</aside>
+</div>
+    </main><footer class="footer mt-auto py-3 text-center container"><ul class="nav justify-content-between footer-memu mb-3"><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Support
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-github"></i>Repository
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-comments"></i>Discussions
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">Features Request
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">Bug Report
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/contact/"><i class="fas fa-fw fa-info-circle"></i>Contact Us
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/faq/"><i class="fas fa-fw fa-question-circle"></i>FAQs
+</a>
+        </li></ul></li><li class="nav-item"><li class="nav-item">
+      <a class="nav-link" target="_blank" rel="noopener noreferrer">Docs
+</a>
+    </li></li><li class="nav-item"><li class="nav-item">
+      <a class="nav-link" target="_blank" rel="noopener noreferrer">Features
+</a>
+    </li></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Demo
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">Netlify
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">China
+</a>
+        </li></ul></li></ul>
+<div class="copyright mb-2">
+  Copyright © 2016-2022 Phạm Duy Tùng. All Rights Reserved.
+</div>
+<div class="powered-by mb-2">
+  Website chia sẻ kiến thức của Phạm Duy Tùng và Đặng Thị Hằng. Vui lòng liên hệ email alexblack2202@gmail.com nếu bạn có thông tin cần trao đổi.
+</div></footer>
+<script src="/js/main.0f06b653e090cf5f3e595cc4f3150328397d377ee5b405d0803057801eb4f3e5.js" integrity="sha256-Dwa2U&#43;CQz18&#43;WVzE8xUDKDl9N37ltAXQgDBXgB608&#43;U=" crossorigin="anonymous" defer></script><script src="/js/icons.min.8ddcaafc364ff0296c2209c5495287f0de039b852da9b24847f94c198b7639b6.js" integrity="sha256-jdyq/DZP8ClsIgnFSVKH8N4Dm4UtqbJIR/lMGYt2ObY=" crossorigin="anonymous" defer></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('\/service-worker.js').then(function(reg) {
+      console.log('Successfully registered service worker', reg);
+    }).catch(function(err) {
+      console.warn('Error whilst registering service worker', err);
+    });
+  });
+}
+</script><script src="/js/viewer.min.652118a9fbf3403cdfde4026209f97ace22f9e334f0b45a33431a221b3db46a8.js" integrity="sha256-ZSEYqfvzQDzf3kAmIJ&#43;XrOIvnjNPC0WjNDGiIbPbRqg=" crossorigin="anonymous" defer></script><script defer src="/js/katex.min.a575e93a07f02f7e58ee9002aea3b4e75163d4fa8ea3a627e90e7fafd5c718fa.js" integrity="sha256-pXXpOgfwL35Y7pACrqO051Fj1PqOo6Yn6Q5/r9XHGPo=" crossorigin="anonymous"></script>
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-114911596-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+</body>
+</html>

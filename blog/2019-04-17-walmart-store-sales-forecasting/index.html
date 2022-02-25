@@ -1,0 +1,893 @@
+<!doctype html><html lang="en" data-palette="blue"
+   data-mode="dark">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dự đoán doanh số bán của các cửa hàng walmart - Phạm Duy Tùng Machine Learning Blog</title><link rel="apple-touch-icon" href="/images/icons/icon-180x180.png" sizes="180x180">
+<link rel="icon" href="/images/icons/icon-32x32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="/images/icons/icon-16x16.png" sizes="16x16" type="image/png">
+<link rel="icon" href="/images/icons/favicon.ico">
+<link rel="manifest" href="/manifest.json">
+<meta name="keywords" content="" />
+<meta name="description" content="Dữ liệu bạn có là lịch sử bán hàng của 45 cửa hàng Walmart nằm ở các vị trí các nhau. Nhiệm vụ của chúng ta là sẽ dự đoán số bán của mỗi sản phẩm trong 45 cửa hàng trên." /><meta name="robots" content="index, follow" /><meta itemprop="name" content="Dự đoán doanh số bán của các cửa hàng walmart">
+<meta itemprop="description" content="Dữ liệu bạn có là lịch sử bán hàng của 45 cửa hàng Walmart nằm ở các vị trí các nhau. Nhiệm vụ của chúng ta là sẽ dự đoán số bán của mỗi sản phẩm trong 45 cửa hàng trên."><meta itemprop="datePublished" content="2019-04-15T00:09:00+03:00" />
+<meta itemprop="dateModified" content="2019-04-15T00:09:00+03:00" />
+<meta itemprop="wordCount" content="3548">
+<meta itemprop="keywords" content="walmart,forecast,dự đoán," /><meta property="og:title" content="Dự đoán doanh số bán của các cửa hàng walmart" />
+<meta property="og:description" content="Dữ liệu bạn có là lịch sử bán hàng của 45 cửa hàng Walmart nằm ở các vị trí các nhau. Nhiệm vụ của chúng ta là sẽ dự đoán số bán của mỗi sản phẩm trong 45 cửa hàng trên." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="/blog/2019-04-17-walmart-store-sales-forecasting/" /><meta property="article:section" content="blog" />
+<meta property="article:published_time" content="2019-04-15T00:09:00+03:00" />
+<meta property="article:modified_time" content="2019-04-15T00:09:00+03:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Dự đoán doanh số bán của các cửa hàng walmart"/>
+<meta name="twitter:description" content="Dữ liệu bạn có là lịch sử bán hàng của 45 cửa hàng Walmart nằm ở các vị trí các nhau. Nhiệm vụ của chúng ta là sẽ dự đoán số bán của mỗi sản phẩm trong 45 cửa hàng trên."/>
+<meta property="og:image" content="/images/logo.png"/>
+  <meta name="twitter:image" content="/images/logo.png"/><link rel="stylesheet" href="/css/main.min.507afbe6e4670fa3e961a0b35816b5daeb36029866fd6bd7b9d7871fcf88faa5.css" integrity="sha256-UHr75uRnD6PpYaCzWBa12us2Aphm/WvXudeHH8&#43;I&#43;qU=" crossorigin="anonymous"><link rel="stylesheet" href="/css/katex.min.d080a89e03e1eb850f547d835c186b4273f69879aa497eb8b0e88c1578bf1f0b.css" integrity="sha256-0ICongPh64UPVH2DXBhrQnP2mHmqSX64sOiMFXi/Hws=" crossorigin="anonymous">
+<link rel="stylesheet" href="/css/viewer.min.3d228794bcedbbfa0412beb8fbc1ec6973202945e42af7004f742a4d7bd620ab.css" integrity="sha256-PSKHlLztu/oEEr64&#43;8HsaXMgKUXkKvcAT3QqTXvWIKs=" crossorigin="anonymous"></head>
+  <body><script>const items=['mode','palette'];items.forEach(function(a){const b=localStorage.getItem('hbs-'+a);b&&document.body.parentElement.setAttribute('data-'+a,b)})</script><header><nav class="navbar top-app-bar top-app-bar-expand-lg fixed-top">
+  <div class="container">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <i class="fas fa-bars"></i>
+    </button><a class="navbar-brand flex-grow-1 flex-lg-grow-0 text-center text-lg-start mx-auto me-lg-3" href="/"><img class="logo" alt="Logo" src="/images/logo.webp" loading="lazy"
+   width="400" height="400"
+   />
+HOME
+    </a>
+    <div class="offcanvas offcanvas-bottom surface" tabindex="-1" id="offcanvasSocialShare" aria-labelledby="offcanvasSocialShare">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Share</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body">
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Twitter Share Button"
+      target="_blank" href="https://twitter.com/intent/tweet?title=D%e1%bb%b1%20%c4%91o%c3%a1n%20doanh%20s%e1%bb%91%20b%c3%a1n%20c%e1%bb%a7a%20c%c3%a1c%20c%e1%bb%ada%20h%c3%a0ng%20walmart&url=%2fblog%2f2019-04-17-walmart-store-sales-forecasting%2f">
+      <i class="fab fa-fw fa-twitter"></i> Twitter
+    </a>
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Facebook Share Button"
+      target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=%2fblog%2f2019-04-17-walmart-store-sales-forecasting%2f">
+      <i class="fab fa-fw fa-facebook-f"></i> Facebook
+    </a>
+  </div>
+</div>
+    <button class="navbar-settings" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSettings"
+  aria-controls="offcanvasSettings" aria-label="Toggle settings">
+  <i class="fas fa-ellipsis-v"></i>
+</button>
+
+<div class="offcanvas offcanvas-end surface h-100" tabindex="-1" id="offcanvasSettings" aria-labelledby="offcanvasSettings">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Settings</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body d-flex flex-column">
+
+
+
+<section class="setting">
+  <form class="font-size-switcher-form row">
+    <div class="col-auto">
+      <label for="fontSize" class="form-label"><i class="fas fa-fw fa-font"></i> Font Size</label>
+    </div>
+    <div class="col-auto ms-auto">
+      <input type="range" class="form-range" min="-2" max="2" id="fontSize">
+    </div>
+  </form>
+</section>
+
+
+<section class="setting palettes">
+  <form class="row">
+    <div class="col-auto">
+      <label><i class="fas fa-fw fa-palette"></i> Palette</label>
+    </div>
+    <div class="col-auto ms-auto">
+      <a id="btnPalette" class="btn btn-sm btn-outline-primary" role="button" aria-label="palettePicker">
+        <i class="fas fa-eye-dropper"></i>
+      </a>
+    </div>
+  </form>
+  <div class="mt-2 d-flex justify-content-between visually-hidden" id="palettePicker"><button type="button" id="palette-blue" aria-label="Blue"
+        class="btn btn-sm w-100 palette" data-palette="blue">
+      </button><button type="button" id="palette-blue-gray" aria-label="Blue Gray"
+        class="btn btn-sm w-100 palette" data-palette="blue-gray">
+      </button><button type="button" id="palette-brown" aria-label="Brown"
+        class="btn btn-sm w-100 palette" data-palette="brown">
+      </button><button type="button" id="palette-cyan" aria-label="Cyan"
+        class="btn btn-sm w-100 palette" data-palette="cyan">
+      </button><button type="button" id="palette-green" aria-label="Green"
+        class="btn btn-sm w-100 palette" data-palette="green">
+      </button><button type="button" id="palette-indigo" aria-label="Indigo"
+        class="btn btn-sm w-100 palette" data-palette="indigo">
+      </button><button type="button" id="palette-orange" aria-label="Orange"
+        class="btn btn-sm w-100 palette" data-palette="orange">
+      </button><button type="button" id="palette-pink" aria-label="Pink"
+        class="btn btn-sm w-100 palette" data-palette="pink">
+      </button><button type="button" id="palette-purple" aria-label="Purple"
+        class="btn btn-sm w-100 palette" data-palette="purple">
+      </button><button type="button" id="palette-red" aria-label="Red"
+        class="btn btn-sm w-100 palette" data-palette="red">
+      </button><button type="button" id="palette-teal" aria-label="Teal"
+        class="btn btn-sm w-100 palette" data-palette="teal">
+      </button><button type="button" id="palette-yellow" aria-label="Yellow"
+        class="btn btn-sm w-100 palette" data-palette="yellow">
+      </button></div>
+</section>
+<section class="setting actions d-flex justify-content-around mt-auto overflow-auto">
+  <a role="button" class="action action-go-back" href="javascript: window.history.back();">
+    <span class="action-icon"><i class="fas fa-2x fa-arrow-left"></i></span> Go back
+  </a>
+  <a role="button" class="action action-reload-page">
+    <span class="action-icon"><i class="fas fa-2x fa-redo-alt"></i></span> Reload
+  </a>
+  <a role="button" class="action action-copy-url">
+    <span class="action-icon"><i class="fas fa-2x fa-link"></i></span> Copy URL
+  </a><a class="action action-social-share" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSocialShare"
+    aria-controls="offcanvasSocialShare" aria-label="Toggle social share">
+    <span class="action-icon"><i class="fas fa-2x fa-share-alt"></i></span> Share
+  </a></section>
+
+</div>
+</div>
+
+    <div class="collapse navbar-collapse" tabindex="-1" id="navbarSupportedContent" aria-labelledby="navbarSupportedContent">
+      <form class="search-bar my-1" action="/search">
+  <div class="input-group input-group-sm">
+    <span class="btn btn-search disabled position-absolute left-0"><i class="fas fa-fw fa-search"></i></span>
+    <input class="form-control rounded-pill" name="q" type="search" aria-label="Search">
+  </div>
+</form>
+      <ul class="navbar-nav ms-auto"><li class="nav-item">
+          <a class="nav-link" href="/series/">
+            <i class="fas fa-fw fa-columns"></i>Series
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="/archives/">
+            <i class="fas fa-fw fa-file-archive"></i>Archives
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="/categories/">
+            <i class="fas fa-fw fa-folder"></i>Categories
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="/tags/">
+            <i class="fas fa-fw fa-tags"></i>Tags
+          </a>
+        </li><li class="nav-item dropdown">
+          <a class="nav-link" id="navbarDropdownSupport" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-fw fa-chevron-circle-down"></i>Support
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdownSupport"><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Repository
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Discussions
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Features Request
+              </a>
+            </li><li><hr class="dropdown-divider"></li><li>
+              <a class="dropdown-item"
+                href="/faq/">
+                FAQs
+              </a>
+            </li></ul>
+        </li></ul>
+    </div>
+  </div>
+</nav>
+</header>
+<main role="main" class="container">
+      <div class="row content">
+<div class="col-lg-8">
+  <div class="container"><nav class="row card component" aria-label="breadcrumb">
+  <div class="card-body">
+    <ol class="breadcrumb "><li class="breadcrumb-item"><a href="/">Home</a></li><li class="breadcrumb-item"><a href="/blog/">Blogs</a></li><li class="breadcrumb-item active">Dự Đoán Doanh Số Bán Của Các Cửa Hàng Walmart</li></ol>
+  </div>
+</nav>
+<div class="post-panel-wrapper">
+  <div class="d-flex flex-column component rounded post-panel">
+    
+    <a class="action action-panel-toggler" role="button" title="Panel toggler">
+      <i class="fas fa-fw fa-chevron-circle-down"></i>
+    </a>
+    <a id="sidebarToggler" class="action d-none d-lg-block" role="button" title="Sidebar toggler">
+  <i class="fas fa-fw fa-expand-alt" data-fa-transform="rotate-45"></i>
+</a>
+
+    
+
+    
+    
+    <a class="action" href="#post-comments" role="button" aria-label="Comments" title="Comments">
+  <i class="fas fa-fw fa-comments"></i>
+</a>
+    <a class="action" href="#postTOC" aria-controls="Table of contents" role="button" title="Table of contents">
+  <i class="fas fa-fw fa-list-alt"></i>
+</a>
+    
+  </div>
+</div>
+<article class="row card component mb-4 post">
+  <div class="card-header ">
+    <h1 class="card-title post-title">Dự Đoán Doanh Số Bán Của Các Cửa Hàng Walmart
+</h1>
+  </div>
+  <div class="card-body"><div class="post-meta">
+  <span class="post-date" title="created on 2019-04-15 04:09:00 &#43;0700 &#43;07.">
+    Apr 15, 2019
+  </span><span class="post-reading-time">
+    17 min read
+  </span><span class="post-taxonomies"><a href="/tags/walmart/" class="badge post-taxonomy">walmart</a><a href="/tags/forecast/" class="badge post-taxonomy">forecast</a><a href="/tags/d%E1%BB%B1-%C4%91o%C3%A1n/" class="badge post-taxonomy">dự đoán</a></span>
+</div>
+<div class="post-content mb-3"><h1 id="nghiên-cứu-dữ-liệu">Nghiên cứu dữ liệu<a class="anchor ms-1" href="#nghiên-cứu-dữ-liệu"><i class="fas fa-link"></i></a></h1>
+<p>Trong thực tế, Walmart đã chạy các chương trình khuyến mãi trong các ngày lễ lớn trong năm. Có 4 ngày lễ lớn đó là Siêu cúp bóng bầu dục Mỹ (Super Bowl - tổ chức vào chủ nhật đầu tiên của tháng Hai. Đây là một sự kiện thể thao lớn và ngày tổ chức Super Bowl được người Mỹ coi là ngày lễ quốc gia của Hoa Kỳ (theo wiki <a href="https://vi.wikipedia.org/wiki/Super_Bowl%29%29" target="_blank" rel="noopener noreferrer">https://vi.wikipedia.org/wiki/Super_Bowl))</a>, ngày lễ lao động (Labor Day - ngày một tháng 5), lễ tạ ơn (Thanksgiving, ngày lễ tạ ơn ở Mỹ được tổ chức vào ngày thứ Năm lần thứ tư của tháng 11, còn ở Canada ngày lễ tạ ơn được tổ chức vào ngày thứ hai lần thứ hai của tháng 10, theo wiki <a href="https://en.wikipedia.org/wiki/Thanksgiving%29" target="_blank" rel="noopener noreferrer">https://en.wikipedia.org/wiki/Thanksgiving)</a>, lễ giáng sinh (Christmas ngày 24 và 25 tháng 12 theo wiki <a href="https://en.wikipedia.org/wiki/Christmas" target="_blank" rel="noopener noreferrer">https://en.wikipedia.org/wiki/Christmas</a> ). Những tuần có chứa những ngày lễ lớn này được đánh trọng số gấp 5 lần những tuần khác. Chúng ta phải xây dựng mô hình để mô hình hoá các tác động của việc giảm giá trong các tuần lễ này khi không có dữ liệu lịch sử đầy đủ.</p>
+<p>Tập dữ liệu được cung cấp bao gồm:</p>
+<p>Tập train: chứa dữ liệu số bán từ 05-02-2010 đến 01-11-2012. Các trường dữ liệu là: store number - mã cửa hàng, Dept number - mã sản phẩm, Date - Tuần, Weekly_Sales - số bán, IsHoliday - Nếu tuần đó có chứa các holidate thì đánh 1 ngược lại đánh 0.</p>
+<p>Tập test: Chứa dữ liệu test, có các cột thuộc tính như tập train</p>
+<p>Tập features: Chứa thông tin thêm về của hàng, bao gồm store - mã cửa hàng, Date - ngày, Temperature - Nhiệt độ, Fuel_Price - giá dầu (ở mỹ, mỗi khu vực khác nhau sẽ có giá nhiên liệu khác nhau), MarkDown1, MarkDown2,&hellip; , MarkDown5 - một chỉ số gì đó mà tác giả không cung cấp định nghĩa cho chúng ta, CPI - chỉ số giá tiêu dùng, Unemployment - tình trạng thất nghiệp, IsHoliday - Tuần có chứa ngày nghỉ.</p>
+<h1 id="phân-tích-dữ-liệu">Phân tích dữ liệu<a class="anchor ms-1" href="#phân-tích-dữ-liệu"><i class="fas fa-link"></i></a></h1>
+<p>Mình sẽ import một số thư viện cần thiết</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln"> 1</span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span> 
+<span class="ln"> 2</span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="ln"> 3</span>
+<span class="ln"> 4</span><span class="c1">#Do some statistics</span>
+<span class="ln"> 5</span><span class="kn">from</span> <span class="nn">scipy.misc</span> <span class="kn">import</span> <span class="n">imread</span>
+<span class="ln"> 6</span><span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">sparse</span>
+<span class="ln"> 7</span><span class="kn">import</span> <span class="nn">scipy.stats</span> <span class="k">as</span> <span class="nn">ss</span>
+<span class="ln"> 8</span><span class="kn">import</span> <span class="nn">math</span>
+<span class="ln"> 9</span>
+<span class="ln">10</span><span class="c1">#Nice graphing tools</span>
+<span class="ln">11</span><span class="kn">import</span> <span class="nn">matplotlib</span>
+<span class="ln">12</span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="ln">13</span><span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
+<span class="ln">14</span>
+</code></pre></div><p>Đọc các file data lên, merge các file lại với nhau</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln"> 1</span>
+<span class="ln"> 2</span>
+<span class="ln"> 3</span><span class="n">train</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;data/train.csv&#39;</span><span class="p">)</span>
+<span class="ln"> 4</span><span class="n">test</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;data/test.csv&#39;</span><span class="p">)</span>
+<span class="ln"> 5</span><span class="n">feature</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;data/features.csv&#39;</span><span class="p">)</span>
+<span class="ln"> 6</span>
+<span class="ln"> 7</span><span class="n">train</span> <span class="o">=</span> <span class="n">train</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">feature</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s1">&#39;left&#39;</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Store&#39;</span><span class="p">,</span><span class="s1">&#39;Date&#39;</span><span class="p">])</span>
+<span class="ln"> 8</span><span class="n">test</span> <span class="o">=</span> <span class="n">test</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">feature</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s1">&#39;left&#39;</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Store&#39;</span><span class="p">,</span><span class="s1">&#39;Date&#39;</span><span class="p">])</span>
+<span class="ln"> 9</span>
+<span class="ln">10</span>
+<span class="ln">11</span><span class="c1"># Merge in store info</span>
+<span class="ln">12</span><span class="n">stores</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&#34;data/stores.csv&#34;</span><span class="p">)</span>
+<span class="ln">13</span><span class="n">train</span> <span class="o">=</span> <span class="n">train</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">stores</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s1">&#39;left&#39;</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="s1">&#39;Store&#39;</span><span class="p">)</span>
+<span class="ln">14</span><span class="n">test</span> <span class="o">=</span> <span class="n">test</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">stores</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s1">&#39;left&#39;</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="s1">&#39;Store&#39;</span><span class="p">)</span>
+<span class="ln">15</span><span class="nb">print</span><span class="p">(</span><span class="n">train</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
+</code></pre></div><p>Kết quả</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span>   <span class="n">Store</span>  <span class="n">Dept</span>        <span class="n">Date</span>  <span class="n">Weekly_Sales</span>  <span class="n">IsHoliday_x</span>  <span class="n">Temperature</span>  <span class="n">Fuel_Price</span>  <span class="n">MarkDown1</span>  <span class="n">MarkDown2</span>  <span class="n">MarkDown3</span>  <span class="n">MarkDown4</span>  <span class="n">MarkDown5</span>         <span class="n">CPI</span>  <span class="n">Unemployment</span>  <span class="n">IsHoliday_y</span> <span class="n">Type</span>    <span class="n">Size</span>  <span class="n">Split</span>
+<span class="ln">2</span><span class="mi">0</span>      <span class="mi">1</span>     <span class="mi">1</span>  <span class="mi">2010</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">05</span>      <span class="mf">24924.50</span>        <span class="kc">False</span>        <span class="mf">42.31</span>       <span class="mf">2.572</span>        <span class="n">NaN</span>        <span class="n">NaN</span>        <span class="n">NaN</span>        <span class="n">NaN</span>        <span class="n">NaN</span>  <span class="mf">211.096358</span>         <span class="mf">8.106</span>        <span class="kc">False</span>    <span class="n">A</span>  <span class="mi">151315</span>  <span class="n">Train</span>
+<span class="ln">3</span><span class="mi">1</span>      <span class="mi">1</span>     <span class="mi">1</span>  <span class="mi">2010</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">12</span>      <span class="mf">46039.49</span>         <span class="kc">True</span>        <span class="mf">38.51</span>       <span class="mf">2.548</span>        <span class="n">NaN</span>        <span class="n">NaN</span>        <span class="n">NaN</span>        <span class="n">NaN</span>        <span class="n">NaN</span>  <span class="mf">211.242170</span>         <span class="mf">8.106</span>         <span class="kc">True</span>    <span class="n">A</span>  <span class="mi">151315</span>  <span class="n">Train</span>
+<span class="ln">4</span><span class="mi">2</span>      <span class="mi">1</span>     <span class="mi">1</span>  <span class="mi">2010</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">19</span>      <span class="mf">41595.55</span>        <span class="kc">False</span>        <span class="mf">39.93</span>       <span class="mf">2.514</span>        <span class="n">NaN</span>        <span class="n">NaN</span>        <span class="n">NaN</span>        <span class="n">NaN</span>        <span class="n">NaN</span>  <span class="mf">211.289143</span>         <span class="mf">8.106</span>        <span class="kc">False</span>    <span class="n">A</span>  <span class="mi">151315</span>  <span class="n">Train</span>
+<span class="ln">5</span><span class="mi">3</span>      <span class="mi">1</span>     <span class="mi">1</span>  <span class="mi">2010</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">26</span>      <span class="mf">19403.54</span>        <span class="kc">False</span>        <span class="mf">46.63</span>       <span class="mf">2.561</span>        <span class="n">NaN</span>        <span class="n">NaN</span>        <span class="n">NaN</span>        <span class="n">NaN</span>        <span class="n">NaN</span>  <span class="mf">211.319643</span>         <span class="mf">8.106</span>        <span class="kc">False</span>    <span class="n">A</span>  <span class="mi">151315</span>  <span class="n">Train</span>
+<span class="ln">6</span><span class="mi">4</span>      <span class="mi">1</span>     <span class="mi">1</span>  <span class="mi">2010</span><span class="o">-</span><span class="mi">03</span><span class="o">-</span><span class="mi">05</span>      <span class="mf">21827.90</span>        <span class="kc">False</span>        <span class="mf">46.50</span>       <span class="mf">2.625</span>        <span class="n">NaN</span>        <span class="n">NaN</span>        <span class="n">NaN</span>        <span class="n">NaN</span>        <span class="n">NaN</span>  <span class="mf">211.350143</span>         <span class="mf">8.106</span>        <span class="kc">False</span>    <span class="n">A</span>  <span class="mi">151315</span>  <span class="n">Train</span>
+</code></pre></div><p>Mới có 5 dòng đầu tiên mà thấy các chỉ số markdown Nan rồi.</p>
+<p>Chúng ta tiến hành một số phân tích dữ liệu. À, Mình sẽ merge dữ liệu train và test lại rồi phân tích thống kê</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">train</span><span class="p">,</span><span class="n">test</span><span class="p">],</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="c1"># Join train and test</span>
+<span class="ln">2</span>
+<span class="ln">3</span><span class="nb">print</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">describe</span><span class="p">())</span>
+<span class="ln">4</span>
+</code></pre></div><p>Kết quả</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span>                 <span class="n">CPI</span>           <span class="n">Dept</span>     <span class="n">Fuel_Price</span>      <span class="n">MarkDown1</span>      <span class="n">MarkDown2</span>      <span class="n">MarkDown3</span>      <span class="n">MarkDown4</span>      <span class="n">MarkDown5</span>          <span class="n">Size</span>          <span class="n">Store</span>    <span class="n">Temperature</span>   <span class="n">Unemployment</span>   <span class="n">Weekly_Sales</span>
+<span class="ln">2</span><span class="n">count</span>  <span class="mf">498472.000000</span>  <span class="mf">536634.000000</span>  <span class="mf">536634.000000</span>  <span class="mf">265596.000000</span>  <span class="mf">197685.000000</span>  <span class="mf">242326.000000</span>  <span class="mf">237143.000000</span>  <span class="mf">266496.000000</span>  <span class="mf">536634.00000</span>  <span class="mf">536634.000000</span>  <span class="mf">536634.000000</span>  <span class="mf">498472.000000</span>  <span class="mf">421570.000000</span>
+<span class="ln">3</span><span class="n">mean</span>      <span class="mf">172.090481</span>      <span class="mf">44.277301</span>       <span class="mf">3.408310</span>    <span class="mf">7438.004144</span>    <span class="mf">3509.274827</span>    <span class="mf">1857.913525</span>    <span class="mf">3371.556866</span>    <span class="mf">4324.021158</span>  <span class="mf">136678.55096</span>      <span class="mf">22.208621</span>      <span class="mf">58.771762</span>       <span class="mf">7.791888</span>   <span class="mf">15981.258123</span>
+<span class="ln">4</span><span class="n">std</span>        <span class="mf">39.542149</span>      <span class="mf">30.527358</span>       <span class="mf">0.430861</span>    <span class="mf">9411.341379</span>    <span class="mf">8992.047197</span>   <span class="mf">11616.143274</span>    <span class="mf">6872.281734</span>   <span class="mf">13549.262124</span>   <span class="mf">61007.71180</span>      <span class="mf">12.790580</span>      <span class="mf">18.678716</span>       <span class="mf">1.865076</span>   <span class="mf">22711.183519</span>
+<span class="ln">5</span><span class="nb">min</span>       <span class="mf">126.064000</span>       <span class="mf">1.000000</span>       <span class="mf">2.472000</span>   <span class="o">-</span><span class="mf">2781.450000</span>    <span class="o">-</span><span class="mf">265.760000</span>    <span class="o">-</span><span class="mf">179.260000</span>       <span class="mf">0.220000</span>    <span class="o">-</span><span class="mf">185.170000</span>   <span class="mf">34875.00000</span>       <span class="mf">1.000000</span>      <span class="o">-</span><span class="mf">7.290000</span>       <span class="mf">3.684000</span>   <span class="o">-</span><span class="mf">4988.940000</span>
+<span class="ln">6</span><span class="mi">25</span><span class="o">%</span>       <span class="mf">132.521867</span>      <span class="mf">18.000000</span>       <span class="mf">3.041000</span>    <span class="mf">2114.640000</span>      <span class="mf">72.500000</span>       <span class="mf">7.220000</span>     <span class="mf">336.240000</span>    <span class="mf">1570.112500</span>   <span class="mf">93638.00000</span>      <span class="mf">11.000000</span>      <span class="mf">45.250000</span>       <span class="mf">6.623000</span>    <span class="mf">2079.650000</span>
+<span class="ln">7</span><span class="mi">50</span><span class="o">%</span>       <span class="mf">182.442420</span>      <span class="mf">37.000000</span>       <span class="mf">3.523000</span>    <span class="mf">5126.540000</span>     <span class="mf">385.310000</span>      <span class="mf">40.760000</span>    <span class="mf">1239.040000</span>    <span class="mf">2870.910000</span>  <span class="mf">140167.00000</span>      <span class="mf">22.000000</span>      <span class="mf">60.060000</span>       <span class="mf">7.795000</span>    <span class="mf">7612.030000</span>
+<span class="ln">8</span><span class="mi">75</span><span class="o">%</span>       <span class="mf">213.748126</span>      <span class="mf">74.000000</span>       <span class="mf">3.744000</span>    <span class="mf">9303.850000</span>    <span class="mf">2392.390000</span>     <span class="mf">174.260000</span>    <span class="mf">3397.080000</span>    <span class="mf">5012.220000</span>  <span class="mf">202505.00000</span>      <span class="mf">33.000000</span>      <span class="mf">73.230000</span>       <span class="mf">8.549000</span>   <span class="mf">20205.852500</span>
+<span class="ln">9</span><span class="nb">max</span>       <span class="mf">228.976456</span>      <span class="mf">99.000000</span>       <span class="mf">4.468000</span>  <span class="mf">103184.980000</span>  <span class="mf">104519.540000</span>  <span class="mf">149483.310000</span>   <span class="mf">67474.850000</span>  <span class="mf">771448.100000</span>  <span class="mf">219622.00000</span>      <span class="mf">45.000000</span>     <span class="mf">101.950000</span>      <span class="mf">14.313000</span>  <span class="mf">693099.360000</span>
+</code></pre></div><p>Phân tích một chút:</p>
+<p>Bỏ qua cột Dept và Store vì nó là mã sản phẩm và mã của hàng, người ta thích đặt số bao nhiêu thì đặt.</p>
+<p>Các chỉ số MarkDown có độ lệch chuẩn khá cao.</p>
+<p>Nhiệt độ min là -7.29, max là 101.95, trung bình là 58, nên không thể là độ C được, có thể là độ F</p>
+<p>Xem thử hệ số tương quan giữa các column như thế nào</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln"> 1</span><span class="n">sns</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">style</span><span class="o">=</span><span class="s2">&#34;white&#34;</span><span class="p">)</span>
+<span class="ln"> 2</span>
+<span class="ln"> 3</span><span class="c1"># Compute the correlation matrix</span>
+<span class="ln"> 4</span><span class="n">corr</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">corr</span><span class="p">()</span>
+<span class="ln"> 5</span>
+<span class="ln"> 6</span><span class="c1"># Generate a mask for the upper triangle</span>
+<span class="ln"> 7</span><span class="n">mask</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">corr</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">bool</span><span class="p">)</span>
+<span class="ln"> 8</span><span class="n">mask</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">triu_indices_from</span><span class="p">(</span><span class="n">mask</span><span class="p">)]</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="ln"> 9</span>
+<span class="ln">10</span><span class="c1"># Set up the matplotlib figure</span>
+<span class="ln">11</span><span class="n">f</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">11</span><span class="p">,</span> <span class="mi">9</span><span class="p">))</span>
+<span class="ln">12</span>
+<span class="ln">13</span><span class="c1"># Generate a custom diverging colormap</span>
+<span class="ln">14</span><span class="n">cmap</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">diverging_palette</span><span class="p">(</span><span class="mi">220</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">as_cmap</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="ln">15</span>
+<span class="ln">16</span><span class="c1"># Draw the heatmap with the mask and correct aspect ratio</span>
+<span class="ln">17</span><span class="n">sns</span><span class="o">.</span><span class="n">heatmap</span><span class="p">(</span><span class="n">corr</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="n">mask</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mf">.3</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+<span class="ln">18</span>            <span class="n">square</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">linewidths</span><span class="o">=</span><span class="mf">.5</span><span class="p">,</span> <span class="n">cbar_kws</span><span class="o">=</span><span class="p">{</span><span class="s2">&#34;shrink&#34;</span><span class="p">:</span> <span class="mf">.5</span><span class="p">})</span>
+<span class="ln">19</span>
+<span class="ln">20</span><span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</code></pre></div><p><img class="img-fluid" alt="Hình ảnh" src="/blog/2019-04-17-walmart-store-sales-forecasting/walmart-corr.jpg" loading="lazy"
+  
+   />
+
+
+<strong>Hệ số tương quan giữa các cột trong dữ liệu</strong></p>
+<p>Phân tích một chút, chúng ta thấy rằng MarkDown5 hầu như không có liên quan gì đến các column còn lại. Hệ số trải từ -0.3 đến 0.3 chứng tỏ mổi quan hệ giữa các cột là khá lỏng lẻo. Chỉ số giá tiêu dùng tương quan tỷ lệ nghịch với tình trạng thất nghiệp (hợp lý không nhỉ). Kích thước cửa hàng càng bự thì bán càng nhiều (ok hiển nhiên), sản phẩm có mã càng lớn thì bán càng nhiều (? có lẽ là sản phẩm mới, người mỹ thích mua sản phẩm mới chăng). Và một vấn đề quan trọng là giá nhiên liệu, isHoliday, nhiệt độ không có mối tương quan với weekly sales. Chỉ số CPI và tình trạng thất nghiệp cũng ảnh hưởng không lớn với  weekly sales.</p>
+<p>Thử plot lên hình ảnh về số lượng bán và kích thước cửa hàng xem sao</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span><span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Size&#39;</span><span class="p">],</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;Weekly_Sales&#39;</span><span class="p">])</span>
+<span class="ln">2</span><span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</code></pre></div><p><img class="img-fluid" alt="Hình ảnh" src="/blog/2019-04-17-walmart-store-sales-forecasting/walmart-size-sales-coeff.jpg" loading="lazy"
+  
+   />
+
+
+<strong>Tương quan giữa số bán và kích thước cửa hàng</strong></p>
+<p>Nhìn vào hình trên, chúng ta thấy rằng cửa hàng có kích thước nhỏ số bán cũng không tăng đột biến khi gặp ngày lễ, cửa hàng kích thước siêu bự có tỷ lệ đột biến thấp, cửa hàng trung trung có đột biến, ở khúc size 125000 và số bán là 700000. Chúng ta hãy xem những ngày có số bán lớn rơi vào ngày nào.
+Dựa vào bảng desription ở phía trên đã phân tích, trung bình của số bán là 15981 và lệch chuẩn là 22711, cộng lại là  15981 + 22711 = 38692, nhìn trên đô thị thì phần đột biến khá lớn. Max là 700000, min là 0 (cái này nhìn hình, không phải số thực tế ở bảng mô tả), mình sẽ lấy ra những ngày có số bán lớn hơn 350000 (vượt qua ngưỡng trung bình + độ lệch chuẩn rất nhều -&gt; ngoại lệ là đây) xem những ngày đó là ngày gì</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span>
+<span class="ln">2</span><span class="nb">print</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;Weekly_Sales&#39;</span><span class="p">]</span> <span class="o">&gt;</span><span class="mi">350000</span><span class="p">]</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span>
+<span class="ln">3</span>
+</code></pre></div><p>In ra top 10 thằng đầu tiên</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln"> 1</span>
+<span class="ln"> 2</span>               <span class="n">CPI</span>        <span class="n">Date</span>  <span class="n">Dept</span>  <span class="n">Fuel_Price</span>  <span class="n">IsHoliday_x</span>  <span class="n">IsHoliday_y</span>  <span class="n">MarkDown1</span>  <span class="n">MarkDown2</span>  <span class="n">MarkDown3</span>  <span class="n">MarkDown4</span>  <span class="n">MarkDown5</span>    <span class="n">Size</span>  <span class="n">Split</span>  <span class="n">Store</span>  <span class="n">Temperature</span> <span class="n">Type</span>  <span class="n">Unemployment</span>  <span class="n">Weekly_Sales</span>
+<span class="ln"> 3</span><span class="mi">37201</span>   <span class="mf">126.669267</span>  <span class="mi">2010</span><span class="o">-</span><span class="mi">11</span><span class="o">-</span><span class="mi">26</span>    <span class="mi">72</span>       <span class="mf">2.752</span>         <span class="kc">True</span>         <span class="kc">True</span>        <span class="n">NaN</span>        <span class="n">NaN</span>        <span class="n">NaN</span>        <span class="n">NaN</span>        <span class="n">NaN</span>  <span class="mi">205863</span>  <span class="n">Train</span>      <span class="mi">4</span>        <span class="mf">48.08</span>    <span class="n">A</span>         <span class="mf">7.127</span>     <span class="mf">381072.11</span>
+<span class="ln"> 4</span><span class="mi">37253</span>   <span class="mf">129.836400</span>  <span class="mi">2011</span><span class="o">-</span><span class="mi">11</span><span class="o">-</span><span class="mi">25</span>    <span class="mi">72</span>       <span class="mf">3.225</span>         <span class="kc">True</span>         <span class="kc">True</span>     <span class="mf">561.45</span>     <span class="mf">137.88</span>   <span class="mf">83340.33</span>      <span class="mf">44.04</span>    <span class="mf">9239.23</span>  <span class="mi">205863</span>  <span class="n">Train</span>      <span class="mi">4</span>        <span class="mf">47.96</span>    <span class="n">A</span>         <span class="mf">5.143</span>     <span class="mf">385051.04</span>
+<span class="ln"> 5</span><span class="mi">88428</span>   <span class="mf">126.983581</span>  <span class="mi">2010</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">24</span>     <span class="mi">7</span>       <span class="mf">3.236</span>        <span class="kc">False</span>        <span class="kc">False</span>        <span class="n">NaN</span>        <span class="n">NaN</span>        <span class="n">NaN</span>        <span class="n">NaN</span>        <span class="n">NaN</span>  <span class="mi">126512</span>  <span class="n">Train</span>     <span class="mi">10</span>        <span class="mf">57.06</span>    <span class="n">B</span>         <span class="mf">9.003</span>     <span class="mf">406988.63</span>
+<span class="ln"> 6</span><span class="mi">95373</span>   <span class="mf">126.669267</span>  <span class="mi">2010</span><span class="o">-</span><span class="mi">11</span><span class="o">-</span><span class="mi">26</span>    <span class="mi">72</span>       <span class="mf">3.162</span>         <span class="kc">True</span>         <span class="kc">True</span>        <span class="n">NaN</span>        <span class="n">NaN</span>        <span class="n">NaN</span>        <span class="n">NaN</span>        <span class="n">NaN</span>  <span class="mi">126512</span>  <span class="n">Train</span>     <span class="mi">10</span>        <span class="mf">55.33</span>    <span class="n">B</span>         <span class="mf">9.003</span>     <span class="mf">693099.36</span>
+<span class="ln"> 7</span><span class="mi">95377</span>   <span class="mf">126.983581</span>  <span class="mi">2010</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">24</span>    <span class="mi">72</span>       <span class="mf">3.236</span>        <span class="kc">False</span>        <span class="kc">False</span>        <span class="n">NaN</span>        <span class="n">NaN</span>        <span class="n">NaN</span>        <span class="n">NaN</span>        <span class="n">NaN</span>  <span class="mi">126512</span>  <span class="n">Train</span>     <span class="mi">10</span>        <span class="mf">57.06</span>    <span class="n">B</span>         <span class="mf">9.003</span>     <span class="mf">404245.03</span>
+<span class="ln"> 8</span><span class="mi">95425</span>   <span class="mf">129.836400</span>  <span class="mi">2011</span><span class="o">-</span><span class="mi">11</span><span class="o">-</span><span class="mi">25</span>    <span class="mi">72</span>       <span class="mf">3.760</span>         <span class="kc">True</span>         <span class="kc">True</span>     <span class="mf">174.72</span>     <span class="mf">329.00</span>  <span class="mf">141630.61</span>      <span class="mf">79.00</span>    <span class="mf">1009.98</span>  <span class="mi">126512</span>  <span class="n">Train</span>     <span class="mi">10</span>        <span class="mf">60.68</span>    <span class="n">B</span>         <span class="mf">7.874</span>     <span class="mf">630999.19</span>
+<span class="ln"> 9</span><span class="mi">115222</span>  <span class="mf">126.669267</span>  <span class="mi">2010</span><span class="o">-</span><span class="mi">11</span><span class="o">-</span><span class="mi">26</span>    <span class="mi">72</span>       <span class="mf">3.162</span>         <span class="kc">True</span>         <span class="kc">True</span>        <span class="n">NaN</span>        <span class="n">NaN</span>        <span class="n">NaN</span>        <span class="n">NaN</span>        <span class="n">NaN</span>  <span class="mi">112238</span>  <span class="n">Train</span>     <span class="mi">12</span>        <span class="mf">47.66</span>    <span class="n">B</span>        <span class="mf">14.313</span>     <span class="mf">359995.60</span>
+<span class="ln">10</span><span class="mi">115274</span>  <span class="mf">129.836400</span>  <span class="mi">2011</span><span class="o">-</span><span class="mi">11</span><span class="o">-</span><span class="mi">25</span>    <span class="mi">72</span>       <span class="mf">3.622</span>         <span class="kc">True</span>         <span class="kc">True</span>    <span class="mf">5391.83</span>       <span class="mf">8.00</span>   <span class="mf">63143.29</span>      <span class="mf">49.27</span>    <span class="mf">2115.67</span>  <span class="mi">112238</span>  <span class="n">Train</span>     <span class="mi">12</span>        <span class="mf">53.25</span>    <span class="n">B</span>        <span class="mf">12.890</span>     <span class="mf">360140.66</span>
+<span class="ln">11</span><span class="mi">128984</span>  <span class="mf">182.544590</span>  <span class="mi">2010</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">24</span>     <span class="mi">7</span>       <span class="mf">3.141</span>        <span class="kc">False</span>        <span class="kc">False</span>        <span class="n">NaN</span>        <span class="n">NaN</span>        <span class="n">NaN</span>        <span class="n">NaN</span>        <span class="n">NaN</span>  <span class="mi">200898</span>  <span class="n">Train</span>     <span class="mi">14</span>        <span class="mf">30.59</span>    <span class="n">A</span>         <span class="mf">8.724</span>     <span class="mf">356867.25</span>
+<span class="ln">12</span><span class="mi">135665</span>  <span class="mf">182.783277</span>  <span class="mi">2010</span><span class="o">-</span><span class="mi">11</span><span class="o">-</span><span class="mi">26</span>    <span class="mi">72</span>       <span class="mf">3.039</span>         <span class="kc">True</span>         <span class="kc">True</span>        <span class="n">NaN</span>        <span class="n">NaN</span>        <span class="n">NaN</span>        <span class="n">NaN</span>        <span class="n">NaN</span>  <span class="mi">200898</span>  <span class="n">Train</span>     <span class="mi">14</span>        <span class="mf">46.15</span>    <span class="n">A</span>         <span class="mf">8.724</span>     <span class="mf">474330.10</span>
+<span class="ln">13</span>
+</code></pre></div><p>Nhìn vào bảng trên, chúng ta thấy rằng 10 ngày đầu tiên tập trung chủ yếu ở tháng 11 và tháng 12, tháng 12 là 24-25 tháng 12 -&gt; ngày noel, còn tháng 11 là 25-26 tháng 11 (ngày gì vậy ta, trong mô tả không thấy)
+Tra lịch thì ngày 25 tháng 11 năm 2011 trúng thứ sáu, tra trên mạng một thông tin khá quan trong là &ldquo;Black Friday sẽ rơi vào khoảng ngày 23-29 tháng 11&rdquo; -&gt; không nghi ngờ gì nữa có thể là ngày này đây.
+Thử tra tiếp ngày 26 tháng 11 năm 2010, cũng là thứ sáu luôn -&gt; ngày black friday và ngày noel có sức mua điên cuồng quá.</p>
+<p>Mình dùng một kỹ thuật nhỏ là giảm dần số bán, để ra số bán tối thiểu mà ngày black friday và ngày nodel vẫn còn giữ vị trí thống trị. Kỹ thuật khá đơn giản thôi, từ giá trị 350000, mỗi lần mình sẽ giảm đi 10000, và đếm số lần xuất hiện của các ngày, nếu có ngày nào đó nằm ngoài tuần chứa black friday và nodel thì mình dừng. Sau một hồi tìm kiếm và số bán đã xuất hiện, đó là 290000</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span><span class="nb">print</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;Weekly_Sales&#39;</span><span class="p">]</span> <span class="o">&gt;</span><span class="mi">290000</span><span class="p">,</span><span class="s2">&#34;Date&#34;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">())</span>
+</code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span><span class="mi">2010</span><span class="o">-</span><span class="mi">11</span><span class="o">-</span><span class="mi">26</span>    <span class="mi">16</span>
+<span class="ln">2</span><span class="mi">2011</span><span class="o">-</span><span class="mi">11</span><span class="o">-</span><span class="mi">25</span>    <span class="mi">14</span>
+<span class="ln">3</span><span class="mi">2010</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">24</span>     <span class="mi">8</span>
+<span class="ln">4</span><span class="mi">2011</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">23</span>     <span class="mi">3</span>
+<span class="ln">5</span><span class="mi">2010</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">05</span>     <span class="mi">1</span>
+</code></pre></div><h1 id="làm-sạch-dữ-liệu">Làm sạch dữ liệu<a class="anchor ms-1" href="#làm-sạch-dữ-liệu"><i class="fas fa-link"></i></a></h1>
+<h3 id="xử-lý-missing-values">Xử lý missing values<a class="anchor ms-1" href="#xử-lý-missing-values"><i class="fas fa-link"></i></a></h3>
+<p>Một vấn đề khá quan trọng là trong tập dữ liệu này missing value khá nhiều, thử đếm số lượng null trong data cho ta biết được rằng</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln"> 1</span><span class="n">CPI</span>              <span class="mi">38162</span>
+<span class="ln"> 2</span><span class="n">Date</span>                 <span class="mi">0</span>
+<span class="ln"> 3</span><span class="n">Dept</span>                 <span class="mi">0</span>
+<span class="ln"> 4</span><span class="n">Fuel_Price</span>           <span class="mi">0</span>
+<span class="ln"> 5</span><span class="n">IsHoliday_x</span>          <span class="mi">0</span>
+<span class="ln"> 6</span><span class="n">IsHoliday_y</span>          <span class="mi">0</span>
+<span class="ln"> 7</span><span class="n">MarkDown1</span>       <span class="mi">271038</span>
+<span class="ln"> 8</span><span class="n">MarkDown2</span>       <span class="mi">338949</span>
+<span class="ln"> 9</span><span class="n">MarkDown3</span>       <span class="mi">294308</span>
+<span class="ln">10</span><span class="n">MarkDown4</span>       <span class="mi">299491</span>
+<span class="ln">11</span><span class="n">MarkDown5</span>       <span class="mi">270138</span>
+<span class="ln">12</span><span class="n">Size</span>                 <span class="mi">0</span>
+<span class="ln">13</span><span class="n">Split</span>                <span class="mi">0</span>
+<span class="ln">14</span><span class="n">Store</span>                <span class="mi">0</span>
+<span class="ln">15</span><span class="n">Temperature</span>          <span class="mi">0</span>
+<span class="ln">16</span><span class="n">Type</span>                 <span class="mi">0</span>
+<span class="ln">17</span><span class="n">Unemployment</span>     <span class="mi">38162</span>
+<span class="ln">18</span><span class="n">Weekly_Sales</span>    <span class="mi">115064</span>
+</code></pre></div><p>Các giá trị MarkDown bị null khá nhiều, cách đơn giản nhất là set 0 cho tất cả các giá trị null ( Mình lưu log lại những index null của các markdown).</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span><span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">md1_present</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;MarkDown1&#39;</span><span class="p">]</span><span class="n">notnull</span><span class="p">())</span>
+<span class="ln">2</span><span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">md2_present</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;MarkDown2&#39;</span><span class="p">]</span><span class="n">notnull</span><span class="p">())</span>
+<span class="ln">3</span><span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">md3_present</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;MarkDown3&#39;</span><span class="p">]</span><span class="n">notnull</span><span class="p">())</span>
+<span class="ln">4</span><span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">md4_present</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;MarkDown4&#39;</span><span class="p">]</span><span class="n">notnull</span><span class="p">())</span>
+<span class="ln">5</span><span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">md5_present</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;MarkDown5&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">notnull</span><span class="p">())</span>
+<span class="ln">6</span>
+<span class="ln">7</span><span class="n">df</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</code></pre></div><h1 id="tạo-đặc-trưng">Tạo đặc trưng<a class="anchor ms-1" href="#tạo-đặc-trưng"><i class="fas fa-link"></i></a></h1>
+<p>Đặc trưng holiday</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;IsHoliday&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;IsHoliday_&#39;</span> <span class="o">+</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;IsHoliday_x&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+<span class="ln">2</span><span class="n">holiday_dummies</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">get_dummies</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;IsHoliday&#39;</span><span class="p">])</span>
+</code></pre></div><p>Đặc trưng ngày tháng</p>
+<p>Rút trích tháng</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;DateType&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">date</span><span class="p">,</span> <span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">date</span><span class="p">()</span> <span class="k">for</span> <span class="n">date</span> <span class="ow">in</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Date&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">tolist</span><span class="p">()]</span>
+<span class="ln">2</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;Month&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">date</span><span class="o">.</span><span class="n">month</span> <span class="k">for</span> <span class="n">date</span> <span class="ow">in</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;DateType&#39;</span><span class="p">]]</span>
+<span class="ln">3</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;Month&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Month_&#39;</span> <span class="o">+</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Month&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+<span class="ln">4</span><span class="n">Month_dummies</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">get_dummies</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;Month&#39;</span><span class="p">]</span> <span class="p">)</span>
+</code></pre></div><p>Rút trích ngày trước giáng sinh và black friday</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;Black_Friday&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">((</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;DateType&#39;</span><span class="p">]</span><span class="o">==</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2010</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">26</span><span class="p">)</span><span class="o">.</span><span class="n">date</span><span class="p">())</span> <span class="o">|</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;DateType&#39;</span><span class="p">]</span><span class="o">==</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2011</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">25</span><span class="p">)</span><span class="o">.</span><span class="n">date</span><span class="p">()),</span> <span class="s1">&#39;yes&#39;</span><span class="p">,</span> <span class="s1">&#39;no&#39;</span><span class="p">)</span>
+<span class="ln">2</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;Pre_christmas&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">((</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;DateType&#39;</span><span class="p">]</span><span class="o">==</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2010</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">23</span><span class="p">)</span><span class="o">.</span><span class="n">date</span><span class="p">())</span> <span class="o">|</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;DateType&#39;</span><span class="p">]</span><span class="o">==</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2010</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">24</span><span class="p">)</span><span class="o">.</span><span class="n">date</span><span class="p">())</span> <span class="o">|</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;DateType&#39;</span><span class="p">]</span><span class="o">==</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2011</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">23</span><span class="p">)</span><span class="o">.</span><span class="n">date</span><span class="p">())</span> <span class="o">|</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;DateType&#39;</span><span class="p">]</span><span class="o">==</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2011</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">24</span><span class="p">)</span><span class="o">.</span><span class="n">date</span><span class="p">()),</span> <span class="s1">&#39;yes&#39;</span><span class="p">,</span> <span class="s1">&#39;no&#39;</span><span class="p">)</span>
+<span class="ln">3</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;Black_Friday&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Black_Friday_&#39;</span> <span class="o">+</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Black_Friday&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+<span class="ln">4</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;Pre_christmas&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Pre_christmas_&#39;</span> <span class="o">+</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Pre_christmas&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+<span class="ln">5</span><span class="n">Black_Friday_dummies</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">get_dummies</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;Black_Friday&#39;</span><span class="p">]</span> <span class="p">)</span>
+<span class="ln">6</span><span class="n">Pre_christmas_dummies</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">get_dummies</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;Pre_christmas&#39;</span><span class="p">]</span> <span class="p">)</span>
+</code></pre></div><p>Thêm các đặc trưng vào trong dữ liệu</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span>
+<span class="ln">2</span><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">df</span><span class="p">,</span><span class="n">holiday_dummies</span><span class="p">,</span><span class="n">Pre_christmas_dummies</span><span class="p">,</span><span class="n">Black_Friday_dummies</span><span class="p">],</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="ln">3</span>
+</code></pre></div><p>Thêm đặc trưng trung vị của từng loại cửa hàng vào từng tháng, do một số của hàng sẽ bị NA ở cột số bán ở một thời điểm nào đó, nên chúng ta replace số bán là 0 có vẻ không hợp lý lắm. Mình chọn cách là thay thế bằng trung bình của số bán trong tháng của cửa hàng cùng loại. Nhưng trước tiên thì tính trung bình số bán của từng loại cửa hàng cái đã.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span>
+<span class="ln">2</span><span class="n">medians</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;Median Sales&#39;</span> <span class="p">:</span><span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;Split&#39;</span><span class="p">]</span><span class="o">==</span><span class="s1">&#39;Train&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Type&#39;</span><span class="p">,</span><span class="s1">&#39;Dept&#39;</span><span class="p">,</span><span class="s1">&#39;Store&#39;</span><span class="p">,</span><span class="s1">&#39;Month&#39;</span><span class="p">,</span><span class="s1">&#39;IsHoliday&#39;</span><span class="p">])[</span><span class="s1">&#39;Weekly_Sales&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">median</span><span class="p">()})</span><span class="o">.</span><span class="n">reset_index</span><span class="p">()</span>
+<span class="ln">3</span><span class="nb">print</span><span class="p">(</span><span class="n">medians</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
+</code></pre></div><p>Kết quả</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span>     <span class="n">Type</span>    <span class="n">Dept</span>    <span class="n">Store</span>     <span class="n">Month</span>        <span class="n">IsHoliday</span>  <span class="n">Median</span> <span class="n">Sales</span>
+<span class="ln">2</span><span class="mi">0</span>  <span class="n">Type_A</span>  <span class="n">Dept_1</span>  <span class="n">Store_1</span>   <span class="n">Month_1</span>  <span class="n">IsHoliday_False</span>     <span class="mf">17350.585</span>
+<span class="ln">3</span><span class="mi">1</span>  <span class="n">Type_A</span>  <span class="n">Dept_1</span>  <span class="n">Store_1</span>  <span class="n">Month_10</span>  <span class="n">IsHoliday_False</span>     <span class="mf">23388.030</span>
+<span class="ln">4</span><span class="mi">2</span>  <span class="n">Type_A</span>  <span class="n">Dept_1</span>  <span class="n">Store_1</span>  <span class="n">Month_11</span>  <span class="n">IsHoliday_False</span>     <span class="mf">19551.115</span>
+<span class="ln">5</span><span class="mi">3</span>  <span class="n">Type_A</span>  <span class="n">Dept_1</span>  <span class="n">Store_1</span>  <span class="n">Month_11</span>   <span class="n">IsHoliday_True</span>     <span class="mf">19865.770</span>
+<span class="ln">6</span><span class="mi">4</span>  <span class="n">Type_A</span>  <span class="n">Dept_1</span>  <span class="n">Store_1</span>  <span class="n">Month_12</span>  <span class="n">IsHoliday_False</span>     <span class="mf">39109.390</span>
+</code></pre></div><p>thêm dữ liệu vào trong data chính, loại bỏ NA và tạo key cho mỗi dòng để dễ dàng truy xuất</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span><span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">medians</span><span class="p">,</span> <span class="n">how</span> <span class="o">=</span> <span class="s1">&#39;outer&#39;</span><span class="p">,</span> <span class="n">on</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Type&#39;</span><span class="p">,</span><span class="s1">&#39;Dept&#39;</span><span class="p">,</span><span class="s1">&#39;Store&#39;</span><span class="p">,</span><span class="s1">&#39;Month&#39;</span><span class="p">,</span><span class="s1">&#39;IsHoliday&#39;</span><span class="p">])</span>
+<span class="ln">2</span>
+<span class="ln">3</span><span class="c1"># Fill NA</span>
+<span class="ln">4</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;Median Sales&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;Median Sales&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;Split&#39;</span><span class="p">]</span><span class="o">==</span><span class="s1">&#39;Train&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">median</span><span class="p">(),</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> 
+<span class="ln">5</span>
+<span class="ln">6</span><span class="c1"># Create a key for easy access</span>
+<span class="ln">7</span>
+<span class="ln">8</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;Key&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Type&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span><span class="o">+</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;Dept&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span><span class="o">+</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;Store&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span><span class="o">+</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;Date&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span><span class="o">+</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;IsHoliday&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+</code></pre></div><p>Chúng ta sẽ dự đoán số bán của tuần kế tiếp dựa vào kết quả số bán của tuần hiện tại, nên trong dữ liệu sẽ lưu trên ngày của tuần trước đó để dễ truy xuất. Vì 1 tuần có 7 ngày, chúng ta sẽ lưu giá trị là ngày ở cột hiện tại - 7</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;DateLagged&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;DateType&#39;</span><span class="p">]</span><span class="o">-</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">7</span><span class="p">)</span>
+</code></pre></div><p>Và giờ đây, chúng ta sẽ lặp qua toàn bộ các dòng trên tập dữ liệu, kiểm tra xem có dòng nào số bán nan hông, nếu có thì sẽ thay bằng trung bình đã tính ở trên. Ở đây mình tạo một sorted dataset để truy xuất cho nhanh</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln"> 1</span>
+<span class="ln"> 2</span><span class="c1">#Make a sorted dataframe. This will allow us to find lagged variables much faster!</span>
+<span class="ln"> 3</span><span class="n">sorted_df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">([</span><span class="s1">&#39;Store&#39;</span><span class="p">,</span> <span class="s1">&#39;Dept&#39;</span><span class="p">,</span><span class="s1">&#39;DateType&#39;</span><span class="p">],</span> <span class="n">ascending</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
+<span class="ln"> 4</span><span class="n">sorted_df</span> <span class="o">=</span> <span class="n">sorted_df</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="c1"># Reinitialize the row indices for the loop to work</span>
+<span class="ln"> 5</span>
+<span class="ln"> 6</span><span class="n">sorted_df</span><span class="p">[</span><span class="s1">&#39;LaggedSales&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span> <span class="c1"># Initialize column</span>
+<span class="ln"> 7</span><span class="n">sorted_df</span><span class="p">[</span><span class="s1">&#39;LaggedAvailable&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span> <span class="c1"># Initialize column</span>
+<span class="ln"> 8</span><span class="n">last</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="c1"># intialize last row for first iteration. Doesn&#39;t really matter what it is</span>
+<span class="ln"> 9</span><span class="n">row_len</span> <span class="o">=</span> <span class="n">sorted_df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="ln">10</span><span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">sorted_df</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+<span class="ln">11</span>    <span class="n">lag_date</span> <span class="o">=</span> <span class="n">row</span><span class="p">[</span><span class="s2">&#34;DateLagged&#34;</span><span class="p">]</span>
+<span class="ln">12</span>    <span class="c1"># Check if it matches by comparing last weeks value to the compared date </span>
+<span class="ln">13</span>    <span class="c1"># And if weekly sales aren&#39;t 0</span>
+<span class="ln">14</span>    <span class="k">if</span><span class="p">((</span><span class="n">last</span><span class="p">[</span><span class="s1">&#39;DateType&#39;</span><span class="p">]</span><span class="o">==</span> <span class="n">lag_date</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">last</span><span class="p">[</span><span class="s1">&#39;Weekly_Sales&#39;</span><span class="p">]</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">)):</span> 
+<span class="ln">15</span>        <span class="n">sorted_df</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="s1">&#39;LaggedSales&#39;</span><span class="p">,</span><span class="n">last</span><span class="p">[</span><span class="s1">&#39;Weekly_Sales&#39;</span><span class="p">])</span>
+<span class="ln">16</span>        <span class="n">sorted_df</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="s1">&#39;LaggedAvailable&#39;</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+<span class="ln">17</span>    <span class="k">else</span><span class="p">:</span>
+<span class="ln">18</span>        <span class="n">sorted_df</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="s1">&#39;LaggedSales&#39;</span><span class="p">,</span><span class="n">row</span><span class="p">[</span><span class="s1">&#39;Median Sales&#39;</span><span class="p">])</span> <span class="c1"># Fill with median</span>
+<span class="ln">19</span>        <span class="n">sorted_df</span><span class="o">.</span><span class="n">set_value</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="s1">&#39;LaggedAvailable&#39;</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
+<span class="ln">20</span>
+<span class="ln">21</span>    <span class="n">last</span> <span class="o">=</span> <span class="n">row</span> <span class="c1">#Remember last row for speed</span>
+<span class="ln">22</span>    <span class="k">if</span><span class="p">(</span><span class="n">index</span><span class="o">%</span><span class="nb">int</span><span class="p">(</span><span class="n">row_len</span><span class="o">/</span><span class="mi">10</span><span class="p">)</span><span class="o">==</span><span class="mi">0</span><span class="p">):</span> <span class="c1">#See progress by printing every 10% interval</span>
+<span class="ln">23</span>        <span class="nb">print</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">index</span><span class="o">*</span><span class="mi">100</span><span class="o">/</span><span class="n">row_len</span><span class="p">))</span><span class="o">+</span><span class="s1">&#39;</span><span class="si">% lo</span><span class="s1">aded&#39;</span><span class="p">)</span>
+<span class="ln">24</span>
+<span class="ln">25</span><span class="nb">print</span><span class="p">(</span><span class="n">sorted_df</span><span class="p">[[</span><span class="s1">&#39;Dept&#39;</span><span class="p">,</span> <span class="s1">&#39;Store&#39;</span><span class="p">,</span><span class="s1">&#39;DateType&#39;</span><span class="p">,</span><span class="s1">&#39;LaggedSales&#39;</span><span class="p">,</span><span class="s1">&#39;Weekly_Sales&#39;</span><span class="p">,</span><span class="s1">&#39;Median Sales&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
+</code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln"> 1</span><span class="mi">9</span><span class="o">%</span> <span class="n">loaded</span>
+<span class="ln"> 2</span><span class="mi">19</span><span class="o">%</span> <span class="n">loaded</span>
+<span class="ln"> 3</span><span class="mi">29</span><span class="o">%</span> <span class="n">loaded</span>
+<span class="ln"> 4</span><span class="mi">39</span><span class="o">%</span> <span class="n">loaded</span>
+<span class="ln"> 5</span><span class="mi">49</span><span class="o">%</span> <span class="n">loaded</span>
+<span class="ln"> 6</span><span class="mi">59</span><span class="o">%</span> <span class="n">loaded</span>
+<span class="ln"> 7</span><span class="mi">69</span><span class="o">%</span> <span class="n">loaded</span>
+<span class="ln"> 8</span><span class="mi">79</span><span class="o">%</span> <span class="n">loaded</span>
+<span class="ln"> 9</span><span class="mi">89</span><span class="o">%</span> <span class="n">loaded</span>
+<span class="ln">10</span><span class="mi">99</span><span class="o">%</span> <span class="n">loaded</span>
+<span class="ln">11</span>     <span class="n">Dept</span>    <span class="n">Store</span>    <span class="n">DateType</span>  <span class="n">LaggedSales</span>  <span class="n">Weekly_Sales</span>  <span class="n">Median</span> <span class="n">Sales</span>
+<span class="ln">12</span><span class="mi">0</span>  <span class="n">Dept_1</span>  <span class="n">Store_1</span>  <span class="mi">2010</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">05</span>     <span class="mf">23510.49</span>      <span class="mf">24924.50</span>      <span class="mf">23510.49</span>
+<span class="ln">13</span><span class="mi">1</span>  <span class="n">Dept_1</span>  <span class="n">Store_1</span>  <span class="mi">2010</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">12</span>     <span class="mf">24924.50</span>      <span class="mf">46039.49</span>      <span class="mf">37887.17</span>
+<span class="ln">14</span><span class="mi">2</span>  <span class="n">Dept_1</span>  <span class="n">Store_1</span>  <span class="mi">2010</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">19</span>     <span class="mf">46039.49</span>      <span class="mf">41595.55</span>      <span class="mf">23510.49</span>
+<span class="ln">15</span><span class="mi">3</span>  <span class="n">Dept_1</span>  <span class="n">Store_1</span>  <span class="mi">2010</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">26</span>     <span class="mf">41595.55</span>      <span class="mf">19403.54</span>      <span class="mf">23510.49</span>
+<span class="ln">16</span><span class="mi">4</span>  <span class="n">Dept_1</span>  <span class="n">Store_1</span>  <span class="mi">2010</span><span class="o">-</span><span class="mi">03</span><span class="o">-</span><span class="mi">05</span>     <span class="mf">19403.54</span>      <span class="mf">21827.90</span>      <span class="mf">21280.40</span>
+</code></pre></div><p>Công việc đơn giản tiếp theo là merge dữ liệu vào data chính và tính độ lệch giữa 2 tuần bán</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span><span class="c1"># Merge by store and department</span>
+<span class="ln">2</span><span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">sorted_df</span><span class="p">[[</span><span class="s1">&#39;Dept&#39;</span><span class="p">,</span> <span class="s1">&#39;Store&#39;</span><span class="p">,</span><span class="s1">&#39;DateType&#39;</span><span class="p">,</span><span class="s1">&#39;LaggedSales&#39;</span><span class="p">,</span><span class="s1">&#39;LaggedAvailable&#39;</span><span class="p">]],</span> <span class="n">how</span> <span class="o">=</span> <span class="s1">&#39;inner&#39;</span><span class="p">,</span> <span class="n">on</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Dept&#39;</span><span class="p">,</span> <span class="s1">&#39;Store&#39;</span><span class="p">,</span><span class="s1">&#39;DateType&#39;</span><span class="p">])</span>
+<span class="ln">3</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;Sales_dif&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Median Sales&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;LaggedSales&#39;</span><span class="p">]</span>
+</code></pre></div><p>Và bây giờ , thay vì ta ước lượng weekly sales, chúng ta sẽ ước lượng độ lệch giữa week sales và median sales (đây là một cách trong những cách để tính điểm dừng của dữ liệu time series)</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;Difference&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Median Sales&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;Weekly_Sales&#39;</span><span class="p">]</span>
+</code></pre></div><h1 id="huấn-luyện-mô-hình">Huấn luyện mô hình<a class="anchor ms-1" href="#huấn-luyện-mô-hình"><i class="fas fa-link"></i></a></h1>
+<p>Lựa chọn các đặc trưng huấn luyện</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln"> 1</span><span class="n">selector</span> <span class="o">=</span> <span class="p">[</span>
+<span class="ln"> 2</span>    <span class="c1">#&#39;Month&#39;,</span>
+<span class="ln"> 3</span>    <span class="s1">&#39;CPI&#39;</span><span class="p">,</span>
+<span class="ln"> 4</span>    <span class="s1">&#39;Fuel_Price&#39;</span><span class="p">,</span>
+<span class="ln"> 5</span>    <span class="s1">&#39;MarkDown1&#39;</span><span class="p">,</span>
+<span class="ln"> 6</span>    <span class="s1">&#39;MarkDown2&#39;</span><span class="p">,</span>
+<span class="ln"> 7</span>    <span class="s1">&#39;MarkDown3&#39;</span><span class="p">,</span>
+<span class="ln"> 8</span>    <span class="s1">&#39;MarkDown4&#39;</span><span class="p">,</span>
+<span class="ln"> 9</span>    <span class="s1">&#39;MarkDown5&#39;</span><span class="p">,</span>
+<span class="ln">10</span>    <span class="s1">&#39;Size&#39;</span><span class="p">,</span>
+<span class="ln">11</span>    <span class="s1">&#39;Temperature&#39;</span><span class="p">,</span>
+<span class="ln">12</span>    <span class="s1">&#39;Unemployment&#39;</span><span class="p">,</span>
+<span class="ln">13</span>    
+<span class="ln">14</span>    
+<span class="ln">15</span>    
+<span class="ln">16</span>    <span class="s1">&#39;md1_present&#39;</span><span class="p">,</span>
+<span class="ln">17</span>    <span class="s1">&#39;md2_present&#39;</span><span class="p">,</span>
+<span class="ln">18</span>    <span class="s1">&#39;md3_present&#39;</span><span class="p">,</span>
+<span class="ln">19</span>    <span class="s1">&#39;md4_present&#39;</span><span class="p">,</span>
+<span class="ln">20</span>    <span class="s1">&#39;md5_present&#39;</span><span class="p">,</span>
+<span class="ln">21</span>
+<span class="ln">22</span>    <span class="s1">&#39;IsHoliday_False&#39;</span><span class="p">,</span>
+<span class="ln">23</span>    <span class="s1">&#39;IsHoliday_True&#39;</span><span class="p">,</span>
+<span class="ln">24</span>    <span class="s1">&#39;Pre_christmas_no&#39;</span><span class="p">,</span>
+<span class="ln">25</span>    <span class="s1">&#39;Pre_christmas_yes&#39;</span><span class="p">,</span>
+<span class="ln">26</span>    <span class="s1">&#39;Black_Friday_no&#39;</span><span class="p">,</span>
+<span class="ln">27</span>    <span class="s1">&#39;Black_Friday_yes&#39;</span><span class="p">,</span>    
+<span class="ln">28</span>    <span class="s1">&#39;LaggedSales&#39;</span><span class="p">,</span>
+<span class="ln">29</span>    <span class="s1">&#39;Sales_dif&#39;</span><span class="p">,</span>
+<span class="ln">30</span>    <span class="s1">&#39;LaggedAvailable&#39;</span>
+<span class="ln">31</span>    <span class="p">]</span>
+</code></pre></div><p>Tách dữ liệu train và test riêng ra</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span>
+<span class="ln">2</span><span class="n">train</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;Split&#39;</span><span class="p">]</span><span class="o">==</span><span class="s1">&#39;Train&#39;</span><span class="p">]</span>
+<span class="ln">3</span><span class="n">test</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;Split&#39;</span><span class="p">]</span><span class="o">==</span><span class="s1">&#39;Test&#39;</span><span class="p">]</span>
+<span class="ln">4</span>
+</code></pre></div><p>Lấy ngẫu nhiên 20% dữ liệu ở tập train để validation</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span><span class="c1"># Set seed for reproducability </span>
+<span class="ln">2</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+<span class="ln">3</span><span class="n">X_train</span><span class="p">,</span> <span class="n">X_val</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_val</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">train</span><span class="p">[</span><span class="n">selector</span><span class="p">],</span> <span class="n">train</span><span class="p">[</span><span class="s1">&#39;Difference&#39;</span><span class="p">],</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+</code></pre></div><p>Huấn luyện bằng neural network sử dụng lstm</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln"> 1</span>
+<span class="ln"> 2</span><span class="n">adam_regularized</span> <span class="o">=</span> <span class="n">Sequential</span><span class="p">()</span>
+<span class="ln"> 3</span>
+<span class="ln"> 4</span>    <span class="c1"># First hidden layer now regularized</span>
+<span class="ln"> 5</span>    <span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Dense</span><span class="p">(</span><span class="mi">32</span><span class="p">,</span><span class="n">activation</span><span class="o">=</span><span class="s1">&#39;relu&#39;</span><span class="p">,</span>
+<span class="ln"> 6</span>                    <span class="n">input_dim</span><span class="o">=</span><span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+<span class="ln"> 7</span>                    <span class="n">kernel_regularizer</span> <span class="o">=</span> <span class="n">regularizers</span><span class="o">.</span><span class="n">l2</span><span class="p">(</span><span class="mf">0.01</span><span class="p">)))</span>
+<span class="ln"> 8</span>
+<span class="ln"> 9</span>    <span class="c1"># Second hidden layer now regularized</span>
+<span class="ln">10</span>    <span class="n">adam_regularized</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Dense</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span><span class="n">activation</span><span class="o">=</span><span class="s1">&#39;relu&#39;</span><span class="p">,</span>
+<span class="ln">11</span>                       <span class="n">kernel_regularizer</span> <span class="o">=</span> <span class="n">regularizers</span><span class="o">.</span><span class="n">l2</span><span class="p">(</span><span class="mf">0.01</span><span class="p">)))</span>
+<span class="ln">12</span>
+<span class="ln">13</span>    <span class="c1"># Output layer stayed sigmoid</span>
+<span class="ln">14</span>    <span class="n">adam_regularized</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Dense</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">activation</span><span class="o">=</span><span class="s1">&#39;linear&#39;</span><span class="p">))</span>
+<span class="ln">15</span>
+<span class="ln">16</span>    <span class="c1"># Setup adam optimizer</span>
+<span class="ln">17</span>    <span class="n">adam_optimizer</span><span class="o">=</span><span class="n">keras</span><span class="o">.</span><span class="n">optimizers</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="n">lr</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
+<span class="ln">18</span>                    <span class="n">beta_1</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span> 
+<span class="ln">19</span>                    <span class="n">beta_2</span><span class="o">=</span><span class="mf">0.999</span><span class="p">,</span> 
+<span class="ln">20</span>                    <span class="n">epsilon</span><span class="o">=</span><span class="mf">1e-08</span><span class="p">)</span>
+<span class="ln">21</span>
+<span class="ln">22</span>    <span class="c1"># Compile the model</span>
+<span class="ln">23</span>    <span class="n">adam_regularized</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">optimizer</span><span class="o">=</span><span class="n">adam_optimizer</span><span class="p">,</span>
+<span class="ln">24</span>                  <span class="n">loss</span><span class="o">=</span><span class="s1">&#39;mean_absolute_error&#39;</span><span class="p">,</span>
+<span class="ln">25</span>                  <span class="n">metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;acc&#39;</span><span class="p">])</span>
+<span class="ln">26</span>
+<span class="ln">27</span>    <span class="c1"># Train</span>
+<span class="ln">28</span>    <span class="n">history</span><span class="o">=</span><span class="n">adam_regularized</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="c1"># Train on training set</span>
+<span class="ln">29</span>                                 <span class="n">epochs</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="c1"># We will train over 1,000 epochs</span>
+<span class="ln">30</span>                                 <span class="n">batch_size</span><span class="o">=</span><span class="mi">2048</span><span class="p">,</span> <span class="c1"># Batch size </span>
+<span class="ln">31</span>                                 <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="c1"># Suppress Keras output</span>
+<span class="ln">32</span>    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;eval&#39;</span><span class="p">,</span><span class="n">model</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">X_val</span><span class="p">,</span><span class="n">y</span><span class="o">=</span><span class="n">y_val</span><span class="p">))</span>
+<span class="ln">33</span>
+<span class="ln">34</span>    <span class="c1"># Plot network</span>
+<span class="ln">35</span>    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">history</span><span class="o">.</span><span class="n">history</span><span class="p">[</span><span class="s1">&#39;loss&#39;</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Adam Regularized&#39;</span><span class="p">)</span>
+<span class="ln">36</span>    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Epochs&#39;</span><span class="p">)</span>
+<span class="ln">37</span>    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;loss&#39;</span><span class="p">)</span>
+<span class="ln">38</span>    <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="ln">39</span>    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+<span class="ln">40</span>
+</code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span><span class="nb">eval</span><span class="p">:</span>  <span class="p">[</span><span class="mf">1457.0501796214685</span><span class="p">,</span> <span class="mf">0.002312783168124545</span><span class="p">]</span>
+</code></pre></div><p><img class="img-fluid" alt="Hình ảnh" src="/blog/2019-04-17-walmart-store-sales-forecasting/walmart_keras_lstm_adam.jpg" loading="lazy"
+  
+   />
+
+
+<strong>Độ lỗi trên tập train</strong></p>
+<p>Độ lỗi trên tập train giảm xuống đến gần 1450 thì đừng hẳn, không thể giảm được nữa</p>
+<p>Giá trị độ lệch trên tập evaluation là 1457.0501796214685</p>
+<p>Thử huấn luyện bằng random forest</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln"> 1</span><span class="n">regr</span> <span class="o">=</span> <span class="n">RandomForestRegressor</span><span class="p">(</span><span class="n">n_estimators</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">criterion</span><span class="o">=</span><span class="s1">&#39;mse&#39;</span><span class="p">,</span> <span class="n">max_depth</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+<span class="ln"> 2</span>                        <span class="n">min_samples_split</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">min_samples_leaf</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> 
+<span class="ln"> 3</span>                        <span class="n">min_weight_fraction_leaf</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">max_features</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span> 
+<span class="ln"> 4</span>                        <span class="n">max_leaf_nodes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">min_impurity_decrease</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> 
+<span class="ln"> 5</span>                        <span class="n">min_impurity_split</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">bootstrap</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> 
+<span class="ln"> 6</span>                        <span class="n">oob_score</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+<span class="ln"> 7</span>                        <span class="n">verbose</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">warm_start</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="ln"> 8</span>
+<span class="ln"> 9</span>    <span class="c1">#Train on data</span>
+<span class="ln">10</span>    <span class="n">regr</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="o">.</span><span class="n">ravel</span><span class="p">())</span>
+<span class="ln">11</span>    <span class="n">y_pred_random</span> <span class="o">=</span> <span class="n">regr</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_val</span><span class="p">)</span>
+<span class="ln">12</span>
+<span class="ln">13</span>    <span class="n">y_val</span> <span class="o">=</span> <span class="n">y_val</span><span class="o">.</span><span class="n">to_frame</span><span class="p">()</span>
+<span class="ln">14</span>
+<span class="ln">15</span>    <span class="c1"># Transform forest predictions to observe direction of change</span>
+<span class="ln">16</span>    <span class="n">direction_true1</span><span class="o">=</span> <span class="n">y_val</span><span class="o">.</span><span class="n">values</span>
+<span class="ln">17</span>    <span class="n">direction_predict</span> <span class="o">=</span> <span class="n">y_pred_random</span>
+<span class="ln">18</span>
+<span class="ln">19</span>    <span class="n">y_val</span><span class="p">[</span><span class="s1">&#39;Predicted&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">y_pred_random</span>
+<span class="ln">20</span>    <span class="n">df_out</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">train</span><span class="p">,</span><span class="n">y_val</span><span class="p">[[</span><span class="s1">&#39;Predicted&#39;</span><span class="p">]],</span><span class="n">how</span> <span class="o">=</span> <span class="s1">&#39;left&#39;</span><span class="p">,</span><span class="n">left_index</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">right_index</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span><span class="n">suffixes</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;_True&#39;</span><span class="p">,</span><span class="s1">&#39;_Pred&#39;</span><span class="p">])</span>
+<span class="ln">21</span>    <span class="n">df_out</span> <span class="o">=</span> <span class="n">df_out</span><span class="p">[</span><span class="o">~</span><span class="n">pd</span><span class="o">.</span><span class="n">isnull</span><span class="p">(</span><span class="n">df_out</span><span class="p">[</span><span class="s1">&#39;Predicted&#39;</span><span class="p">])]</span>
+<span class="ln">22</span>
+<span class="ln">23</span>    <span class="n">df_out</span><span class="p">[</span><span class="s1">&#39;prediction&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_out</span><span class="p">[</span><span class="s1">&#39;Median Sales&#39;</span><span class="p">]</span><span class="o">-</span><span class="n">df_out</span><span class="p">[</span><span class="s1">&#39;Predicted&#39;</span><span class="p">]</span>
+<span class="ln">24</span>
+<span class="ln">25</span>    <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;Medians: &#34;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">df_out</span><span class="p">[</span><span class="s1">&#39;Difference&#39;</span><span class="p">]))</span><span class="o">/</span><span class="n">df_out</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+<span class="ln">26</span>    <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;Random Forest: &#34;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">df_out</span><span class="p">[</span><span class="s1">&#39;Weekly_Sales&#39;</span><span class="p">]</span><span class="o">-</span><span class="n">df_out</span><span class="p">[</span><span class="s1">&#39;prediction&#39;</span><span class="p">]))</span><span class="o">/</span><span class="n">df_out</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> 
+</code></pre></div><p>Kết quả</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln"> 1</span>
+<span class="ln"> 2</span><span class="mi">9</span><span class="o">%</span> <span class="n">loaded</span>
+<span class="ln"> 3</span><span class="mi">19</span><span class="o">%</span> <span class="n">loaded</span>
+<span class="ln"> 4</span><span class="mi">29</span><span class="o">%</span> <span class="n">loaded</span>
+<span class="ln"> 5</span><span class="mi">39</span><span class="o">%</span> <span class="n">loaded</span>
+<span class="ln"> 6</span><span class="mi">49</span><span class="o">%</span> <span class="n">loaded</span>
+<span class="ln"> 7</span><span class="mi">59</span><span class="o">%</span> <span class="n">loaded</span>
+<span class="ln"> 8</span><span class="mi">69</span><span class="o">%</span> <span class="n">loaded</span>
+<span class="ln"> 9</span><span class="mi">79</span><span class="o">%</span> <span class="n">loaded</span>
+<span class="ln">10</span><span class="mi">89</span><span class="o">%</span> <span class="n">loaded</span>
+<span class="ln">11</span><span class="mi">99</span><span class="o">%</span> <span class="n">loaded</span>
+<span class="ln">12</span>     <span class="n">Dept</span>    <span class="n">Store</span>    <span class="n">DateType</span>  <span class="n">LaggedSales</span>  <span class="n">Weekly_Sales</span>  <span class="n">Median</span> <span class="n">Sales</span>
+<span class="ln">13</span><span class="mi">0</span>  <span class="n">Dept_1</span>  <span class="n">Store_1</span>  <span class="mi">2010</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">05</span>     <span class="mf">23510.49</span>      <span class="mf">24924.50</span>      <span class="mf">23510.49</span>
+<span class="ln">14</span><span class="mi">1</span>  <span class="n">Dept_1</span>  <span class="n">Store_1</span>  <span class="mi">2010</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">12</span>     <span class="mf">24924.50</span>      <span class="mf">46039.49</span>      <span class="mf">37887.17</span>
+<span class="ln">15</span><span class="mi">2</span>  <span class="n">Dept_1</span>  <span class="n">Store_1</span>  <span class="mi">2010</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">19</span>     <span class="mf">46039.49</span>      <span class="mf">41595.55</span>      <span class="mf">23510.49</span>
+<span class="ln">16</span><span class="mi">3</span>  <span class="n">Dept_1</span>  <span class="n">Store_1</span>  <span class="mi">2010</span><span class="o">-</span><span class="mi">02</span><span class="o">-</span><span class="mi">26</span>     <span class="mf">41595.55</span>      <span class="mf">19403.54</span>      <span class="mf">23510.49</span>
+<span class="ln">17</span><span class="mi">4</span>  <span class="n">Dept_1</span>  <span class="n">Store_1</span>  <span class="mi">2010</span><span class="o">-</span><span class="mi">03</span><span class="o">-</span><span class="mi">05</span>     <span class="mf">19403.54</span>      <span class="mf">21827.90</span>      <span class="mf">21280.40</span>
+<span class="ln">18</span><span class="p">[</span><span class="n">Parallel</span><span class="p">(</span><span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">)]:</span> <span class="n">Using</span> <span class="n">backend</span> <span class="n">SequentialBackend</span> <span class="k">with</span> <span class="mi">1</span> <span class="n">concurrent</span> <span class="n">workers</span><span class="o">.</span>
+<span class="ln">19</span><span class="n">building</span> <span class="n">tree</span> <span class="mi">1</span> <span class="n">of</span> <span class="mi">20</span>
+<span class="ln">20</span><span class="p">[</span><span class="n">Parallel</span><span class="p">(</span><span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">)]:</span> <span class="n">Done</span>   <span class="mi">1</span> <span class="n">out</span> <span class="n">of</span>   <span class="mi">1</span> <span class="o">|</span> <span class="n">elapsed</span><span class="p">:</span>    <span class="mf">6.5</span><span class="n">s</span> <span class="n">remaining</span><span class="p">:</span>    <span class="mf">0.0</span><span class="n">s</span>
+<span class="ln">21</span><span class="n">building</span> <span class="n">tree</span> <span class="mi">2</span> <span class="n">of</span> <span class="mi">20</span>
+<span class="ln">22</span><span class="n">building</span> <span class="n">tree</span> <span class="mi">3</span> <span class="n">of</span> <span class="mi">20</span>
+<span class="ln">23</span><span class="n">building</span> <span class="n">tree</span> <span class="mi">4</span> <span class="n">of</span> <span class="mi">20</span>
+<span class="ln">24</span><span class="n">building</span> <span class="n">tree</span> <span class="mi">5</span> <span class="n">of</span> <span class="mi">20</span>
+<span class="ln">25</span><span class="n">building</span> <span class="n">tree</span> <span class="mi">6</span> <span class="n">of</span> <span class="mi">20</span>
+<span class="ln">26</span><span class="n">building</span> <span class="n">tree</span> <span class="mi">7</span> <span class="n">of</span> <span class="mi">20</span>
+<span class="ln">27</span><span class="n">building</span> <span class="n">tree</span> <span class="mi">8</span> <span class="n">of</span> <span class="mi">20</span>
+<span class="ln">28</span><span class="n">building</span> <span class="n">tree</span> <span class="mi">9</span> <span class="n">of</span> <span class="mi">20</span>
+<span class="ln">29</span><span class="n">building</span> <span class="n">tree</span> <span class="mi">10</span> <span class="n">of</span> <span class="mi">20</span>
+<span class="ln">30</span><span class="n">building</span> <span class="n">tree</span> <span class="mi">11</span> <span class="n">of</span> <span class="mi">20</span>
+<span class="ln">31</span><span class="n">building</span> <span class="n">tree</span> <span class="mi">12</span> <span class="n">of</span> <span class="mi">20</span>
+<span class="ln">32</span><span class="n">building</span> <span class="n">tree</span> <span class="mi">13</span> <span class="n">of</span> <span class="mi">20</span>
+<span class="ln">33</span><span class="n">building</span> <span class="n">tree</span> <span class="mi">14</span> <span class="n">of</span> <span class="mi">20</span>
+<span class="ln">34</span><span class="n">building</span> <span class="n">tree</span> <span class="mi">15</span> <span class="n">of</span> <span class="mi">20</span>
+<span class="ln">35</span><span class="n">building</span> <span class="n">tree</span> <span class="mi">16</span> <span class="n">of</span> <span class="mi">20</span>
+<span class="ln">36</span><span class="n">building</span> <span class="n">tree</span> <span class="mi">17</span> <span class="n">of</span> <span class="mi">20</span>
+<span class="ln">37</span><span class="n">building</span> <span class="n">tree</span> <span class="mi">18</span> <span class="n">of</span> <span class="mi">20</span>
+<span class="ln">38</span><span class="n">building</span> <span class="n">tree</span> <span class="mi">19</span> <span class="n">of</span> <span class="mi">20</span>
+<span class="ln">39</span><span class="n">building</span> <span class="n">tree</span> <span class="mi">20</span> <span class="n">of</span> <span class="mi">20</span>
+<span class="ln">40</span><span class="p">[</span><span class="n">Parallel</span><span class="p">(</span><span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">)]:</span> <span class="n">Done</span>  <span class="mi">20</span> <span class="n">out</span> <span class="n">of</span>  <span class="mi">20</span> <span class="o">|</span> <span class="n">elapsed</span><span class="p">:</span>  <span class="mf">2.2</span><span class="nb">min</span> <span class="n">finished</span>
+<span class="ln">41</span><span class="p">[</span><span class="n">Parallel</span><span class="p">(</span><span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">)]:</span> <span class="n">Using</span> <span class="n">backend</span> <span class="n">SequentialBackend</span> <span class="k">with</span> <span class="mi">1</span> <span class="n">concurrent</span> <span class="n">workers</span><span class="o">.</span>
+<span class="ln">42</span><span class="p">[</span><span class="n">Parallel</span><span class="p">(</span><span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">)]:</span> <span class="n">Done</span>   <span class="mi">1</span> <span class="n">out</span> <span class="n">of</span>   <span class="mi">1</span> <span class="o">|</span> <span class="n">elapsed</span><span class="p">:</span>    <span class="mf">0.0</span><span class="n">s</span> <span class="n">remaining</span><span class="p">:</span>    <span class="mf">0.0</span><span class="n">s</span>
+<span class="ln">43</span><span class="p">[</span><span class="n">Parallel</span><span class="p">(</span><span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">)]:</span> <span class="n">Done</span>  <span class="mi">20</span> <span class="n">out</span> <span class="n">of</span>  <span class="mi">20</span> <span class="o">|</span> <span class="n">elapsed</span><span class="p">:</span>    <span class="mf">1.1</span><span class="n">s</span> <span class="n">finished</span>
+<span class="ln">44</span><span class="n">Medians</span><span class="p">:</span> <span class="mf">1545.7406070759525</span>
+<span class="ln">45</span><span class="n">Random</span> <span class="n">Forest</span><span class="p">:</span> <span class="mf">1356.4670052620745</span>
+<span class="ln">46</span>
+</code></pre></div><p>Trung bình lệch của random forest là 1356, giá trị này nhỏ hơn so với giá trị output của lstm trả về.</p>
+<p>Thử huấn luyện bằng XGBoost</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln"> 1</span>
+<span class="ln"> 2</span><span class="n">param_dist</span> <span class="o">=</span> <span class="p">{</span> <span class="s1">&#39;max_depth&#39;</span><span class="p">:</span><span class="mi">5</span><span class="p">}</span>
+<span class="ln"> 3</span>
+<span class="ln"> 4</span>    <span class="n">model</span> <span class="o">=</span> <span class="n">XGBRegressor</span><span class="p">(</span><span class="o">**</span><span class="n">param_dist</span><span class="p">)</span>
+<span class="ln"> 5</span>
+<span class="ln"> 6</span>    <span class="c1">#Train on data</span>
+<span class="ln"> 7</span>    <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="o">.</span><span class="n">ravel</span><span class="p">())</span>
+<span class="ln"> 8</span>    <span class="n">y_pred_random</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_val</span><span class="p">)</span>
+<span class="ln"> 9</span>
+<span class="ln">10</span>    <span class="n">y_val</span> <span class="o">=</span> <span class="n">y_val</span><span class="o">.</span><span class="n">to_frame</span><span class="p">()</span>
+<span class="ln">11</span>
+<span class="ln">12</span>    <span class="c1"># Transform forest predictions to observe direction of change</span>
+<span class="ln">13</span>    <span class="n">direction_true1</span><span class="o">=</span> <span class="n">y_val</span><span class="o">.</span><span class="n">values</span>
+<span class="ln">14</span>    <span class="n">direction_predict</span> <span class="o">=</span> <span class="n">y_pred_random</span>
+<span class="ln">15</span>
+<span class="ln">16</span>    <span class="n">y_val</span><span class="p">[</span><span class="s1">&#39;Predicted&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">y_pred_random</span>
+<span class="ln">17</span>    <span class="n">df_out</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">train</span><span class="p">,</span><span class="n">y_val</span><span class="p">[[</span><span class="s1">&#39;Predicted&#39;</span><span class="p">]],</span><span class="n">how</span> <span class="o">=</span> <span class="s1">&#39;left&#39;</span><span class="p">,</span><span class="n">left_index</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">right_index</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span><span class="n">suffixes</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;_True&#39;</span><span class="p">,</span><span class="s1">&#39;_Pred&#39;</span><span class="p">])</span>
+<span class="ln">18</span>    <span class="n">df_out</span> <span class="o">=</span> <span class="n">df_out</span><span class="p">[</span><span class="o">~</span><span class="n">pd</span><span class="o">.</span><span class="n">isnull</span><span class="p">(</span><span class="n">df_out</span><span class="p">[</span><span class="s1">&#39;Predicted&#39;</span><span class="p">])]</span>
+<span class="ln">19</span>
+<span class="ln">20</span>    <span class="n">df_out</span><span class="p">[</span><span class="s1">&#39;prediction&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_out</span><span class="p">[</span><span class="s1">&#39;Median Sales&#39;</span><span class="p">]</span><span class="o">-</span><span class="n">df_out</span><span class="p">[</span><span class="s1">&#39;Predicted&#39;</span><span class="p">]</span>
+<span class="ln">21</span>
+<span class="ln">22</span>    <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;Medians: &#34;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">df_out</span><span class="p">[</span><span class="s1">&#39;Difference&#39;</span><span class="p">]))</span><span class="o">/</span><span class="n">df_out</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+<span class="ln">23</span>    <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;XGB Regressor: &#34;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">df_out</span><span class="p">[</span><span class="s1">&#39;Weekly_Sales&#39;</span><span class="p">]</span><span class="o">-</span><span class="n">df_out</span><span class="p">[</span><span class="s1">&#39;prediction&#39;</span><span class="p">]))</span><span class="o">/</span><span class="n">df_out</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span> 
+<span class="ln">24</span>
+</code></pre></div><p>Kết quả</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span>
+<span class="ln">2</span><span class="n">Medians</span><span class="p">:</span> <span class="mf">1545.7406070759525</span>
+<span class="ln">3</span><span class="n">XGB</span> <span class="n">Regressor</span><span class="p">:</span> <span class="mf">1354.1976755192593</span>
+<span class="ln">4</span>
+</code></pre></div><p>Kết quả cũng gần như bằng Random forest :).</p>
+<p>Giờ mình sẽ dùng random forest để tạo file submission</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln"> 1</span>
+<span class="ln"> 2</span>
+<span class="ln"> 3</span><span class="n">rf_model</span> <span class="o">=</span> <span class="n">RandomForestRegressor</span><span class="p">(</span><span class="n">n_estimators</span><span class="o">=</span><span class="mi">80</span><span class="p">,</span> <span class="n">criterion</span><span class="o">=</span><span class="s1">&#39;mse&#39;</span><span class="p">,</span> <span class="n">max_depth</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+<span class="ln"> 4</span>                      <span class="n">min_samples_split</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">min_samples_leaf</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> 
+<span class="ln"> 5</span>                      <span class="n">min_weight_fraction_leaf</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">max_features</span><span class="o">=</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span> 
+<span class="ln"> 6</span>                      <span class="n">max_leaf_nodes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">min_impurity_decrease</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> 
+<span class="ln"> 7</span>                      <span class="n">min_impurity_split</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">bootstrap</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> 
+<span class="ln"> 8</span>                      <span class="n">oob_score</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+<span class="ln"> 9</span>                      <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">warm_start</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="ln">10</span>
+<span class="ln">11</span><span class="c1">#Train on data</span>
+<span class="ln">12</span><span class="n">rf_model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train</span><span class="p">[</span><span class="n">selector</span><span class="p">],</span> <span class="n">train</span><span class="p">[</span><span class="s1">&#39;Difference&#39;</span><span class="p">])</span>
+<span class="ln">13</span><span class="n">final_y_prediction</span> <span class="o">=</span> <span class="n">rf_model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">test</span><span class="p">[</span><span class="n">selector</span><span class="p">])</span>
+<span class="ln">14</span>
+<span class="ln">15</span><span class="n">testfile</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">test</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">final_y_prediction</span><span class="p">)],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="ln">16</span><span class="n">testfile</span><span class="p">[</span><span class="s1">&#39;prediction&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">testfile</span><span class="p">[</span><span class="s1">&#39;Median Sales&#39;</span><span class="p">]</span><span class="o">-</span><span class="n">testfile</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="ln">17</span>
+<span class="ln">18</span><span class="n">submission</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;id&#39;</span><span class="p">:</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">([</span><span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="nb">str</span><span class="o">.</span><span class="n">isdigit</span><span class="p">,</span> <span class="n">x</span><span class="p">)))</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">testfile</span><span class="p">[</span><span class="s1">&#39;Store&#39;</span><span class="p">]])</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span>
+<span class="ln">19</span>                           <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">([</span><span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="nb">str</span><span class="o">.</span><span class="n">isdigit</span><span class="p">,</span> <span class="n">x</span><span class="p">)))</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">testfile</span><span class="p">[</span><span class="s1">&#39;Dept&#39;</span><span class="p">]])</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>  <span class="o">+</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span>
+<span class="ln">20</span>                           <span class="n">testfile</span><span class="p">[</span><span class="s1">&#39;Date&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="nb">str</span><span class="p">),</span>
+<span class="ln">21</span>                          <span class="s1">&#39;Weekly_Sales&#39;</span><span class="p">:</span><span class="n">testfile</span><span class="p">[</span><span class="s1">&#39;prediction&#39;</span><span class="p">]})</span>
+<span class="ln">22</span>
+<span class="ln">23</span><span class="n">submission</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s1">&#39;submission.csv&#39;</span><span class="p">,</span><span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</code></pre></div><p>Sau khi submit mô hình, mình đạt được kết quả là 4455.96312 trên private board, và 4419.17292 trên publish board. Đây là một kết quả khá tệ (đứng hạng khoảng top 300). Sau khi mình nhìn lại mô hình thì phát hiện một số vấn đề.</p>
+<p>Các đặc trưng trong file features.csv nó không có mối tương quan gì hết với số bán như phân tích ở trên -&gt; mình mạnh dạng bỏ luôn file features.csv, không quan tâm đến nó nữa, tập trung vào file chính.</p>
+<p>Bỏ mấy cái lag luôn, thử forecast chính vào cái số bán luôn xem sao</p>
+<p>Với cửa hàng nào thì xây dựng mô hình cho cửa hàng và sản phẩm đó, không xây dựng một mô hình tổng quát áp dụng cho toàn cửa hàng. với những cửa hàng không có trong tập train hoặc những sản phẩm mà cửa hàng đó chưa bán trước đây (nói chung là không có trong tập train) thì mới áp dụng mô hình của toàn cửa hàng cho nó.</p>
+<p>Kết quả là mình đạt được 2736 trên private board và 2657.40087 trên publish board (top 30), kết quả trên vẫn làm cho mình chưa hài lòng lắm.</p>
+<p>Cảm ơn các bạn đã theo dõi. Hẹn gặp bạn ở các bài viết tiếp theo.</p>
+</div></div>
+  <div class="card-footer"><div class="post-navs d-flex justify-content-evenly"><div class="post-nav post-prev">
+    <i class="fas fa-fw fa-chevron-left"></i>
+    <a href="/blog/2019-04-16-colorfull-grayscale-to-color/">Thử Làm Ứng Dụng Tô Màu Ảnh Xám Thành Ảnh Màu Sử Dụng Tensorflow
+</a>
+  </div><div class="post-nav post-next">
+    <a href="/blog/2019-04-15-phan-loai-hoa/">Phân Loại Hoa Sử Dụng Pretrain Model
+</a>
+    <i class="fas fa-fw fa-chevron-right"></i>
+  </div></div></div>
+</article><div class="card component row post-comments" id="post-comments">
+  <div class="card-header">
+    <h2 class="card-title">Comments</h2>
+  </div>
+  <div class="card-body"><script src="https://utteranc.es/client.js"
+  repo="AlexBlack2202/utterances"
+  issue-term="pathname"
+  label="comment"
+  theme="github-light"
+  crossorigin="anonymous"
+  async>
+</script></div>
+</div></div>
+</div><aside class="col-lg-4 sidebar d-flex">
+  <div class="container d-flex flex-column">
+    
+    <section class="card row text-center profile component">
+  <div class="card-body">
+    <div class="col-12 d-flex align-items-center justify-content-center"><img class="profile-avatar rounded-circle" alt="Đặng Thị Hằng | Phạm Duy Tùng" src="/images/profile.webp" loading="lazy"
+   width="736" height="920"
+   />
+</div>
+    <div class="col-12 profile-meta"><div class="profile-name">Đặng Thị Hằng | Phạm Duy Tùng</div><div class="profile-bio">Gopher, CShaper, Pythoner, Full Stack Engineer.</div><div class="profile-company"><i class="fas fa-fw fa-building"></i>MWG</div><div class="profile-location"><i class="fas fa-fw fa-map-marker-alt"></i>Earth</div><div class="profile-about"><i class="fas fa-fw fa-user"></i><a href="/about/">About</a></div><div class="profile-contact"><i class="fas fa-fw fa-question-circle"></i><a href="/contact/">Contact Us</a></div>
+</div>
+  </div>
+</section>
+  <div class="post-toc row mb-4 card component" id="postTOC">
+  <div class="card-header">
+    <h2 class="card-title">Contents</h2>
+  </div>
+  <div class="card-body">
+    <nav id="TableOfContents">
+  <ul>
+    <li>
+      <ul>
+        <li><a href="#xử-lý-missing-values">Xử lý missing values</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div><section class="recent-posts row card component">
+  <div class="card-header">
+    <h2 class="card-title">Recent Posts</h2>
+  </div>
+  <div class="card-body">
+    <ul class="post-list"><li>
+        <a href="/blog/2021-11-06-some-way-make-momey-from-web-scrapping/">Một Số Cách Kiếm Thêm Thu Nhập Từ Cách Cào Dữ Liệu
+</a>
+      </li><li>
+        <a href="/blog/2021-08-12-china_chess_alpha_beta_ai/">Xây Dựng Chương Trình AI Đơn Giản Cho Game Cờ Tướng
+</a>
+      </li><li>
+        <a href="/blog/2021-07-28-pycaret-flaskapi/">Tìm Hiểu Package PyCaret Trong Python
+</a>
+      </li><li>
+        <a href="/blog/2021-07-02-mo-hinh-phan-quyen/">Mô Hình Phân Quyền - Access Control
+</a>
+      </li><li>
+        <a href="/blog/2021-05-30-upgrade-wls-to-wls2/">Nâng Cấp WSL Lên Bản WSL 2 Trên Window 10
+</a>
+      </li></ul>
+  </div>
+</section><section class="series-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="/series">Series</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="/series/kh%C3%B3a-h%E1%BB%8Dc-c&#43;&#43;-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa học c&#43;&#43; căn bản">
+            Khóa học c&#43;&#43; căn bản<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="/series/machine-learning-dataset/" class="badge rounded post-taxonomy" title="Machine learning dataset">
+            Machine learning dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a><a href="/series/kh%C3%B3a-h%E1%BB%8Dc-python-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa học python căn bản">
+            Khóa học python căn bản<span class="badge badge-sm text-white bg-accent ms-1">1</span></a></div>
+      </div>
+    </section><section class="tags-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="/tags">Tags</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="/tags/machine-learning/" class="badge rounded post-taxonomy" title="Machine learning">
+            Machine learning<span class="badge badge-sm text-white bg-accent ms-1">38</span></a><a href="/tags/deeplearning/" class="badge rounded post-taxonomy" title="Deeplearning">
+            Deeplearning<span class="badge badge-sm text-white bg-accent ms-1">20</span></a><a href="/tags/deep-learning/" class="badge rounded post-taxonomy" title="Deep learning">
+            Deep learning<span class="badge badge-sm text-white bg-accent ms-1">15</span></a><a href="/tags/python/" class="badge rounded post-taxonomy" title="python">
+            python<span class="badge badge-sm text-white bg-accent ms-1">10</span></a><a href="/tags/opencv/" class="badge rounded post-taxonomy" title="opencv">
+            opencv<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="/tags/c&#43;&#43;/" class="badge rounded post-taxonomy" title="c&#43;&#43;">
+            c&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/object-detector/" class="badge rounded post-taxonomy" title="object detector">
+            object detector<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/alexnet/" class="badge rounded post-taxonomy" title="AlexNet">
+            AlexNet<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="/tags/d%E1%BB%B1-%C4%91o%C3%A1n/" class="badge rounded post-taxonomy" title="dự đoán">
+            dự đoán<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="/tags/forecast/" class="badge rounded post-taxonomy" title="forecast">
+            forecast<span class="badge badge-sm text-white bg-accent ms-1">3</span></a></div>
+      </div>
+    </section>
+    
+  </div>
+</aside>
+</div>
+    </main><footer class="footer mt-auto py-3 text-center container"><ul class="nav justify-content-between footer-memu mb-3"><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Support
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-github"></i>Repository
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-comments"></i>Discussions
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">Features Request
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">Bug Report
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/contact/"><i class="fas fa-fw fa-info-circle"></i>Contact Us
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/faq/"><i class="fas fa-fw fa-question-circle"></i>FAQs
+</a>
+        </li></ul></li><li class="nav-item"><li class="nav-item">
+      <a class="nav-link" target="_blank" rel="noopener noreferrer">Docs
+</a>
+    </li></li><li class="nav-item"><li class="nav-item">
+      <a class="nav-link" target="_blank" rel="noopener noreferrer">Features
+</a>
+    </li></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Demo
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">Netlify
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">China
+</a>
+        </li></ul></li></ul>
+<div class="copyright mb-2">
+  Copyright © 2016-2022 Phạm Duy Tùng. All Rights Reserved.
+</div>
+<div class="powered-by mb-2">
+  Website chia sẻ kiến thức của Phạm Duy Tùng và Đặng Thị Hằng. Vui lòng liên hệ email alexblack2202@gmail.com nếu bạn có thông tin cần trao đổi.
+</div></footer>
+<script src="/js/main.0f06b653e090cf5f3e595cc4f3150328397d377ee5b405d0803057801eb4f3e5.js" integrity="sha256-Dwa2U&#43;CQz18&#43;WVzE8xUDKDl9N37ltAXQgDBXgB608&#43;U=" crossorigin="anonymous" defer></script><script src="/js/icons.min.8ddcaafc364ff0296c2209c5495287f0de039b852da9b24847f94c198b7639b6.js" integrity="sha256-jdyq/DZP8ClsIgnFSVKH8N4Dm4UtqbJIR/lMGYt2ObY=" crossorigin="anonymous" defer></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('\/service-worker.js').then(function(reg) {
+      console.log('Successfully registered service worker', reg);
+    }).catch(function(err) {
+      console.warn('Error whilst registering service worker', err);
+    });
+  });
+}
+</script><script src="/js/viewer.min.652118a9fbf3403cdfde4026209f97ace22f9e334f0b45a33431a221b3db46a8.js" integrity="sha256-ZSEYqfvzQDzf3kAmIJ&#43;XrOIvnjNPC0WjNDGiIbPbRqg=" crossorigin="anonymous" defer></script><script defer src="/js/katex.min.a575e93a07f02f7e58ee9002aea3b4e75163d4fa8ea3a627e90e7fafd5c718fa.js" integrity="sha256-pXXpOgfwL35Y7pACrqO051Fj1PqOo6Yn6Q5/r9XHGPo=" crossorigin="anonymous"></script>
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-114911596-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+</body>
+</html>

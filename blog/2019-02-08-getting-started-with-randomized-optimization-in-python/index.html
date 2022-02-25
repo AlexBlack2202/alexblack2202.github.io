@@ -1,0 +1,602 @@
+<!doctype html><html lang="en" data-palette="blue"
+   data-mode="dark">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Tối ưu hoá ngẫu nhiên - Phạm Duy Tùng Machine Learning Blog</title><link rel="apple-touch-icon" href="/images/icons/icon-180x180.png" sizes="180x180">
+<link rel="icon" href="/images/icons/icon-32x32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="/images/icons/icon-16x16.png" sizes="16x16" type="image/png">
+<link rel="icon" href="/images/icons/favicon.ico">
+<link rel="manifest" href="/manifest.json">
+<meta name="keywords" content="" />
+<meta name="description" content="Ở bài viết này, chúng ta sẽ đề cập đến bài toán tối ưu hoá ngẫu nhiên, và cách sử dụng thư viện mlrose để giải bài toán trên." /><meta name="robots" content="index, follow" /><meta itemprop="name" content="Tối ưu hoá ngẫu nhiên">
+<meta itemprop="description" content="Ở bài viết này, chúng ta sẽ đề cập đến bài toán tối ưu hoá ngẫu nhiên, và cách sử dụng thư viện mlrose để giải bài toán trên."><meta itemprop="datePublished" content="2019-02-08T00:09:00+03:00" />
+<meta itemprop="dateModified" content="2019-02-08T00:09:00+03:00" />
+<meta itemprop="wordCount" content="1923">
+<meta itemprop="keywords" content="tối ưu hóa ngẫu nhiên,mlrose," /><meta property="og:title" content="Tối ưu hoá ngẫu nhiên" />
+<meta property="og:description" content="Ở bài viết này, chúng ta sẽ đề cập đến bài toán tối ưu hoá ngẫu nhiên, và cách sử dụng thư viện mlrose để giải bài toán trên." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="/blog/2019-02-08-getting-started-with-randomized-optimization-in-python/" /><meta property="article:section" content="blog" />
+<meta property="article:published_time" content="2019-02-08T00:09:00+03:00" />
+<meta property="article:modified_time" content="2019-02-08T00:09:00+03:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Tối ưu hoá ngẫu nhiên"/>
+<meta name="twitter:description" content="Ở bài viết này, chúng ta sẽ đề cập đến bài toán tối ưu hoá ngẫu nhiên, và cách sử dụng thư viện mlrose để giải bài toán trên."/>
+<meta property="og:image" content="/images/logo.png"/>
+  <meta name="twitter:image" content="/images/logo.png"/><link rel="stylesheet" href="/css/main.min.507afbe6e4670fa3e961a0b35816b5daeb36029866fd6bd7b9d7871fcf88faa5.css" integrity="sha256-UHr75uRnD6PpYaCzWBa12us2Aphm/WvXudeHH8&#43;I&#43;qU=" crossorigin="anonymous"><link rel="stylesheet" href="/css/katex.min.d080a89e03e1eb850f547d835c186b4273f69879aa497eb8b0e88c1578bf1f0b.css" integrity="sha256-0ICongPh64UPVH2DXBhrQnP2mHmqSX64sOiMFXi/Hws=" crossorigin="anonymous">
+<link rel="stylesheet" href="/css/viewer.min.3d228794bcedbbfa0412beb8fbc1ec6973202945e42af7004f742a4d7bd620ab.css" integrity="sha256-PSKHlLztu/oEEr64&#43;8HsaXMgKUXkKvcAT3QqTXvWIKs=" crossorigin="anonymous"></head>
+  <body><script>const items=['mode','palette'];items.forEach(function(a){const b=localStorage.getItem('hbs-'+a);b&&document.body.parentElement.setAttribute('data-'+a,b)})</script><header><nav class="navbar top-app-bar top-app-bar-expand-lg fixed-top">
+  <div class="container">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <i class="fas fa-bars"></i>
+    </button><a class="navbar-brand flex-grow-1 flex-lg-grow-0 text-center text-lg-start mx-auto me-lg-3" href="/"><img class="logo" alt="Logo" src="/images/logo.webp" loading="lazy"
+   width="400" height="400"
+   />
+HOME
+    </a>
+    <div class="offcanvas offcanvas-bottom surface" tabindex="-1" id="offcanvasSocialShare" aria-labelledby="offcanvasSocialShare">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Share</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body">
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Twitter Share Button"
+      target="_blank" href="https://twitter.com/intent/tweet?title=T%e1%bb%91i%20%c6%b0u%20ho%c3%a1%20ng%e1%ba%abu%20nhi%c3%aan&url=%2fblog%2f2019-02-08-getting-started-with-randomized-optimization-in-python%2f">
+      <i class="fab fa-fw fa-twitter"></i> Twitter
+    </a>
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Facebook Share Button"
+      target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=%2fblog%2f2019-02-08-getting-started-with-randomized-optimization-in-python%2f">
+      <i class="fab fa-fw fa-facebook-f"></i> Facebook
+    </a>
+  </div>
+</div>
+    <button class="navbar-settings" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSettings"
+  aria-controls="offcanvasSettings" aria-label="Toggle settings">
+  <i class="fas fa-ellipsis-v"></i>
+</button>
+
+<div class="offcanvas offcanvas-end surface h-100" tabindex="-1" id="offcanvasSettings" aria-labelledby="offcanvasSettings">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Settings</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body d-flex flex-column">
+
+
+
+<section class="setting">
+  <form class="font-size-switcher-form row">
+    <div class="col-auto">
+      <label for="fontSize" class="form-label"><i class="fas fa-fw fa-font"></i> Font Size</label>
+    </div>
+    <div class="col-auto ms-auto">
+      <input type="range" class="form-range" min="-2" max="2" id="fontSize">
+    </div>
+  </form>
+</section>
+
+
+<section class="setting palettes">
+  <form class="row">
+    <div class="col-auto">
+      <label><i class="fas fa-fw fa-palette"></i> Palette</label>
+    </div>
+    <div class="col-auto ms-auto">
+      <a id="btnPalette" class="btn btn-sm btn-outline-primary" role="button" aria-label="palettePicker">
+        <i class="fas fa-eye-dropper"></i>
+      </a>
+    </div>
+  </form>
+  <div class="mt-2 d-flex justify-content-between visually-hidden" id="palettePicker"><button type="button" id="palette-blue" aria-label="Blue"
+        class="btn btn-sm w-100 palette" data-palette="blue">
+      </button><button type="button" id="palette-blue-gray" aria-label="Blue Gray"
+        class="btn btn-sm w-100 palette" data-palette="blue-gray">
+      </button><button type="button" id="palette-brown" aria-label="Brown"
+        class="btn btn-sm w-100 palette" data-palette="brown">
+      </button><button type="button" id="palette-cyan" aria-label="Cyan"
+        class="btn btn-sm w-100 palette" data-palette="cyan">
+      </button><button type="button" id="palette-green" aria-label="Green"
+        class="btn btn-sm w-100 palette" data-palette="green">
+      </button><button type="button" id="palette-indigo" aria-label="Indigo"
+        class="btn btn-sm w-100 palette" data-palette="indigo">
+      </button><button type="button" id="palette-orange" aria-label="Orange"
+        class="btn btn-sm w-100 palette" data-palette="orange">
+      </button><button type="button" id="palette-pink" aria-label="Pink"
+        class="btn btn-sm w-100 palette" data-palette="pink">
+      </button><button type="button" id="palette-purple" aria-label="Purple"
+        class="btn btn-sm w-100 palette" data-palette="purple">
+      </button><button type="button" id="palette-red" aria-label="Red"
+        class="btn btn-sm w-100 palette" data-palette="red">
+      </button><button type="button" id="palette-teal" aria-label="Teal"
+        class="btn btn-sm w-100 palette" data-palette="teal">
+      </button><button type="button" id="palette-yellow" aria-label="Yellow"
+        class="btn btn-sm w-100 palette" data-palette="yellow">
+      </button></div>
+</section>
+<section class="setting actions d-flex justify-content-around mt-auto overflow-auto">
+  <a role="button" class="action action-go-back" href="javascript: window.history.back();">
+    <span class="action-icon"><i class="fas fa-2x fa-arrow-left"></i></span> Go back
+  </a>
+  <a role="button" class="action action-reload-page">
+    <span class="action-icon"><i class="fas fa-2x fa-redo-alt"></i></span> Reload
+  </a>
+  <a role="button" class="action action-copy-url">
+    <span class="action-icon"><i class="fas fa-2x fa-link"></i></span> Copy URL
+  </a><a class="action action-social-share" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSocialShare"
+    aria-controls="offcanvasSocialShare" aria-label="Toggle social share">
+    <span class="action-icon"><i class="fas fa-2x fa-share-alt"></i></span> Share
+  </a></section>
+
+</div>
+</div>
+
+    <div class="collapse navbar-collapse" tabindex="-1" id="navbarSupportedContent" aria-labelledby="navbarSupportedContent">
+      <form class="search-bar my-1" action="/search">
+  <div class="input-group input-group-sm">
+    <span class="btn btn-search disabled position-absolute left-0"><i class="fas fa-fw fa-search"></i></span>
+    <input class="form-control rounded-pill" name="q" type="search" aria-label="Search">
+  </div>
+</form>
+      <ul class="navbar-nav ms-auto"><li class="nav-item">
+          <a class="nav-link" href="/series/">
+            <i class="fas fa-fw fa-columns"></i>Series
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="/archives/">
+            <i class="fas fa-fw fa-file-archive"></i>Archives
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="/categories/">
+            <i class="fas fa-fw fa-folder"></i>Categories
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="/tags/">
+            <i class="fas fa-fw fa-tags"></i>Tags
+          </a>
+        </li><li class="nav-item dropdown">
+          <a class="nav-link" id="navbarDropdownSupport" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-fw fa-chevron-circle-down"></i>Support
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdownSupport"><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Repository
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Discussions
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Features Request
+              </a>
+            </li><li><hr class="dropdown-divider"></li><li>
+              <a class="dropdown-item"
+                href="/faq/">
+                FAQs
+              </a>
+            </li></ul>
+        </li></ul>
+    </div>
+  </div>
+</nav>
+</header>
+<main role="main" class="container">
+      <div class="row content">
+<div class="col-lg-8">
+  <div class="container"><nav class="row card component" aria-label="breadcrumb">
+  <div class="card-body">
+    <ol class="breadcrumb "><li class="breadcrumb-item"><a href="/">Home</a></li><li class="breadcrumb-item"><a href="/blog/">Blogs</a></li><li class="breadcrumb-item active">Tối Ưu Hoá Ngẫu Nhiên</li></ol>
+  </div>
+</nav>
+<div class="post-panel-wrapper">
+  <div class="d-flex flex-column component rounded post-panel">
+    
+    <a class="action action-panel-toggler" role="button" title="Panel toggler">
+      <i class="fas fa-fw fa-chevron-circle-down"></i>
+    </a>
+    <a id="sidebarToggler" class="action d-none d-lg-block" role="button" title="Sidebar toggler">
+  <i class="fas fa-fw fa-expand-alt" data-fa-transform="rotate-45"></i>
+</a>
+
+    
+
+    
+    
+    <a class="action" href="#post-comments" role="button" aria-label="Comments" title="Comments">
+  <i class="fas fa-fw fa-comments"></i>
+</a>
+    <a class="action" href="#postTOC" aria-controls="Table of contents" role="button" title="Table of contents">
+  <i class="fas fa-fw fa-list-alt"></i>
+</a>
+    
+  </div>
+</div>
+<article class="row card component mb-4 post">
+  <div class="card-header ">
+    <h1 class="card-title post-title">Tối Ưu Hoá Ngẫu Nhiên
+</h1>
+  </div>
+  <div class="card-body"><div class="post-meta">
+  <span class="post-date" title="created on 2019-02-08 04:09:00 &#43;0700 &#43;07.">
+    Feb 8, 2019
+  </span><span class="post-reading-time">
+    10 min read
+  </span><span class="post-taxonomies"><a href="/tags/t%E1%BB%91i-%C6%B0u-h%C3%B3a-ng%E1%BA%ABu-nhi%C3%AAn/" class="badge post-taxonomy">tối ưu hóa ngẫu nhiên</a><a href="/tags/mlrose/" class="badge post-taxonomy">mlrose</a></span>
+</div>
+<div class="post-content mb-3"><h2 id="bài-toán-tối-ưu-hoá-là-gì">Bài toán tối ưu hoá là gì<a class="anchor ms-1" href="#bài-toán-tối-ưu-hoá-là-gì"><i class="fas fa-link"></i></a></h2>
+<p>Theo  Russell and Norvig  bài toán tối ưu hoá là bài toán mà &ldquo;the aim is to find the best state according to an objective function&rdquo; (mình xin phép để nguyên câu tiếng anh).</p>
+<p>Trong đó, state trong từ best state phụ thuộc vào ngữ cảnh của bài toán. Ví dục</p>
+<ul>
+<li>Trong ngữ cảnh là mạng neural network, state chính là các trọng số (weight), best state là tìm các trọng số tối ưu</li>
+<li>Trong bài toán 8 hậu, state là vị trí của các con hậu, best state là vị trí tốt nhất thoả yêu cầu, cũng chính là lời giải.</li>
+<li>Trong bài toán người giao hàng, state là các thành phố người giao hàng đi qua.</li>
+<li>Trong bài toán tô màu cho mỗi quốc gia trên bản đồ, state là màu được tô cho mỗi quốc gia</li>
+</ul>
+<p>Nói đến đây, các bạn chắc cũng đã hiểu được khái niệm state là gì rồi. Điều quan trọng ở đây là chúng ta có thể biểu diễn state dưới dạng một con số, hoặc một mảng các giá trị số. (nghĩa là chúng ta phải chuyển đổi màu, thành phố, &hellip; dưới dạng số) thì mới có thể tính toán được.</p>
+<p>Từ best trong chữ best state được biểu diễn bởi một hàm toán học (mà chúng ta quen thuộc với các từ như là objective funtion, fitness funtion, cost funtion, loss function , v.v). Cái mà chúng ta muốn là cực đại hoặc cực tiểu  hoá nó (để có được kết quả tốt nhất). Hàm này nhận đầu vào là state array và trả về &ldquo;fitness&rdquo; value.</p>
+<p>Cho nên, chúng ta có thể định nghĩa đơn giản bài toán tối ưu là việc tìm các giá trị tối ưu để cực đại/ cực tiểu hoá một hàm toán học.</p>
+<h2 id="ví-dụ">Ví dụ<a class="anchor ms-1" href="#ví-dụ"><i class="fas fa-link"></i></a></h2>
+<p>Một ví dụ xàm xàm như sau</p>
+<p>Ta có một (state) vector x = [x0,x1,x2,x3,x4] thuộc đoạn [0,1]
+một hàm f(x) = x0 + x1 + x2 + x3 + x4, tìm các giá trị x để f đạt cực đại.</p>
+<p>Rõ ràng, bằng việc tính nhẩm, chúng ta biết được rằng giá trị cực đại của hàm trên là 5, và lời giải cho bài toán trên là x = [1,1,1,1,1].</p>
+<p>Còn theo toán học cấp 3, ta sẽ tính đạo hàm riêng phần của từng phần tử (cái này đơn giản, mình không nhắc lại), và cũng đạt được x = [1,1,1,1,1]</p>
+<h2 id="tại-sao-lại-dùng-randomized-optimization">Tại sao lại dùng Randomized Optimization?<a class="anchor ms-1" href="#tại-sao-lại-dùng-randomized-optimization"><i class="fas fa-link"></i></a></h2>
+<p>Trong bài toán ở trên, chúng ta có thể dễ dàng nhẩm được giá trị tối ưu một cách nhanh chóng. Tuy nhiên, trong thực tế, bài toán sẽ khó hơn một chút, và có nhiều hàm chúng ta không thể dễ dàng tìm được giá trị đạo hàm một cách nhanh chóng được (tốn thời gian rất lâu để giải bài toán ). Lúc này, chúng ta sẽ dùng Randomized optimization.</p>
+<p>Randomized optimization sẽ bắt đầu tại một điểm ngẫu nhiên &ldquo;best&rdquo; state nào đó, sau đó sẽ sinh ngẫu nhiên một state khác (thường là láng giềng của &ldquo;best&rdquo; state hiện tại). Nếu state mới đạt giá trị finest tốt hơn &ldquo;best&rdquo; state hiện tại thì gán &ldquo;best&rdquo; state bằng state mới. Quá trình này lặp đi lặp lại cho đến khi không thể tìm được state mới này tốt hơn &ldquo;best&rdquo; state hiện tại.</p>
+<p><img class="img-fluid" alt="Hình ảnh" src="/blog/2019-02-08-getting-started-with-randomized-optimization-in-python/global_maximin.jpg" loading="lazy"
+  
+   />
+
+</p>
+<p>Không có gì bảo đảm rằng randomized optimization sẽ tìm được lời giải tối ưu. Ví dụ như hình trên, thuật toán chỉ có thể dừng ở local maximin, rồi đứng yên ở đó. Tuy nhiên, nếu chúng ta thiết lập số lần lặp đủ lớn, thuật toán thông thường sẽ trả về kết quả tốt hơn.</p>
+<p>Ở đây, chúng ta có một sự đánh đổi trade-off giữa thời gian tìm ra lời giải tối ưu và chất lượng của lời giải.</p>
+<h2 id="giải-bài-toán-tối-ưu-bằng-thư-viện-mlrose">Giải bài toán tối ưu bằng thư viện mlrose<a class="anchor ms-1" href="#giải-bài-toán-tối-ưu-bằng-thư-viện-mlrose"><i class="fas fa-link"></i></a></h2>
+<p>Để giải bài toán tối ưu bằng thư viện mlrose, chúng ta sẽ phải định nghĩa 4 thứ:</p>
+<ol>
+<li>Định nghĩa state vector</li>
+<li>Định nghĩa hàm fitness function</li>
+<li>Xác định loại bài toán</li>
+<li>Chọn  một thuật toán tối ưu hoá ngẫu nhiên để chạy.</li>
+</ol>
+<p>Để đơn giản, chúng ta sẽ giải quyết bài toán 8 hậu bằng thư viện mlrose.</p>
+<h3 id="bài-toán-8-hậu">Bài toán 8 hậu<a class="anchor ms-1" href="#bài-toán-8-hậu"><i class="fas fa-link"></i></a></h3>
+<p>Nhắc lại một chút về bài toán 8 hậu. Trong bàn cờ vua có kích thước 8x8, chúng ta phải chọn vị trí đặt 8 con hậu sao cho trên mỗi dòng, cột và đường chéo của một con hậu bất kỳ đang đứng không giáp mặt với con hậu khác.</p>
+<h4 id="định-nghĩa-state">Định nghĩa state<a class="anchor ms-1" href="#định-nghĩa-state"><i class="fas fa-link"></i></a></h4>
+<p>Đây rõ ràng là bài toán tối ưu, và bước đầu tiên ta sẽ định nghĩa một vector trạng thái x = [x0, x1, x2, x3, x4, x5, x6, x7], quy ước toạ độ 0,0 là vị trí trái dưới. Giá trị của xi là vị trị cột của con hậu dòng i đang đứng.</p>
+<p><img class="img-fluid" alt="Hình ảnh" src="/blog/2019-02-08-getting-started-with-randomized-optimization-in-python/8_queen.jpg" loading="lazy"
+  
+   />
+
+</p>
+<p>Ví dụ, ở hình trên, ta có x = [6, 1, 7, 5, 0, 2, 3, 4], với x0 = 6 nghĩa là con hậu đang ở cột 0 dòng 6 (góc toạ độ chúng ta khảo sát là trái dưới)</p>
+<p>Hình trên không phải là lời giải tối ưu cho bài toán, vì con hậu ở cột 5, cột 6 và cột 7 giáp mặt nhau theo đường chéo.</p>
+<h4 id="định-nghĩa-fitness-funtion">Định nghĩa fitness funtion<a class="anchor ms-1" href="#định-nghĩa-fitness-funtion"><i class="fas fa-link"></i></a></h4>
+<p>Trong thư viện mlrose đã định nghĩa sẵn hàm fitness function cho một số bài toán đơn giản, ví dụ như trong bài toán 8 hậu vừa rồi. Tuy nhiên, chúng ta sẽ không sử dụng hàm có sẵn đó, mà sẽ tự viết một hàm fitness riêng. Có nhiều cách để định nghĩa hàm fitness khác nhau cho bài toán này. Ở đay, chúng ta sẽ xây dựng một hàm có input là vị trí của các con hậu output là một con số thông báo số lượng con hậu không giáp nhau. Nếu số lượng là 8 thì input chính là lời giải của bài toán.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln"> 1</span><span class="c1"># Define alternative N-Queens fitness function for maximization problem</span>
+<span class="ln"> 2</span><span class="k">def</span> <span class="nf">queens_max</span><span class="p">(</span><span class="n">state</span><span class="p">):</span>
+<span class="ln"> 3</span>    
+<span class="ln"> 4</span>    <span class="c1"># Initialize counter</span>
+<span class="ln"> 5</span>    <span class="n">fitness</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="ln"> 6</span>    
+<span class="ln"> 7</span>    <span class="c1"># For all pairs of queens</span>
+<span class="ln"> 8</span>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">state</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+<span class="ln"> 9</span>        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">state</span><span class="p">)):</span>
+<span class="ln">10</span>            
+<span class="ln">11</span>            <span class="c1"># Check for horizontal, diagonal-up and diagonal-down attacks</span>
+<span class="ln">12</span>            <span class="k">if</span> <span class="p">(</span><span class="n">state</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">==</span> <span class="n">state</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> \
+<span class="ln">13</span>                <span class="ow">or</span> <span class="p">(</span><span class="n">state</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">==</span> <span class="n">state</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">j</span> <span class="o">-</span> <span class="n">i</span><span class="p">))</span> \
+<span class="ln">14</span>                <span class="ow">or</span> <span class="p">(</span><span class="n">state</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">==</span> <span class="n">state</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="p">(</span><span class="n">j</span> <span class="o">-</span> <span class="n">i</span><span class="p">)):</span>
+<span class="ln">15</span>                
+<span class="ln">16</span>                <span class="c1"># If no attacks, then increment counter</span>
+<span class="ln">17</span>                <span class="n">fitness</span> <span class="o">+=</span> <span class="mi">1</span>
+<span class="ln">18</span>                <span class="k">break</span>
+<span class="ln">19</span>
+<span class="ln">20</span>
+<span class="ln">21</span>    <span class="k">return</span> <span class="n">fitness</span>
+<span class="ln">22</span>
+<span class="ln">23</span><span class="n">fitness_cust</span> <span class="o">=</span> <span class="n">mlrose</span><span class="o">.</span><span class="n">CustomFitness</span><span class="p">(</span><span class="n">queens_max</span><span class="p">)</span>
+</code></pre></div><h4 id="xác-định-loại-bài-toán">Xác định loại bài toán<a class="anchor ms-1" href="#xác-định-loại-bài-toán"><i class="fas fa-link"></i></a></h4>
+<p>Thư viện mlrose cung cấp cho chúng ta các lớp để định nghĩa 3 loại bài toán tối ưu:</p>
+<ul>
+<li>
+<p>DiscreteOpt: Lớp này được sử dụng để giải các bài toán có giá trị trạng thái là rời rạc. Và tập các trạng thái sẽ được cung cấp trước. Mỗi phần tử trong state chỉ nhận một giá trị trong tập trạng thái. và mỗi phần tử trong tập trạng thái chỉ thuộc về một phần tử trong state.</p>
+</li>
+<li>
+<p>ContinuousOpt: Lớp này được sử dụng để giải các bài toán có giá trị trạng thái là liên tục.</p>
+</li>
+<li>
+<p>TSPOpt: Lớp này được dùng để giải các bài toán về travelling. Ví dụ bài toán người giao hàng. Bài toán này khác bài toán Discrete ở chỗ chúng ta sẽ phải tìm ra thứ tự tối ưu của các con số.</p>
+</li>
+</ul>
+<p>Bài toán 8 hậu được xếp vào dạng bài toán tối ưu rời rạc. Trong đó, mỗi phần tử trong state vector chỉ mang một con số từ 0 đến 7.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span>
+<span class="ln">2</span><span class="n">problem</span> <span class="o">=</span> <span class="n">mlrose</span><span class="o">.</span><span class="n">DiscreteOpt</span><span class="p">(</span><span class="n">length</span> <span class="o">=</span> <span class="mi">8</span><span class="p">,</span> <span class="n">fitness_fn</span> <span class="o">=</span> <span class="n">fitness</span><span class="p">,</span>
+<span class="ln">3</span>                             <span class="n">maximize</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">max_val</span> <span class="o">=</span> <span class="mi">8</span><span class="p">)</span>
+<span class="ln">4</span>							 
+</code></pre></div><p>length chính là số lượng phần tử trong state vector ( chúng ta có 8 cột nên length = 8), max_val = 8 (đã nói ở trên, giá trị tối ưu là khi 8 con hậu không giáp mặt nhau). Do bài toán của mình là cực tiểu (lý do là fitness  = 0 thì không có con hậu nào giáp mặt nhau, nên chúng ta set maximize = False)</p>
+<h4 id="xác-định-thuật-toán-tối-ưu">Xác định thuật toán tối ưu<a class="anchor ms-1" href="#xác-định-thuật-toán-tối-ưu"><i class="fas fa-link"></i></a></h4>
+<p>Thư viện mlrose cung cấp cho chúng ta các thuật toán như leo đồi (hill climbing), leo đồi ngẫu nhiên (stochastic hill climbing),simulated annealing, thuật giải di truyền (genetic algorithm), MIMIC (Mutual-Information-Maximizing Input Clustering). Với dạng bài toán rời rạc và travelling, chúng ta có thể chọn bất kỳ thuật toán tối ưu nào. Với bài toán liên tục, thì thuật toán MIMIC không hỗ trợ.</p>
+<p>Ví dụ, chúng ta sẽ sử dụng simulated annealing để mô phỏng hàm tối ưu, với trạng thái init là x = [1,2,3,4,5,6,7], lặp 1000 lần để tìm trạng thái tốt nhất. Có 10 lần thử. để tìm hàng xóm tốt nhất trong mỗi lần lặp.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln"> 1</span><span class="c1"># Define decay schedule</span>
+<span class="ln"> 2</span><span class="n">schedule</span> <span class="o">=</span> <span class="n">mlrose</span><span class="o">.</span><span class="n">ExpDecay</span><span class="p">()</span>
+<span class="ln"> 3</span>
+<span class="ln"> 4</span><span class="c1"># Define initial state</span>
+<span class="ln"> 5</span><span class="n">init_state</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">])</span>
+<span class="ln"> 6</span>
+<span class="ln"> 7</span><span class="c1"># Set random seed</span>
+<span class="ln"> 8</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="ln"> 9</span>
+<span class="ln">10</span><span class="c1"># Solve problem using simulated annealing</span>
+<span class="ln">11</span><span class="n">best_state</span><span class="p">,</span> <span class="n">best_fitness</span> <span class="o">=</span> <span class="n">mlrose</span><span class="o">.</span><span class="n">simulated_annealing</span><span class="p">(</span><span class="n">problem</span><span class="p">,</span> <span class="n">schedule</span> <span class="o">=</span> <span class="n">schedule</span><span class="p">,</span>
+<span class="ln">12</span>                                                      <span class="n">max_attempts</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="n">max_iters</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span>
+<span class="ln">13</span>                                                      <span class="n">init_state</span> <span class="o">=</span> <span class="n">init_state</span><span class="p">)</span>
+<span class="ln">14</span>
+<span class="ln">15</span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;The best state found is: &#39;</span><span class="p">,</span> <span class="n">best_state</span><span class="p">)</span>
+<span class="ln">16</span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;The fitness at the best state is: &#39;</span><span class="p">,</span> <span class="n">best_fitness</span><span class="p">)</span>
+</code></pre></div><p>Kết quả</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span><span class="n">The</span> <span class="n">best</span> <span class="n">state</span> <span class="n">found</span> <span class="ow">is</span><span class="p">:</span>  <span class="p">[</span><span class="mi">0</span> <span class="mi">7</span> <span class="mi">6</span> <span class="mi">4</span> <span class="mi">7</span> <span class="mi">1</span> <span class="mi">3</span> <span class="mi">5</span><span class="p">]</span>
+<span class="ln">2</span><span class="n">The</span> <span class="n">fitness</span> <span class="n">at</span> <span class="n">the</span> <span class="n">best</span> <span class="n">state</span> <span class="ow">is</span><span class="p">:</span>  <span class="mf">1.0</span>
+</code></pre></div><p>Do best state =1 , nên có 2 con hậu có thể nhìn thấy và tấn công nhau, Chúng ta sẽ thử thay dổi số max_attempts =10 thành max_attempts = 50 xem sao.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span>
+<span class="ln">2</span><span class="n">The</span> <span class="n">best</span> <span class="n">state</span> <span class="n">found</span> <span class="ow">is</span><span class="p">:</span>  <span class="p">[</span><span class="mi">2</span> <span class="mi">0</span> <span class="mi">6</span> <span class="mi">4</span> <span class="mi">7</span> <span class="mi">1</span> <span class="mi">3</span> <span class="mi">5</span><span class="p">]</span>
+<span class="ln">3</span><span class="n">The</span> <span class="n">fitness</span> <span class="n">at</span> <span class="n">the</span> <span class="n">best</span> <span class="n">state</span> <span class="ow">is</span><span class="p">:</span>  <span class="mf">0.0</span>
+</code></pre></div><p><img class="img-fluid" alt="Hình ảnh" src="/blog/2019-02-08-getting-started-with-randomized-optimization-in-python/8_queen_result.jpg" loading="lazy"
+  
+   />
+
+</p>
+<p>Thử thay bằng bài toán 12 hậu</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln"> 1</span><span class="kn">import</span> <span class="nn">mlrose</span>
+<span class="ln"> 2</span>
+<span class="ln"> 3</span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="ln"> 4</span>
+<span class="ln"> 5</span><span class="c1"># Define alternative N-Queens fitness function for maximization problem</span>
+<span class="ln"> 6</span><span class="k">def</span> <span class="nf">queens_max</span><span class="p">(</span><span class="n">state</span><span class="p">):</span>
+<span class="ln"> 7</span>    
+<span class="ln"> 8</span>    <span class="c1"># Initialize counter</span>
+<span class="ln"> 9</span>    <span class="n">fitness</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="ln">10</span>    
+<span class="ln">11</span>    <span class="c1"># For all pairs of queens</span>
+<span class="ln">12</span>    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">state</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+<span class="ln">13</span>        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">state</span><span class="p">)):</span>
+<span class="ln">14</span>            
+<span class="ln">15</span>            <span class="c1"># Check for horizontal, diagonal-up and diagonal-down attacks</span>
+<span class="ln">16</span>            <span class="k">if</span> <span class="p">(</span><span class="n">state</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">==</span> <span class="n">state</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> \
+<span class="ln">17</span>                <span class="ow">or</span> <span class="p">(</span><span class="n">state</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">==</span> <span class="n">state</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">j</span> <span class="o">-</span> <span class="n">i</span><span class="p">))</span> \
+<span class="ln">18</span>                <span class="ow">or</span> <span class="p">(</span><span class="n">state</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">==</span> <span class="n">state</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="p">(</span><span class="n">j</span> <span class="o">-</span> <span class="n">i</span><span class="p">)):</span>
+<span class="ln">19</span>                
+<span class="ln">20</span>                <span class="c1"># If no attacks, then increment counter</span>
+<span class="ln">21</span>                <span class="n">fitness</span> <span class="o">+=</span> <span class="mi">1</span>
+<span class="ln">22</span>                <span class="k">break</span>
+<span class="ln">23</span>
+<span class="ln">24</span>
+<span class="ln">25</span>    <span class="k">return</span> <span class="n">fitness</span>
+<span class="ln">26</span>
+<span class="ln">27</span><span class="n">fitness_cust</span> <span class="o">=</span> <span class="n">mlrose</span><span class="o">.</span><span class="n">CustomFitness</span><span class="p">(</span><span class="n">queens_max</span><span class="p">)</span>
+<span class="ln">28</span>
+<span class="ln">29</span><span class="n">problem</span> <span class="o">=</span> <span class="n">mlrose</span><span class="o">.</span><span class="n">DiscreteOpt</span><span class="p">(</span><span class="n">length</span> <span class="o">=</span> <span class="mi">12</span><span class="p">,</span> <span class="n">fitness_fn</span> <span class="o">=</span> <span class="n">fitness_cust</span><span class="p">,</span> <span class="n">maximize</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">max_val</span> <span class="o">=</span> <span class="mi">12</span><span class="p">)</span>
+<span class="ln">30</span>
+<span class="ln">31</span>
+<span class="ln">32</span><span class="c1"># Define decay schedule</span>
+<span class="ln">33</span><span class="n">schedule</span> <span class="o">=</span> <span class="n">mlrose</span><span class="o">.</span><span class="n">ExpDecay</span><span class="p">()</span>
+<span class="ln">34</span>
+<span class="ln">35</span><span class="c1"># Define initial state</span>
+<span class="ln">36</span><span class="n">init_state</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span><span class="mi">8</span><span class="p">,</span><span class="mi">9</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">11</span><span class="p">])</span>
+<span class="ln">37</span>
+<span class="ln">38</span><span class="c1"># Set random seed</span>
+<span class="ln">39</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="ln">40</span>
+<span class="ln">41</span><span class="c1"># Solve problem using simulated annealing</span>
+<span class="ln">42</span><span class="n">best_state</span><span class="p">,</span> <span class="n">best_fitness</span> <span class="o">=</span> <span class="n">mlrose</span><span class="o">.</span><span class="n">simulated_annealing</span><span class="p">(</span><span class="n">problem</span><span class="p">,</span> <span class="n">schedule</span> <span class="o">=</span> <span class="n">schedule</span><span class="p">,</span>
+<span class="ln">43</span>                                                      <span class="n">max_attempts</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span> <span class="n">max_iters</span> <span class="o">=</span> <span class="mi">5000</span><span class="p">,</span>
+<span class="ln">44</span>                                                      <span class="n">init_state</span> <span class="o">=</span> <span class="n">init_state</span><span class="p">)</span>
+<span class="ln">45</span>
+<span class="ln">46</span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;The best state found is: &#39;</span><span class="p">,</span> <span class="n">best_state</span><span class="p">)</span>
+<span class="ln">47</span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;The fitness at the best state is: &#39;</span><span class="p">,</span> <span class="n">best_fitness</span><span class="p">)</span>
+<span class="ln">48</span><span class="err">``</span>
+<span class="ln">49</span>
+<span class="ln">50</span><span class="n">Kết</span> <span class="n">quả</span>
+<span class="ln">51</span>
+<span class="ln">52</span><span class="err">```</span><span class="n">python</span>
+<span class="ln">53</span><span class="n">The</span> <span class="n">best</span> <span class="n">state</span> <span class="n">found</span> <span class="ow">is</span><span class="p">:</span>  <span class="p">[</span> <span class="mi">8</span> <span class="mi">10</span>  <span class="mi">3</span>  <span class="mi">6</span>  <span class="mi">0</span>  <span class="mi">9</span>  <span class="mi">1</span>  <span class="mi">5</span>  <span class="mi">2</span> <span class="mi">11</span>  <span class="mi">7</span>  <span class="mi">4</span><span class="p">]</span>
+<span class="ln">54</span><span class="n">The</span> <span class="n">fitness</span> <span class="n">at</span> <span class="n">the</span> <span class="n">best</span> <span class="n">state</span> <span class="ow">is</span><span class="p">:</span>  <span class="mf">0.0</span>
+</code></pre></div><p><img class="img-fluid" alt="Hình ảnh" src="/blog/2019-02-08-getting-started-with-randomized-optimization-in-python/12_queen_result.jpg" loading="lazy"
+  
+   />
+
+</p>
+<p>Tất nhiên, ở trên chỉ là 1 trong số các lời giải của bài toán trên, chúng ta còn có nhiều lời giải khác, do bài toán có nhiều nghiệm.</p>
+<p>Cảm ơn các bạn đã theo dõi. Hẹn gặp bạn ở các bài viết tiếp theo.</p>
+</div></div>
+  <div class="card-footer"><div class="post-navs d-flex justify-content-evenly"><div class="post-nav post-prev">
+    <i class="fas fa-fw fa-chevron-left"></i>
+    <a href="/blog/2019-02-07-china-social-creadit-system/">Hệ Thống Tín Dụng Xã Hội Của Trung Quốc - Những Ảnh Hưởng Khi Bạn Có Điểm Xã Hội Thấp
+</a>
+  </div><div class="post-nav post-next">
+    <a href="/blog/2019-02-08-randomized-optimization-in-python-v1/">Tối Ưu Hoá Ngẫu Nhiên - Bài Toán Người Giao Hàng
+</a>
+    <i class="fas fa-fw fa-chevron-right"></i>
+  </div></div></div>
+</article><div class="card component row post-comments" id="post-comments">
+  <div class="card-header">
+    <h2 class="card-title">Comments</h2>
+  </div>
+  <div class="card-body"><script src="https://utteranc.es/client.js"
+  repo="AlexBlack2202/utterances"
+  issue-term="pathname"
+  label="comment"
+  theme="github-light"
+  crossorigin="anonymous"
+  async>
+</script></div>
+</div></div>
+</div><aside class="col-lg-4 sidebar d-flex">
+  <div class="container d-flex flex-column">
+    
+    <section class="card row text-center profile component">
+  <div class="card-body">
+    <div class="col-12 d-flex align-items-center justify-content-center"><img class="profile-avatar rounded-circle" alt="Đặng Thị Hằng | Phạm Duy Tùng" src="/images/profile.webp" loading="lazy"
+   width="736" height="920"
+   />
+</div>
+    <div class="col-12 profile-meta"><div class="profile-name">Đặng Thị Hằng | Phạm Duy Tùng</div><div class="profile-bio">Gopher, CShaper, Pythoner, Full Stack Engineer.</div><div class="profile-company"><i class="fas fa-fw fa-building"></i>MWG</div><div class="profile-location"><i class="fas fa-fw fa-map-marker-alt"></i>Earth</div><div class="profile-about"><i class="fas fa-fw fa-user"></i><a href="/about/">About</a></div><div class="profile-contact"><i class="fas fa-fw fa-question-circle"></i><a href="/contact/">Contact Us</a></div>
+</div>
+  </div>
+</section>
+  <div class="post-toc row mb-4 card component" id="postTOC">
+  <div class="card-header">
+    <h2 class="card-title">Contents</h2>
+  </div>
+  <div class="card-body">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#bài-toán-tối-ưu-hoá-là-gì">Bài toán tối ưu hoá là gì</a></li>
+    <li><a href="#ví-dụ">Ví dụ</a></li>
+    <li><a href="#tại-sao-lại-dùng-randomized-optimization">Tại sao lại dùng Randomized Optimization?</a></li>
+    <li><a href="#giải-bài-toán-tối-ưu-bằng-thư-viện-mlrose">Giải bài toán tối ưu bằng thư viện mlrose</a>
+      <ul>
+        <li><a href="#bài-toán-8-hậu">Bài toán 8 hậu</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div><section class="recent-posts row card component">
+  <div class="card-header">
+    <h2 class="card-title">Recent Posts</h2>
+  </div>
+  <div class="card-body">
+    <ul class="post-list"><li>
+        <a href="/blog/2021-11-06-some-way-make-momey-from-web-scrapping/">Một Số Cách Kiếm Thêm Thu Nhập Từ Cách Cào Dữ Liệu
+</a>
+      </li><li>
+        <a href="/blog/2021-08-12-china_chess_alpha_beta_ai/">Xây Dựng Chương Trình AI Đơn Giản Cho Game Cờ Tướng
+</a>
+      </li><li>
+        <a href="/blog/2021-07-28-pycaret-flaskapi/">Tìm Hiểu Package PyCaret Trong Python
+</a>
+      </li><li>
+        <a href="/blog/2021-07-02-mo-hinh-phan-quyen/">Mô Hình Phân Quyền - Access Control
+</a>
+      </li><li>
+        <a href="/blog/2021-05-30-upgrade-wls-to-wls2/">Nâng Cấp WSL Lên Bản WSL 2 Trên Window 10
+</a>
+      </li></ul>
+  </div>
+</section><section class="series-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="/series">Series</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="/series/kh%C3%B3a-h%E1%BB%8Dc-c&#43;&#43;-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa học c&#43;&#43; căn bản">
+            Khóa học c&#43;&#43; căn bản<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="/series/machine-learning-dataset/" class="badge rounded post-taxonomy" title="Machine learning dataset">
+            Machine learning dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a><a href="/series/kh%C3%B3a-h%E1%BB%8Dc-python-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa học python căn bản">
+            Khóa học python căn bản<span class="badge badge-sm text-white bg-accent ms-1">1</span></a></div>
+      </div>
+    </section><section class="tags-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="/tags">Tags</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="/tags/machine-learning/" class="badge rounded post-taxonomy" title="Machine learning">
+            Machine learning<span class="badge badge-sm text-white bg-accent ms-1">38</span></a><a href="/tags/deeplearning/" class="badge rounded post-taxonomy" title="Deeplearning">
+            Deeplearning<span class="badge badge-sm text-white bg-accent ms-1">20</span></a><a href="/tags/deep-learning/" class="badge rounded post-taxonomy" title="Deep learning">
+            Deep learning<span class="badge badge-sm text-white bg-accent ms-1">15</span></a><a href="/tags/python/" class="badge rounded post-taxonomy" title="python">
+            python<span class="badge badge-sm text-white bg-accent ms-1">10</span></a><a href="/tags/opencv/" class="badge rounded post-taxonomy" title="opencv">
+            opencv<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="/tags/c&#43;&#43;/" class="badge rounded post-taxonomy" title="c&#43;&#43;">
+            c&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/object-detector/" class="badge rounded post-taxonomy" title="object detector">
+            object detector<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/alexnet/" class="badge rounded post-taxonomy" title="AlexNet">
+            AlexNet<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="/tags/d%E1%BB%B1-%C4%91o%C3%A1n/" class="badge rounded post-taxonomy" title="dự đoán">
+            dự đoán<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="/tags/forecast/" class="badge rounded post-taxonomy" title="forecast">
+            forecast<span class="badge badge-sm text-white bg-accent ms-1">3</span></a></div>
+      </div>
+    </section>
+    
+  </div>
+</aside>
+</div>
+    </main><footer class="footer mt-auto py-3 text-center container"><ul class="nav justify-content-between footer-memu mb-3"><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Support
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-github"></i>Repository
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-comments"></i>Discussions
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">Features Request
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">Bug Report
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/contact/"><i class="fas fa-fw fa-info-circle"></i>Contact Us
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/faq/"><i class="fas fa-fw fa-question-circle"></i>FAQs
+</a>
+        </li></ul></li><li class="nav-item"><li class="nav-item">
+      <a class="nav-link" target="_blank" rel="noopener noreferrer">Docs
+</a>
+    </li></li><li class="nav-item"><li class="nav-item">
+      <a class="nav-link" target="_blank" rel="noopener noreferrer">Features
+</a>
+    </li></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Demo
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">Netlify
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">China
+</a>
+        </li></ul></li></ul>
+<div class="copyright mb-2">
+  Copyright © 2016-2022 Phạm Duy Tùng. All Rights Reserved.
+</div>
+<div class="powered-by mb-2">
+  Website chia sẻ kiến thức của Phạm Duy Tùng và Đặng Thị Hằng. Vui lòng liên hệ email alexblack2202@gmail.com nếu bạn có thông tin cần trao đổi.
+</div></footer>
+<script src="/js/main.0f06b653e090cf5f3e595cc4f3150328397d377ee5b405d0803057801eb4f3e5.js" integrity="sha256-Dwa2U&#43;CQz18&#43;WVzE8xUDKDl9N37ltAXQgDBXgB608&#43;U=" crossorigin="anonymous" defer></script><script src="/js/icons.min.8ddcaafc364ff0296c2209c5495287f0de039b852da9b24847f94c198b7639b6.js" integrity="sha256-jdyq/DZP8ClsIgnFSVKH8N4Dm4UtqbJIR/lMGYt2ObY=" crossorigin="anonymous" defer></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('\/service-worker.js').then(function(reg) {
+      console.log('Successfully registered service worker', reg);
+    }).catch(function(err) {
+      console.warn('Error whilst registering service worker', err);
+    });
+  });
+}
+</script><script src="/js/viewer.min.652118a9fbf3403cdfde4026209f97ace22f9e334f0b45a33431a221b3db46a8.js" integrity="sha256-ZSEYqfvzQDzf3kAmIJ&#43;XrOIvnjNPC0WjNDGiIbPbRqg=" crossorigin="anonymous" defer></script><script defer src="/js/katex.min.a575e93a07f02f7e58ee9002aea3b4e75163d4fa8ea3a627e90e7fafd5c718fa.js" integrity="sha256-pXXpOgfwL35Y7pACrqO051Fj1PqOo6Yn6Q5/r9XHGPo=" crossorigin="anonymous"></script>
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-114911596-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+</body>
+</html>

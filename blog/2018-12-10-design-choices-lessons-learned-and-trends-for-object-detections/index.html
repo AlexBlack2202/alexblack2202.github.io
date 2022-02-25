@@ -1,0 +1,536 @@
+<!doctype html><html lang="en" data-palette="blue"
+   data-mode="dark">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Lựa chọn mô hình object detectors - Phạm Duy Tùng Machine Learning Blog</title><link rel="apple-touch-icon" href="/images/icons/icon-180x180.png" sizes="180x180">
+<link rel="icon" href="/images/icons/icon-32x32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="/images/icons/icon-16x16.png" sizes="16x16" type="image/png">
+<link rel="icon" href="/images/icons/favicon.ico">
+<link rel="manifest" href="/manifest.json">
+<meta name="keywords" content="" />
+<meta name="description" content="Ở bài viết này, chúng ta sẽ bàn về cách lựa chọn mô hình object detector tối ưu cho bài toán." /><meta name="robots" content="index, follow" /><meta itemprop="name" content="Lựa chọn mô hình object detectors">
+<meta itemprop="description" content="Ở bài viết này, chúng ta sẽ bàn về cách lựa chọn mô hình object detector tối ưu cho bài toán."><meta itemprop="datePublished" content="2018-12-10T00:19:00+03:00" />
+<meta itemprop="dateModified" content="2018-12-10T00:19:00+03:00" />
+<meta itemprop="wordCount" content="1666"><meta itemprop="image" content="/blog/2018-12-10-design-choices-lessons-learned-and-trends-for-object-detections/feature_extraction_accuracy.jpg">
+<meta itemprop="keywords" content="Machine learning,Deeplearning,object detector,single shot," /><meta property="og:title" content="Lựa chọn mô hình object detectors" />
+<meta property="og:description" content="Ở bài viết này, chúng ta sẽ bàn về cách lựa chọn mô hình object detector tối ưu cho bài toán." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="/blog/2018-12-10-design-choices-lessons-learned-and-trends-for-object-detections/" /><meta property="og:image" content="/blog/2018-12-10-design-choices-lessons-learned-and-trends-for-object-detections/feature_extraction_accuracy.jpg"/><meta property="article:section" content="blog" />
+<meta property="article:published_time" content="2018-12-10T00:19:00+03:00" />
+<meta property="article:modified_time" content="2018-12-10T00:19:00+03:00" />
+
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:image" content="/blog/2018-12-10-design-choices-lessons-learned-and-trends-for-object-detections/feature_extraction_accuracy.jpg"/>
+<meta name="twitter:title" content="Lựa chọn mô hình object detectors"/>
+<meta name="twitter:description" content="Ở bài viết này, chúng ta sẽ bàn về cách lựa chọn mô hình object detector tối ưu cho bài toán."/>
+<link rel="stylesheet" href="/css/main.min.507afbe6e4670fa3e961a0b35816b5daeb36029866fd6bd7b9d7871fcf88faa5.css" integrity="sha256-UHr75uRnD6PpYaCzWBa12us2Aphm/WvXudeHH8&#43;I&#43;qU=" crossorigin="anonymous"><link rel="stylesheet" href="/css/katex.min.d080a89e03e1eb850f547d835c186b4273f69879aa497eb8b0e88c1578bf1f0b.css" integrity="sha256-0ICongPh64UPVH2DXBhrQnP2mHmqSX64sOiMFXi/Hws=" crossorigin="anonymous">
+<link rel="stylesheet" href="/css/viewer.min.3d228794bcedbbfa0412beb8fbc1ec6973202945e42af7004f742a4d7bd620ab.css" integrity="sha256-PSKHlLztu/oEEr64&#43;8HsaXMgKUXkKvcAT3QqTXvWIKs=" crossorigin="anonymous"></head>
+  <body><script>const items=['mode','palette'];items.forEach(function(a){const b=localStorage.getItem('hbs-'+a);b&&document.body.parentElement.setAttribute('data-'+a,b)})</script><header><nav class="navbar top-app-bar top-app-bar-expand-lg fixed-top">
+  <div class="container">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <i class="fas fa-bars"></i>
+    </button><a class="navbar-brand flex-grow-1 flex-lg-grow-0 text-center text-lg-start mx-auto me-lg-3" href="/"><img class="logo" alt="Logo" src="/images/logo.webp" loading="lazy"
+   width="400" height="400"
+   />
+HOME
+    </a>
+    <div class="offcanvas offcanvas-bottom surface" tabindex="-1" id="offcanvasSocialShare" aria-labelledby="offcanvasSocialShare">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Share</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body">
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Twitter Share Button"
+      target="_blank" href="https://twitter.com/intent/tweet?title=L%e1%bb%b1a%20ch%e1%bb%8dn%20m%c3%b4%20h%c3%acnh%20object%20detectors&url=%2fblog%2f2018-12-10-design-choices-lessons-learned-and-trends-for-object-detections%2f">
+      <i class="fab fa-fw fa-twitter"></i> Twitter
+    </a>
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Facebook Share Button"
+      target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=%2fblog%2f2018-12-10-design-choices-lessons-learned-and-trends-for-object-detections%2f">
+      <i class="fab fa-fw fa-facebook-f"></i> Facebook
+    </a>
+  </div>
+</div>
+    <button class="navbar-settings" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSettings"
+  aria-controls="offcanvasSettings" aria-label="Toggle settings">
+  <i class="fas fa-ellipsis-v"></i>
+</button>
+
+<div class="offcanvas offcanvas-end surface h-100" tabindex="-1" id="offcanvasSettings" aria-labelledby="offcanvasSettings">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Settings</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body d-flex flex-column">
+
+
+
+<section class="setting">
+  <form class="font-size-switcher-form row">
+    <div class="col-auto">
+      <label for="fontSize" class="form-label"><i class="fas fa-fw fa-font"></i> Font Size</label>
+    </div>
+    <div class="col-auto ms-auto">
+      <input type="range" class="form-range" min="-2" max="2" id="fontSize">
+    </div>
+  </form>
+</section>
+
+
+<section class="setting palettes">
+  <form class="row">
+    <div class="col-auto">
+      <label><i class="fas fa-fw fa-palette"></i> Palette</label>
+    </div>
+    <div class="col-auto ms-auto">
+      <a id="btnPalette" class="btn btn-sm btn-outline-primary" role="button" aria-label="palettePicker">
+        <i class="fas fa-eye-dropper"></i>
+      </a>
+    </div>
+  </form>
+  <div class="mt-2 d-flex justify-content-between visually-hidden" id="palettePicker"><button type="button" id="palette-blue" aria-label="Blue"
+        class="btn btn-sm w-100 palette" data-palette="blue">
+      </button><button type="button" id="palette-blue-gray" aria-label="Blue Gray"
+        class="btn btn-sm w-100 palette" data-palette="blue-gray">
+      </button><button type="button" id="palette-brown" aria-label="Brown"
+        class="btn btn-sm w-100 palette" data-palette="brown">
+      </button><button type="button" id="palette-cyan" aria-label="Cyan"
+        class="btn btn-sm w-100 palette" data-palette="cyan">
+      </button><button type="button" id="palette-green" aria-label="Green"
+        class="btn btn-sm w-100 palette" data-palette="green">
+      </button><button type="button" id="palette-indigo" aria-label="Indigo"
+        class="btn btn-sm w-100 palette" data-palette="indigo">
+      </button><button type="button" id="palette-orange" aria-label="Orange"
+        class="btn btn-sm w-100 palette" data-palette="orange">
+      </button><button type="button" id="palette-pink" aria-label="Pink"
+        class="btn btn-sm w-100 palette" data-palette="pink">
+      </button><button type="button" id="palette-purple" aria-label="Purple"
+        class="btn btn-sm w-100 palette" data-palette="purple">
+      </button><button type="button" id="palette-red" aria-label="Red"
+        class="btn btn-sm w-100 palette" data-palette="red">
+      </button><button type="button" id="palette-teal" aria-label="Teal"
+        class="btn btn-sm w-100 palette" data-palette="teal">
+      </button><button type="button" id="palette-yellow" aria-label="Yellow"
+        class="btn btn-sm w-100 palette" data-palette="yellow">
+      </button></div>
+</section>
+<section class="setting actions d-flex justify-content-around mt-auto overflow-auto">
+  <a role="button" class="action action-go-back" href="javascript: window.history.back();">
+    <span class="action-icon"><i class="fas fa-2x fa-arrow-left"></i></span> Go back
+  </a>
+  <a role="button" class="action action-reload-page">
+    <span class="action-icon"><i class="fas fa-2x fa-redo-alt"></i></span> Reload
+  </a>
+  <a role="button" class="action action-copy-url">
+    <span class="action-icon"><i class="fas fa-2x fa-link"></i></span> Copy URL
+  </a><a class="action action-social-share" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSocialShare"
+    aria-controls="offcanvasSocialShare" aria-label="Toggle social share">
+    <span class="action-icon"><i class="fas fa-2x fa-share-alt"></i></span> Share
+  </a></section>
+
+</div>
+</div>
+
+    <div class="collapse navbar-collapse" tabindex="-1" id="navbarSupportedContent" aria-labelledby="navbarSupportedContent">
+      <form class="search-bar my-1" action="/search">
+  <div class="input-group input-group-sm">
+    <span class="btn btn-search disabled position-absolute left-0"><i class="fas fa-fw fa-search"></i></span>
+    <input class="form-control rounded-pill" name="q" type="search" aria-label="Search">
+  </div>
+</form>
+      <ul class="navbar-nav ms-auto"><li class="nav-item">
+          <a class="nav-link" href="/series/">
+            <i class="fas fa-fw fa-columns"></i>Series
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="/archives/">
+            <i class="fas fa-fw fa-file-archive"></i>Archives
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="/categories/">
+            <i class="fas fa-fw fa-folder"></i>Categories
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="/tags/">
+            <i class="fas fa-fw fa-tags"></i>Tags
+          </a>
+        </li><li class="nav-item dropdown">
+          <a class="nav-link" id="navbarDropdownSupport" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-fw fa-chevron-circle-down"></i>Support
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdownSupport"><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Repository
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Discussions
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Features Request
+              </a>
+            </li><li><hr class="dropdown-divider"></li><li>
+              <a class="dropdown-item"
+                href="/faq/">
+                FAQs
+              </a>
+            </li></ul>
+        </li></ul>
+    </div>
+  </div>
+</nav>
+</header>
+<main role="main" class="container">
+      <div class="row content">
+<div class="col-lg-8">
+  <div class="container"><nav class="row card component" aria-label="breadcrumb">
+  <div class="card-body">
+    <ol class="breadcrumb "><li class="breadcrumb-item"><a href="/">Home</a></li><li class="breadcrumb-item"><a href="/blog/">Blogs</a></li><li class="breadcrumb-item active">Lựa Chọn Mô Hình Object Detectors</li></ol>
+  </div>
+</nav>
+<div class="post-panel-wrapper">
+  <div class="d-flex flex-column component rounded post-panel">
+    
+    <a class="action action-panel-toggler" role="button" title="Panel toggler">
+      <i class="fas fa-fw fa-chevron-circle-down"></i>
+    </a>
+    <a id="sidebarToggler" class="action d-none d-lg-block" role="button" title="Sidebar toggler">
+  <i class="fas fa-fw fa-expand-alt" data-fa-transform="rotate-45"></i>
+</a>
+
+    
+
+    
+    
+    <a class="action" href="#post-comments" role="button" aria-label="Comments" title="Comments">
+  <i class="fas fa-fw fa-comments"></i>
+</a>
+    <a class="action" href="#postTOC" aria-controls="Table of contents" role="button" title="Table of contents">
+  <i class="fas fa-fw fa-list-alt"></i>
+</a>
+    
+  </div>
+</div>
+<article class="row card component mb-4 post">
+  <div class="card-header ">
+    <h1 class="card-title post-title">Lựa Chọn Mô Hình Object Detectors
+</h1>
+  </div>
+  <div class="card-body"><div class="post-meta">
+  <span class="post-date" title="created on 2018-12-10 04:19:00 &#43;0700 &#43;07.">
+    Dec 10, 2018
+  </span><span class="post-reading-time">
+    8 min read
+  </span><span class="post-taxonomies"><a href="/tags/machine-learning/" class="badge post-taxonomy">Machine learning</a><a href="/tags/deeplearning/" class="badge post-taxonomy">Deeplearning</a><a href="/tags/object-detector/" class="badge post-taxonomy">object detector</a><a href="/tags/single-shot/" class="badge post-taxonomy">single shot</a></span>
+</div>
+<div class="post-content mb-3"><h2 id="lời-mở-đầu">Lời mở đầu<a class="anchor ms-1" href="#lời-mở-đầu"><i class="fas fa-link"></i></a></h2>
+<p>Các thuật toán phát hiện đối tượng, như các thuật toán thuộc nhóm region proposal hoặc single shot đầu bắt đầu bởi những ý tưởng khác nhau, nhưng sau qua một vài quá trình cập nhật và nâng cấp cho đến thời điểm hiện tại, mô hình chung của chúng đã gần gần giống nhau hơn. Và hai thuật toán trên là hai thuật toán tiêu biểu cạnh tranh nhau danh hiệu thuật toán phát hiện đối tượng nhanh nhất và thuật toán nhận diện chính xác nhất.
+Trong bài viết này, chúng ta sẽ đề cập đến một số chiến lược lựa chọn mô hình cho bài toán object detector và một số benchmarks do team Google Research thực hiện.</p>
+<h2 id="box-encoding-và-loss-function">Box encoding và loss function<a class="anchor ms-1" href="#box-encoding-và-loss-function"><i class="fas fa-link"></i></a></h2>
+<p>Có rất nhiều hàm lỗi và box encoding được sử dụng trong các thuật toán phát hiện đối tượng. Ví dụ, SSD trả ra căn bậc hai của Width và height để giảm tỷ lệ độ lỗi.</p>
+<p><img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-10-design-choices-lessons-learned-and-trends-for-object-detections/box_encoding_architerch.jpg" loading="lazy"
+  
+   />
+
+</p>
+<p>Các bạn có thể để ý kỹ hơn SSD phiên bản custom không sử dụng cặp toạ độ trái trên - phải dưới mà là cặp tâm - căn bậc hai của with, căn bậc hai của height. Một số thuật toán lại dùng log width, log height, một số lại dùng tâm là Wc/Wa, Wy/ha, với Wc và Wy là toạ độ tâm của đối tượng, wa và ha là chiều dài và rộng của anchor khớp nhất (matching anchor). Các bạn có thể tham khảo thêm ở <a href="https://arxiv.org/pdf/1611.10012.pdf" target="_blank" rel="noopener noreferrer">https://arxiv.org/pdf/1611.10012.pdf</a>.</p>
+<p>Để huấn luyện mô hình tốt hơn, Các nhà nghiên cứu sử dụng các trọng số khác nhau cho các hàm lỗi, YOLO và một ví dụ minh hoạ.</p>
+<h2 id="feature-extraction">Feature extraction<a class="anchor ms-1" href="#feature-extraction"><i class="fas fa-link"></i></a></h2>
+<p>Trong thực tế, Feature extraction ảnh hưởng lớn trên 2 phần tradeoff là độ chính xác và tốc độ. Nhóm thuật toán ResNet và Inception đi theo tiêu chí là độ chính xác quan trọng hơn tốc độ (và quả thật nhóm thuật toán thuộc họ này có độ chính xác khá cao). MobileNet cung cấp cho chúng ta một mô hình khá nhỏ gọn, sử dụng SSD, mục tiêu của nhóm này là có thể xử lý được trên các thiết bị di động và thời gian xử lý là realtime.</p>
+<h2 id="feature-extractor-accuracy">Feature extractor accuracy<a class="anchor ms-1" href="#feature-extractor-accuracy"><i class="fas fa-link"></i></a></h2>
+<p><img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-10-design-choices-lessons-learned-and-trends-for-object-detections/feature_extraction_accuracy.jpg" loading="lazy"
+  
+   />
+
+</p>
+<p>Nhìn vào hình trên, chúng ta có thể thấy rõ ràng rằng Faster R-CNN và R-FCN đều cho độ chính xác khá tốt trên feature extraction. Ngược lại SSD có kết quả khá tệ.</p>
+<h2 id="non-max-suppression-nms">Non-max suppression (nms)<a class="anchor ms-1" href="#non-max-suppression-nms"><i class="fas fa-link"></i></a></h2>
+<p>Sau khi thu được vị trí của các đối tượng, chúng ta sẽ merge lại các vị trí bị phát hiện trùng lắp. Các thuật toán thuộc nhóm single shot thường cho ra output overlap khá nhiều.</p>
+<h2 id="data-augmentation">Data augmentation<a class="anchor ms-1" href="#data-augmentation"><i class="fas fa-link"></i></a></h2>
+<p>Ngày nay, hầu hết các thuật toán đều sử dụng Data augmentation. Việc augment data bằng cách cắt xét ảnh, quay ảnh một góc ngẫu nhiên nào đó, giúp cho tránh được overfit trong quá trình huấn luyện, do đó gián tiếp tăng độ chính xác của mô hình.</p>
+<h2 id="feature-map-strides">Feature map strides<a class="anchor ms-1" href="#feature-map-strides"><i class="fas fa-link"></i></a></h2>
+<p>Thuật toán thuộc nhóm single shot thường có tuỳ chọn layter feature map nào được sử dụng để nhận dạng đối tượng. Feature map có stride là 2 nếu chúng ta thực hiện giảm 2 lần độ phân giải. Feature map có độ phân giải thấp thường giữ lại những thông tin đặc trưng tốt của đối tượng và giúp cho detector thực hiện tốt hơn. Tuy nhiên, những đối tượng có kính thước nhỏ sẽ bị mất thông tin trầm trọng và khó để phát hiện ra chúng.</p>
+<h2 id="speed-vs-accuracy">Speed v.s. accuracy<a class="anchor ms-1" href="#speed-vs-accuracy"><i class="fas fa-link"></i></a></h2>
+<p>Thật khó để trả lời rằng thuật toán nhận dạng đối tượng nào tốt hơn, mà câu trả lời phụ thuộc vào bài toán của bạn đang gặp. Nếu bài toán cần độ chính xác cao, hãy sử dụng ResNet hoặc Inception, nếu bạn cần chạy realtime và độ chính xác tạm chấp nhận, hãy sử dụng MobileNet hoặc YOLO. Không có (chưa có - ít nhất đến thời điểm hiện tại) có thuật toán nào đáp ứng cả 2 tiêu chí là vừa có độ chính xác cao, vừa chạy nhanh cả. Đó là một tradeoff giữa Speed và Accuracy.</p>
+<p><img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-10-design-choices-lessons-learned-and-trends-for-object-detections/gpu-time-resnet-inception-mobilenet.jpg" loading="lazy"
+  
+   />
+
+</p>
+<h2 id="object-size">Object size<a class="anchor ms-1" href="#object-size"><i class="fas fa-link"></i></a></h2>
+<p>Với những hình ảnh có kích thước lớn, SSD thực hiện rút trích đặc trưng rất tốt (nên nhớ rằng mô hình rút trích đặc trưng của SSD rất đơn giản). Với những hình ảnh dạng này, SSD có thể so sánh với các thuật toán khác khác về độ chính xác.</p>
+<p>Với nhưng hình ảnh có kích thước nhỏ, chúng ta không nên/không bao giờ xài SSD.</p>
+<p><img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-10-design-choices-lessons-learned-and-trends-for-object-detections/object_size_compatiple.jpg" loading="lazy"
+  
+   />
+
+</p>
+<p>Nhìn hình ở trên, chúng ta thấy rõ độ chính xác của SSD và các thuật oán khác trên các tập dữ liệu có kích thước khác nhau. Và phụ thuộc vào kích thước dữ liệu của bạn để chọn ra mô hình tối ưu nhất.</p>
+<h2 id="input-image-resolution">Input image resolution<a class="anchor ms-1" href="#input-image-resolution"><i class="fas fa-link"></i></a></h2>
+<p><img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-10-design-choices-lessons-learned-and-trends-for-object-detections/resolution_reduce.jpg" loading="lazy"
+  
+   />
+
+</p>
+<p>Nhìn hình trên các bạn cũng có thể nhìn thấy rõ. Ảnh có độ phân giải lớn giúp nhận dạng đối tượng tốt hơn rất nhiều so với ảnh có độ phân giải nhỏ. Khi giảm 2 lần độ phân giải trên mỗi chiều (từ 600x600 xuống còn 300x300), trung bình độ chính xác giảm 15.88% trong quá trình huấn luyện, và trung bình giảm 27.4% trong inference.</p>
+<h2 id="number-of-proposals">Number of proposals<a class="anchor ms-1" href="#number-of-proposals"><i class="fas fa-link"></i></a></h2>
+<p>Số lượng proposal được sinh ra ảnh hưởng trực tiếp đến tốc độ của nhóm R-CNN. Ví dụ, Faster R-CNN có thể tăng tốc độ nhận dạng đối tượng gấp 3 lần nếu ta chỉ sử dụng 50 proposal thay vì 300 proposal. Độ chính xác chỉ giảm 4%</p>
+<p><img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-10-design-choices-lessons-learned-and-trends-for-object-detections/number-proposal-f-rcnn.jpg" loading="lazy"
+  
+   />
+
+</p>
+<p>Hình trên, đường nét liền mô tả độ chính xác khi tăng số lượng proposal. Đường nét đứt thể hiện thời gian xử láy tăng khi tăng số lượng proposal.</p>
+<h2 id="điểm-danh-danh-lại-các-bước-phát-triển-của-object-detection">Điểm danh danh lại các bước phát triển của object detection<a class="anchor ms-1" href="#điểm-danh-danh-lại-các-bước-phát-triển-của-object-detection"><i class="fas fa-link"></i></a></h2>
+<p>Các thuật toán object detection đã phát triển trong một khoảng thời gian dài. Ý tưởng  đầu tiên, đơn giản nhất là chúng ta sẽ sử dụng cửa sổ trượt.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span>
+<span class="ln">2</span><span class="c1"># Sliding windows</span>
+<span class="ln">3</span><span class="k">for</span> <span class="n">window</span> <span class="ow">in</span> <span class="n">windows</span>
+<span class="ln">4</span>    <span class="n">patch</span> <span class="o">=</span> <span class="n">get_patch</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">window</span><span class="p">)</span>
+<span class="ln">5</span>    <span class="n">results</span> <span class="o">=</span> <span class="n">detector</span><span class="p">(</span><span class="n">patch</span><span class="p">)</span>
+</code></pre></div><p>Để tăng tốc, chúng ta sẽ</p>
+<ol>
+<li>Giảm số lượng windows (R-CNN giảm còn khoảng 2000)</li>
+<li>Giảm các phép tính trong việc tìm ROI (Fast R-CNN sử dụng feature map thay vì toàn bộ image patchs).</li>
+</ol>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span><span class="c1"># Fast R-CNN</span>
+<span class="ln">2</span><span class="n">feature_maps</span> <span class="o">=</span> <span class="n">process</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+<span class="ln">3</span><span class="n">ROIs</span> <span class="o">=</span> <span class="n">region_proposal</span><span class="p">(</span><span class="n">feature_maps</span><span class="p">)</span>
+<span class="ln">4</span><span class="k">for</span> <span class="n">ROI</span> <span class="ow">in</span> <span class="n">ROIs</span>
+<span class="ln">5</span>    <span class="n">patch</span> <span class="o">=</span> <span class="n">roi_pooling</span><span class="p">(</span><span class="n">feature_maps</span><span class="p">,</span> <span class="n">ROI</span><span class="p">)</span>
+<span class="ln">6</span>    <span class="n">results</span> <span class="o">=</span> <span class="n">detector2</span><span class="p">(</span><span class="n">patch</span><span class="p">)</span>
+</code></pre></div><p>Việc tìm region_proposal cũng tốn khá nhiều thời gian. Faster R-CNN sử dụng một convolution network thay thế cho region proposal ở bước này (làm giảm thời gian từ 2.3s xuống còn 0.3 giây). Faster R-CNN cũng giới thiệu 1 khái nhiệm là anchor giúp cải thiện độ chính xác và việc huấn luyện trở nên dễ dàng hơn.</p>
+<p>R-FCN đưa ra một điều chỉnh nhỏ, là tiến hành tìm position và sensitive score map trên mỗi ROIS độc lập. Và tính trung bình xác suất xuất hiện đối tượng</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span><span class="c1"># R-FCN</span>
+<span class="ln">2</span><span class="n">feature_maps</span> <span class="o">=</span> <span class="n">process</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+<span class="ln">3</span><span class="n">ROIs</span> <span class="o">=</span> <span class="n">region_proposal</span><span class="p">(</span><span class="n">feature_maps</span><span class="p">)</span>         
+<span class="ln">4</span><span class="n">score_maps</span> <span class="o">=</span> <span class="n">compute_score_map</span><span class="p">(</span><span class="n">feature_maps</span><span class="p">)</span>
+<span class="ln">5</span><span class="k">for</span> <span class="n">ROI</span> <span class="ow">in</span> <span class="n">ROIs</span>
+<span class="ln">6</span>    <span class="n">V</span> <span class="o">=</span> <span class="n">pool</span><span class="p">(</span><span class="n">score_maps</span><span class="p">,</span> <span class="n">ROI</span><span class="p">)</span>     
+<span class="ln">7</span>    <span class="n">class_scores</span> <span class="o">=</span> <span class="n">average</span><span class="p">(</span><span class="n">V</span><span class="p">)</span>         
+<span class="ln">8</span>    <span class="n">class_probabilities</span> <span class="o">=</span> <span class="n">softmax</span><span class="p">(</span><span class="n">class_scores</span><span class="p">)</span>
+</code></pre></div><p>R-FCN chạy khá nhanh, nhưng độ chính xác thì thấp hơn một hút so với Faster R-CNN. Để ý kỹ đoạn mã giả ở trên, chúng ta phải trải qua 2 lần tính toán, một lần là tìm các ROIs, một lần là object detection. Thuật toán Single shot detector được đề xuất để sử dụng 1 lần tính toán.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span><span class="n">feature_maps</span> <span class="o">=</span> <span class="n">process</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+<span class="ln">2</span><span class="n">results</span> <span class="o">=</span> <span class="n">detector3</span><span class="p">(</span><span class="n">feature_maps</span><span class="p">)</span> <span class="c1"># No more separate step for ROIs</span>
+</code></pre></div><p>Thuật toán SSD và YOLO đều thuộc nhóm single shot detectors. Cả hai đều sử dụng convolution layer để rút trích đặc trưng và một convolution filter để đưa quyết định. Cả hai đều dùng feature map có độ phân giải thấp (low resolution feature map) để dò tìm đối tượng =&gt; chỉ phát hiện được các đối tượng có kích thước lớn. Một cách tiếp cận là sử dụng các feature map có độ phân giải cao (higher resolution feature map). Nhưng độ chính xác sẽ giảm do thông tin đặc trưng của đối tượng quá hỗn loạn. FPN đưa ra ý tưởng sử dụng feature map trung gian merge giữa feature map high resolution và low resolution. Việc này giúp cho chúng ta vẫn giữ được thông tin đặc trưng hữu ích của đối tượng, đồng thời cũng giữ được thông tin của các đối tượng có kích thước nhỏ. Do đó, độ chính xác cũng tăng lên và phát hiện các đối tượng có các tỷ lệ khác nhau (different scale) tốt hơn.</p>
+<p>Trong quá trình huấn luyện, chúng ta sẽ nhận ra 1 vấn đề rằng backgroup sẽ chiếm 1 phần rất lớn trong bức ảnh. Hoặc một đối tượng nào đó có số mẫu nhiều hơn so với các đối tượng khác. Thuật toán Focal loss được sinh ra để giải quyết vấn đề này.</p>
+<h2 id="lesson-learned">Lesson learned<a class="anchor ms-1" href="#lesson-learned"><i class="fas fa-link"></i></a></h2>
+<ul>
+<li>
+<p>Feature Pyramid Networks sử dụng các feature map nhiều thông tin hơn để cải thiện độ chính xác.</p>
+</li>
+<li>
+<p>Sử dụng các mô hình như ResNet hoặc Inception ResNet nếu mô hình bạn cần độ chính xác và không quan tâm lắm về tốc độ.</p>
+</li>
+<li>
+<p>Sử dụng các thuật toán thuộc nhóm Single shot detectors như MobileNet nếu bạn cần tốc độ tính toán và có thể chạy được trên mobilenet, yêu cầu về độ chính xác tạm chấp nhận được.</p>
+</li>
+<li>
+<p>Sử dụng batch normaliation, nói chung là đều phải chuẩn hoá dữ liệu trước khi sử dụng.</p>
+</li>
+<li>
+<p>Lựa chọn anchors cẩn thận (Cái này khá khó, đòi hỏi bạn phải am hiểu khá kỹ về dữ liệu, và nếu set nhầm thì sẽ đi tong).</p>
+</li>
+<li>
+<p>Sử dụng data augmentation.</p>
+</li>
+</ul>
+<p>Cảm ơn các bạn đã theo dõi. Hẹn gặp bạn ở các bài viết tiếp theo.</p>
+<p>Bài viết được lược dịch và tham khảo từ nguồn <a href="https://medium.com/@jonathan_hui/design-choices-lessons-learned-and-trends-for-object-detections-4f48b59ec5ff" target="_blank" rel="noopener noreferrer">https://medium.com/@jonathan_hui/design-choices-lessons-learned-and-trends-for-object-detections-4f48b59ec5ff</a></p>
+</div></div>
+  <div class="card-footer"><div class="post-navs d-flex justify-content-evenly"><div class="post-nav post-prev">
+    <i class="fas fa-fw fa-chevron-left"></i>
+    <a href="/blog/2018-12-06-what-do-we-learn-from-single-shot-object-detection/">Tìm Hiểu Single Shot Object Detectors
+</a>
+  </div><div class="post-nav post-next">
+    <a href="/blog/2018-12-11-a-bunch-of-tips-and-tricks-for-training-deep-neural-networks/">Một Số Mẹo Để Lựa Chọn Mô Hình Object Detection
+</a>
+    <i class="fas fa-fw fa-chevron-right"></i>
+  </div></div></div>
+</article><div class="card component row post-comments" id="post-comments">
+  <div class="card-header">
+    <h2 class="card-title">Comments</h2>
+  </div>
+  <div class="card-body"><script src="https://utteranc.es/client.js"
+  repo="AlexBlack2202/utterances"
+  issue-term="pathname"
+  label="comment"
+  theme="github-light"
+  crossorigin="anonymous"
+  async>
+</script></div>
+</div></div>
+</div><aside class="col-lg-4 sidebar d-flex">
+  <div class="container d-flex flex-column">
+    
+    <section class="card row text-center profile component">
+  <div class="card-body">
+    <div class="col-12 d-flex align-items-center justify-content-center"><img class="profile-avatar rounded-circle" alt="Đặng Thị Hằng | Phạm Duy Tùng" src="/images/profile.webp" loading="lazy"
+   width="736" height="920"
+   />
+</div>
+    <div class="col-12 profile-meta"><div class="profile-name">Đặng Thị Hằng | Phạm Duy Tùng</div><div class="profile-bio">Gopher, CShaper, Pythoner, Full Stack Engineer.</div><div class="profile-company"><i class="fas fa-fw fa-building"></i>MWG</div><div class="profile-location"><i class="fas fa-fw fa-map-marker-alt"></i>Earth</div><div class="profile-about"><i class="fas fa-fw fa-user"></i><a href="/about/">About</a></div><div class="profile-contact"><i class="fas fa-fw fa-question-circle"></i><a href="/contact/">Contact Us</a></div>
+</div>
+  </div>
+</section>
+  <div class="post-toc row mb-4 card component" id="postTOC">
+  <div class="card-header">
+    <h2 class="card-title">Contents</h2>
+  </div>
+  <div class="card-body">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#lời-mở-đầu">Lời mở đầu</a></li>
+    <li><a href="#box-encoding-và-loss-function">Box encoding và loss function</a></li>
+    <li><a href="#feature-extraction">Feature extraction</a></li>
+    <li><a href="#feature-extractor-accuracy">Feature extractor accuracy</a></li>
+    <li><a href="#non-max-suppression-nms">Non-max suppression (nms)</a></li>
+    <li><a href="#data-augmentation">Data augmentation</a></li>
+    <li><a href="#feature-map-strides">Feature map strides</a></li>
+    <li><a href="#speed-vs-accuracy">Speed v.s. accuracy</a></li>
+    <li><a href="#object-size">Object size</a></li>
+    <li><a href="#input-image-resolution">Input image resolution</a></li>
+    <li><a href="#number-of-proposals">Number of proposals</a></li>
+    <li><a href="#điểm-danh-danh-lại-các-bước-phát-triển-của-object-detection">Điểm danh danh lại các bước phát triển của object detection</a></li>
+    <li><a href="#lesson-learned">Lesson learned</a></li>
+  </ul>
+</nav>
+  </div>
+</div><section class="recent-posts row card component">
+  <div class="card-header">
+    <h2 class="card-title">Recent Posts</h2>
+  </div>
+  <div class="card-body">
+    <ul class="post-list"><li>
+        <a href="/blog/2021-11-06-some-way-make-momey-from-web-scrapping/">Một Số Cách Kiếm Thêm Thu Nhập Từ Cách Cào Dữ Liệu
+</a>
+      </li><li>
+        <a href="/blog/2021-08-12-china_chess_alpha_beta_ai/">Xây Dựng Chương Trình AI Đơn Giản Cho Game Cờ Tướng
+</a>
+      </li><li>
+        <a href="/blog/2021-07-28-pycaret-flaskapi/">Tìm Hiểu Package PyCaret Trong Python
+</a>
+      </li><li>
+        <a href="/blog/2021-07-02-mo-hinh-phan-quyen/">Mô Hình Phân Quyền - Access Control
+</a>
+      </li><li>
+        <a href="/blog/2021-05-30-upgrade-wls-to-wls2/">Nâng Cấp WSL Lên Bản WSL 2 Trên Window 10
+</a>
+      </li></ul>
+  </div>
+</section><section class="series-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="/series">Series</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="/series/kh%C3%B3a-h%E1%BB%8Dc-c&#43;&#43;-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa học c&#43;&#43; căn bản">
+            Khóa học c&#43;&#43; căn bản<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="/series/machine-learning-dataset/" class="badge rounded post-taxonomy" title="Machine learning dataset">
+            Machine learning dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a><a href="/series/kh%C3%B3a-h%E1%BB%8Dc-python-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa học python căn bản">
+            Khóa học python căn bản<span class="badge badge-sm text-white bg-accent ms-1">1</span></a></div>
+      </div>
+    </section><section class="tags-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="/tags">Tags</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="/tags/machine-learning/" class="badge rounded post-taxonomy" title="Machine learning">
+            Machine learning<span class="badge badge-sm text-white bg-accent ms-1">38</span></a><a href="/tags/deeplearning/" class="badge rounded post-taxonomy" title="Deeplearning">
+            Deeplearning<span class="badge badge-sm text-white bg-accent ms-1">20</span></a><a href="/tags/deep-learning/" class="badge rounded post-taxonomy" title="Deep learning">
+            Deep learning<span class="badge badge-sm text-white bg-accent ms-1">15</span></a><a href="/tags/python/" class="badge rounded post-taxonomy" title="python">
+            python<span class="badge badge-sm text-white bg-accent ms-1">10</span></a><a href="/tags/opencv/" class="badge rounded post-taxonomy" title="opencv">
+            opencv<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="/tags/c&#43;&#43;/" class="badge rounded post-taxonomy" title="c&#43;&#43;">
+            c&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/object-detector/" class="badge rounded post-taxonomy" title="object detector">
+            object detector<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/alexnet/" class="badge rounded post-taxonomy" title="AlexNet">
+            AlexNet<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="/tags/d%E1%BB%B1-%C4%91o%C3%A1n/" class="badge rounded post-taxonomy" title="dự đoán">
+            dự đoán<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="/tags/forecast/" class="badge rounded post-taxonomy" title="forecast">
+            forecast<span class="badge badge-sm text-white bg-accent ms-1">3</span></a></div>
+      </div>
+    </section>
+    
+  </div>
+</aside>
+</div>
+    </main><footer class="footer mt-auto py-3 text-center container"><ul class="nav justify-content-between footer-memu mb-3"><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Support
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-github"></i>Repository
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-comments"></i>Discussions
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">Features Request
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">Bug Report
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/contact/"><i class="fas fa-fw fa-info-circle"></i>Contact Us
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/faq/"><i class="fas fa-fw fa-question-circle"></i>FAQs
+</a>
+        </li></ul></li><li class="nav-item"><li class="nav-item">
+      <a class="nav-link" target="_blank" rel="noopener noreferrer">Docs
+</a>
+    </li></li><li class="nav-item"><li class="nav-item">
+      <a class="nav-link" target="_blank" rel="noopener noreferrer">Features
+</a>
+    </li></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Demo
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">Netlify
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">China
+</a>
+        </li></ul></li></ul>
+<div class="copyright mb-2">
+  Copyright © 2016-2022 Phạm Duy Tùng. All Rights Reserved.
+</div>
+<div class="powered-by mb-2">
+  Website chia sẻ kiến thức của Phạm Duy Tùng và Đặng Thị Hằng. Vui lòng liên hệ email alexblack2202@gmail.com nếu bạn có thông tin cần trao đổi.
+</div></footer>
+<script src="/js/main.0f06b653e090cf5f3e595cc4f3150328397d377ee5b405d0803057801eb4f3e5.js" integrity="sha256-Dwa2U&#43;CQz18&#43;WVzE8xUDKDl9N37ltAXQgDBXgB608&#43;U=" crossorigin="anonymous" defer></script><script src="/js/icons.min.8ddcaafc364ff0296c2209c5495287f0de039b852da9b24847f94c198b7639b6.js" integrity="sha256-jdyq/DZP8ClsIgnFSVKH8N4Dm4UtqbJIR/lMGYt2ObY=" crossorigin="anonymous" defer></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('\/service-worker.js').then(function(reg) {
+      console.log('Successfully registered service worker', reg);
+    }).catch(function(err) {
+      console.warn('Error whilst registering service worker', err);
+    });
+  });
+}
+</script><script src="/js/viewer.min.652118a9fbf3403cdfde4026209f97ace22f9e334f0b45a33431a221b3db46a8.js" integrity="sha256-ZSEYqfvzQDzf3kAmIJ&#43;XrOIvnjNPC0WjNDGiIbPbRqg=" crossorigin="anonymous" defer></script><script defer src="/js/katex.min.a575e93a07f02f7e58ee9002aea3b4e75163d4fa8ea3a627e90e7fafd5c718fa.js" integrity="sha256-pXXpOgfwL35Y7pACrqO051Fj1PqOo6Yn6Q5/r9XHGPo=" crossorigin="anonymous"></script>
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-114911596-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+</body>
+</html>

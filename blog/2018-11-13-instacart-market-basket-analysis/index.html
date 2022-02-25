@@ -1,0 +1,855 @@
+<!doctype html><html lang="en" data-palette="blue"
+   data-mode="dark">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Phân tích giỏ hàng của website instacart - Phạm Duy Tùng Machine Learning Blog</title><link rel="apple-touch-icon" href="/images/icons/icon-180x180.png" sizes="180x180">
+<link rel="icon" href="/images/icons/icon-32x32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="/images/icons/icon-16x16.png" sizes="16x16" type="image/png">
+<link rel="icon" href="/images/icons/favicon.ico">
+<link rel="manifest" href="/manifest.json">
+<meta name="keywords" content="" />
+<meta name="description" content="Ở bài viết này, chúng ta sẽ phân tích các item trong giỏ hàng của các đơn hàng trên instacart." /><meta name="robots" content="index, follow" /><meta itemprop="name" content="Phân tích giỏ hàng của website instacart">
+<meta itemprop="description" content="Ở bài viết này, chúng ta sẽ phân tích các item trong giỏ hàng của các đơn hàng trên instacart."><meta itemprop="datePublished" content="2018-11-13T00:19:00+03:00" />
+<meta itemprop="dateModified" content="2018-11-13T00:19:00+03:00" />
+<meta itemprop="wordCount" content="2191">
+<meta itemprop="keywords" content="Machine learning,Deeplearning,instacart,Giỏ hàng,Đơn hàng," /><meta property="og:title" content="Phân tích giỏ hàng của website instacart" />
+<meta property="og:description" content="Ở bài viết này, chúng ta sẽ phân tích các item trong giỏ hàng của các đơn hàng trên instacart." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="/blog/2018-11-13-instacart-market-basket-analysis/" /><meta property="article:section" content="blog" />
+<meta property="article:published_time" content="2018-11-13T00:19:00+03:00" />
+<meta property="article:modified_time" content="2018-11-13T00:19:00+03:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Phân tích giỏ hàng của website instacart"/>
+<meta name="twitter:description" content="Ở bài viết này, chúng ta sẽ phân tích các item trong giỏ hàng của các đơn hàng trên instacart."/>
+<meta property="og:image" content="/images/logo.png"/>
+  <meta name="twitter:image" content="/images/logo.png"/><link rel="stylesheet" href="/css/main.min.507afbe6e4670fa3e961a0b35816b5daeb36029866fd6bd7b9d7871fcf88faa5.css" integrity="sha256-UHr75uRnD6PpYaCzWBa12us2Aphm/WvXudeHH8&#43;I&#43;qU=" crossorigin="anonymous"><link rel="stylesheet" href="/css/katex.min.d080a89e03e1eb850f547d835c186b4273f69879aa497eb8b0e88c1578bf1f0b.css" integrity="sha256-0ICongPh64UPVH2DXBhrQnP2mHmqSX64sOiMFXi/Hws=" crossorigin="anonymous">
+<link rel="stylesheet" href="/css/viewer.min.3d228794bcedbbfa0412beb8fbc1ec6973202945e42af7004f742a4d7bd620ab.css" integrity="sha256-PSKHlLztu/oEEr64&#43;8HsaXMgKUXkKvcAT3QqTXvWIKs=" crossorigin="anonymous"></head>
+  <body><script>const items=['mode','palette'];items.forEach(function(a){const b=localStorage.getItem('hbs-'+a);b&&document.body.parentElement.setAttribute('data-'+a,b)})</script><header><nav class="navbar top-app-bar top-app-bar-expand-lg fixed-top">
+  <div class="container">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <i class="fas fa-bars"></i>
+    </button><a class="navbar-brand flex-grow-1 flex-lg-grow-0 text-center text-lg-start mx-auto me-lg-3" href="/"><img class="logo" alt="Logo" src="/images/logo.webp" loading="lazy"
+   width="400" height="400"
+   />
+HOME
+    </a>
+    <div class="offcanvas offcanvas-bottom surface" tabindex="-1" id="offcanvasSocialShare" aria-labelledby="offcanvasSocialShare">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Share</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body">
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Twitter Share Button"
+      target="_blank" href="https://twitter.com/intent/tweet?title=Ph%c3%a2n%20t%c3%adch%20gi%e1%bb%8f%20h%c3%a0ng%20c%e1%bb%a7a%20website%20instacart&url=%2fblog%2f2018-11-13-instacart-market-basket-analysis%2f">
+      <i class="fab fa-fw fa-twitter"></i> Twitter
+    </a>
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Facebook Share Button"
+      target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=%2fblog%2f2018-11-13-instacart-market-basket-analysis%2f">
+      <i class="fab fa-fw fa-facebook-f"></i> Facebook
+    </a>
+  </div>
+</div>
+    <button class="navbar-settings" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSettings"
+  aria-controls="offcanvasSettings" aria-label="Toggle settings">
+  <i class="fas fa-ellipsis-v"></i>
+</button>
+
+<div class="offcanvas offcanvas-end surface h-100" tabindex="-1" id="offcanvasSettings" aria-labelledby="offcanvasSettings">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Settings</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body d-flex flex-column">
+
+
+
+<section class="setting">
+  <form class="font-size-switcher-form row">
+    <div class="col-auto">
+      <label for="fontSize" class="form-label"><i class="fas fa-fw fa-font"></i> Font Size</label>
+    </div>
+    <div class="col-auto ms-auto">
+      <input type="range" class="form-range" min="-2" max="2" id="fontSize">
+    </div>
+  </form>
+</section>
+
+
+<section class="setting palettes">
+  <form class="row">
+    <div class="col-auto">
+      <label><i class="fas fa-fw fa-palette"></i> Palette</label>
+    </div>
+    <div class="col-auto ms-auto">
+      <a id="btnPalette" class="btn btn-sm btn-outline-primary" role="button" aria-label="palettePicker">
+        <i class="fas fa-eye-dropper"></i>
+      </a>
+    </div>
+  </form>
+  <div class="mt-2 d-flex justify-content-between visually-hidden" id="palettePicker"><button type="button" id="palette-blue" aria-label="Blue"
+        class="btn btn-sm w-100 palette" data-palette="blue">
+      </button><button type="button" id="palette-blue-gray" aria-label="Blue Gray"
+        class="btn btn-sm w-100 palette" data-palette="blue-gray">
+      </button><button type="button" id="palette-brown" aria-label="Brown"
+        class="btn btn-sm w-100 palette" data-palette="brown">
+      </button><button type="button" id="palette-cyan" aria-label="Cyan"
+        class="btn btn-sm w-100 palette" data-palette="cyan">
+      </button><button type="button" id="palette-green" aria-label="Green"
+        class="btn btn-sm w-100 palette" data-palette="green">
+      </button><button type="button" id="palette-indigo" aria-label="Indigo"
+        class="btn btn-sm w-100 palette" data-palette="indigo">
+      </button><button type="button" id="palette-orange" aria-label="Orange"
+        class="btn btn-sm w-100 palette" data-palette="orange">
+      </button><button type="button" id="palette-pink" aria-label="Pink"
+        class="btn btn-sm w-100 palette" data-palette="pink">
+      </button><button type="button" id="palette-purple" aria-label="Purple"
+        class="btn btn-sm w-100 palette" data-palette="purple">
+      </button><button type="button" id="palette-red" aria-label="Red"
+        class="btn btn-sm w-100 palette" data-palette="red">
+      </button><button type="button" id="palette-teal" aria-label="Teal"
+        class="btn btn-sm w-100 palette" data-palette="teal">
+      </button><button type="button" id="palette-yellow" aria-label="Yellow"
+        class="btn btn-sm w-100 palette" data-palette="yellow">
+      </button></div>
+</section>
+<section class="setting actions d-flex justify-content-around mt-auto overflow-auto">
+  <a role="button" class="action action-go-back" href="javascript: window.history.back();">
+    <span class="action-icon"><i class="fas fa-2x fa-arrow-left"></i></span> Go back
+  </a>
+  <a role="button" class="action action-reload-page">
+    <span class="action-icon"><i class="fas fa-2x fa-redo-alt"></i></span> Reload
+  </a>
+  <a role="button" class="action action-copy-url">
+    <span class="action-icon"><i class="fas fa-2x fa-link"></i></span> Copy URL
+  </a><a class="action action-social-share" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSocialShare"
+    aria-controls="offcanvasSocialShare" aria-label="Toggle social share">
+    <span class="action-icon"><i class="fas fa-2x fa-share-alt"></i></span> Share
+  </a></section>
+
+</div>
+</div>
+
+    <div class="collapse navbar-collapse" tabindex="-1" id="navbarSupportedContent" aria-labelledby="navbarSupportedContent">
+      <form class="search-bar my-1" action="/search">
+  <div class="input-group input-group-sm">
+    <span class="btn btn-search disabled position-absolute left-0"><i class="fas fa-fw fa-search"></i></span>
+    <input class="form-control rounded-pill" name="q" type="search" aria-label="Search">
+  </div>
+</form>
+      <ul class="navbar-nav ms-auto"><li class="nav-item">
+          <a class="nav-link" href="/series/">
+            <i class="fas fa-fw fa-columns"></i>Series
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="/archives/">
+            <i class="fas fa-fw fa-file-archive"></i>Archives
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="/categories/">
+            <i class="fas fa-fw fa-folder"></i>Categories
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="/tags/">
+            <i class="fas fa-fw fa-tags"></i>Tags
+          </a>
+        </li><li class="nav-item dropdown">
+          <a class="nav-link" id="navbarDropdownSupport" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-fw fa-chevron-circle-down"></i>Support
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdownSupport"><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Repository
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Discussions
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Features Request
+              </a>
+            </li><li><hr class="dropdown-divider"></li><li>
+              <a class="dropdown-item"
+                href="/faq/">
+                FAQs
+              </a>
+            </li></ul>
+        </li></ul>
+    </div>
+  </div>
+</nav>
+</header>
+<main role="main" class="container">
+      <div class="row content">
+<div class="col-lg-8">
+  <div class="container"><nav class="row card component" aria-label="breadcrumb">
+  <div class="card-body">
+    <ol class="breadcrumb "><li class="breadcrumb-item"><a href="/">Home</a></li><li class="breadcrumb-item"><a href="/blog/">Blogs</a></li><li class="breadcrumb-item active">Phân Tích Giỏ Hàng Của Website Instacart</li></ol>
+  </div>
+</nav>
+<div class="post-panel-wrapper">
+  <div class="d-flex flex-column component rounded post-panel">
+    
+    <a class="action action-panel-toggler" role="button" title="Panel toggler">
+      <i class="fas fa-fw fa-chevron-circle-down"></i>
+    </a>
+    <a id="sidebarToggler" class="action d-none d-lg-block" role="button" title="Sidebar toggler">
+  <i class="fas fa-fw fa-expand-alt" data-fa-transform="rotate-45"></i>
+</a>
+
+    
+
+    
+    
+    <a class="action" href="#post-comments" role="button" aria-label="Comments" title="Comments">
+  <i class="fas fa-fw fa-comments"></i>
+</a>
+    <a class="action" href="#postTOC" aria-controls="Table of contents" role="button" title="Table of contents">
+  <i class="fas fa-fw fa-list-alt"></i>
+</a>
+    
+  </div>
+</div>
+<article class="row card component mb-4 post">
+  <div class="card-header ">
+    <h1 class="card-title post-title">Phân Tích Giỏ Hàng Của Website Instacart
+</h1>
+  </div>
+  <div class="card-body"><div class="post-meta">
+  <span class="post-date" title="created on 2018-11-13 04:19:00 &#43;0700 &#43;07.">
+    Nov 13, 2018
+  </span><span class="post-reading-time">
+    11 min read
+  </span><span class="post-taxonomies"><a href="/tags/machine-learning/" class="badge post-taxonomy">Machine learning</a><a href="/tags/deeplearning/" class="badge post-taxonomy">Deeplearning</a><a href="/tags/instacart/" class="badge post-taxonomy">instacart</a><a href="/tags/gi%E1%BB%8F-h%C3%A0ng/" class="badge post-taxonomy">Giỏ hàng</a><a href="/tags/%C4%91%C6%A1n-h%C3%A0ng/" class="badge post-taxonomy">Đơn hàng</a></span>
+</div>
+<div class="post-content mb-3"><h1 id="lời-mở-đầu">Lời mở đầu<a class="anchor ms-1" href="#lời-mở-đầu"><i class="fas fa-link"></i></a></h1>
+<p>Instacart là một startup cung ứng đồ tạp hóa qua website và ứng dụng di động. Người dùng chỉ cần chọn đồ muốn mua tại các chuỗi bán lẻ và đặt đồ, Instacart sẽ đi mua và giao đến tận tay họ. Đến nay, Instacart hoạt động tại 15.000 cửa hàng tạp hoá tại 4.000 thành phố với khoảng 50.000 “trợ lý mua sắm”. Team data science của instacart đóng vai trò rất quan trọng trong việc cung cấp trải nghiệm người dùng trong việc sử dụng app để mua hàng. Hiện tại, họ đang sử dụng các dữ liệu của khách hàng để tạo nên mô hình dự đoán sản phẩm nào người dùng sẽ mua lại, sẽ mua thử lần đầu tiên, hoặc sẽ thêm vào giỏ hàng. Hiện họ đã publish khoảng 3 triệu đơn hàng của họ để các nhà khoa học dữ liệu khác sử dụng và nghiên cứu.</p>
+<h1 id="dẫn-nhập">Dẫn nhập<a class="anchor ms-1" href="#dẫn-nhập"><i class="fas fa-link"></i></a></h1>
+<h2 id="phân-tích-dữ-liệu">Phân tích dữ liệu<a class="anchor ms-1" href="#phân-tích-dữ-liệu"><i class="fas fa-link"></i></a></h2>
+<p>Các bạn có thể download dữ liệu ở <a href="https://www.instacart.com/datasets/grocery-shopping-2017" target="_blank" rel="noopener noreferrer">https://www.instacart.com/datasets/grocery-shopping-2017</a>.</p>
+<p>Các file bao gồm:</p>
+<p>File aisles.csv (134 dòng) có 2 cột là aisle_id,aisle</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span><span class="n">aisle_id</span><span class="p">,</span><span class="n">aisle</span>  
+<span class="ln">2</span><span class="mi">1</span><span class="p">,</span><span class="n">prepared</span> <span class="n">soups</span> <span class="n">salads</span>  
+<span class="ln">3</span><span class="mi">2</span><span class="p">,</span><span class="n">specialty</span> <span class="n">cheeses</span>  
+<span class="ln">4</span><span class="mi">3</span><span class="p">,</span><span class="n">energy</span> <span class="n">granola</span> <span class="n">bars</span>  
+<span class="ln">5</span> <span class="o">...</span>
+</code></pre></div><p>File departments.csv (21 dòng) gồm 2 cột là department_id,department</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span><span class="n">department_id</span><span class="p">,</span><span class="n">department</span>  
+<span class="ln">2</span><span class="mi">1</span><span class="p">,</span><span class="n">frozen</span>  
+<span class="ln">3</span><span class="mi">2</span><span class="p">,</span><span class="n">other</span>  
+<span class="ln">4</span><span class="mi">3</span><span class="p">,</span><span class="n">bakery</span>   
+<span class="ln">5</span> <span class="o">...</span>
+</code></pre></div><p>File order_products__(prior|train).csv (trên 30 triệu dòng)</p>
+<p>Tập này chứa danh sách sản phẩm được mua trong mỗi đơn hàng. File order_products__prior.csv chứa sản phẩm của đơn hàng trước đó của khách hàng. &lsquo;reordered&rsquo; nói rằng sản phẩm này trong đơn hàng hiện tại đã được mua ở đơn hàng trước đó. Vì vậy, sẽ có đơn hàng không được gán là &lsquo;reordered&rsquo; (chúng ta có thể gán nhãn là None hoặc cái gì đó cũng được để chỉ các sản phẩm này). &lsquo;add_to_cart_order&rsquo; là thứ tự của sp được thêm vào giỏ hàng.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span><span class="n">order_id</span><span class="p">,</span><span class="n">product_id</span><span class="p">,</span><span class="n">add_to_cart_order</span><span class="p">,</span><span class="n">reordered</span>  
+<span class="ln">2</span> <span class="mi">1</span><span class="p">,</span><span class="mi">49302</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span>  
+<span class="ln">3</span> <span class="mi">1</span><span class="p">,</span><span class="mi">11109</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span>  
+<span class="ln">4</span> <span class="mi">1</span><span class="p">,</span><span class="mi">10246</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">0</span>  
+<span class="ln">5</span> <span class="o">...</span> 
+</code></pre></div><p>File orders.csv (3.4 triệu dòng, 206k users): chứa thông tin của đơn hàng, trong đó, order_dow là ngày trong tuần, eval_set thuộc một trong 3 loại là prior, train, test.  order_number là thứ tự của đơn hàng của user này.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span><span class="n">order_id</span><span class="p">,</span><span class="n">user_id</span><span class="p">,</span><span class="n">eval_set</span><span class="p">,</span><span class="n">order_number</span><span class="p">,</span><span class="n">order_dow</span><span class="p">,</span><span class="n">order_hour_of_day</span><span class="p">,</span><span class="n">days_since_prior_order</span>  
+<span class="ln">2</span> <span class="mi">2539329</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">prior</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">08</span><span class="p">,</span>  
+<span class="ln">3</span> <span class="mi">2398795</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">prior</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">07</span><span class="p">,</span><span class="mf">15.0</span>  
+<span class="ln">4</span> <span class="mi">473747</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">prior</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">12</span><span class="p">,</span><span class="mf">21.0</span>  
+<span class="ln">5</span> <span class="o">...</span>
+</code></pre></div><p>File products.csv ((50k dòng) chứa thông tin sản phẩm:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span> <span class="n">product_id</span><span class="p">,</span><span class="n">product_name</span><span class="p">,</span><span class="n">aisle_id</span><span class="p">,</span><span class="n">department_id</span>
+<span class="ln">2</span> <span class="mi">1</span><span class="p">,</span><span class="n">Chocolate</span> <span class="n">Sandwich</span> <span class="n">Cookies</span><span class="p">,</span><span class="mi">61</span><span class="p">,</span><span class="mi">19</span>  
+<span class="ln">3</span> <span class="mi">2</span><span class="p">,</span><span class="n">All</span><span class="o">-</span><span class="n">Seasons</span> <span class="n">Salt</span><span class="p">,</span><span class="mi">104</span><span class="p">,</span><span class="mi">13</span>  
+<span class="ln">4</span> <span class="mi">3</span><span class="p">,</span><span class="n">Robust</span> <span class="n">Golden</span> <span class="n">Unsweetened</span> <span class="n">Oolong</span> <span class="n">Tea</span><span class="p">,</span><span class="mi">94</span><span class="p">,</span><span class="mi">7</span>  
+<span class="ln">5</span> <span class="o">...</span>
+</code></pre></div><p>Với mỗi order_id trong tập test ở file orders.csv, chúng ta phải dự đoán các sản phẩm nào người dùng sẽ mua lại (&ldquo;reorder&rdquo;) thuộc đơn hàng đó. Nếu bạn dự đoán đó là đơn hàng không có sản phẩm nào được mua lại, thì ta sẽ điền vào giá trị &lsquo;None&rsquo;</p>
+<p>Ví dụ về kết quả dự đoán:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span><span class="n">order_id</span><span class="p">,</span><span class="n">products</span>  
+<span class="ln">2</span><span class="mi">17</span><span class="p">,</span><span class="mi">1</span> <span class="mi">2</span>  
+<span class="ln">3</span><span class="mi">34</span><span class="p">,</span><span class="kc">None</span>  
+<span class="ln">4</span><span class="mi">137</span><span class="p">,</span><span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span>  
+</code></pre></div><h1 id="thực-hành">Thực hành<a class="anchor ms-1" href="#thực-hành"><i class="fas fa-link"></i></a></h1>
+<p>Đầu tiên, ta sẽ import một số thư viện cơ bản để sử dụng, và load tất cả các file lên. Lưu ý một chút là ở đây, mình để tất cả các file trong thư mục data</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln"> 1</span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="ln"> 2</span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="ln"> 3</span><span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">OrderedDict</span>
+<span class="ln"> 4</span>
+<span class="ln"> 5</span><span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="kn">import</span> <span class="n">LogisticRegression</span>
+<span class="ln"> 6</span><span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">f1_score</span>
+<span class="ln"> 7</span>
+<span class="ln"> 8</span><span class="kn">from</span> <span class="nn">sklearn</span> <span class="kn">import</span> <span class="n">metrics</span><span class="p">,</span> <span class="n">cross_validation</span>
+<span class="ln"> 9</span><span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">f1_score</span>
+<span class="ln">10</span><span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">MinMaxScaler</span>
+<span class="ln">11</span>
+<span class="ln">12</span><span class="c1">#Import the files</span>
+<span class="ln">13</span><span class="n">aisles_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;data/aisles.csv&#39;</span><span class="p">)</span>
+<span class="ln">14</span><span class="n">products_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;data/products.csv&#39;</span><span class="p">)</span>
+<span class="ln">15</span><span class="n">orders_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;data/orders.csv&#39;</span><span class="p">)</span>
+<span class="ln">16</span><span class="n">order_products_prior_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;data/order_products__prior.csv&#39;</span><span class="p">)</span>
+<span class="ln">17</span><span class="n">departments_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;data/departments.csv&#39;</span><span class="p">)</span>
+<span class="ln">18</span><span class="n">order_products_train_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;data/order_products__train.csv&#39;</span><span class="p">)</span>
+<span class="ln">19</span>
+</code></pre></div><p>Sau đó, mình sẽ merge đơn hàng vào chi tiết đơn hàng của tập train và tập prior</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span><span class="n">order_products_train_df</span> <span class="o">=</span> <span class="n">order_products_train_df</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">orders_df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s1">&#39;eval_set&#39;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">on</span><span class="o">=</span><span class="s1">&#39;order_id&#39;</span><span class="p">)</span>
+<span class="ln">2</span><span class="n">order_products_prior_df</span> <span class="o">=</span> <span class="n">order_products_prior_df</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">orders_df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s1">&#39;eval_set&#39;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">on</span><span class="o">=</span><span class="s1">&#39;order_id&#39;</span><span class="p">)</span>
+</code></pre></div><p>show ra 5 dòng đầu tiên của order_products_train_df</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span><span class="nb">print</span><span class="p">(</span><span class="n">order_products_train_df</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
+<span class="ln">2</span>
+</code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span>   <span class="n">order_id</span>  <span class="n">product_id</span>  <span class="n">add_to_cart_order</span>  <span class="n">reordered</span>  <span class="n">user_id</span>  <span class="n">order_number</span>  <span class="n">order_dow</span>  <span class="n">order_hour_of_day</span>  <span class="n">days_since_prior_order</span>
+<span class="ln">2</span><span class="mi">0</span>         <span class="mi">1</span>       <span class="mi">49302</span>                  <span class="mi">1</span>          <span class="mi">1</span>   <span class="mi">112108</span>             <span class="mi">4</span>          <span class="mi">4</span>                 <span class="mi">10</span>                     <span class="mf">9.0</span>
+<span class="ln">3</span><span class="mi">1</span>         <span class="mi">1</span>       <span class="mi">11109</span>                  <span class="mi">2</span>          <span class="mi">1</span>   <span class="mi">112108</span>             <span class="mi">4</span>          <span class="mi">4</span>                 <span class="mi">10</span>                     <span class="mf">9.0</span>
+<span class="ln">4</span><span class="mi">2</span>         <span class="mi">1</span>       <span class="mi">10246</span>                  <span class="mi">3</span>          <span class="mi">0</span>   <span class="mi">112108</span>             <span class="mi">4</span>          <span class="mi">4</span>                 <span class="mi">10</span>                     <span class="mf">9.0</span>
+<span class="ln">5</span><span class="mi">3</span>         <span class="mi">1</span>       <span class="mi">49683</span>                  <span class="mi">4</span>          <span class="mi">0</span>   <span class="mi">112108</span>             <span class="mi">4</span>          <span class="mi">4</span>                 <span class="mi">10</span>                     <span class="mf">9.0</span>
+<span class="ln">6</span><span class="mi">4</span>         <span class="mi">1</span>       <span class="mi">43633</span>                  <span class="mi">5</span>          <span class="mi">1</span>   <span class="mi">112108</span>             <span class="mi">4</span>          <span class="mi">4</span>                 <span class="mi">10</span>                     <span class="mf">9.0</span>
+<span class="ln">7</span>
+<span class="ln">8</span><span class="p">[</span><span class="mi">5</span> <span class="n">rows</span> <span class="n">x</span> <span class="mi">9</span> <span class="n">columns</span><span class="p">]</span>
+</code></pre></div><p>Tổng cộng mình có 9 cột, ý nghĩa các cột mình có giải thích ở trên rồi nha.</p>
+<p>Tiếp theo, chúng ta tạo tập tập dữ liệu đếm số lượng sản phẩm của từng người mua</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span><span class="n">user_product_df</span> <span class="o">=</span> <span class="p">(</span><span class="n">order_products_prior_df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;product_id&#39;</span><span class="p">,</span><span class="s1">&#39;user_id&#39;</span><span class="p">],</span><span class="n">as_index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> 
+<span class="ln">2</span>                                          <span class="o">.</span><span class="n">agg</span><span class="p">({</span><span class="s1">&#39;order_id&#39;</span><span class="p">:</span><span class="s1">&#39;count&#39;</span><span class="p">})</span> 
+<span class="ln">3</span>                                          <span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;order_id&#39;</span><span class="p">:</span><span class="s1">&#39;user_product_total_orders&#39;</span><span class="p">}))</span>
+<span class="ln">4</span>
+<span class="ln">5</span><span class="n">train_ids</span> <span class="o">=</span> <span class="n">order_products_train_df</span><span class="p">[</span><span class="s1">&#39;user_id&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span> 
+<span class="ln">6</span><span class="n">df_X</span> <span class="o">=</span> <span class="n">user_product_df</span><span class="p">[</span><span class="n">user_product_df</span><span class="p">[</span><span class="s1">&#39;user_id&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">train_ids</span><span class="p">)]</span>
+<span class="ln">7</span><span class="nb">print</span><span class="p">(</span><span class="n">df_X</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
+<span class="ln">8</span>
+</code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span>   <span class="n">product_id</span>  <span class="n">user_id</span>  <span class="n">user_product_total_orders</span>
+<span class="ln">2</span><span class="mi">0</span>           <span class="mi">1</span>      <span class="mi">138</span>                          <span class="mi">2</span>
+<span class="ln">3</span><span class="mi">1</span>           <span class="mi">1</span>      <span class="mi">709</span>                          <span class="mi">1</span>
+<span class="ln">4</span><span class="mi">3</span>           <span class="mi">1</span>      <span class="mi">777</span>                          <span class="mi">1</span>
+<span class="ln">5</span><span class="mi">6</span>           <span class="mi">1</span>     <span class="mi">1052</span>                          <span class="mi">2</span>
+<span class="ln">6</span><span class="mi">9</span>           <span class="mi">1</span>     <span class="mi">1494</span>                          <span class="mi">3</span>
+</code></pre></div><p>Ở đây, người 138 mua sản phẩm 1 2 lần, người 709 mua sản phẩm 1 1 lần, &hellip; tương tự như vậy cho các user và product khác.</p>
+<p>Bước tiếp theo, chúng ta sẽ liệt kê các sản phẩm người dùng đã mua:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span><span class="n">train_carts</span> <span class="o">=</span> <span class="p">(</span><span class="n">order_products_train_df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;user_id&#39;</span><span class="p">,</span><span class="n">as_index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="ln">2</span>                                      <span class="o">.</span><span class="n">agg</span><span class="p">({</span><span class="s1">&#39;product_id&#39;</span><span class="p">:(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nb">set</span><span class="p">(</span><span class="n">x</span><span class="p">))})</span>
+<span class="ln">3</span>                                      <span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;product_id&#39;</span><span class="p">:</span><span class="s1">&#39;latest_cart&#39;</span><span class="p">}))</span>
+</code></pre></div><p>print(train_carts.head())</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span>  <span class="n">user_id</span>                                        <span class="n">latest_cart</span>
+<span class="ln">2</span><span class="mi">0</span>        <span class="mi">1</span>  <span class="p">{</span><span class="mi">196</span><span class="p">,</span> <span class="mi">26405</span><span class="p">,</span> <span class="mi">27845</span><span class="p">,</span> <span class="mi">46149</span><span class="p">,</span> <span class="mi">13032</span><span class="p">,</span> <span class="mi">39657</span><span class="p">,</span> <span class="mf">26088.</span><span class="o">..</span>
+<span class="ln">3</span><span class="mi">1</span>        <span class="mi">2</span>  <span class="p">{</span><span class="mi">24838</span><span class="p">,</span> <span class="mi">11913</span><span class="p">,</span> <span class="mi">45066</span><span class="p">,</span> <span class="mi">31883</span><span class="p">,</span> <span class="mi">48523</span><span class="p">,</span> <span class="mi">38547</span><span class="p">,</span> <span class="mf">248.</span><span class="o">..</span>
+<span class="ln">4</span><span class="mi">2</span>        <span class="mi">5</span>  <span class="p">{</span><span class="mi">40706</span><span class="p">,</span> <span class="mi">21413</span><span class="p">,</span> <span class="mi">20843</span><span class="p">,</span> <span class="mi">48204</span><span class="p">,</span> <span class="mi">21616</span><span class="p">,</span> <span class="mi">19057</span><span class="p">,</span> <span class="mf">201.</span><span class="o">..</span>
+<span class="ln">5</span><span class="mi">3</span>        <span class="mi">7</span>  <span class="p">{</span><span class="mi">17638</span><span class="p">,</span> <span class="mi">29894</span><span class="p">,</span> <span class="mi">47272</span><span class="p">,</span> <span class="mi">45066</span><span class="p">,</span> <span class="mi">13198</span><span class="p">,</span> <span class="mi">37999</span><span class="p">,</span> <span class="mf">408.</span><span class="o">..</span>
+<span class="ln">6</span><span class="mi">4</span>        <span class="mi">8</span>  <span class="p">{</span><span class="mi">27104</span><span class="p">,</span> <span class="mi">15937</span><span class="p">,</span> <span class="mi">5539</span><span class="p">,</span> <span class="mi">41540</span><span class="p">,</span> <span class="mi">31717</span><span class="p">,</span> <span class="mi">48230</span><span class="p">,</span> <span class="mf">2224.</span><span class="o">..</span>
+</code></pre></div><p>Mối tương quan giữa sản phẩm được add to card và sản phẩm được mua</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span><span class="n">df_X</span> <span class="o">=</span> <span class="n">df_X</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">train_carts</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="s1">&#39;user_id&#39;</span><span class="p">)</span>
+<span class="ln">2</span><span class="n">df_X</span><span class="p">[</span><span class="s1">&#39;in_cart&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">df_X</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">row</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;product_id&#39;</span><span class="p">]</span> <span class="ow">in</span> <span class="n">row</span><span class="p">[</span><span class="s1">&#39;latest_cart&#39;</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">))</span>
+<span class="ln">3</span>
+<span class="ln">4</span><span class="nb">print</span><span class="p">(</span><span class="n">df_X</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
+<span class="ln">5</span>
+<span class="ln">6</span><span class="nb">print</span><span class="p">(</span><span class="n">df_X</span><span class="p">[</span><span class="s1">&#39;in_cart&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">())</span>
+<span class="ln">7</span>
+</code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln"> 1</span><span class="c1"># df_X.head()</span>
+<span class="ln"> 2</span>   <span class="n">product_id</span>  <span class="n">user_id</span>  <span class="n">user_product_total_orders</span> <span class="n">latest_cart</span>  <span class="n">in_cart</span>
+<span class="ln"> 3</span><span class="mi">0</span>           <span class="mi">1</span>      <span class="mi">138</span>                          <span class="mi">2</span>     <span class="p">{</span><span class="mi">42475</span><span class="p">}</span>        <span class="mi">0</span>
+<span class="ln"> 4</span><span class="mi">1</span>         <span class="mi">907</span>      <span class="mi">138</span>                          <span class="mi">2</span>     <span class="p">{</span><span class="mi">42475</span><span class="p">}</span>        <span class="mi">0</span>
+<span class="ln"> 5</span><span class="mi">2</span>        <span class="mi">1000</span>      <span class="mi">138</span>                          <span class="mi">1</span>     <span class="p">{</span><span class="mi">42475</span><span class="p">}</span>        <span class="mi">0</span>
+<span class="ln"> 6</span><span class="mi">3</span>        <span class="mi">3265</span>      <span class="mi">138</span>                          <span class="mi">1</span>     <span class="p">{</span><span class="mi">42475</span><span class="p">}</span>        <span class="mi">0</span>
+<span class="ln"> 7</span><span class="mi">4</span>        <span class="mi">4913</span>      <span class="mi">138</span>                          <span class="mi">1</span>     <span class="p">{</span><span class="mi">42475</span><span class="p">}</span>        <span class="mi">0</span>
+<span class="ln"> 8</span>
+<span class="ln"> 9</span><span class="c1"># df_X[&#39;in_cart&#39;].value_counts()</span>
+<span class="ln">10</span><span class="mi">0</span>    <span class="mi">7645837</span>
+<span class="ln">11</span><span class="mi">1</span>     <span class="mi">828824</span>
+<span class="ln">12</span><span class="n">Name</span><span class="p">:</span> <span class="n">in_cart</span><span class="p">,</span> <span class="n">dtype</span><span class="p">:</span> <span class="n">int64</span>
+</code></pre></div><p>Tỷ lệ khoảng 9.7%. Điều này nói lên rằng, người dùng trong 1 phiên mua hàng có thể add rất nhiều sản phẩm vào giỏ, nhưng chỉ khoảng 10% sản phẩm họ mua thật sự, hơn 90% sản phẩm còn lại sẽ bị remove trước khi nọ nhấn nút thanh toán.</p>
+<h1 id="xây-dựng-tập-đặc-trưng">Xây dựng tập đặc trưng<a class="anchor ms-1" href="#xây-dựng-tập-đặc-trưng"><i class="fas fa-link"></i></a></h1>
+<h2 id="đặc-trưng-sản-phẩm">Đặc trưng sản phẩm<a class="anchor ms-1" href="#đặc-trưng-sản-phẩm"><i class="fas fa-link"></i></a></h2>
+<p>Với đặc trưng sản phẩm, chúng ta sẽ rút trích 2 đặc trưng đơn giản là tổng số lượng đơn hàng của một sản phẩm và trung bình số lượng đơn hàng có chứa sản phẩm.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span><span class="n">prod_features</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;product_total_orders&#39;</span><span class="p">,</span><span class="s1">&#39;product_avg_add_to_cart_order&#39;</span><span class="p">]</span>
+<span class="ln">2</span>
+<span class="ln">3</span><span class="n">prod_features_df</span> <span class="o">=</span> <span class="p">(</span><span class="n">order_products_prior_df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;product_id&#39;</span><span class="p">],</span><span class="n">as_index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="ln">4</span>                                           <span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="n">OrderedDict</span><span class="p">(</span>
+<span class="ln">5</span>                                                   <span class="p">[(</span><span class="s1">&#39;order_id&#39;</span><span class="p">,</span><span class="s1">&#39;nunique&#39;</span><span class="p">),</span>
+<span class="ln">6</span>                                                    <span class="p">(</span><span class="s1">&#39;add_to_cart_order&#39;</span><span class="p">,</span><span class="s1">&#39;mean&#39;</span><span class="p">)])))</span>
+<span class="ln">7</span><span class="n">prod_features_df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;product_id&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">prod_features</span>
+<span class="ln">8</span><span class="nb">print</span><span class="p">(</span><span class="n">prod_features_df</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
+</code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span>
+<span class="ln">2</span>   <span class="n">product_id</span>  <span class="n">product_total_orders</span>  <span class="n">product_avg_add_to_cart_order</span>
+<span class="ln">3</span><span class="mi">0</span>           <span class="mi">1</span>                  <span class="mi">1852</span>                       <span class="mf">5.801836</span>
+<span class="ln">4</span><span class="mi">1</span>           <span class="mi">2</span>                    <span class="mi">90</span>                       <span class="mf">9.888889</span>
+<span class="ln">5</span><span class="mi">2</span>           <span class="mi">3</span>                   <span class="mi">277</span>                       <span class="mf">6.415162</span>
+<span class="ln">6</span><span class="mi">3</span>           <span class="mi">4</span>                   <span class="mi">329</span>                       <span class="mf">9.507599</span>
+<span class="ln">7</span><span class="mi">4</span>           <span class="mi">5</span>                    <span class="mi">15</span>                       <span class="mf">6.466667</span>
+<span class="ln">8</span>
+</code></pre></div><p>Add thêm đặc trưng sản phẩm vào trong tập huấn luyện</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span>
+<span class="ln">2</span><span class="n">df_X</span> <span class="o">=</span> <span class="n">df_X</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">prod_features_df</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="s1">&#39;product_id&#39;</span><span class="p">)</span>
+<span class="ln">3</span>
+<span class="ln">4</span><span class="c1">#note that dropping rows with NA product_avg_days_since_prior_order is likely a naive choice </span>
+<span class="ln">5</span><span class="n">df_X</span> <span class="o">=</span> <span class="n">df_X</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+<span class="ln">6</span><span class="nb">print</span><span class="p">(</span><span class="n">df_X</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
+</code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span>   <span class="n">product_id</span>  <span class="n">user_id</span>              <span class="o">...</span>               <span class="n">product_total_orders</span> <span class="n">product_avg_add_to_cart_order</span>
+<span class="ln">2</span><span class="mi">0</span>           <span class="mi">1</span>      <span class="mi">138</span>              <span class="o">...</span>                               <span class="mi">1852</span>                      <span class="mf">5.801836</span>
+<span class="ln">3</span><span class="mi">1</span>           <span class="mi">1</span>      <span class="mi">709</span>              <span class="o">...</span>                               <span class="mi">1852</span>                      <span class="mf">5.801836</span>
+<span class="ln">4</span><span class="mi">2</span>           <span class="mi">1</span>      <span class="mi">777</span>              <span class="o">...</span>                               <span class="mi">1852</span>                      <span class="mf">5.801836</span>
+<span class="ln">5</span><span class="mi">3</span>           <span class="mi">1</span>     <span class="mi">1052</span>              <span class="o">...</span>                               <span class="mi">1852</span>                      <span class="mf">5.801836</span>
+<span class="ln">6</span><span class="mi">4</span>           <span class="mi">1</span>     <span class="mi">1494</span>              <span class="o">...</span>                               <span class="mi">1852</span>                      <span class="mf">5.801836</span>
+<span class="ln">7</span>
+</code></pre></div><h2 id="đặc-trưng-người-dùng">Đặc trưng người dùng<a class="anchor ms-1" href="#đặc-trưng-người-dùng"><i class="fas fa-link"></i></a></h2>
+<p>Với người dùng, chúng sa sử dụng các đặc trưng là: Tổng số lượng đơn hàng, trung bình số sản phẩm trong 1 đơn hàng, tổng số lượng sản phẩm người dùng mua, Trung bình số ngày user sẽ mua đơn hàng tiếp theo</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln"> 1</span><span class="n">user_features</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;user_total_orders&#39;</span><span class="p">,</span><span class="s1">&#39;user_avg_cartsize&#39;</span><span class="p">,</span><span class="s1">&#39;user_total_products&#39;</span><span class="p">,</span><span class="s1">&#39;user_avg_days_since_prior_order&#39;</span><span class="p">]</span>
+<span class="ln"> 2</span>
+<span class="ln"> 3</span><span class="n">user_features_df</span> <span class="o">=</span> <span class="p">(</span><span class="n">order_products_prior_df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;user_id&#39;</span><span class="p">],</span><span class="n">as_index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="ln"> 4</span>                                           <span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="n">OrderedDict</span><span class="p">(</span>
+<span class="ln"> 5</span>                                                   <span class="p">[(</span><span class="s1">&#39;order_id&#39;</span><span class="p">,[</span><span class="s1">&#39;nunique&#39;</span><span class="p">,</span> <span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">x</span><span class="o">.</span><span class="n">nunique</span><span class="p">())]),</span>
+<span class="ln"> 6</span>                                                    <span class="p">(</span><span class="s1">&#39;product_id&#39;</span><span class="p">,</span><span class="s1">&#39;nunique&#39;</span><span class="p">),</span>
+<span class="ln"> 7</span>                                                    <span class="p">(</span><span class="s1">&#39;days_since_prior_order&#39;</span><span class="p">,</span><span class="s1">&#39;mean&#39;</span><span class="p">)])))</span>
+<span class="ln"> 8</span>
+<span class="ln"> 9</span><span class="n">user_features_df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;user_id&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">user_features</span>
+<span class="ln">10</span><span class="nb">print</span><span class="p">(</span><span class="n">user_features_df</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
+</code></pre></div><p>Và chúng ta merge tiếp đặc trưng user vào trong tập huấn luyện.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span>
+<span class="ln">2</span><span class="n">df_X</span> <span class="o">=</span> <span class="n">df_X</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">user_features_df</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="s1">&#39;product_id&#39;</span><span class="p">)</span>
+<span class="ln">3</span>
+<span class="ln">4</span><span class="c1">#note that dropping rows with NA product_avg_days_since_prior_order is likely a naive choice </span>
+<span class="ln">5</span><span class="n">df_X</span> <span class="o">=</span> <span class="n">df_X</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+</code></pre></div><h2 id="đặc-trưng-mối-tương-quan-giữa-người-dùng-và-sản-phẩm">Đặc trưng mối tương quan giữa người dùng và sản phẩm<a class="anchor ms-1" href="#đặc-trưng-mối-tương-quan-giữa-người-dùng-và-sản-phẩm"><i class="fas fa-link"></i></a></h2>
+<p>Ở đây, chúng ta sử dụng đặc trưng trung bình số sản phẩm của 1 người được thêm vào đơn hàng và tần suất 1 sản phẩm 1 user add vào đơn hàng.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span><span class="n">user_prod_features</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;user_product_avg_add_to_cart_order&#39;</span><span class="p">]</span>
+<span class="ln">2</span>
+<span class="ln">3</span><span class="n">user_prod_features_df</span> <span class="o">=</span> <span class="p">(</span><span class="n">order_products_prior_df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;product_id&#39;</span><span class="p">,</span><span class="s1">&#39;user_id&#39;</span><span class="p">],</span><span class="n">as_index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> \
+<span class="ln">4</span>                                                <span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="n">OrderedDict</span><span class="p">(</span>
+<span class="ln">5</span>                                                     <span class="p">[(</span><span class="s1">&#39;add_to_cart_order&#39;</span><span class="p">,</span><span class="s1">&#39;mean&#39;</span><span class="p">)])))</span>
+<span class="ln">6</span>
+<span class="ln">7</span><span class="n">user_prod_features_df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;product_id&#39;</span><span class="p">,</span><span class="s1">&#39;user_id&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">user_prod_features</span>
+<span class="ln">8</span><span class="n">df_X</span> <span class="o">=</span> <span class="n">df_X</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">user_prod_features_df</span><span class="p">,</span><span class="n">on</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;user_id&#39;</span><span class="p">,</span><span class="s1">&#39;product_id&#39;</span><span class="p">])</span>
+<span class="ln">9</span><span class="n">df_X</span><span class="p">[</span><span class="s1">&#39;user_product_order_freq&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_X</span><span class="p">[</span><span class="s1">&#39;user_product_total_orders&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="n">df_X</span><span class="p">[</span><span class="s1">&#39;user_total_orders&#39;</span><span class="p">]</span> 
+</code></pre></div><h1 id="bổ-sung-thêm-đặc-trưng">Bổ sung thêm đặc trưng<a class="anchor ms-1" href="#bổ-sung-thêm-đặc-trưng"><i class="fas fa-link"></i></a></h1>
+<p>Ngoài các đặc trưng cơ bản ở trên, ta sẽ bổ sung thêm một số đặc trưng khác:</p>
+<p>Đặc trưng sản phẩm: bổ sung thêm 3 đặc trưng trung bình ngày trong tuần được đặt hàng  (cột order_down), trung bình giờ đặt hàng (cột order_hour_of_day), trung bình ngày đặt hàng kể từ lần đặt trước đó (cột days_since_prior_order) theo sản phẩm.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln"> 1</span><span class="n">prod_features</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;product_avg_order_dow&#39;</span><span class="p">,</span> <span class="s1">&#39;product_avg_order_hour_of_day&#39;</span><span class="p">,</span> <span class="s1">&#39;product_avg_days_since_prior_order&#39;</span><span class="p">]</span>
+<span class="ln"> 2</span>
+<span class="ln"> 3</span><span class="n">prod_features_df</span> <span class="o">=</span> <span class="p">(</span><span class="n">order_products_prior_df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;product_id&#39;</span><span class="p">],</span> <span class="n">as_index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="ln"> 4</span>                                     <span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="n">OrderedDict</span><span class="p">(</span>
+<span class="ln"> 5</span>                                     <span class="p">[(</span><span class="s1">&#39;order_dow&#39;</span><span class="p">,</span><span class="s1">&#39;mean&#39;</span><span class="p">),</span>
+<span class="ln"> 6</span>                                      <span class="p">(</span><span class="s1">&#39;order_hour_of_day&#39;</span><span class="p">,</span> <span class="s1">&#39;mean&#39;</span><span class="p">),</span>
+<span class="ln"> 7</span>                                      <span class="p">(</span><span class="s1">&#39;days_since_prior_order&#39;</span><span class="p">,</span> <span class="s1">&#39;mean&#39;</span><span class="p">)])))</span>
+<span class="ln"> 8</span>
+<span class="ln"> 9</span><span class="n">prod_features_df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;product_id&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">prod_features</span>
+<span class="ln">10</span>
+<span class="ln">11</span><span class="n">df_X</span> <span class="o">=</span> <span class="n">df_X</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">prod_features_df</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="s1">&#39;product_id&#39;</span><span class="p">)</span>
+<span class="ln">12</span><span class="n">df_X</span> <span class="o">=</span> <span class="n">df_X</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+</code></pre></div><p>Đặc trưng người dùng: bổ sung thêm 2 cột đặc trung trung bình ngày trong tuần được đặt hàng  (cột order_down) và  trung bình giờ đặt hàng (cột order_hour_of_day) theo người dùng</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln"> 1</span><span class="n">user_features</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;user_avg_order_dow&#39;</span><span class="p">,</span><span class="s1">&#39;user_avg_order_hour_of_day&#39;</span><span class="p">]</span>
+<span class="ln"> 2</span>
+<span class="ln"> 3</span><span class="n">user_features_df</span> <span class="o">=</span> <span class="p">(</span><span class="n">order_products_prior_df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;user_id&#39;</span><span class="p">],</span><span class="n">as_index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="ln"> 4</span>                                           <span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="n">OrderedDict</span><span class="p">(</span>
+<span class="ln"> 5</span>                                                   <span class="p">[(</span><span class="s1">&#39;order_dow&#39;</span><span class="p">,</span><span class="s1">&#39;mean&#39;</span><span class="p">),</span>
+<span class="ln"> 6</span>                                                    <span class="p">(</span><span class="s1">&#39;order_hour_of_day&#39;</span><span class="p">,</span><span class="s1">&#39;mean&#39;</span><span class="p">)])))</span>
+<span class="ln"> 7</span>
+<span class="ln"> 8</span><span class="n">user_features_df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;user_id&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">user_features</span>
+<span class="ln"> 9</span><span class="n">df_X</span> <span class="o">=</span> <span class="n">df_X</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">user_features_df</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="s1">&#39;user_id&#39;</span><span class="p">)</span>
+<span class="ln">10</span><span class="n">df_X</span> <span class="o">=</span> <span class="n">df_X</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+</code></pre></div><p>Đặc trung người dùng - sản phẩm: Bổ sung thêm đặc trưng tung bình trên cột order_down, order_hour_of_day, days_since_prior_order theo người dùng và sản phẩm</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln"> 1</span>
+<span class="ln"> 2</span><span class="n">user_prod_features</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;user_product_avg_days_since_prior_order&#39;</span><span class="p">,</span>
+<span class="ln"> 3</span>                      <span class="s1">&#39;user_product_avg_order_dow&#39;</span><span class="p">,</span>
+<span class="ln"> 4</span>                      <span class="s1">&#39;user_product_avg_order_hour_of_day&#39;</span><span class="p">]</span>
+<span class="ln"> 5</span>
+<span class="ln"> 6</span><span class="n">user_prod_features_df</span> <span class="o">=</span> <span class="p">(</span><span class="n">order_products_prior_df</span><span class="o">.</span><span class="n">groupby</span><span class="p">([</span><span class="s1">&#39;product_id&#39;</span><span class="p">,</span><span class="s1">&#39;user_id&#39;</span><span class="p">],</span><span class="n">as_index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> \
+<span class="ln"> 7</span>                                                <span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="n">OrderedDict</span><span class="p">(</span>
+<span class="ln"> 8</span>                                                     <span class="p">[(</span><span class="s1">&#39;days_since_prior_order&#39;</span><span class="p">,</span><span class="s1">&#39;mean&#39;</span><span class="p">),</span>
+<span class="ln"> 9</span>                                                     <span class="p">(</span><span class="s1">&#39;order_dow&#39;</span><span class="p">,</span><span class="s1">&#39;mean&#39;</span><span class="p">),</span>
+<span class="ln">10</span>                                                     <span class="p">(</span><span class="s1">&#39;order_hour_of_day&#39;</span><span class="p">,</span><span class="s1">&#39;mean&#39;</span><span class="p">)])))</span>
+<span class="ln">11</span>
+<span class="ln">12</span><span class="n">user_prod_features_df</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;product_id&#39;</span><span class="p">,</span><span class="s1">&#39;user_id&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">user_prod_features</span> 
+<span class="ln">13</span>
+<span class="ln">14</span><span class="n">df_X</span> <span class="o">=</span> <span class="n">df_X</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">user_prod_features_df</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;user_id&#39;</span><span class="p">,</span> <span class="s1">&#39;product_id&#39;</span><span class="p">])</span>
+<span class="ln">15</span><span class="n">df_X</span> <span class="o">=</span> <span class="n">df_X</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+</code></pre></div><p>Đặc trưng độ lệch: Tính độ lệch của của một số đặc trưng so với trung bình của chúng</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln"> 1</span><span class="c1">#Create delta columns to compare how users perform against averages</span>
+<span class="ln"> 2</span><span class="n">df_X</span><span class="p">[</span><span class="s1">&#39;product_total_orders_delta_per_user&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_X</span><span class="p">[</span><span class="s1">&#39;product_total_orders&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">df_X</span><span class="p">[</span><span class="s1">&#39;user_product_total_orders&#39;</span><span class="p">]</span>
+<span class="ln"> 3</span>
+<span class="ln"> 4</span><span class="n">df_X</span><span class="p">[</span><span class="s1">&#39;product_avg_add_to_cart_order_delta_per_user&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_X</span><span class="p">[</span><span class="s1">&#39;product_avg_add_to_cart_order&#39;</span><span class="p">]</span> <span class="o">-</span> \
+<span class="ln"> 5</span>                                                            <span class="n">df_X</span><span class="p">[</span><span class="s1">&#39;user_product_avg_add_to_cart_order&#39;</span><span class="p">]</span>
+<span class="ln"> 6</span>
+<span class="ln"> 7</span><span class="n">df_X</span><span class="p">[</span><span class="s1">&#39;product_avg_order_dow_per_user&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_X</span><span class="p">[</span><span class="s1">&#39;product_avg_order_dow&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">df_X</span><span class="p">[</span><span class="s1">&#39;user_product_avg_order_dow&#39;</span><span class="p">]</span>
+<span class="ln"> 8</span>
+<span class="ln"> 9</span><span class="n">df_X</span><span class="p">[</span><span class="s1">&#39;product_avg_order_hour_of_day_per_user&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_X</span><span class="p">[</span><span class="s1">&#39;product_avg_order_hour_of_day&#39;</span><span class="p">]</span> <span class="o">-</span> \
+<span class="ln">10</span>                                                            <span class="n">df_X</span><span class="p">[</span><span class="s1">&#39;user_product_avg_order_hour_of_day&#39;</span><span class="p">]</span>
+<span class="ln">11</span>
+<span class="ln">12</span><span class="n">df_X</span><span class="p">[</span><span class="s1">&#39;product_avg_days_since_prior_order_per_user&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_X</span><span class="p">[</span><span class="s1">&#39;product_avg_days_since_prior_order&#39;</span><span class="p">]</span> <span class="o">-</span> \
+<span class="ln">13</span>                                                            <span class="n">df_X</span><span class="p">[</span><span class="s1">&#39;user_product_avg_days_since_prior_order&#39;</span><span class="p">]</span>
+</code></pre></div><p>Bổ sung thêm đặc trưng department name</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span><span class="n">f_departments_df</span> <span class="o">=</span> <span class="n">products_df</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">departments_df</span><span class="p">,</span> <span class="n">on</span> <span class="o">=</span> <span class="s1">&#39;department_id&#39;</span><span class="p">)</span>
+<span class="ln">2</span><span class="n">f_departments_df</span> <span class="o">=</span> <span class="n">f_departments_df</span><span class="p">[[</span><span class="s1">&#39;product_id&#39;</span><span class="p">,</span> <span class="s1">&#39;department&#39;</span><span class="p">]]</span>
+<span class="ln">3</span>
+<span class="ln">4</span><span class="n">df_X</span> <span class="o">=</span> <span class="n">df_X</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">f_departments_df</span><span class="p">,</span> <span class="n">on</span> <span class="o">=</span> <span class="s1">&#39;product_id&#39;</span><span class="p">)</span>
+<span class="ln">5</span><span class="n">df_X</span> <span class="o">=</span> <span class="n">df_X</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+<span class="ln">6</span><span class="n">df_X</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">df_X</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">get_dummies</span><span class="p">(</span><span class="n">df_X</span><span class="p">[</span><span class="s1">&#39;department&#39;</span><span class="p">])],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="ln">7</span><span class="k">del</span> <span class="n">df_X</span><span class="p">[</span><span class="s1">&#39;department&#39;</span><span class="p">]</span>
+</code></pre></div><p>Chúng ta có tổng cộng 21 department name, vậy chúng ta thêm 21 cột, một cột tương ứng với một department name, ví dụ: alcohol,babies ,bakery, &hellip; Sản phẩm thuộc department name thì sẽ được đánh số 1, không thuộc department name thì đánh số 0.</p>
+<h1 id="huấn-luyện-mô-hình">Huấn luyện mô hình<a class="anchor ms-1" href="#huấn-luyện-mô-hình"><i class="fas fa-link"></i></a></h1>
+<p>Chia tập dữ liệu thành 80/20 trong đó 80% là tập train, 20% là tập test. Sử dụng k-fold-cross_validation với k=10</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln"> 1</span>
+<span class="ln"> 2</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">99</span><span class="p">)</span>
+<span class="ln"> 3</span><span class="n">total_users</span> <span class="o">=</span> <span class="n">df_X</span><span class="p">[</span><span class="s1">&#39;user_id&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">()</span> 
+<span class="ln"> 4</span><span class="n">test_users</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">total_users</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">total_users</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="mf">.20</span><span class="p">),</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="ln"> 5</span>
+<span class="ln"> 6</span>
+<span class="ln"> 7</span>
+<span class="ln"> 8</span><span class="n">test_user_sets</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="ln"> 9</span><span class="n">length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">test_users</span><span class="p">)</span>
+<span class="ln">10</span><span class="n">cv</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="ln">11</span>
+<span class="ln">12</span>
+<span class="ln">13</span><span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">cv</span><span class="p">):</span>
+<span class="ln">14</span>    <span class="n">start</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">x</span><span class="o">/</span><span class="n">cv</span><span class="o">*</span><span class="n">length</span><span class="p">)</span>
+<span class="ln">15</span>    <span class="n">finish</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">x</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="n">cv</span><span class="o">*</span><span class="n">length</span><span class="p">)</span>
+<span class="ln">16</span>    <span class="n">test_user_sets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">test_users</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">finish</span><span class="p">])</span>
+<span class="ln">17</span>
+<span class="ln">18</span><span class="n">cv_f1_scores</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="ln">19</span><span class="n">cv_f1_scores_balanced</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="ln">20</span><span class="n">cv_f1_scores_10fit</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="ln">21</span>
+<span class="ln">22</span><span class="k">for</span> <span class="n">test_user_set</span> <span class="ow">in</span> <span class="n">test_user_sets</span><span class="p">:</span>
+<span class="ln">23</span>    <span class="n">df_X_tr</span><span class="p">,</span> <span class="n">df_X_te</span> <span class="o">=</span> <span class="n">df_X</span><span class="p">[</span><span class="o">~</span><span class="n">df_X</span><span class="p">[</span><span class="s1">&#39;user_id&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">test_user_set</span><span class="p">)],</span> <span class="n">df_X</span><span class="p">[</span><span class="n">df_X</span><span class="p">[</span><span class="s1">&#39;user_id&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">test_user_set</span><span class="p">)]</span> 
+<span class="ln">24</span>
+<span class="ln">25</span>    <span class="n">y_tr</span><span class="p">,</span> <span class="n">y_te</span> <span class="o">=</span> <span class="n">df_X_tr</span><span class="p">[</span><span class="s1">&#39;in_cart&#39;</span><span class="p">],</span> <span class="n">df_X_te</span><span class="p">[</span><span class="s1">&#39;in_cart&#39;</span><span class="p">]</span>
+<span class="ln">26</span>    <span class="n">X_tr</span><span class="p">,</span> <span class="n">X_te</span> <span class="o">=</span> <span class="n">df_X_tr</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s1">&#39;product_id&#39;</span><span class="p">,</span><span class="s1">&#39;user_id&#39;</span><span class="p">,</span><span class="s1">&#39;latest_cart&#39;</span><span class="p">,</span><span class="s1">&#39;in_cart&#39;</span><span class="p">],</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> \
+<span class="ln">27</span>             <span class="n">df_X_te</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s1">&#39;product_id&#39;</span><span class="p">,</span><span class="s1">&#39;user_id&#39;</span><span class="p">,</span><span class="s1">&#39;latest_cart&#39;</span><span class="p">,</span><span class="s1">&#39;in_cart&#39;</span><span class="p">],</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> \
+<span class="ln">28</span>        
+<span class="ln">29</span>    <span class="n">scaler</span> <span class="o">=</span> <span class="n">MinMaxScaler</span><span class="p">()</span>
+<span class="ln">30</span>    <span class="n">X_tr</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">scaler</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">X_tr</span><span class="p">),</span> <span class="n">columns</span><span class="o">=</span><span class="n">X_tr</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+<span class="ln">31</span>    <span class="n">X_te</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">scaler</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">X_te</span><span class="p">),</span> <span class="n">columns</span><span class="o">=</span><span class="n">X_te</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+<span class="ln">32</span>    
+<span class="ln">33</span>    <span class="n">lr</span> <span class="o">=</span> <span class="n">LogisticRegression</span><span class="p">(</span><span class="n">C</span><span class="o">=</span><span class="mi">10000000</span><span class="p">)</span> 
+<span class="ln">34</span>    <span class="n">lr_balanced</span> <span class="o">=</span> <span class="n">LogisticRegression</span><span class="p">(</span><span class="n">class_weight</span><span class="o">=</span><span class="s1">&#39;balanced&#39;</span><span class="p">,</span> <span class="n">C</span><span class="o">=</span><span class="mi">10000000</span><span class="p">)</span>
+<span class="ln">35</span>    <span class="n">lr_10x</span> <span class="o">=</span> <span class="n">LogisticRegression</span><span class="p">(</span><span class="n">class_weight</span><span class="o">=</span><span class="p">{</span><span class="mi">1</span> <span class="p">:</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">0</span> <span class="p">:</span> <span class="mi">1</span><span class="p">},</span> <span class="n">C</span><span class="o">=</span><span class="mi">10000000</span><span class="p">)</span>
+<span class="ln">36</span>    
+<span class="ln">37</span>    <span class="n">lr</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_tr</span><span class="p">,</span> <span class="n">y_tr</span><span class="p">)</span>
+<span class="ln">38</span>    <span class="n">cv_f1_scores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f1_score</span><span class="p">(</span><span class="n">lr</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_te</span><span class="p">),</span> <span class="n">y_te</span><span class="p">))</span>
+<span class="ln">39</span>
+<span class="ln">40</span>    <span class="n">lr_balanced</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_tr</span><span class="p">,</span> <span class="n">y_tr</span><span class="p">)</span>
+<span class="ln">41</span>    <span class="n">cv_f1_scores_balanced</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f1_score</span><span class="p">(</span><span class="n">lr_balanced</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_te</span><span class="p">),</span> <span class="n">y_te</span><span class="p">))</span>
+<span class="ln">42</span>
+<span class="ln">43</span>    <span class="n">lr_10x</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_tr</span><span class="p">,</span> <span class="n">y_tr</span><span class="p">)</span>
+<span class="ln">44</span>    <span class="n">cv_f1_scores_10fit</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f1_score</span><span class="p">(</span><span class="n">lr_10x</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_te</span><span class="p">),</span> <span class="n">y_te</span><span class="p">))</span>   
+<span class="ln">45</span>
+<span class="ln">46</span><span class="nb">print</span><span class="p">(</span><span class="s2">&#34;cv_f1_scores: &#34;</span> <span class="o">+</span><span class="nb">str</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">cv_f1_scores</span><span class="p">)))</span>
+<span class="ln">47</span><span class="nb">print</span><span class="p">(</span><span class="s2">&#34;cv_f1_scores_balanced: &#34;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">cv_f1_scores_balanced</span><span class="p">)))</span>
+<span class="ln">48</span><span class="nb">print</span><span class="p">(</span><span class="s2">&#34;cv_f1_scores_10fit: &#34;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">cv_f1_scores_10fit</span><span class="p">)))</span>
+<span class="ln">49</span>
+<span class="ln">50</span><span class="n">df_X_tr</span><span class="p">,</span> <span class="n">df_X_te</span> <span class="o">=</span> <span class="n">df_X</span><span class="p">[</span><span class="o">~</span><span class="n">df_X</span><span class="p">[</span><span class="s1">&#39;user_id&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">test_users</span><span class="p">)],</span> <span class="n">df_X</span><span class="p">[</span><span class="n">df_X</span><span class="p">[</span><span class="s1">&#39;user_id&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">test_users</span><span class="p">)]</span>
+<span class="ln">51</span>
+<span class="ln">52</span><span class="n">y_tr</span><span class="p">,</span> <span class="n">y_te</span> <span class="o">=</span> <span class="n">df_X_tr</span><span class="p">[</span><span class="s1">&#39;in_cart&#39;</span><span class="p">],</span> <span class="n">df_X_te</span><span class="p">[</span><span class="s1">&#39;in_cart&#39;</span><span class="p">]</span>
+<span class="ln">53</span><span class="n">X_tr</span><span class="p">,</span> <span class="n">X_te</span> <span class="o">=</span> <span class="n">df_X_tr</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s1">&#39;product_id&#39;</span><span class="p">,</span><span class="s1">&#39;user_id&#39;</span><span class="p">,</span><span class="s1">&#39;latest_cart&#39;</span><span class="p">,</span><span class="s1">&#39;in_cart&#39;</span><span class="p">],</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> \
+<span class="ln">54</span>             <span class="n">df_X_te</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="s1">&#39;product_id&#39;</span><span class="p">,</span><span class="s1">&#39;user_id&#39;</span><span class="p">,</span><span class="s1">&#39;latest_cart&#39;</span><span class="p">,</span><span class="s1">&#39;in_cart&#39;</span><span class="p">],</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> \
+<span class="ln">55</span>
+<span class="ln">56</span><span class="n">lr_10x</span> <span class="o">=</span> <span class="n">LogisticRegression</span><span class="p">(</span><span class="n">class_weight</span><span class="o">=</span><span class="p">{</span><span class="mi">1</span> <span class="p">:</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">0</span> <span class="p">:</span> <span class="mi">1</span><span class="p">},</span> <span class="n">C</span><span class="o">=</span><span class="mi">10000000</span><span class="p">)</span>
+<span class="ln">57</span><span class="n">lr_10x</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_tr</span><span class="p">,</span> <span class="n">y_tr</span><span class="p">)</span>
+<span class="ln">58</span><span class="nb">print</span><span class="p">(</span><span class="s2">&#34;F1 store all: &#34;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">f1_score</span><span class="p">(</span><span class="n">lr_10x</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_te</span><span class="p">),</span> <span class="n">y_te</span><span class="p">)))</span>
+</code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span><span class="n">cv_f1_scores</span><span class="p">:</span> <span class="mf">0.2026889989037295</span>
+<span class="ln">2</span><span class="n">cv_f1_scores_balanced</span><span class="p">:</span> <span class="mf">0.3816810646496983</span>
+<span class="ln">3</span><span class="n">cv_f1_scores_10fit</span><span class="p">:</span> <span class="mf">0.3899595078917494</span>
+<span class="ln">4</span>
+<span class="ln">5</span><span class="n">F1</span> <span class="n">store</span> <span class="nb">all</span><span class="p">:</span> <span class="mf">0.3808374055616213</span>
+</code></pre></div><p>Thử in ra hệ số của hàm hồi quy</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span><span class="n">coefficients</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">lr_10x</span><span class="o">.</span><span class="n">coef_</span><span class="p">,</span> <span class="n">columns</span> <span class="o">=</span> <span class="n">X_tr</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+<span class="ln">2</span><span class="n">coefficients</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">coefficients</span><span class="p">)</span>
+<span class="ln">3</span><span class="nb">print</span><span class="p">(</span><span class="n">coefficients</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+</code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln"> 1</span><span class="n">user_product_total_orders</span>                     <span class="mf">1.160475</span>
+<span class="ln"> 2</span><span class="n">product_total_orders</span>                          <span class="mf">1.077254</span>
+<span class="ln"> 3</span><span class="n">product_avg_add_to_cart_order</span>                 <span class="mf">0.915343</span>
+<span class="ln"> 4</span><span class="n">user_total_orders</span>                             <span class="mf">0.983272</span>
+<span class="ln"> 5</span><span class="n">user_avg_cartsize</span>                             <span class="mf">1.059655</span>
+<span class="ln"> 6</span><span class="n">user_total_products</span>                           <span class="mf">0.993839</span>
+<span class="ln"> 7</span><span class="n">user_avg_days_since_prior_order</span>               <span class="mf">0.993513</span>
+<span class="ln"> 8</span><span class="n">user_product_avg_add_to_cart_order</span>            <span class="mf">0.950418</span>
+<span class="ln"> 9</span><span class="n">user_product_order_freq</span>                       <span class="mf">1.051246</span>
+<span class="ln">10</span><span class="n">product_avg_order_dow</span>                         <span class="mf">0.994744</span>
+<span class="ln">11</span><span class="n">product_avg_order_hour_of_day</span>                 <span class="mf">1.010971</span>
+<span class="ln">12</span><span class="n">product_avg_days_since_prior_order</span>            <span class="mf">0.994498</span>
+<span class="ln">13</span><span class="n">user_avg_order_dow</span>                            <span class="mf">0.997298</span>
+<span class="ln">14</span><span class="n">user_avg_order_hour_of_day</span>                    <span class="mf">1.012958</span>
+<span class="ln">15</span><span class="n">user_product_avg_days_since_prior_order</span>       <span class="mf">1.003382</span>
+<span class="ln">16</span><span class="n">user_product_avg_order_dow</span>                    <span class="mf">0.994477</span>
+<span class="ln">17</span><span class="n">user_product_avg_order_hour_of_day</span>            <span class="mf">1.003457</span>
+<span class="ln">18</span><span class="n">product_total_orders_delta_per_user</span>           <span class="mf">0.928288</span>
+<span class="ln">19</span><span class="n">product_avg_add_to_cart_order_delta_per_user</span>  <span class="mf">0.963095</span>
+<span class="ln">20</span><span class="n">product_avg_order_dow_per_user</span>                <span class="mf">1.000268</span>
+<span class="ln">21</span><span class="n">product_avg_order_hour_of_day_per_user</span>        <span class="mf">1.007489</span>
+<span class="ln">22</span><span class="n">product_avg_days_since_prior_order_per_user</span>   <span class="mf">0.991147</span>
+<span class="ln">23</span><span class="n">alcohol</span>                                       <span class="mf">0.998866</span>
+<span class="ln">24</span><span class="n">babies</span>                                        <span class="mf">1.000313</span>
+<span class="ln">25</span><span class="n">bakery</span>                                        <span class="mf">1.003098</span>
+<span class="ln">26</span><span class="n">beverages</span>                                     <span class="mf">1.007733</span>
+<span class="ln">27</span><span class="n">breakfast</span>                                     <span class="mf">1.000117</span>
+<span class="ln">28</span><span class="n">bulk</span>                                          <span class="mf">0.999980</span>
+<span class="ln">29</span><span class="n">canned</span> <span class="n">goods</span>                                  <span class="mf">0.995017</span>
+<span class="ln">30</span><span class="n">dairy</span> <span class="n">eggs</span>                                    <span class="mf">1.018069</span>
+<span class="ln">31</span><span class="n">deli</span>                                          <span class="mf">1.002720</span>
+<span class="ln">32</span><span class="n">dry</span> <span class="n">goods</span> <span class="n">pasta</span>                               <span class="mf">0.997379</span>
+<span class="ln">33</span><span class="n">frozen</span>                                        <span class="mf">1.000752</span>
+<span class="ln">34</span><span class="n">household</span>                                     <span class="mf">0.992164</span>
+<span class="ln">35</span><span class="n">international</span>                                 <span class="mf">0.996822</span>
+<span class="ln">36</span><span class="n">meat</span> <span class="n">seafood</span>                                  <span class="mf">1.000340</span>
+<span class="ln">37</span><span class="n">missing</span>                                       <span class="mf">1.001953</span>
+<span class="ln">38</span><span class="n">other</span>                                         <span class="mf">0.999607</span>
+<span class="ln">39</span><span class="n">pantry</span>                                        <span class="mf">0.972038</span>
+<span class="ln">40</span><span class="n">personal</span> <span class="n">care</span>                                 <span class="mf">0.992072</span>
+<span class="ln">41</span><span class="n">pets</span>                                          <span class="mf">1.000466</span>
+<span class="ln">42</span><span class="n">produce</span>                                       <span class="mf">1.017809</span>
+<span class="ln">43</span><span class="n">snacks</span>                                        <span class="mf">1.004893</span>
+</code></pre></div><p>Thử show confusion matrix của dữ liệu:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln"> 1</span><span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">confusion_matrix</span>
+<span class="ln"> 2</span><span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
+<span class="ln"> 3</span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="ln"> 4</span><span class="o">%</span><span class="n">matplotlib</span> <span class="n">inline</span>
+<span class="ln"> 5</span><span class="n">plt</span><span class="o">.</span><span class="n">style</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="s1">&#39;fivethirtyeight&#39;</span><span class="p">)</span>
+<span class="ln"> 6</span>
+<span class="ln"> 7</span><span class="k">def</span> <span class="nf">plot_confusion_matrix</span><span class="p">(</span><span class="n">cm</span><span class="p">,</span><span class="n">title</span><span class="o">=</span><span class="s1">&#39;Confusion matrix&#39;</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">Reds</span><span class="p">):</span>
+<span class="ln"> 8</span>    <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">cm</span><span class="p">,</span> <span class="n">interpolation</span><span class="o">=</span><span class="s1">&#39;nearest&#39;</span><span class="p">,</span><span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">)</span>
+<span class="ln"> 9</span>    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+<span class="ln">10</span>    <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">()</span>
+<span class="ln">11</span>    <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="ln">12</span>    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;True label&#39;</span><span class="p">)</span>
+<span class="ln">13</span>    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Predicted label&#39;</span><span class="p">)</span>
+<span class="ln">14</span>
+<span class="ln">15</span><span class="c1">#y_tr=np.ravel(y_tr)</span>
+<span class="ln">16</span>
+<span class="ln">17</span><span class="n">train_acc</span><span class="o">=</span><span class="n">lr_10x</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">X_tr</span><span class="p">,</span> <span class="n">y_tr</span><span class="p">)</span>
+<span class="ln">18</span><span class="n">test_acc</span><span class="o">=</span><span class="n">lr_10x</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">X_te</span><span class="p">,</span> <span class="n">y_te</span><span class="p">)</span>
+<span class="ln">19</span><span class="nb">print</span><span class="p">(</span><span class="s2">&#34;Training Data Accuracy: </span><span class="si">%0.2f</span><span class="s2">&#34;</span> <span class="o">%</span><span class="p">(</span><span class="n">train_acc</span><span class="p">))</span>
+<span class="ln">20</span><span class="nb">print</span><span class="p">(</span><span class="s2">&#34;Test Data Accuracy:     </span><span class="si">%0.2f</span><span class="s2">&#34;</span> <span class="o">%</span><span class="p">(</span><span class="n">test_acc</span><span class="p">))</span>
+<span class="ln">21</span>    
+<span class="ln">22</span><span class="n">y_true</span> <span class="o">=</span> <span class="n">y_te</span>
+<span class="ln">23</span><span class="n">y_pred</span> <span class="o">=</span> <span class="n">lr_10x</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_te</span><span class="p">)</span>
+<span class="ln">24</span>
+<span class="ln">25</span>
+<span class="ln">26</span><span class="n">conf</span> <span class="o">=</span> <span class="n">confusion_matrix</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span>
+<span class="ln">27</span><span class="nb">print</span><span class="p">(</span><span class="n">conf</span><span class="p">)</span>
+<span class="ln">28</span>
+<span class="ln">29</span><span class="nb">print</span> <span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="ln">30</span><span class="nb">print</span> <span class="p">(</span><span class="s2">&#34;Precision:              </span><span class="si">%0.2f</span><span class="s2">&#34;</span> <span class="o">%</span><span class="p">(</span><span class="n">conf</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">conf</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">conf</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])))</span>
+<span class="ln">31</span><span class="nb">print</span> <span class="p">(</span><span class="s2">&#34;Recall:                 </span><span class="si">%0.2f</span><span class="s2">&#34;</span><span class="o">%</span> <span class="p">(</span><span class="n">conf</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">conf</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">conf</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">])))</span>
+<span class="ln">32</span>    
+<span class="ln">33</span><span class="n">cm</span><span class="o">=</span><span class="n">confusion_matrix</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+<span class="ln">34</span>    
+<span class="ln">35</span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="ln">36</span><span class="n">plot_confusion_matrix</span><span class="p">(</span><span class="n">cm</span><span class="p">)</span>
+</code></pre></div><p>Kết quả</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span><span class="n">Training</span> <span class="n">Data</span> <span class="n">Accuracy</span><span class="p">:</span> <span class="mf">0.83</span>
+<span class="ln">2</span><span class="n">Test</span> <span class="n">Data</span> <span class="n">Accuracy</span><span class="p">:</span>     <span class="mf">0.83</span>
+<span class="ln">3</span><span class="p">[[</span><span class="mi">1236979</span>  <span class="mi">190126</span><span class="p">]</span>
+<span class="ln">4</span> <span class="p">[</span>  <span class="mi">78107</span>   <span class="mi">82493</span><span class="p">]]</span>
+<span class="ln">5</span>
+<span class="ln">6</span>
+<span class="ln">7</span><span class="n">Precision</span><span class="p">:</span>              <span class="mf">0.30</span>
+<span class="ln">8</span><span class="n">Recall</span><span class="p">:</span>                 <span class="mf">0.51</span>
+</code></pre></div><p><img class="img-fluid" alt="Hình ảnh" src="/blog/2018-11-13-instacart-market-basket-analysis/instartcart_plot_confusion_matrix.png" loading="lazy"
+  
+   />
+
+</p>
+<p>Show đường cong ROC của dữ liệu</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln"> 1</span>
+<span class="ln"> 2</span><span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">roc_curve</span><span class="p">,</span> <span class="n">auc</span>
+<span class="ln"> 3</span>
+<span class="ln"> 4</span><span class="n">y_score</span> <span class="o">=</span> <span class="n">lr_10x</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">X_te</span><span class="p">)[:,</span><span class="mi">1</span><span class="p">]</span>
+<span class="ln"> 5</span>
+<span class="ln"> 6</span><span class="n">fpr</span><span class="p">,</span> <span class="n">tpr</span><span class="p">,</span><span class="n">_</span> <span class="o">=</span> <span class="n">roc_curve</span><span class="p">(</span><span class="n">y_te</span><span class="p">,</span> <span class="n">y_score</span><span class="p">)</span>
+<span class="ln"> 7</span><span class="n">roc_auc</span> <span class="o">=</span> <span class="n">auc</span><span class="p">(</span><span class="n">fpr</span><span class="p">,</span> <span class="n">tpr</span><span class="p">)</span>
+<span class="ln"> 8</span>
+<span class="ln"> 9</span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="ln">10</span><span class="c1"># Plotting our Baseline..</span>
+<span class="ln">11</span><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">],[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;black&#39;</span><span class="p">)</span>
+<span class="ln">12</span><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">fpr</span><span class="p">,</span> <span class="n">tpr</span><span class="p">,</span> <span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;green&#39;</span><span class="p">)</span>
+<span class="ln">13</span><span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;False Positive Rate&#39;</span><span class="p">)</span>
+<span class="ln">14</span><span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;True Positive Rate&#39;</span><span class="p">)</span>
+<span class="ln">15</span><span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span><span class="o">.</span><span class="n">set_aspect</span><span class="p">(</span><span class="s1">&#39;equal&#39;</span><span class="p">,</span> <span class="n">adjustable</span><span class="o">=</span><span class="s1">&#39;box&#39;</span><span class="p">)</span>
+</code></pre></div><p><img class="img-fluid" alt="Hình ảnh" src="/blog/2018-11-13-instacart-market-basket-analysis/instartcart_roc.png" loading="lazy"
+  
+   />
+
+</p>
+<p>Cảm ơn các bạn đã theo dõi. Hẹn gặp bạn ở các bài viết tiếp theo.</p>
+</div></div>
+  <div class="card-footer"><div class="post-navs d-flex justify-content-evenly"><div class="post-nav post-prev">
+    <i class="fas fa-fw fa-chevron-left"></i>
+    <a href="/blog/2018-11-10-stock-prediction_v1/">Dự Đoán Giá Chứng Khoán SP500 Sử Dụng LSTM
+</a>
+  </div><div class="post-nav post-next">
+    <a href="/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/">Tìm Hiểu Region Based Object Detectors
+</a>
+    <i class="fas fa-fw fa-chevron-right"></i>
+  </div></div></div>
+</article><div class="card component row post-comments" id="post-comments">
+  <div class="card-header">
+    <h2 class="card-title">Comments</h2>
+  </div>
+  <div class="card-body"><script src="https://utteranc.es/client.js"
+  repo="AlexBlack2202/utterances"
+  issue-term="pathname"
+  label="comment"
+  theme="github-light"
+  crossorigin="anonymous"
+  async>
+</script></div>
+</div></div>
+</div><aside class="col-lg-4 sidebar d-flex">
+  <div class="container d-flex flex-column">
+    
+    <section class="card row text-center profile component">
+  <div class="card-body">
+    <div class="col-12 d-flex align-items-center justify-content-center"><img class="profile-avatar rounded-circle" alt="Đặng Thị Hằng | Phạm Duy Tùng" src="/images/profile.webp" loading="lazy"
+   width="736" height="920"
+   />
+</div>
+    <div class="col-12 profile-meta"><div class="profile-name">Đặng Thị Hằng | Phạm Duy Tùng</div><div class="profile-bio">Gopher, CShaper, Pythoner, Full Stack Engineer.</div><div class="profile-company"><i class="fas fa-fw fa-building"></i>MWG</div><div class="profile-location"><i class="fas fa-fw fa-map-marker-alt"></i>Earth</div><div class="profile-about"><i class="fas fa-fw fa-user"></i><a href="/about/">About</a></div><div class="profile-contact"><i class="fas fa-fw fa-question-circle"></i><a href="/contact/">Contact Us</a></div>
+</div>
+  </div>
+</section>
+  <div class="post-toc row mb-4 card component" id="postTOC">
+  <div class="card-header">
+    <h2 class="card-title">Contents</h2>
+  </div>
+  <div class="card-body">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#phân-tích-dữ-liệu">Phân tích dữ liệu</a></li>
+  </ul>
+
+  <ul>
+    <li><a href="#đặc-trưng-sản-phẩm">Đặc trưng sản phẩm</a></li>
+    <li><a href="#đặc-trưng-người-dùng">Đặc trưng người dùng</a></li>
+    <li><a href="#đặc-trưng-mối-tương-quan-giữa-người-dùng-và-sản-phẩm">Đặc trưng mối tương quan giữa người dùng và sản phẩm</a></li>
+  </ul>
+</nav>
+  </div>
+</div><section class="recent-posts row card component">
+  <div class="card-header">
+    <h2 class="card-title">Recent Posts</h2>
+  </div>
+  <div class="card-body">
+    <ul class="post-list"><li>
+        <a href="/blog/2021-11-06-some-way-make-momey-from-web-scrapping/">Một Số Cách Kiếm Thêm Thu Nhập Từ Cách Cào Dữ Liệu
+</a>
+      </li><li>
+        <a href="/blog/2021-08-12-china_chess_alpha_beta_ai/">Xây Dựng Chương Trình AI Đơn Giản Cho Game Cờ Tướng
+</a>
+      </li><li>
+        <a href="/blog/2021-07-28-pycaret-flaskapi/">Tìm Hiểu Package PyCaret Trong Python
+</a>
+      </li><li>
+        <a href="/blog/2021-07-02-mo-hinh-phan-quyen/">Mô Hình Phân Quyền - Access Control
+</a>
+      </li><li>
+        <a href="/blog/2021-05-30-upgrade-wls-to-wls2/">Nâng Cấp WSL Lên Bản WSL 2 Trên Window 10
+</a>
+      </li></ul>
+  </div>
+</section><section class="series-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="/series">Series</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="/series/kh%C3%B3a-h%E1%BB%8Dc-c&#43;&#43;-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa học c&#43;&#43; căn bản">
+            Khóa học c&#43;&#43; căn bản<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="/series/machine-learning-dataset/" class="badge rounded post-taxonomy" title="Machine learning dataset">
+            Machine learning dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a><a href="/series/kh%C3%B3a-h%E1%BB%8Dc-python-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa học python căn bản">
+            Khóa học python căn bản<span class="badge badge-sm text-white bg-accent ms-1">1</span></a></div>
+      </div>
+    </section><section class="tags-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="/tags">Tags</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="/tags/machine-learning/" class="badge rounded post-taxonomy" title="Machine learning">
+            Machine learning<span class="badge badge-sm text-white bg-accent ms-1">38</span></a><a href="/tags/deeplearning/" class="badge rounded post-taxonomy" title="Deeplearning">
+            Deeplearning<span class="badge badge-sm text-white bg-accent ms-1">20</span></a><a href="/tags/deep-learning/" class="badge rounded post-taxonomy" title="Deep learning">
+            Deep learning<span class="badge badge-sm text-white bg-accent ms-1">15</span></a><a href="/tags/python/" class="badge rounded post-taxonomy" title="python">
+            python<span class="badge badge-sm text-white bg-accent ms-1">10</span></a><a href="/tags/opencv/" class="badge rounded post-taxonomy" title="opencv">
+            opencv<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="/tags/c&#43;&#43;/" class="badge rounded post-taxonomy" title="c&#43;&#43;">
+            c&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/object-detector/" class="badge rounded post-taxonomy" title="object detector">
+            object detector<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/alexnet/" class="badge rounded post-taxonomy" title="AlexNet">
+            AlexNet<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="/tags/d%E1%BB%B1-%C4%91o%C3%A1n/" class="badge rounded post-taxonomy" title="dự đoán">
+            dự đoán<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="/tags/forecast/" class="badge rounded post-taxonomy" title="forecast">
+            forecast<span class="badge badge-sm text-white bg-accent ms-1">3</span></a></div>
+      </div>
+    </section>
+    
+  </div>
+</aside>
+</div>
+    </main><footer class="footer mt-auto py-3 text-center container"><ul class="nav justify-content-between footer-memu mb-3"><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Support
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-github"></i>Repository
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-comments"></i>Discussions
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">Features Request
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">Bug Report
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/contact/"><i class="fas fa-fw fa-info-circle"></i>Contact Us
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/faq/"><i class="fas fa-fw fa-question-circle"></i>FAQs
+</a>
+        </li></ul></li><li class="nav-item"><li class="nav-item">
+      <a class="nav-link" target="_blank" rel="noopener noreferrer">Docs
+</a>
+    </li></li><li class="nav-item"><li class="nav-item">
+      <a class="nav-link" target="_blank" rel="noopener noreferrer">Features
+</a>
+    </li></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Demo
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">Netlify
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">China
+</a>
+        </li></ul></li></ul>
+<div class="copyright mb-2">
+  Copyright © 2016-2022 Phạm Duy Tùng. All Rights Reserved.
+</div>
+<div class="powered-by mb-2">
+  Website chia sẻ kiến thức của Phạm Duy Tùng và Đặng Thị Hằng. Vui lòng liên hệ email alexblack2202@gmail.com nếu bạn có thông tin cần trao đổi.
+</div></footer>
+<script src="/js/main.0f06b653e090cf5f3e595cc4f3150328397d377ee5b405d0803057801eb4f3e5.js" integrity="sha256-Dwa2U&#43;CQz18&#43;WVzE8xUDKDl9N37ltAXQgDBXgB608&#43;U=" crossorigin="anonymous" defer></script><script src="/js/icons.min.8ddcaafc364ff0296c2209c5495287f0de039b852da9b24847f94c198b7639b6.js" integrity="sha256-jdyq/DZP8ClsIgnFSVKH8N4Dm4UtqbJIR/lMGYt2ObY=" crossorigin="anonymous" defer></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('\/service-worker.js').then(function(reg) {
+      console.log('Successfully registered service worker', reg);
+    }).catch(function(err) {
+      console.warn('Error whilst registering service worker', err);
+    });
+  });
+}
+</script><script src="/js/viewer.min.652118a9fbf3403cdfde4026209f97ace22f9e334f0b45a33431a221b3db46a8.js" integrity="sha256-ZSEYqfvzQDzf3kAmIJ&#43;XrOIvnjNPC0WjNDGiIbPbRqg=" crossorigin="anonymous" defer></script><script defer src="/js/katex.min.a575e93a07f02f7e58ee9002aea3b4e75163d4fa8ea3a627e90e7fafd5c718fa.js" integrity="sha256-pXXpOgfwL35Y7pACrqO051Fj1PqOo6Yn6Q5/r9XHGPo=" crossorigin="anonymous"></script>
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-114911596-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+</body>
+</html>

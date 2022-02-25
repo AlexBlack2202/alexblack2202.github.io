@@ -1,0 +1,587 @@
+<!doctype html><html lang="en" data-palette="blue"
+   data-mode="dark">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Giảm bộ nhớ sử dụng trong python - Phạm Duy Tùng Machine Learning Blog</title><link rel="apple-touch-icon" href="/images/icons/icon-180x180.png" sizes="180x180">
+<link rel="icon" href="/images/icons/icon-32x32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="/images/icons/icon-16x16.png" sizes="16x16" type="image/png">
+<link rel="icon" href="/images/icons/favicon.ico">
+<link rel="manifest" href="/manifest.json">
+<meta name="keywords" content="" />
+<meta name="description" content="Python là ngôn ngữ kịch bản được phát triển kể từ năm 1991. Ở một số thực nghiệm, ta thấy rằng python &#34;ăn&#34; rất nhiều RAM. Ở bài viết này, chúng ta sẽ phân tích sâu hơn về vì sao python lại ăn ram và cách khắc phục." /><meta name="robots" content="index, follow" /><meta itemprop="name" content="Giảm bộ nhớ sử dụng trong python">
+<meta itemprop="description" content="Python là ngôn ngữ kịch bản được phát triển kể từ năm 1991. Ở một số thực nghiệm, ta thấy rằng python &#34;ăn&#34; rất nhiều RAM. Ở bài viết này, chúng ta sẽ phân tích sâu hơn về vì sao python lại ăn ram và cách khắc phục."><meta itemprop="datePublished" content="2019-02-06T00:19:00+03:00" />
+<meta itemprop="dateModified" content="2019-02-06T00:19:00+03:00" />
+<meta itemprop="wordCount" content="1222">
+<meta itemprop="keywords" content="Machine learning,Deeplearning,python," /><meta property="og:title" content="Giảm bộ nhớ sử dụng trong python" />
+<meta property="og:description" content="Python là ngôn ngữ kịch bản được phát triển kể từ năm 1991. Ở một số thực nghiệm, ta thấy rằng python &#34;ăn&#34; rất nhiều RAM. Ở bài viết này, chúng ta sẽ phân tích sâu hơn về vì sao python lại ăn ram và cách khắc phục." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="/blog/2019-02-06-how-to-reduce-memory-consumption-by-half-by-adding-just-one-line-of-code/" /><meta property="article:section" content="blog" />
+<meta property="article:published_time" content="2019-02-06T00:19:00+03:00" />
+<meta property="article:modified_time" content="2019-02-06T00:19:00+03:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Giảm bộ nhớ sử dụng trong python"/>
+<meta name="twitter:description" content="Python là ngôn ngữ kịch bản được phát triển kể từ năm 1991. Ở một số thực nghiệm, ta thấy rằng python &#34;ăn&#34; rất nhiều RAM. Ở bài viết này, chúng ta sẽ phân tích sâu hơn về vì sao python lại ăn ram và cách khắc phục."/>
+<meta property="og:image" content="/images/logo.png"/>
+  <meta name="twitter:image" content="/images/logo.png"/><link rel="stylesheet" href="/css/main.min.507afbe6e4670fa3e961a0b35816b5daeb36029866fd6bd7b9d7871fcf88faa5.css" integrity="sha256-UHr75uRnD6PpYaCzWBa12us2Aphm/WvXudeHH8&#43;I&#43;qU=" crossorigin="anonymous"><link rel="stylesheet" href="/css/katex.min.d080a89e03e1eb850f547d835c186b4273f69879aa497eb8b0e88c1578bf1f0b.css" integrity="sha256-0ICongPh64UPVH2DXBhrQnP2mHmqSX64sOiMFXi/Hws=" crossorigin="anonymous">
+<link rel="stylesheet" href="/css/viewer.min.3d228794bcedbbfa0412beb8fbc1ec6973202945e42af7004f742a4d7bd620ab.css" integrity="sha256-PSKHlLztu/oEEr64&#43;8HsaXMgKUXkKvcAT3QqTXvWIKs=" crossorigin="anonymous"></head>
+  <body><script>const items=['mode','palette'];items.forEach(function(a){const b=localStorage.getItem('hbs-'+a);b&&document.body.parentElement.setAttribute('data-'+a,b)})</script><header><nav class="navbar top-app-bar top-app-bar-expand-lg fixed-top">
+  <div class="container">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <i class="fas fa-bars"></i>
+    </button><a class="navbar-brand flex-grow-1 flex-lg-grow-0 text-center text-lg-start mx-auto me-lg-3" href="/"><img class="logo" alt="Logo" src="/images/logo.webp" loading="lazy"
+   width="400" height="400"
+   />
+HOME
+    </a>
+    <div class="offcanvas offcanvas-bottom surface" tabindex="-1" id="offcanvasSocialShare" aria-labelledby="offcanvasSocialShare">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Share</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body">
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Twitter Share Button"
+      target="_blank" href="https://twitter.com/intent/tweet?title=Gi%e1%ba%a3m%20b%e1%bb%99%20nh%e1%bb%9b%20s%e1%bb%ad%20d%e1%bb%a5ng%20trong%20python&url=%2fblog%2f2019-02-06-how-to-reduce-memory-consumption-by-half-by-adding-just-one-line-of-code%2f">
+      <i class="fab fa-fw fa-twitter"></i> Twitter
+    </a>
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Facebook Share Button"
+      target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=%2fblog%2f2019-02-06-how-to-reduce-memory-consumption-by-half-by-adding-just-one-line-of-code%2f">
+      <i class="fab fa-fw fa-facebook-f"></i> Facebook
+    </a>
+  </div>
+</div>
+    <button class="navbar-settings" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSettings"
+  aria-controls="offcanvasSettings" aria-label="Toggle settings">
+  <i class="fas fa-ellipsis-v"></i>
+</button>
+
+<div class="offcanvas offcanvas-end surface h-100" tabindex="-1" id="offcanvasSettings" aria-labelledby="offcanvasSettings">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Settings</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body d-flex flex-column">
+
+
+
+<section class="setting">
+  <form class="font-size-switcher-form row">
+    <div class="col-auto">
+      <label for="fontSize" class="form-label"><i class="fas fa-fw fa-font"></i> Font Size</label>
+    </div>
+    <div class="col-auto ms-auto">
+      <input type="range" class="form-range" min="-2" max="2" id="fontSize">
+    </div>
+  </form>
+</section>
+
+
+<section class="setting palettes">
+  <form class="row">
+    <div class="col-auto">
+      <label><i class="fas fa-fw fa-palette"></i> Palette</label>
+    </div>
+    <div class="col-auto ms-auto">
+      <a id="btnPalette" class="btn btn-sm btn-outline-primary" role="button" aria-label="palettePicker">
+        <i class="fas fa-eye-dropper"></i>
+      </a>
+    </div>
+  </form>
+  <div class="mt-2 d-flex justify-content-between visually-hidden" id="palettePicker"><button type="button" id="palette-blue" aria-label="Blue"
+        class="btn btn-sm w-100 palette" data-palette="blue">
+      </button><button type="button" id="palette-blue-gray" aria-label="Blue Gray"
+        class="btn btn-sm w-100 palette" data-palette="blue-gray">
+      </button><button type="button" id="palette-brown" aria-label="Brown"
+        class="btn btn-sm w-100 palette" data-palette="brown">
+      </button><button type="button" id="palette-cyan" aria-label="Cyan"
+        class="btn btn-sm w-100 palette" data-palette="cyan">
+      </button><button type="button" id="palette-green" aria-label="Green"
+        class="btn btn-sm w-100 palette" data-palette="green">
+      </button><button type="button" id="palette-indigo" aria-label="Indigo"
+        class="btn btn-sm w-100 palette" data-palette="indigo">
+      </button><button type="button" id="palette-orange" aria-label="Orange"
+        class="btn btn-sm w-100 palette" data-palette="orange">
+      </button><button type="button" id="palette-pink" aria-label="Pink"
+        class="btn btn-sm w-100 palette" data-palette="pink">
+      </button><button type="button" id="palette-purple" aria-label="Purple"
+        class="btn btn-sm w-100 palette" data-palette="purple">
+      </button><button type="button" id="palette-red" aria-label="Red"
+        class="btn btn-sm w-100 palette" data-palette="red">
+      </button><button type="button" id="palette-teal" aria-label="Teal"
+        class="btn btn-sm w-100 palette" data-palette="teal">
+      </button><button type="button" id="palette-yellow" aria-label="Yellow"
+        class="btn btn-sm w-100 palette" data-palette="yellow">
+      </button></div>
+</section>
+<section class="setting actions d-flex justify-content-around mt-auto overflow-auto">
+  <a role="button" class="action action-go-back" href="javascript: window.history.back();">
+    <span class="action-icon"><i class="fas fa-2x fa-arrow-left"></i></span> Go back
+  </a>
+  <a role="button" class="action action-reload-page">
+    <span class="action-icon"><i class="fas fa-2x fa-redo-alt"></i></span> Reload
+  </a>
+  <a role="button" class="action action-copy-url">
+    <span class="action-icon"><i class="fas fa-2x fa-link"></i></span> Copy URL
+  </a><a class="action action-social-share" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSocialShare"
+    aria-controls="offcanvasSocialShare" aria-label="Toggle social share">
+    <span class="action-icon"><i class="fas fa-2x fa-share-alt"></i></span> Share
+  </a></section>
+
+</div>
+</div>
+
+    <div class="collapse navbar-collapse" tabindex="-1" id="navbarSupportedContent" aria-labelledby="navbarSupportedContent">
+      <form class="search-bar my-1" action="/search">
+  <div class="input-group input-group-sm">
+    <span class="btn btn-search disabled position-absolute left-0"><i class="fas fa-fw fa-search"></i></span>
+    <input class="form-control rounded-pill" name="q" type="search" aria-label="Search">
+  </div>
+</form>
+      <ul class="navbar-nav ms-auto"><li class="nav-item">
+          <a class="nav-link" href="/series/">
+            <i class="fas fa-fw fa-columns"></i>Series
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="/archives/">
+            <i class="fas fa-fw fa-file-archive"></i>Archives
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="/categories/">
+            <i class="fas fa-fw fa-folder"></i>Categories
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="/tags/">
+            <i class="fas fa-fw fa-tags"></i>Tags
+          </a>
+        </li><li class="nav-item dropdown">
+          <a class="nav-link" id="navbarDropdownSupport" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-fw fa-chevron-circle-down"></i>Support
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdownSupport"><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Repository
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Discussions
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Features Request
+              </a>
+            </li><li><hr class="dropdown-divider"></li><li>
+              <a class="dropdown-item"
+                href="/faq/">
+                FAQs
+              </a>
+            </li></ul>
+        </li></ul>
+    </div>
+  </div>
+</nav>
+</header>
+<main role="main" class="container">
+      <div class="row content">
+<div class="col-lg-8">
+  <div class="container"><nav class="row card component" aria-label="breadcrumb">
+  <div class="card-body">
+    <ol class="breadcrumb "><li class="breadcrumb-item"><a href="/">Home</a></li><li class="breadcrumb-item"><a href="/blog/">Blogs</a></li><li class="breadcrumb-item active">Giảm Bộ Nhớ Sử Dụng Trong Python</li></ol>
+  </div>
+</nav>
+<div class="post-panel-wrapper">
+  <div class="d-flex flex-column component rounded post-panel">
+    
+    <a class="action action-panel-toggler" role="button" title="Panel toggler">
+      <i class="fas fa-fw fa-chevron-circle-down"></i>
+    </a>
+    <a id="sidebarToggler" class="action d-none d-lg-block" role="button" title="Sidebar toggler">
+  <i class="fas fa-fw fa-expand-alt" data-fa-transform="rotate-45"></i>
+</a>
+
+    
+
+    
+    
+    <a class="action" href="#post-comments" role="button" aria-label="Comments" title="Comments">
+  <i class="fas fa-fw fa-comments"></i>
+</a>
+    <a class="action" href="#postTOC" aria-controls="Table of contents" role="button" title="Table of contents">
+  <i class="fas fa-fw fa-list-alt"></i>
+</a>
+    
+  </div>
+</div>
+<article class="row card component mb-4 post">
+  <div class="card-header ">
+    <h1 class="card-title post-title">Giảm Bộ Nhớ Sử Dụng Trong Python
+</h1>
+  </div>
+  <div class="card-body"><div class="post-meta">
+  <span class="post-date" title="created on 2019-02-06 04:19:00 &#43;0700 &#43;07.">
+    Feb 6, 2019
+  </span><span class="post-reading-time">
+    6 min read
+  </span><span class="post-taxonomies"><a href="/tags/machine-learning/" class="badge post-taxonomy">Machine learning</a><a href="/tags/deeplearning/" class="badge post-taxonomy">Deeplearning</a><a href="/tags/python/" class="badge post-taxonomy">python</a></span>
+</div>
+<div class="post-content mb-3"><h2 id="mở-đầu">Mở đầu<a class="anchor ms-1" href="#mở-đầu"><i class="fas fa-link"></i></a></h2>
+<p>Bắt đầu bằng một class đơn giản như sau:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span><span class="k">class</span> <span class="nc">DataItem</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="ln">2</span>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">age</span><span class="p">,</span> <span class="n">address</span><span class="p">):</span>
+<span class="ln">3</span>        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+<span class="ln">4</span>        <span class="bp">self</span><span class="o">.</span><span class="n">age</span> <span class="o">=</span> <span class="n">age</span>
+<span class="ln">5</span>        <span class="bp">self</span><span class="o">.</span><span class="n">address</span> <span class="o">=</span> <span class="n">address</span>
+</code></pre></div><p>Bạn nghĩ một đối tượng của class trên sẽ chiếm bao nhiêu bộ nhớ. Chúng ta cùng tiến hành một vài thí nghiệm nho nhỏ bên dưới.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span><span class="n">dx</span> <span class="o">=</span> <span class="n">DataItem</span><span class="p">(</span><span class="s2">&#34;Alex Black&#34;</span><span class="p">,</span> <span class="mi">42</span><span class="p">,</span> <span class="s2">&#34;-&#34;</span><span class="p">)</span>
+<span class="ln">2</span><span class="nb">print</span> <span class="p">(</span><span class="s2">&#34;sys.getsizeof(dx):&#34;</span><span class="p">,</span> <span class="n">sys</span><span class="o">.</span><span class="n">getsizeof</span><span class="p">(</span><span class="n">dx</span><span class="p">))</span>
+<span class="ln">3</span><span class="o">&gt;&gt;</span> <span class="n">sys</span><span class="o">.</span><span class="n">getsizeof</span><span class="p">(</span><span class="n">dx</span><span class="p">):</span> <span class="mi">56</span>
+</code></pre></div><p>Kết quả ra là <em>56 bytes</em>, khá hợp lý phải không các bạn. Thử với một ví dụ khác xem sao nhỉ.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span><span class="n">dy</span> <span class="o">=</span> <span class="n">DataItem</span><span class="p">(</span><span class="s2">&#34;Alex Black&#34;</span><span class="p">,</span> <span class="mi">42</span><span class="p">,</span> <span class="s2">&#34;I am working at MWG&#34;</span><span class="p">)</span>
+<span class="ln">2</span><span class="nb">print</span> <span class="p">(</span><span class="s2">&#34;sys.getsizeof(dy):&#34;</span><span class="p">,</span> <span class="n">sys</span><span class="o">.</span><span class="n">getsizeof</span><span class="p">(</span><span class="n">dy</span><span class="p">))</span>
+<span class="ln">3</span><span class="o">&gt;&gt;</span> <span class="n">sys</span><span class="o">.</span><span class="n">getsizeof</span><span class="p">(</span><span class="n">dy</span><span class="p">):</span> <span class="mi">56</span>
+</code></pre></div><p>Kết quả vẫn là <em>56 bytes</em>. Có cái gì đó sai sai ở đây không nhỉ?</p>
+<p>Chúng ta thực nghiệm một vài thí nghiệm khác để chứng thực.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln"> 1</span><span class="nb">print</span> <span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">getsizeof</span><span class="p">(</span><span class="s2">&#34;&#34;</span><span class="p">))</span>
+<span class="ln"> 2</span><span class="o">&gt;&gt;</span> <span class="mi">49</span>
+<span class="ln"> 3</span><span class="nb">print</span> <span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">getsizeof</span><span class="p">(</span><span class="s2">&#34;1&#34;</span><span class="p">))</span>
+<span class="ln"> 4</span><span class="o">&gt;&gt;</span> <span class="mi">50</span>
+<span class="ln"> 5</span><span class="nb">print</span> <span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">getsizeof</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+<span class="ln"> 6</span><span class="o">&gt;&gt;</span> <span class="mi">28</span>
+<span class="ln"> 7</span><span class="nb">print</span> <span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">getsizeof</span><span class="p">(</span><span class="nb">dict</span><span class="p">()))</span>
+<span class="ln"> 8</span><span class="o">&gt;&gt;</span> <span class="mi">240</span>
+<span class="ln"> 9</span><span class="nb">print</span> <span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">getsizeof</span><span class="p">({}))</span>
+<span class="ln">10</span><span class="o">&gt;&gt;</span> <span class="mi">240</span>
+<span class="ln">11</span><span class="nb">print</span> <span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">getsizeof</span><span class="p">(</span><span class="nb">list</span><span class="p">()))</span>
+<span class="ln">12</span><span class="o">&gt;&gt;</span> <span class="mi">64</span>
+<span class="ln">13</span><span class="nb">print</span> <span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">getsizeof</span><span class="p">([]))</span>
+<span class="ln">14</span><span class="o">&gt;&gt;</span> <span class="mi">64</span>
+<span class="ln">15</span><span class="nb">print</span> <span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">getsizeof</span><span class="p">(()))</span>
+<span class="ln">16</span><span class="o">&gt;&gt;</span> <span class="mi">48</span>
+</code></pre></div><p>Một điều cực kỳ bất ngờ đã xuất hiện ở đây. Một chuỗi rỗng chiếm đến tận <em>49 bytes</em>, một dictionary rỗng, không chứa phần tử nào chiếm đến <em>240 bytes</em>, và một list rỗng chiếm tới <em>64 bytes</em>. Rõ ràng, python đã lưu một số thứ gì đó ngoài dữ liệu của mình.</p>
+<p>Đi sâu vào thử tìm hiểu những thứ &lsquo;linh kiện&rsquo; linh tinh mà python đã kèm theo cho chúng ta là gì nhé.</p>
+<p>Đầu tiên, chúng ta sẽ cần một hàm in ra những thứ mà python đã &lsquo;nhúng&rsquo; thêm vào class DataItem chúng ta khai báo ở trên.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span><span class="k">def</span> <span class="nf">dump</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+<span class="ln">2</span>  <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+<span class="ln">3</span>    <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;  obj.</span><span class="si">%s</span><span class="s2"> = </span><span class="si">%r</span><span class="s2">&#34;</span> <span class="o">%</span> <span class="p">(</span><span class="n">attr</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">attr</span><span class="p">)))</span>
+</code></pre></div><p>và dump biến dy ra thôi</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln"> 1</span><span class="n">dump</span><span class="p">(</span><span class="n">dy</span><span class="p">)</span>
+<span class="ln"> 2</span>
+<span class="ln"> 3</span><span class="n">obj</span><span class="o">.</span><span class="vm">__class__</span> <span class="o">=</span> <span class="o">&lt;</span><span class="k">class</span> <span class="err">&#39;</span><span class="nc">__main__</span><span class="o">.</span><span class="n">DataItem</span><span class="s1">&#39;&gt;</span>
+<span class="ln"> 4</span>  <span class="n">obj</span><span class="o">.</span><span class="fm">__delattr__</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">method</span><span class="o">-</span><span class="n">wrapper</span> <span class="s1">&#39;__delattr__&#39;</span> <span class="n">of</span> <span class="n">DataItem</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x000001A64A6DD0F0</span><span class="o">&gt;</span>
+<span class="ln"> 5</span>  <span class="n">obj</span><span class="o">.</span><span class="vm">__dict__</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;Alex Black&#39;</span><span class="p">,</span> <span class="s1">&#39;age&#39;</span><span class="p">:</span> <span class="mi">42</span><span class="p">,</span> <span class="s1">&#39;address&#39;</span><span class="p">:</span> <span class="s1">&#39;i am working at MWG&#39;</span><span class="p">}</span>
+<span class="ln"> 6</span>  <span class="n">obj</span><span class="o">.</span><span class="fm">__dir__</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">built</span><span class="o">-</span><span class="ow">in</span> <span class="n">method</span> <span class="fm">__dir__</span> <span class="n">of</span> <span class="n">DataItem</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x000001A64A6DD0F0</span><span class="o">&gt;</span>
+<span class="ln"> 7</span>  <span class="n">obj</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="ln"> 8</span>  <span class="n">obj</span><span class="o">.</span><span class="fm">__eq__</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">method</span><span class="o">-</span><span class="n">wrapper</span> <span class="s1">&#39;__eq__&#39;</span> <span class="n">of</span> <span class="n">DataItem</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x000001A64A6DD0F0</span><span class="o">&gt;</span>
+<span class="ln"> 9</span>  <span class="n">obj</span><span class="o">.</span><span class="fm">__format__</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">built</span><span class="o">-</span><span class="ow">in</span> <span class="n">method</span> <span class="fm">__format__</span> <span class="n">of</span> <span class="n">DataItem</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x000001A64A6DD0F0</span><span class="o">&gt;</span>
+<span class="ln">10</span>  <span class="n">obj</span><span class="o">.</span><span class="fm">__ge__</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">method</span><span class="o">-</span><span class="n">wrapper</span> <span class="s1">&#39;__ge__&#39;</span> <span class="n">of</span> <span class="n">DataItem</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x000001A64A6DD0F0</span><span class="o">&gt;</span>
+<span class="ln">11</span>  <span class="n">obj</span><span class="o">.</span><span class="fm">__getattribute__</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">method</span><span class="o">-</span><span class="n">wrapper</span> <span class="s1">&#39;__getattribute__&#39;</span> <span class="n">of</span> <span class="n">DataItem</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x000001A64A6DD0F0</span><span class="o">&gt;</span>
+<span class="ln">12</span>  <span class="n">obj</span><span class="o">.</span><span class="fm">__gt__</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">method</span><span class="o">-</span><span class="n">wrapper</span> <span class="s1">&#39;__gt__&#39;</span> <span class="n">of</span> <span class="n">DataItem</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x000001A64A6DD0F0</span><span class="o">&gt;</span>
+<span class="ln">13</span>  <span class="n">obj</span><span class="o">.</span><span class="fm">__hash__</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">method</span><span class="o">-</span><span class="n">wrapper</span> <span class="s1">&#39;__hash__&#39;</span> <span class="n">of</span> <span class="n">DataItem</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x000001A64A6DD0F0</span><span class="o">&gt;</span>
+<span class="ln">14</span>  <span class="n">obj</span><span class="o">.</span><span class="fm">__init__</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">bound</span> <span class="n">method</span> <span class="n">DataItem</span><span class="o">.</span><span class="fm">__init__</span> <span class="n">of</span> <span class="o">&lt;</span><span class="n">__main__</span><span class="o">.</span><span class="n">DataItem</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x000001A64A6DD0F0</span><span class="o">&gt;&gt;</span>
+<span class="ln">15</span>  <span class="n">obj</span><span class="o">.</span><span class="n">__init_subclass__</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">built</span><span class="o">-</span><span class="ow">in</span> <span class="n">method</span> <span class="n">__init_subclass__</span> <span class="n">of</span> <span class="nb">type</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x000001A64A5DE738</span><span class="o">&gt;</span>
+<span class="ln">16</span>  <span class="n">obj</span><span class="o">.</span><span class="fm">__le__</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">method</span><span class="o">-</span><span class="n">wrapper</span> <span class="s1">&#39;__le__&#39;</span> <span class="n">of</span> <span class="n">DataItem</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x000001A64A6DD0F0</span><span class="o">&gt;</span>
+<span class="ln">17</span>  <span class="n">obj</span><span class="o">.</span><span class="fm">__lt__</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">method</span><span class="o">-</span><span class="n">wrapper</span> <span class="s1">&#39;__lt__&#39;</span> <span class="n">of</span> <span class="n">DataItem</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x000001A64A6DD0F0</span><span class="o">&gt;</span>
+<span class="ln">18</span>  <span class="n">obj</span><span class="o">.</span><span class="vm">__module__</span> <span class="o">=</span> <span class="s1">&#39;__main__&#39;</span>
+<span class="ln">19</span>  <span class="n">obj</span><span class="o">.</span><span class="fm">__ne__</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">method</span><span class="o">-</span><span class="n">wrapper</span> <span class="s1">&#39;__ne__&#39;</span> <span class="n">of</span> <span class="n">DataItem</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x000001A64A6DD0F0</span><span class="o">&gt;</span>
+<span class="ln">20</span>  <span class="n">obj</span><span class="o">.</span><span class="fm">__new__</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">built</span><span class="o">-</span><span class="ow">in</span> <span class="n">method</span> <span class="fm">__new__</span> <span class="n">of</span> <span class="nb">type</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x000000005C2DC580</span><span class="o">&gt;</span>
+<span class="ln">21</span>  <span class="n">obj</span><span class="o">.</span><span class="n">__reduce__</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">built</span><span class="o">-</span><span class="ow">in</span> <span class="n">method</span> <span class="n">__reduce__</span> <span class="n">of</span> <span class="n">DataItem</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x000001A64A6DD0F0</span><span class="o">&gt;</span>
+<span class="ln">22</span>  <span class="n">obj</span><span class="o">.</span><span class="n">__reduce_ex__</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">built</span><span class="o">-</span><span class="ow">in</span> <span class="n">method</span> <span class="n">__reduce_ex__</span> <span class="n">of</span> <span class="n">DataItem</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x000001A64A6DD0F0</span><span class="o">&gt;</span>
+<span class="ln">23</span>  <span class="n">obj</span><span class="o">.</span><span class="fm">__repr__</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">method</span><span class="o">-</span><span class="n">wrapper</span> <span class="s1">&#39;__repr__&#39;</span> <span class="n">of</span> <span class="n">DataItem</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x000001A64A6DD0F0</span><span class="o">&gt;</span>
+<span class="ln">24</span>  <span class="n">obj</span><span class="o">.</span><span class="fm">__setattr__</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">method</span><span class="o">-</span><span class="n">wrapper</span> <span class="s1">&#39;__setattr__&#39;</span> <span class="n">of</span> <span class="n">DataItem</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x000001A64A6DD0F0</span><span class="o">&gt;</span>
+<span class="ln">25</span>  <span class="n">obj</span><span class="o">.</span><span class="n">__sizeof__</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">built</span><span class="o">-</span><span class="ow">in</span> <span class="n">method</span> <span class="n">__sizeof__</span> <span class="n">of</span> <span class="n">DataItem</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x000001A64A6DD0F0</span><span class="o">&gt;</span>
+<span class="ln">26</span>  <span class="n">obj</span><span class="o">.</span><span class="fm">__str__</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">method</span><span class="o">-</span><span class="n">wrapper</span> <span class="s1">&#39;__str__&#39;</span> <span class="n">of</span> <span class="n">DataItem</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x000001A64A6DD0F0</span><span class="o">&gt;</span>
+<span class="ln">27</span>  <span class="n">obj</span><span class="o">.</span><span class="n">__subclasshook__</span> <span class="o">=</span> <span class="o">&lt;</span><span class="n">built</span><span class="o">-</span><span class="ow">in</span> <span class="n">method</span> <span class="n">__subclasshook__</span> <span class="n">of</span> <span class="nb">type</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x000001A64A5DE738</span><span class="o">&gt;</span>
+<span class="ln">28</span>  <span class="n">obj</span><span class="o">.</span><span class="vm">__weakref__</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="ln">29</span>  <span class="n">obj</span><span class="o">.</span><span class="n">address</span> <span class="o">=</span> <span class="s1">&#39;i am working at MWG&#39;</span>
+<span class="ln">30</span>  <span class="n">obj</span><span class="o">.</span><span class="n">age</span> <span class="o">=</span> <span class="mi">42</span>
+<span class="ln">31</span>  <span class="n">obj</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;Alex Black&#39;</span>
+</code></pre></div><p>Wow, có vẻ khá là đồ sộ nhỉ.</p>
+<p>Trên github, có một hàm có sẵn tính toán số lượng bộ nhớ mà object chiếm được dựa vào cách truy xuất trực tiếp từng trường dữ liệu của đối tượng và tính toán kích thước</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln"> 1</span><span class="kn">import</span> <span class="nn">sys</span>
+<span class="ln"> 2</span>
+<span class="ln"> 3</span><span class="k">def</span> <span class="nf">get_size</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">seen</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="ln"> 4</span>    <span class="s2">&#34;&#34;&#34;Recursively finds size of objects&#34;&#34;&#34;</span>
+<span class="ln"> 5</span>    <span class="n">size</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">getsizeof</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+<span class="ln"> 6</span>    <span class="k">if</span> <span class="n">seen</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+<span class="ln"> 7</span>        <span class="n">seen</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+<span class="ln"> 8</span>    <span class="n">obj_id</span> <span class="o">=</span> <span class="nb">id</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+<span class="ln"> 9</span>    <span class="k">if</span> <span class="n">obj_id</span> <span class="ow">in</span> <span class="n">seen</span><span class="p">:</span>
+<span class="ln">10</span>        <span class="k">return</span> <span class="mi">0</span>
+<span class="ln">11</span>    <span class="c1"># Important mark as seen *before* entering recursion to gracefully handle</span>
+<span class="ln">12</span>    <span class="c1"># self-referential objects</span>
+<span class="ln">13</span>    <span class="n">seen</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">obj_id</span><span class="p">)</span>
+<span class="ln">14</span>    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+<span class="ln">15</span>        <span class="n">size</span> <span class="o">+=</span> <span class="nb">sum</span><span class="p">([</span><span class="n">get_size</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">seen</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">values</span><span class="p">()])</span>
+<span class="ln">16</span>        <span class="n">size</span> <span class="o">+=</span> <span class="nb">sum</span><span class="p">([</span><span class="n">get_size</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">seen</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="n">keys</span><span class="p">()])</span>
+<span class="ln">17</span>    <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s1">&#39;__dict__&#39;</span><span class="p">):</span>
+<span class="ln">18</span>        <span class="n">size</span> <span class="o">+=</span> <span class="n">get_size</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">,</span> <span class="n">seen</span><span class="p">)</span>
+<span class="ln">19</span>    <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s1">&#39;__iter__&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">,</span> <span class="nb">bytearray</span><span class="p">)):</span>
+<span class="ln">20</span>        <span class="n">size</span> <span class="o">+=</span> <span class="nb">sum</span><span class="p">([</span><span class="n">get_size</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">seen</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">obj</span><span class="p">])</span>
+<span class="ln">21</span>    <span class="k">return</span> <span class="n">size</span>
+</code></pre></div><p>thử với 2 biến dx và dy của chúng ta xem sao</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span><span class="o">&gt;&gt;&gt;</span> <span class="nb">print</span> <span class="p">(</span><span class="s2">&#34;get_size(d1):&#34;</span><span class="p">,</span> <span class="n">get_size</span><span class="p">(</span><span class="n">dx</span><span class="p">))</span>
+<span class="ln">2</span><span class="n">get_size</span><span class="p">(</span><span class="n">d1</span><span class="p">):</span> <span class="mi">466</span>
+<span class="ln">3</span><span class="o">&gt;&gt;&gt;</span> <span class="nb">print</span> <span class="p">(</span><span class="s2">&#34;get_size(d1):&#34;</span><span class="p">,</span> <span class="n">get_size</span><span class="p">(</span><span class="n">dy</span><span class="p">))</span>
+<span class="ln">4</span><span class="n">get_size</span><span class="p">(</span><span class="n">d1</span><span class="p">):</span> <span class="mi">484</span>
+</code></pre></div><p>Chúng tốn lần lượt là 466 và 484 bytes. Có vẻ đúng đó nhỉ.</p>
+<p>Điều chúng ta quan tâm lúc này là có cách nào để giảm bộ nhớ tiêu thụ của một object hay không?</p>
+<h2 id="giảm-bộ-nhớ-tiêu-thụ-của-một-đối-tượng-trong-python">Giảm bộ nhớ tiêu thụ của một đối tượng trong python<a class="anchor ms-1" href="#giảm-bộ-nhớ-tiêu-thụ-của-một-đối-tượng-trong-python"><i class="fas fa-link"></i></a></h2>
+<p>Tất nhiên là sẽ có cách giảm. Python là một ngôn ngữ thông dịch, và nó cho phép chúng ta mở rộng lớp bất kể lúc nào bằng cách thêm một/ nhiều trường dữ liệu.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span><span class="n">dz</span> <span class="o">=</span> <span class="n">DataItem</span><span class="p">(</span><span class="s2">&#34;Alex Black&#34;</span><span class="p">,</span> <span class="mi">42</span><span class="p">,</span> <span class="s2">&#34;-&#34;</span><span class="p">)</span>
+<span class="ln">2</span><span class="n">dz</span><span class="o">.</span><span class="n">height</span> <span class="o">=</span> <span class="mf">1.80</span>
+<span class="ln">3</span><span class="nb">print</span> <span class="p">(</span> <span class="n">get_size</span><span class="p">(</span><span class="n">dz</span><span class="p">))</span>
+<span class="ln">4</span><span class="o">&gt;&gt;</span> <span class="mi">484</span>
+</code></pre></div><p>Chính vì lý do này, trình biên dịch sẽ tốn thêm một đống bộ nhớ tạm để chúng ta có thể dễ dàng mở rộng một lớp trong tương lai. Nếu chúng ta &ldquo;ép buộc&rdquo; trình biên dịch, nói rằng chúng ta chỉ có nhiêu đó trường, và bỏ phần dư thừa đi.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span><span class="k">class</span> <span class="nc">DataItem</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="ln">2</span>    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;age&#39;</span><span class="p">,</span> <span class="s1">&#39;address&#39;</span><span class="p">]</span>
+<span class="ln">3</span>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">age</span><span class="p">,</span> <span class="n">address</span><span class="p">):</span>
+<span class="ln">4</span>        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+<span class="ln">5</span>        <span class="bp">self</span><span class="o">.</span><span class="n">age</span> <span class="o">=</span> <span class="n">age</span>
+<span class="ln">6</span>        <span class="bp">self</span><span class="o">.</span><span class="n">address</span> <span class="o">=</span> <span class="n">address</span>
+</code></pre></div><p>Và thử lại</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span>
+<span class="ln">2</span><span class="n">dz</span> <span class="o">=</span> <span class="n">DataItem</span><span class="p">(</span><span class="s2">&#34;Alex Black&#34;</span><span class="p">,</span> <span class="mi">42</span><span class="p">,</span> <span class="s2">&#34;i am working at MWG&#34;</span><span class="p">)</span>
+<span class="ln">3</span><span class="nb">print</span> <span class="p">(</span><span class="s2">&#34;sys.getsizeof(dz):&#34;</span><span class="p">,</span> <span class="n">get_size</span><span class="p">(</span><span class="n">dz</span><span class="p">))</span>
+<span class="ln">4</span>
+<span class="ln">5</span><span class="o">&gt;&gt;</span><span class="n">sys</span><span class="o">.</span><span class="n">getsizeof</span><span class="p">(</span><span class="n">dz</span><span class="p">):</span> <span class="mi">64</span>
+</code></pre></div><p>Các bạn thấy gì không, bộ nhớ tiêu thụ chỉ là &ldquo;64 bytes&rdquo;. Dung lượng đã giảm đi hơn &ldquo;7 lần&rdquo; so với model class ban đầu. Tuy nhiên, chúng ta sẽ không thể mở rộng class dễ dàng như xưa nữa.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span><span class="o">&gt;&gt;&gt;</span> <span class="n">dz</span><span class="o">.</span><span class="n">height</span> <span class="o">=</span> <span class="mf">1.80</span>
+<span class="ln">2</span><span class="n">Traceback</span> <span class="p">(</span><span class="n">most</span> <span class="n">recent</span> <span class="n">call</span> <span class="n">last</span><span class="p">):</span>
+<span class="ln">3</span>  <span class="n">File</span> <span class="s2">&#34;&lt;stdin&gt;&#34;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">1</span><span class="p">,</span> <span class="ow">in</span> <span class="o">&lt;</span><span class="n">module</span><span class="o">&gt;</span>
+<span class="ln">4</span><span class="ne">AttributeError</span><span class="p">:</span> <span class="s1">&#39;DataItem&#39;</span> <span class="nb">object</span> <span class="n">has</span> <span class="n">no</span> <span class="n">attribute</span> <span class="s1">&#39;height&#39;</span>
+</code></pre></div><p>Thử tạo một đối tượng có 1000 phần tử và kiểm tra thử.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln"> 1</span><span class="k">class</span> <span class="nc">DataItem</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="ln"> 2</span>    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;age&#39;</span><span class="p">,</span> <span class="s1">&#39;address&#39;</span><span class="p">]</span>
+<span class="ln"> 3</span>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">age</span><span class="p">,</span> <span class="n">address</span><span class="p">):</span>
+<span class="ln"> 4</span>        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+<span class="ln"> 5</span>        <span class="bp">self</span><span class="o">.</span><span class="n">age</span> <span class="o">=</span> <span class="n">age</span>
+<span class="ln"> 6</span>        <span class="bp">self</span><span class="o">.</span><span class="n">address</span> <span class="o">=</span> <span class="n">address</span>
+<span class="ln"> 7</span>
+<span class="ln"> 8</span>
+<span class="ln"> 9</span><span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="ln">10</span>
+<span class="ln">11</span><span class="n">tracemalloc</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+<span class="ln">12</span><span class="n">start</span> <span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+<span class="ln">13</span><span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100000</span><span class="p">):</span>
+<span class="ln">14</span>    <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">DataItem</span><span class="p">(</span><span class="s2">&#34;Alex&#34;</span><span class="p">,</span> <span class="mi">42</span><span class="p">,</span> <span class="s2">&#34;middle of nowhere&#34;</span><span class="p">))</span>
+<span class="ln">15</span>	
+<span class="ln">16</span><span class="n">end</span> <span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+<span class="ln">17</span><span class="n">snapshot</span> <span class="o">=</span> <span class="n">tracemalloc</span><span class="o">.</span><span class="n">take_snapshot</span><span class="p">()</span>
+<span class="ln">18</span><span class="n">top_stats</span> <span class="o">=</span> <span class="n">snapshot</span><span class="o">.</span><span class="n">statistics</span><span class="p">(</span><span class="s1">&#39;lineno&#39;</span><span class="p">)</span>
+<span class="ln">19</span><span class="n">total</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">stat</span><span class="o">.</span><span class="n">size</span> <span class="k">for</span> <span class="n">stat</span> <span class="ow">in</span> <span class="n">top_stats</span><span class="p">)</span>
+<span class="ln">20</span><span class="nb">print</span><span class="p">(</span><span class="s2">&#34;Total allocated size: </span><span class="si">%.1f</span><span class="s2"> MB&#34;</span> <span class="o">%</span> <span class="p">(</span><span class="n">total</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1024</span><span class="o">*</span><span class="mi">1024</span><span class="p">)))</span>
+<span class="ln">21</span><span class="nb">print</span><span class="p">(</span><span class="s2">&#34;Total execute time:&#34;</span><span class="p">,(</span><span class="n">end</span><span class="o">-</span><span class="n">start</span><span class="p">)</span><span class="o">.</span><span class="n">microseconds</span><span class="p">)</span>
+<span class="ln">22</span>
+<span class="ln">23</span><span class="o">&gt;&gt;</span> <span class="n">Total</span> <span class="n">allocated</span> <span class="n">size</span><span class="p">:</span> <span class="mf">6.9</span> <span class="n">MB</span>
+<span class="ln">24</span><span class="o">&gt;&gt;</span> <span class="n">Total</span> <span class="n">execute</span> <span class="n">time</span><span class="p">:</span> <span class="mi">232565</span>
+</code></pre></div><p>Bỏ dòng <strong>slots</strong> = [&lsquo;name&rsquo;, &lsquo;age&rsquo;, &lsquo;address&rsquo;] đi thử</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln"> 1</span>
+<span class="ln"> 2</span><span class="k">class</span> <span class="nc">DataItem</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="ln"> 3</span>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">age</span><span class="p">,</span> <span class="n">address</span><span class="p">):</span>
+<span class="ln"> 4</span>        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+<span class="ln"> 5</span>        <span class="bp">self</span><span class="o">.</span><span class="n">age</span> <span class="o">=</span> <span class="n">age</span>
+<span class="ln"> 6</span>        <span class="bp">self</span><span class="o">.</span><span class="n">address</span> <span class="o">=</span> <span class="n">address</span>
+<span class="ln"> 7</span>
+<span class="ln"> 8</span>
+<span class="ln"> 9</span><span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="ln">10</span>
+<span class="ln">11</span><span class="n">tracemalloc</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+<span class="ln">12</span><span class="n">start</span> <span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+<span class="ln">13</span><span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100000</span><span class="p">):</span>
+<span class="ln">14</span>    <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">DataItem</span><span class="p">(</span><span class="s2">&#34;Alex&#34;</span><span class="p">,</span> <span class="mi">42</span><span class="p">,</span> <span class="s2">&#34;middle of nowhere&#34;</span><span class="p">))</span>
+<span class="ln">15</span><span class="n">end</span> <span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+<span class="ln">16</span><span class="n">snapshot</span> <span class="o">=</span> <span class="n">tracemalloc</span><span class="o">.</span><span class="n">take_snapshot</span><span class="p">()</span>
+<span class="ln">17</span><span class="n">top_stats</span> <span class="o">=</span> <span class="n">snapshot</span><span class="o">.</span><span class="n">statistics</span><span class="p">(</span><span class="s1">&#39;lineno&#39;</span><span class="p">)</span>
+<span class="ln">18</span><span class="n">total</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">stat</span><span class="o">.</span><span class="n">size</span> <span class="k">for</span> <span class="n">stat</span> <span class="ow">in</span> <span class="n">top_stats</span><span class="p">)</span>
+<span class="ln">19</span><span class="nb">print</span><span class="p">(</span><span class="s2">&#34;Total allocated size: </span><span class="si">%.1f</span><span class="s2"> MB&#34;</span> <span class="o">%</span> <span class="p">(</span><span class="n">total</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1024</span><span class="o">*</span><span class="mi">1024</span><span class="p">)))</span>
+<span class="ln">20</span><span class="nb">print</span><span class="p">(</span><span class="s2">&#34;Total execute time:&#34;</span><span class="p">,(</span><span class="n">end</span><span class="o">-</span><span class="n">start</span><span class="p">)</span><span class="o">.</span><span class="n">microseconds</span><span class="p">)</span>
+<span class="ln">21</span>
+<span class="ln">22</span><span class="o">&gt;&gt;</span> <span class="n">Total</span> <span class="n">allocated</span> <span class="n">size</span><span class="p">:</span> <span class="mf">16.8</span> <span class="n">MB</span>
+<span class="ln">23</span><span class="o">&gt;&gt;</span> <span class="n">Total</span> <span class="n">execute</span> <span class="n">time</span><span class="p">:</span> <span class="mi">240772</span>
+</code></pre></div><p>So sánh thử, chúng ta thấy rằng số lượng RAM giảm đi khá nhiều, thời gian thực thi khá tương đương nhau (có giảm một chút).</p>
+<p>Cảm ơn các bạn đã theo dõi. Hẹn gặp bạn ở các bài viết tiếp theo.</p>
+</div></div>
+  <div class="card-footer"><div class="post-navs d-flex justify-content-evenly"><div class="post-nav post-prev">
+    <i class="fas fa-fw fa-chevron-left"></i>
+    <a href="/blog/2019-02-05-5-python-tricks-you-need-to-know-today/">5 Mẹo Hay Sử Dụng Python
+</a>
+  </div><div class="post-nav post-next">
+    <a href="/blog/2019-02-06-choosing-the-right-hyperparameters-for-a-simple-lstm-using-keras/">Lựa Chọn Siêu Tham Số Cho Mô Hình LSTM Đơn Giản Sử Dụng Keras
+</a>
+    <i class="fas fa-fw fa-chevron-right"></i>
+  </div></div></div>
+</article><div class="card component row post-comments" id="post-comments">
+  <div class="card-header">
+    <h2 class="card-title">Comments</h2>
+  </div>
+  <div class="card-body"><script src="https://utteranc.es/client.js"
+  repo="AlexBlack2202/utterances"
+  issue-term="pathname"
+  label="comment"
+  theme="github-light"
+  crossorigin="anonymous"
+  async>
+</script></div>
+</div></div>
+</div><aside class="col-lg-4 sidebar d-flex">
+  <div class="container d-flex flex-column">
+    
+    <section class="card row text-center profile component">
+  <div class="card-body">
+    <div class="col-12 d-flex align-items-center justify-content-center"><img class="profile-avatar rounded-circle" alt="Đặng Thị Hằng | Phạm Duy Tùng" src="/images/profile.webp" loading="lazy"
+   width="736" height="920"
+   />
+</div>
+    <div class="col-12 profile-meta"><div class="profile-name">Đặng Thị Hằng | Phạm Duy Tùng</div><div class="profile-bio">Gopher, CShaper, Pythoner, Full Stack Engineer.</div><div class="profile-company"><i class="fas fa-fw fa-building"></i>MWG</div><div class="profile-location"><i class="fas fa-fw fa-map-marker-alt"></i>Earth</div><div class="profile-about"><i class="fas fa-fw fa-user"></i><a href="/about/">About</a></div><div class="profile-contact"><i class="fas fa-fw fa-question-circle"></i><a href="/contact/">Contact Us</a></div>
+</div>
+  </div>
+</section>
+  <div class="post-toc row mb-4 card component" id="postTOC">
+  <div class="card-header">
+    <h2 class="card-title">Contents</h2>
+  </div>
+  <div class="card-body">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#mở-đầu">Mở đầu</a></li>
+    <li><a href="#giảm-bộ-nhớ-tiêu-thụ-của-một-đối-tượng-trong-python">Giảm bộ nhớ tiêu thụ của một đối tượng trong python</a></li>
+  </ul>
+</nav>
+  </div>
+</div><section class="recent-posts row card component">
+  <div class="card-header">
+    <h2 class="card-title">Recent Posts</h2>
+  </div>
+  <div class="card-body">
+    <ul class="post-list"><li>
+        <a href="/blog/2021-11-06-some-way-make-momey-from-web-scrapping/">Một Số Cách Kiếm Thêm Thu Nhập Từ Cách Cào Dữ Liệu
+</a>
+      </li><li>
+        <a href="/blog/2021-08-12-china_chess_alpha_beta_ai/">Xây Dựng Chương Trình AI Đơn Giản Cho Game Cờ Tướng
+</a>
+      </li><li>
+        <a href="/blog/2021-07-28-pycaret-flaskapi/">Tìm Hiểu Package PyCaret Trong Python
+</a>
+      </li><li>
+        <a href="/blog/2021-07-02-mo-hinh-phan-quyen/">Mô Hình Phân Quyền - Access Control
+</a>
+      </li><li>
+        <a href="/blog/2021-05-30-upgrade-wls-to-wls2/">Nâng Cấp WSL Lên Bản WSL 2 Trên Window 10
+</a>
+      </li></ul>
+  </div>
+</section><section class="series-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="/series">Series</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="/series/kh%C3%B3a-h%E1%BB%8Dc-c&#43;&#43;-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa học c&#43;&#43; căn bản">
+            Khóa học c&#43;&#43; căn bản<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="/series/machine-learning-dataset/" class="badge rounded post-taxonomy" title="Machine learning dataset">
+            Machine learning dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a><a href="/series/kh%C3%B3a-h%E1%BB%8Dc-python-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa học python căn bản">
+            Khóa học python căn bản<span class="badge badge-sm text-white bg-accent ms-1">1</span></a></div>
+      </div>
+    </section><section class="tags-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="/tags">Tags</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="/tags/machine-learning/" class="badge rounded post-taxonomy" title="Machine learning">
+            Machine learning<span class="badge badge-sm text-white bg-accent ms-1">38</span></a><a href="/tags/deeplearning/" class="badge rounded post-taxonomy" title="Deeplearning">
+            Deeplearning<span class="badge badge-sm text-white bg-accent ms-1">20</span></a><a href="/tags/deep-learning/" class="badge rounded post-taxonomy" title="Deep learning">
+            Deep learning<span class="badge badge-sm text-white bg-accent ms-1">15</span></a><a href="/tags/python/" class="badge rounded post-taxonomy" title="python">
+            python<span class="badge badge-sm text-white bg-accent ms-1">10</span></a><a href="/tags/opencv/" class="badge rounded post-taxonomy" title="opencv">
+            opencv<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="/tags/c&#43;&#43;/" class="badge rounded post-taxonomy" title="c&#43;&#43;">
+            c&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/object-detector/" class="badge rounded post-taxonomy" title="object detector">
+            object detector<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/alexnet/" class="badge rounded post-taxonomy" title="AlexNet">
+            AlexNet<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="/tags/d%E1%BB%B1-%C4%91o%C3%A1n/" class="badge rounded post-taxonomy" title="dự đoán">
+            dự đoán<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="/tags/forecast/" class="badge rounded post-taxonomy" title="forecast">
+            forecast<span class="badge badge-sm text-white bg-accent ms-1">3</span></a></div>
+      </div>
+    </section>
+    
+  </div>
+</aside>
+</div>
+    </main><footer class="footer mt-auto py-3 text-center container"><ul class="nav justify-content-between footer-memu mb-3"><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Support
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-github"></i>Repository
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-comments"></i>Discussions
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">Features Request
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">Bug Report
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/contact/"><i class="fas fa-fw fa-info-circle"></i>Contact Us
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/faq/"><i class="fas fa-fw fa-question-circle"></i>FAQs
+</a>
+        </li></ul></li><li class="nav-item"><li class="nav-item">
+      <a class="nav-link" target="_blank" rel="noopener noreferrer">Docs
+</a>
+    </li></li><li class="nav-item"><li class="nav-item">
+      <a class="nav-link" target="_blank" rel="noopener noreferrer">Features
+</a>
+    </li></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Demo
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">Netlify
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">China
+</a>
+        </li></ul></li></ul>
+<div class="copyright mb-2">
+  Copyright © 2016-2022 Phạm Duy Tùng. All Rights Reserved.
+</div>
+<div class="powered-by mb-2">
+  Website chia sẻ kiến thức của Phạm Duy Tùng và Đặng Thị Hằng. Vui lòng liên hệ email alexblack2202@gmail.com nếu bạn có thông tin cần trao đổi.
+</div></footer>
+<script src="/js/main.0f06b653e090cf5f3e595cc4f3150328397d377ee5b405d0803057801eb4f3e5.js" integrity="sha256-Dwa2U&#43;CQz18&#43;WVzE8xUDKDl9N37ltAXQgDBXgB608&#43;U=" crossorigin="anonymous" defer></script><script src="/js/icons.min.8ddcaafc364ff0296c2209c5495287f0de039b852da9b24847f94c198b7639b6.js" integrity="sha256-jdyq/DZP8ClsIgnFSVKH8N4Dm4UtqbJIR/lMGYt2ObY=" crossorigin="anonymous" defer></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('\/service-worker.js').then(function(reg) {
+      console.log('Successfully registered service worker', reg);
+    }).catch(function(err) {
+      console.warn('Error whilst registering service worker', err);
+    });
+  });
+}
+</script><script src="/js/viewer.min.652118a9fbf3403cdfde4026209f97ace22f9e334f0b45a33431a221b3db46a8.js" integrity="sha256-ZSEYqfvzQDzf3kAmIJ&#43;XrOIvnjNPC0WjNDGiIbPbRqg=" crossorigin="anonymous" defer></script><script defer src="/js/katex.min.a575e93a07f02f7e58ee9002aea3b4e75163d4fa8ea3a627e90e7fafd5c718fa.js" integrity="sha256-pXXpOgfwL35Y7pACrqO051Fj1PqOo6Yn6Q5/r9XHGPo=" crossorigin="anonymous"></script>
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-114911596-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+</body>
+</html>
