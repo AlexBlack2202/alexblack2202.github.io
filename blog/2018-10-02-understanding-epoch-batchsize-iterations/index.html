@@ -12,7 +12,7 @@
 <meta name="description" content="Trong bài viết này, chúng ta sẽ tìm hiểu kỹ hơn 3 khái niệm Epoch, Batch Size và Iteration." /><meta name="robots" content="index, follow" /><meta itemprop="name" content="Phân biệt Epoch - Batch size và Iterations">
 <meta itemprop="description" content="Trong bài viết này, chúng ta sẽ tìm hiểu kỹ hơn 3 khái niệm Epoch, Batch Size và Iteration."><meta itemprop="datePublished" content="2018-10-02T00:19:00+03:00" />
 <meta itemprop="dateModified" content="2018-10-02T00:19:00+03:00" />
-<meta itemprop="wordCount" content="636">
+<meta itemprop="wordCount" content="941">
 <meta itemprop="keywords" content="Machine learning,Deeplearning,Epoch,Batch Size,Iteration," /><meta property="og:title" content="Phân biệt Epoch - Batch size và Iterations" />
 <meta property="og:description" content="Trong bài viết này, chúng ta sẽ tìm hiểu kỹ hơn 3 khái niệm Epoch, Batch Size và Iteration." />
 <meta property="og:type" content="article" />
@@ -229,30 +229,49 @@ HOME
   <span class="post-date" title="created on 2018-10-02 04:19:00 &#43;0700 &#43;07.">
     Oct 2, 2018
   </span><span class="post-reading-time">
-    3 min read
+    5 min read
   </span><span class="post-taxonomies"><a href="/tags/machine-learning/" class="badge post-taxonomy">Machine learning</a><a href="/tags/deeplearning/" class="badge post-taxonomy">Deeplearning</a><a href="/tags/epoch/" class="badge post-taxonomy">Epoch</a><a href="/tags/batch-size/" class="badge post-taxonomy">Batch Size</a><a href="/tags/iteration/" class="badge post-taxonomy">Iteration</a></span>
 </div>
-<div class="post-content mb-3"><h2 id="lời-mở-đầu">Lời mở đầu<a class="anchor ms-1" href="#lời-mở-đầu"><i class="fas fa-link"></i></a></h2>
+<div class="post-content mb-3"><h1 id="lời-mở-đầu">Lời mở đầu<a class="anchor ms-1" href="#lời-mở-đầu"><i class="fas fa-link"></i></a></h1>
 <p>Khi mới bắt đầu bước vào thế giới của ML/DL chúng ta sẽ bắt gặp các thuật ngữ Epoch - Batch size và Iterations. Và sẽ cảm thấy bối rối vì chúng khá giống nhau, nhưng thực tế là chúng khác xa nhau.</p>
-<p>Để hiểu rõ sự khác biệt giữa chúng, các bạn cần tìm hiểu một số khái niệm trong machine learning như Gradient Descent.</p>
+<p>Để cho dễ hình dung, mình lấy ví dụ về việc ăn cơm. Chúng ta không thể ăn một lần hết một chén cơm được, mà phải mỗi lần ăn phải xúc từng muỗn ăn. Xúc lần lượt khi hết bát thứ nhất, chúng ta lại ăn tiếp bát thứ 2, bát thứ 3 &hellip; đến khi no, kết thúc bữa ăn.</p>
+<p>Liên tưởng giữa việt ăn cơm và các thuật ngữ epoch, batch size, iteration như sau:</p>
+<ul>
+<li>
+<p>batch size: Số hạt cơm trong 1 lần xúc.</p>
+</li>
+<li>
+<p>Iteration : Số lần xúc cơm hết 1 bát.</p>
+</li>
+<li>
+<p>epoch : Số bát cơm bạn ăn trong 1 bữa ăn.</p>
+</li>
+</ul>
+<p>Hết phần diễn giải bằng ví dụ. Đến phần viết hàn lâm bên dưới, nếu bạn nào đã hiểu rồi thì có thể bỏ qua, bạn nào muốn đào sâu thêm lý do thì xem mình diễn giải bên dưới.</p>
+<p>Để hiểu rõ sự khác biệt giữa chúng, các bạn cần tìm hiểu một khái niệm vô cùng quan trọng trong machine learning - Gradient Descent.</p>
 <p>Định nghĩa ngắn gọn của Gradient Descent:</p>
 <p>Gradient Descent là thuật toán lặp tối ưu (iteractive optimization algorithm) được sử dụng trong machine learning để tìm kết quả tốt nhất (minima of a curve).</p>
-<p>Trong đó:
-..* Gradient có nghĩa là tỷ lệ của độ nghiêm của đường dốc.</p>
+<p>Trong đó:</p>
+<p>..* Gradient có nghĩa là tỷ lệ của độ nghiêng của đường dốc.</p>
 <p>..* Descent là từ viết tắt của decending - nghĩa là giảm.</p>
-<p>Thuật toán sẽ lặp đi lặp lại nhiều lần để tìm ra được kết quả tối ưu.</p>
+<p>Thuật toán sẽ lặp đi lặp lại nhiều lần để tìm ra được cực tiểu.</p>
 <p><img class="img-fluid" alt="Hình ảnh" src="/blog/2018-10-02-understanding-epoch-batchsize-iterations/gradient.gif" loading="lazy"
   
    />
 
 </p>
 <p><a href="https://medium.com/onfido-tech/machine-learning-101-be2e0a86c96a" target="_blank" rel="noopener noreferrer">https://medium.com/onfido-tech/machine-learning-101-be2e0a86c96a</a> Nguồn ảnh</p>
-<p>Thuật toán gradient Descent có một tham số là learning rate. Như hình phía trên bên trái, ban đầu bước nhảy khá lớn, nghĩa là giá trị learning rate lớn, và sau một vài lần lặp, điểm chấm đen đi xuống dần, và giá trị learning rate nhỏ dần theo.</p>
-<p>Chúng ta sử dụng thuật ngữ epochs, batch size, iterations khi dữ liệu của chúng ta quá (rất) lớn (vd 10 triệu mẫu). Lúc này các khái niệm trên mới trở nên rõ ràng, còn với trường hợp dữ liệu nhỏ thì chúng khá tương tự nhau.</p>
-<h2 id="khái-niện-epoch">Khái niện Epoch<a class="anchor ms-1" href="#khái-niện-epoch"><i class="fas fa-link"></i></a></h2>
-<p>Một Epoch được tính là khi chúng ta đưa tất cả dữ liệu vào mạng neural network 1 lần.</p>
-<p>Khi dữ liệu quá lớn, chúng ta không thể đưa hết mỗi lần tất cả tập dữ liệu vào để huấn luyện được. Buộc lòng chúng ta phải chia nhỏ  tập dữ liệu ra thành các batch (size nhỏ hơn).</p>
-<h3 id="tại-sao-phải-dùng-hơn-1-epoch">Tại sao phải dùng hơn 1 Epoch.<a class="anchor ms-1" href="#tại-sao-phải-dùng-hơn-1-epoch"><i class="fas fa-link"></i></a></h3>
+<p>Các bạn quan sát hình phía trên bên trái, ban đầu, bước nhảy khá lớn, nghĩa là giá trị cost lớn, và sau một vài lần lặp, điểm chấm đen đi xuống dần, và giá trị cost nhỏ dần theo. Mô hình hội tụ dần dần đến khi cost &lt;= epselon</p>
+<p>Chúng ta sử dụng thuật ngữ epochs, batch size, iterations khi chúng ta cần phải trainning mô hình machine learning, mà tập trainset của chúng ta quá (rất) lớn (vd 10 triệu mẫu, ví dụ train mô hình nhận dạng khuôn mặt với tập ms-celeb-1m). Lúc này các khái niệm trên mới trở nên rõ ràng, còn với trường hợp dữ liệu nhỏ thì chúng khá tương tự nhau.</p>
+<h1 id="khái-niện-epoch">Khái niện Epoch<a class="anchor ms-1" href="#khái-niện-epoch"><i class="fas fa-link"></i></a></h1>
+<p>Một Epoch được tính là khi chúng ta đưa tất cả dữ liệu trong tập train vào mạng neural network 1 lần. Ví dụ, bạn có 10 triệu bức hình trong tập train, bạn cho toàn bộ số hình đó là input của mô hình 3 lần, suy ra bạn đã train được 3 epoch.</p>
+<p>Khi dữ liệu quá lớn, chúng ta không thể đưa hết mỗi lần tất cả tập dữ liệu vào để huấn luyện được, vì bạn cần một siêu máy tính có lượng RAM và GPU RAM cực lớn để lưu trữ toàn bộ hình ảnh trên, điều này là bất khả thi đối với người dùng bình thường, phòng lab nhỏ. Buộc lòng chúng ta phải chia nhỏ tập dữ liệu ra, và khái niệm batch hình thành.</p>
+<h1 id="batch-size">Batch Size<a class="anchor ms-1" href="#batch-size"><i class="fas fa-link"></i></a></h1>
+<p>Batch size là số lượng mẫu dữ liệu trong một lần huấn luyện. Ví dụ, trong bài toán phân loại chó mèo, chọn batch size =32, nghĩa là 1 lần lặp ta sẽ cho ngẫu nhiên 32 bức nhìn chó hoặc mèo chạy lan truyền tiến trong mạng neural network. tiếp theo bạn quăng tiếp 32 hình ngẫu nhiên, không lặp với các hình trước đó, vào mạng, quăng đến khi nào không còn hình nào có thể quăng vào nữa -&gt; bạn hoàn thành 1 epoch.</p>
+<h2 id="iterations">Iterations<a class="anchor ms-1" href="#iterations"><i class="fas fa-link"></i></a></h2>
+<p>Iterations là số lượng batchs cần để hoàn thành 1 epoch.</p>
+<p>Ví dụ chúng ta có tập dữ liệu có 20,000 mẫu, batch size là 500, vậy chúng ta cần 40 lần lặp (iteration) để hoàn thành 1 epoch.</p>
+<h2 id="tại-sao-phải-dùng-hơn-1-epoch">Tại sao phải dùng hơn 1 Epoch.<a class="anchor ms-1" href="#tại-sao-phải-dùng-hơn-1-epoch"><i class="fas fa-link"></i></a></h2>
 <p>Câu trả lời ở đây là tại vì chúng ta đang dùng thuật toán tối ưu là Gradient Descent. Thuật toán này đòi hỏi chúng ta phải đem toàn bộ dữ liệu qua mạng một vài lần để tìm được kết quả tối ưu. Vì vậy, dùng 1 epoch thật sự không đủ để tìm được kết quả tốt nhất.</p>
 <p>Với việc chỉ sử dụng 1 lần lặp, xác suất rất cao là dữ liệu sẽ bị underfitting(như hình mô tả bên dưới).</p>
 <p><img class="img-fluid" alt="Hình ảnh" src="/blog/2018-10-02-understanding-epoch-batchsize-iterations/overfit_underfit.png" loading="lazy"
@@ -262,15 +281,9 @@ HOME
 </p>
 <p>Khi số lần lặp tăng dần, trạng thái của mô hình sẽ chuyển dần từ underfitting sang optimal và sau đó là overfitting (thông thường là vậy, trừ khi mô hình huấn luyện của bạn đang sử dụng quá đơn giản, quá ít trọng số thì chúng không thể nào overfitting nổi).</p>
 <p>Chúng ta có thể dùng 1 epoch để huấn luyện mô hình, với điều kiện là ta sử dụng thuật toán tối ưu không phải là gradient descent.</p>
-<h3 id="số-lần-lặp-tối-ưu-là-bao-nhiêu">Số lần lặp tối ưu là bao nhiêu?<a class="anchor ms-1" href="#số-lần-lặp-tối-ưu-là-bao-nhiêu"><i class="fas fa-link"></i></a></h3>
-<p>Tiếc rằng không có câu trả lời cho câu hỏi này. Phụ thuộc hoàn toàn vào tập dữ liệu của bạn đang có.</p>
-<h2 id="batch-size">Batch Size<a class="anchor ms-1" href="#batch-size"><i class="fas fa-link"></i></a></h2>
-<p>Batch size là số lượng mẫu dữ liệu trong một batch.</p>
-<p>Ở đây, khái niệm batch size và số lượng batch(number of batch) là hoàn toàn khác nhau.</p>
-<p>Như đã nói ở trên, chúng ta không thể đưa hết toàn bộ dữ liệu vào huấn luyện trong 1 epoch, vì vậy chúng ta cần phải chia tập dữ liệu thành các phần (number of batch), mỗi phần có kích thước là batch size.</p>
-<h2 id="iterations">Iterations<a class="anchor ms-1" href="#iterations"><i class="fas fa-link"></i></a></h2>
-<p>Iterations là số lượng batchs cần để hoàn thành 1 epoch.</p>
-<p>Ví dụ chúng ta có tập dữ liệu có 20,000 mẫu, batch size là 500, vậy chúng ta cần 40 lần lặp (iteration) để hoàn thành 1 epoch.</p>
+<h2 id="số-lần-lặp-tối-ưu-là-bao-nhiêu">Số lần lặp tối ưu là bao nhiêu?<a class="anchor ms-1" href="#số-lần-lặp-tối-ưu-là-bao-nhiêu"><i class="fas fa-link"></i></a></h2>
+<p>Tiếc rằng không có câu trả lời cho câu hỏi này. Phụ thuộc hoàn toàn vào nhiều yếu tố. Mục tiêu chung là ta sẽ lặp đến khi nào hội tụ. Có một số phương pháp giúp chúng ta xác định mô hình đã đứng ở ngưỡng cực tiểu cục bộ rồi, không thể xuống hơn được nữa.</p>
+<p>Các bạn có thể tìm hiểu với từ khóa early stopping.</p>
 <p>Cảm ơn các bạn đã theo dõi bài viết.</p>
 <p>Nguồn: <a href="https://towardsdatascience.com/epoch-vs-iterations-vs-batch-size-4dfb9c7ce9c9" target="_blank" rel="noopener noreferrer">https://towardsdatascience.com/epoch-vs-iterations-vs-batch-size-4dfb9c7ce9c9</a></p>
 </div></div>
@@ -316,15 +329,9 @@ HOME
   <div class="card-body">
     <nav id="TableOfContents">
   <ul>
-    <li><a href="#lời-mở-đầu">Lời mở đầu</a></li>
-    <li><a href="#khái-niện-epoch">Khái niện Epoch</a>
-      <ul>
-        <li><a href="#tại-sao-phải-dùng-hơn-1-epoch">Tại sao phải dùng hơn 1 Epoch.</a></li>
-        <li><a href="#số-lần-lặp-tối-ưu-là-bao-nhiêu">Số lần lặp tối ưu là bao nhiêu?</a></li>
-      </ul>
-    </li>
-    <li><a href="#batch-size">Batch Size</a></li>
     <li><a href="#iterations">Iterations</a></li>
+    <li><a href="#tại-sao-phải-dùng-hơn-1-epoch">Tại sao phải dùng hơn 1 Epoch.</a></li>
+    <li><a href="#số-lần-lặp-tối-ưu-là-bao-nhiêu">Số lần lặp tối ưu là bao nhiêu?</a></li>
   </ul>
 </nav>
   </div>
