@@ -1,0 +1,514 @@
+<!doctype html><html lang="en" data-palette="blue"
+   data-mode="dark">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Các kỹ thuật chuẩn hóa trong Deep Learning - Phạm Duy Tùng Machine Learning Blog</title><link rel="apple-touch-icon" href="/images/icons/icon-180x180.png" sizes="180x180">
+<link rel="icon" href="/images/icons/icon-32x32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="/images/icons/icon-16x16.png" sizes="16x16" type="image/png">
+<link rel="icon" href="/images/icons/favicon.ico">
+<link rel="manifest" href="/manifest.json">
+<meta name="keywords" content="" />
+<meta name="description" content="Ở bài viết này, mình sẽ giới thiệu các bạn một vài cách có thể giúp các bạn có thêm thu nhập dựa vào việc cào dữ liệu. Tất nhiên là các công việc đều không dễ dàng gì, chúng ta cần đổ thêm chút sức trâu bò và nuôi dưỡng thì mới có ngày hái quả ngọt được" /><meta name="robots" content="index, follow" /><meta itemprop="name" content="Các kỹ thuật chuẩn hóa trong Deep Learning">
+<meta itemprop="description" content="Ở bài viết này, mình sẽ giới thiệu các bạn một vài cách có thể giúp các bạn có thêm thu nhập dựa vào việc cào dữ liệu. Tất nhiên là các công việc đều không dễ dàng gì, chúng ta cần đổ thêm chút sức trâu bò và nuôi dưỡng thì mới có ngày hái quả ngọt được"><meta itemprop="datePublished" content="2022-02-25T00:19:00+03:00" />
+<meta itemprop="dateModified" content="2022-02-25T00:19:00+03:00" />
+<meta itemprop="wordCount" content="1263">
+<meta itemprop="keywords" content="machine learning,normalization,deep learning," /><meta property="og:title" content="Các kỹ thuật chuẩn hóa trong Deep Learning" />
+<meta property="og:description" content="Ở bài viết này, mình sẽ giới thiệu các bạn một vài cách có thể giúp các bạn có thêm thu nhập dựa vào việc cào dữ liệu. Tất nhiên là các công việc đều không dễ dàng gì, chúng ta cần đổ thêm chút sức trâu bò và nuôi dưỡng thì mới có ngày hái quả ngọt được" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="/blog/2022-02-25-normalization/" /><meta property="article:section" content="blog" />
+<meta property="article:published_time" content="2022-02-25T00:19:00+03:00" />
+<meta property="article:modified_time" content="2022-02-25T00:19:00+03:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Các kỹ thuật chuẩn hóa trong Deep Learning"/>
+<meta name="twitter:description" content="Ở bài viết này, mình sẽ giới thiệu các bạn một vài cách có thể giúp các bạn có thêm thu nhập dựa vào việc cào dữ liệu. Tất nhiên là các công việc đều không dễ dàng gì, chúng ta cần đổ thêm chút sức trâu bò và nuôi dưỡng thì mới có ngày hái quả ngọt được"/>
+<meta property="og:image" content="/images/logo.png"/>
+  <meta name="twitter:image" content="/images/logo.png"/><link rel="stylesheet" href="/css/main.min.507afbe6e4670fa3e961a0b35816b5daeb36029866fd6bd7b9d7871fcf88faa5.css" integrity="sha256-UHr75uRnD6PpYaCzWBa12us2Aphm/WvXudeHH8&#43;I&#43;qU=" crossorigin="anonymous"><link rel="stylesheet" href="/css/katex.min.d080a89e03e1eb850f547d835c186b4273f69879aa497eb8b0e88c1578bf1f0b.css" integrity="sha256-0ICongPh64UPVH2DXBhrQnP2mHmqSX64sOiMFXi/Hws=" crossorigin="anonymous">
+<link rel="stylesheet" href="/css/viewer.min.3d228794bcedbbfa0412beb8fbc1ec6973202945e42af7004f742a4d7bd620ab.css" integrity="sha256-PSKHlLztu/oEEr64&#43;8HsaXMgKUXkKvcAT3QqTXvWIKs=" crossorigin="anonymous"></head>
+  <body><script>const items=['mode','palette'];items.forEach(function(a){const b=localStorage.getItem('hbs-'+a);b&&document.body.parentElement.setAttribute('data-'+a,b)})</script><header><nav class="navbar top-app-bar top-app-bar-expand-lg fixed-top">
+  <div class="container">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <i class="fas fa-bars"></i>
+    </button><a class="navbar-brand flex-grow-1 flex-lg-grow-0 text-center text-lg-start mx-auto me-lg-3" href="/"><img class="logo" alt="Logo" src="/images/logo.webp" loading="lazy"
+   width="400" height="400"
+   />
+HOME
+    </a>
+    <div class="offcanvas offcanvas-bottom surface" tabindex="-1" id="offcanvasSocialShare" aria-labelledby="offcanvasSocialShare">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Share</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body">
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Twitter Share Button"
+      target="_blank" href="https://twitter.com/intent/tweet?title=C%c3%a1c%20k%e1%bb%b9%20thu%e1%ba%adt%20chu%e1%ba%a9n%20h%c3%b3a%20trong%20Deep%20Learning&url=%2fblog%2f2022-02-25-normalization%2f">
+      <i class="fab fa-fw fa-twitter"></i> Twitter
+    </a>
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Facebook Share Button"
+      target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=%2fblog%2f2022-02-25-normalization%2f">
+      <i class="fab fa-fw fa-facebook-f"></i> Facebook
+    </a>
+  </div>
+</div>
+    <button class="navbar-settings" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSettings"
+  aria-controls="offcanvasSettings" aria-label="Toggle settings">
+  <i class="fas fa-ellipsis-v"></i>
+</button>
+
+<div class="offcanvas offcanvas-end surface h-100" tabindex="-1" id="offcanvasSettings" aria-labelledby="offcanvasSettings">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Settings</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body d-flex flex-column">
+
+
+
+<section class="setting">
+  <form class="font-size-switcher-form row">
+    <div class="col-auto">
+      <label for="fontSize" class="form-label"><i class="fas fa-fw fa-font"></i> Font Size</label>
+    </div>
+    <div class="col-auto ms-auto">
+      <input type="range" class="form-range" min="-2" max="2" id="fontSize">
+    </div>
+  </form>
+</section>
+
+
+<section class="setting palettes">
+  <form class="row">
+    <div class="col-auto">
+      <label><i class="fas fa-fw fa-palette"></i> Palette</label>
+    </div>
+    <div class="col-auto ms-auto">
+      <a id="btnPalette" class="btn btn-sm btn-outline-primary" role="button" aria-label="palettePicker">
+        <i class="fas fa-eye-dropper"></i>
+      </a>
+    </div>
+  </form>
+  <div class="mt-2 d-flex justify-content-between visually-hidden" id="palettePicker"><button type="button" id="palette-blue" aria-label="Blue"
+        class="btn btn-sm w-100 palette" data-palette="blue">
+      </button><button type="button" id="palette-blue-gray" aria-label="Blue Gray"
+        class="btn btn-sm w-100 palette" data-palette="blue-gray">
+      </button><button type="button" id="palette-brown" aria-label="Brown"
+        class="btn btn-sm w-100 palette" data-palette="brown">
+      </button><button type="button" id="palette-cyan" aria-label="Cyan"
+        class="btn btn-sm w-100 palette" data-palette="cyan">
+      </button><button type="button" id="palette-green" aria-label="Green"
+        class="btn btn-sm w-100 palette" data-palette="green">
+      </button><button type="button" id="palette-indigo" aria-label="Indigo"
+        class="btn btn-sm w-100 palette" data-palette="indigo">
+      </button><button type="button" id="palette-orange" aria-label="Orange"
+        class="btn btn-sm w-100 palette" data-palette="orange">
+      </button><button type="button" id="palette-pink" aria-label="Pink"
+        class="btn btn-sm w-100 palette" data-palette="pink">
+      </button><button type="button" id="palette-purple" aria-label="Purple"
+        class="btn btn-sm w-100 palette" data-palette="purple">
+      </button><button type="button" id="palette-red" aria-label="Red"
+        class="btn btn-sm w-100 palette" data-palette="red">
+      </button><button type="button" id="palette-teal" aria-label="Teal"
+        class="btn btn-sm w-100 palette" data-palette="teal">
+      </button><button type="button" id="palette-yellow" aria-label="Yellow"
+        class="btn btn-sm w-100 palette" data-palette="yellow">
+      </button></div>
+</section>
+<section class="setting actions d-flex justify-content-around mt-auto overflow-auto">
+  <a role="button" class="action action-go-back" href="javascript: window.history.back();">
+    <span class="action-icon"><i class="fas fa-2x fa-arrow-left"></i></span> Go back
+  </a>
+  <a role="button" class="action action-reload-page">
+    <span class="action-icon"><i class="fas fa-2x fa-redo-alt"></i></span> Reload
+  </a>
+  <a role="button" class="action action-copy-url">
+    <span class="action-icon"><i class="fas fa-2x fa-link"></i></span> Copy URL
+  </a><a class="action action-social-share" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSocialShare"
+    aria-controls="offcanvasSocialShare" aria-label="Toggle social share">
+    <span class="action-icon"><i class="fas fa-2x fa-share-alt"></i></span> Share
+  </a></section>
+
+</div>
+</div>
+
+    <div class="collapse navbar-collapse" tabindex="-1" id="navbarSupportedContent" aria-labelledby="navbarSupportedContent">
+      <form class="search-bar my-1" action="/search">
+  <div class="input-group input-group-sm">
+    <span class="btn btn-search disabled position-absolute left-0"><i class="fas fa-fw fa-search"></i></span>
+    <input class="form-control rounded-pill" name="q" type="search" aria-label="Search">
+  </div>
+</form>
+      <ul class="navbar-nav ms-auto"><li class="nav-item">
+          <a class="nav-link" href="/series/">
+            <i class="fas fa-fw fa-columns"></i>Series
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="/archives/">
+            <i class="fas fa-fw fa-file-archive"></i>Archives
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="/categories/">
+            <i class="fas fa-fw fa-folder"></i>Categories
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="/tools/">
+            <i class="fas fa-fw fa-folder"></i>Tools
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="/tags/">
+            <i class="fas fa-fw fa-tags"></i>Tags
+          </a>
+        </li><li class="nav-item dropdown">
+          <a class="nav-link" id="navbarDropdownSupport" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-fw fa-chevron-circle-down"></i>Support
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdownSupport"><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Repository
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Discussions
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Features Request
+              </a>
+            </li><li><hr class="dropdown-divider"></li><li>
+              <a class="dropdown-item"
+                href="/faq/">
+                FAQs
+              </a>
+            </li></ul>
+        </li></ul>
+    </div>
+  </div>
+</nav>
+</header>
+<main role="main" class="container">
+      <div class="row content">
+<div class="col-lg-8">
+  <div class="container"><nav class="row card component" aria-label="breadcrumb">
+  <div class="card-body">
+    <ol class="breadcrumb "><li class="breadcrumb-item"><a href="/">Home</a></li><li class="breadcrumb-item"><a href="/blog/">Blogs</a></li><li class="breadcrumb-item active">Các Kỹ Thuật Chuẩn Hóa Trong Deep Learning</li></ol>
+  </div>
+</nav>
+<div class="post-panel-wrapper">
+  <div class="d-flex flex-column component rounded post-panel">
+    
+    <a class="action action-panel-toggler" role="button" title="Panel toggler">
+      <i class="fas fa-fw fa-chevron-circle-down"></i>
+    </a>
+    <a id="sidebarToggler" class="action d-none d-lg-block" role="button" title="Sidebar toggler">
+  <i class="fas fa-fw fa-expand-alt" data-fa-transform="rotate-45"></i>
+</a>
+
+    
+
+    
+    
+    <a class="action" href="#post-comments" role="button" aria-label="Comments" title="Comments">
+  <i class="fas fa-fw fa-comments"></i>
+</a>
+    <a class="action" href="#postTOC" aria-controls="Table of contents" role="button" title="Table of contents">
+  <i class="fas fa-fw fa-list-alt"></i>
+</a>
+    
+  </div>
+</div>
+<article class="row card component mb-4 post">
+  <div class="card-header ">
+    <h1 class="card-title post-title">Các Kỹ Thuật Chuẩn Hóa Trong Deep Learning
+</h1>
+  </div>
+  <div class="card-body"><div class="post-meta">
+  <span class="post-date" title="created on 2022-02-25 04:19:00 &#43;0700 &#43;07.">
+    Feb 25, 2022
+  </span><span class="post-reading-time">
+    6 min read
+  </span><span class="post-taxonomies"><a href="/tags/machine-learning/" class="badge post-taxonomy">Machine learning</a><a href="/tags/normalization/" class="badge post-taxonomy">normalization</a><a href="/tags/deep-learning/" class="badge post-taxonomy">Deep learning</a></span>
+</div>
+<div class="post-content mb-3"><h1 id="tại-sao-chúng-ta-cần-chuẩn-hóa-layer">Tại sao chúng ta cần chuẩn hóa layer<a class="anchor ms-1" href="#tại-sao-chúng-ta-cần-chuẩn-hóa-layer"><i class="fas fa-link"></i></a></h1>
+<p>Mình nghĩ, câu trả lời thỏa đáng nhất là bởi vì nó làm tăng độ chính xác của mô hình. Trong quá trình thực nghiệm, các nhà nghiên cứu nhận thấy rằng việc thêm Layer Normalization cho kết quả test tốt hơn/ chạy nhanh hơn, hội tụ sớm hơn &hellip;  Và từ đó, các nhà nghiên cứu đổ hết tâm sức khai phá, đào bới nó ra thử sai , cải tiến, đề xuất các mô hình chuẩn hóa liên lục, tạo nên các mô hình mà mình sẽ liệt kê ở dưới.</p>
+<p>Thật ra, một ý tưởng nào hay thì cũng có nhiều nhà nghiên cứu đổ hết tâm huyết vào nghiên cứu, đào sâu tận cùng nó ra, để cống hiến cho nhân loại.</p>
+<h1 id="batch-normalization">Batch Normalization<a class="anchor ms-1" href="#batch-normalization"><i class="fas fa-link"></i></a></h1>
+<p>Đây là một trong các phương pháp chuẩn hóa lâu đời và được sử dụng rộng rãi nhất. Ngay cả mình khi test các data mới cũng xài nó vì sự tiện lợi và nhanh chóng của nó. Các bạn có thể tìm đọc paper có tựa đề Batch normalization: Accelerating deep network training by reducing internal covariate shift. Những phần bên dưới, mình sẽ thay chữ Batch Normalization thành BN để cho câu chữ được ngắng gọn và tập trung vào ý chính hơn.</p>
+<p>Batch Normalization (BN) đề cập đến việc chuẩn hóa giá trị input của layer bất kỳ. Chuẩn hóa có nghĩa là đưa phân phối của layer về xấp xỉ phân phối chuẩn với trung bình  xấp xỉ 0 và phương sai  xấp xỉ 1.  Về mặc toán học, Batch Normalization (BN) thực hiện như sau: với mỗi layer, BN  tính giá trị trung bình và phương sai của nó. Sau đó sẽ lấy giá trị đặc trưng trừ giá trị trung bình , sau đó chia cho độ lệch chuẩn. Thực tế, chúng ta hay chia tập train thành từng batch với kích thước là 16,32,64 ,128 &hellip; hình, hay còn gọi là 1 mini-batch size 16,32,64,128 &hellip;. BN được tính toán trên các mini-batch đó.</p>
+<p>Công thức tính trung bình của mini-batch</p>
+<p>$$</p>
+<p>\mu_B \leftarrow \frac{1}{m}\sum^{m}_{i=1}x_i</p>
+<p>$$</p>
+<p>Công thức tính phương sai của mini-batch
+$$</p>
+<p>\sigma^2_\beta \leftarrow \frac{1}{m}\sum^{m}_{i=1}(x_i-\mu_B)^2</p>
+<p>$$</p>
+<p>Chuẩn hóa</p>
+<p>$$</p>
+<p>\hat{x}_i \frac{x_i - \mu_B}{\sqrt{\sigma^2_B + \epsilon}}</p>
+<p>$$</p>
+<p>Phía trên mà mô tả toán học phép biến đổi Batch Normalizing , sử dụng cho hàm kích hoạt x trên mini-batch.</p>
+<p>Thực tế, đôi khi mô hình lại hoạt động hiệu quả với một giá trị trung bình và phương sai khác, nên tác giả thêm 2 siêu tham số là gamma - scale và beta - shift để có tính tổng quát.</p>
+<p>$$</p>
+<p>y_i \leftarrow \gamma\hat{x}_i + \beta</p>
+<p>$$</p>
+<h2 id="batch-normalization-hoạt-động-như-thế-nào">Batch Normalization hoạt động như thế nào<a class="anchor ms-1" href="#batch-normalization-hoạt-động-như-thế-nào"><i class="fas fa-link"></i></a></h2>
+<p>Về mặc trực quan, chúng ta biết rằng, trong gradient descent, mạng NN tính giá trị đạo hàm và giảm trọng số của nó dựa vào hướng đi của đạo hàm. Nhưng do các layer được xếp chồng lên nhau, phân phối của dữ liệu đầu vào sẽ bị thay đổi dần do việc cập nhật trọng số của các layer trước đó, làm cho phân phối của đầu vào của các layer phía sau sẽ khác xa so với phân phối của data input. BN giúp cố định phân phối của dữ liệu về phân phối chuẩn, qua tất cả các lớp, dẫn tới tính chất phân phối của dữ liệu không thay đổi qua các lớp.</p>
+<h2 id="khuyết-điểm-của-batch-normalization">Khuyết điểm của Batch Normalization<a class="anchor ms-1" href="#khuyết-điểm-của-batch-normalization"><i class="fas fa-link"></i></a></h2>
+<ul>
+<li>
+<p>BN thực hiện lại các phép tính trình bày phía trên qua các lần lặp, cho nên, về lý thuyết, chúng ta cần batch size đủ lớn để phân phối của mini-batch xấp xỉ phân phối của dữ liệu. Điều này gây khó khăn cho các mô hình đòi hỏi ảnh đầu vào có chất lượng cao (1920x1080) như object detection, semantic segmentation, &hellip; Việc huấn luyện với batch size lớn làm mô hình phải tính toán nhiều và chậm.</p>
+</li>
+<li>
+<p>Với Batch size = 1, giá trị phương sai sẽ là 0. Do đó BN sẽ không hoạt động hiệu quả.</p>
+</li>
+<li>
+<p>BN không hoạt động tốt với RNN. Lý do là RNN có các kết nối lặp lại với các timestamps trước đó, và yêu cầu các giá trị beta và gamma khác nhau cho mỗi timestep, dẫn đến độ phức tạp tăng lên gấp nhiều lần, và gây khó khăn cho việc sử dụng BN trong RNN.</p>
+</li>
+<li>
+<p>Trong quá trình test, BN không tính toán lại giá trị trung bình và phương sai của tập test. Mà sử dụng giá trị trung bình và phương sai được tính toán từ tập train. Điều này làm cho việc tính toán tăng thêm. Ỏ pytorch, hàm model.eval() giúp chúng ta thiết lập mô hình ở chế độ evaluation. Ở chế độ này, BN layer sẽ sử dụng các giá trị trung bình và phương sai được tính toán từ trước trong dữ liệu huấn luyện. Giúp cho chúng ta không phải tính đi tính lại giá trị này.</p>
+</li>
+</ul>
+<h1 id="weight-normalization">Weight Normalization<a class="anchor ms-1" href="#weight-normalization"><i class="fas fa-link"></i></a></h1>
+<p>Tham khảo <a href="https://arxiv.org/pdf/1602.07868.pdf" target="_blank" rel="noopener noreferrer">https://arxiv.org/pdf/1602.07868.pdf</a>
+Do các bất lợi của BN, T. Saliman và P. Kingma đề xuất cách tính khác, và đặt tên là Weight Normalization. Ý tưởng của tác giả là tách trọng số thành 2 thành phần là giá trị của trọng số và hướng của trọng số. Nhằm mục đích tăng tốc tốc độ train.</p>
+<p>Tác giả đề xuất sử dụng hai giá trị g( cho giá trị trọng số ) và v cho hướng của trọng số thay vì sử dụng 1 giá trị w nguyên thủy.</p>
+<p>$$
+w = \frac{g}{||v||}v
+$$</p>
+<p>Với g là giá trị scala, v là vector. Công thức này nhanh do chúng ta đã fixed được giá trị chuẩn của w. Do chuẩn của w lúc này bằng g.</p>
+<p>Không giống như BN, WN hoạt động được trong mô hình RNN. Tuy nhiên, về thực nghiệm cho thấy mô hình với WN thường không ổn định, nên ít khi được sử dụng trong thực tế</p>
+<h1 id="layer-normalization">Layer Normalization<a class="anchor ms-1" href="#layer-normalization"><i class="fas fa-link"></i></a></h1>
+<p>Tham khảo <a href="https://arxiv.org/pdf/1607.06450.pdf" target="_blank" rel="noopener noreferrer">https://arxiv.org/pdf/1607.06450.pdf</a></p>
+<p>Lấy cảm hứng từ BN, Geoffrey Hinton và các đồng sự đã đề xuất Layer Normalization. Phép chuẩn hóa được sử dụng trên từng layer như sau</p>
+<p>$$</p>
+<p>\mu^l =\frac{1}{H}\sum^{H}_{i=1}\alpha^l_i</p>
+<p>$$</p>
+<p>$$</p>
+<p>\sigma^l = \sqrt{\frac{1}{H}\sum^{H}_{i=1}(\alpha^l_i-\mu^l)^2}
+$$</p>
+<p>Với H là số lượng phần tử trong một hidden layer.</p>
+<p>Cái khác nhau chính giữa BN và LN là LN sử dụng chung một giá trị trung bình và phương sai trong 1 hidden layer. LN không phụ thuộc vào mini-batch, nên có thể train được với batch-size  = 1 mà không gặp vấn đề gì cả.</p>
+<p>Ngoài ra LN cũng có thể được sử dụng trong RNN mà không gặp trở ngại nào như BN.</p>
+<h1 id="instance-normalization">Instance Normalization<a class="anchor ms-1" href="#instance-normalization"><i class="fas fa-link"></i></a></h1>
+<p>Instance Normalization còn có tên gọi khác là contrast normalization</p>
+<p>Ý tưởng ở đây là chúng ta sẽ chuẩn hoá trên từng channel của từng batch.</p>
+<h1 id="group-normalization">Group Normalization<a class="anchor ms-1" href="#group-normalization"><i class="fas fa-link"></i></a></h1>
+<p>Tham khảo <a href="https://arxiv.org/pdf/1803.08494.pdf" target="_blank" rel="noopener noreferrer">https://arxiv.org/pdf/1803.08494.pdf</a></p>
+<p>Được đề xuất bởi Kaiming He và cộng sự , Group Normalization có cách thức hoạt động tương tự LN, chỉ một khác biệt duy nhất là thuật toán sẽ chia các layer thành từng nhóm và thực hiện chuẩn hóa trên các nhóm đó. Chúng ta phải turning tham số num_groups để tìm số lượng nhóm cho kết quả tốt nhất.</p>
+<p><img class="img-fluid" alt="Hình ảnh cho tất cả" src="https://miro.medium.com/max/1400/0*P2BEbb-GFU1TCS0A." loading="lazy"
+  
+   />
+
+</p>
+<p>Nguồn ảnh : <a href="https://medium.com/syncedreview/facebook-ai-proposes-group-normalization-alternative-to-batch-normalization-fb0699bffae7" target="_blank" rel="noopener noreferrer">https://medium.com/syncedreview/facebook-ai-proposes-group-normalization-alternative-to-batch-normalization-fb0699bffae7</a></p>
+<p>Journalist: Tony Peng| Editor: Michael Sarazen</p>
+<h1 id="nguồn-tham-khảo">Nguồn tham khảo<a class="anchor ms-1" href="#nguồn-tham-khảo"><i class="fas fa-link"></i></a></h1>
+<p>@inproceedings{ioffe2015batch,
+title={Batch normalization: Accelerating deep network training by reducing internal covariate shift},
+author={Ioffe, Sergey and Szegedy, Christian},
+booktitle={International conference on machine learning},
+pages={448&ndash;456},
+year={2015},
+organization={PMLR}
+}</p>
+<p><a href="https://analyticsindiamag.com/understanding-normalization-methods-in-deep-learning/" target="_blank" rel="noopener noreferrer">https://analyticsindiamag.com/understanding-normalization-methods-in-deep-learning/</a></p>
+<p><a href="https://medium.com/techspace-usict/normalization-techniques-in-deep-neural-networks-9121bf100d8" target="_blank" rel="noopener noreferrer">https://medium.com/techspace-usict/normalization-techniques-in-deep-neural-networks-9121bf100d8</a></p>
+<p><a href="https://towardsdatascience.com/different-normalization-layers-in-deep-learning-1a7214ff71d6" target="_blank" rel="noopener noreferrer">https://towardsdatascience.com/different-normalization-layers-in-deep-learning-1a7214ff71d6</a></p>
+<p><a href="https://arxiv.org/pdf/1602.07868.pdf" target="_blank" rel="noopener noreferrer">https://arxiv.org/pdf/1602.07868.pdf</a></p>
+<p><a href="https://arxiv.org/pdf/1607.06450.pdf" target="_blank" rel="noopener noreferrer">https://arxiv.org/pdf/1607.06450.pdf</a></p>
+<p><a href="https://arxiv.org/pdf/1803.08494.pdf" target="_blank" rel="noopener noreferrer">https://arxiv.org/pdf/1803.08494.pdf</a></p>
+<p><a href="https://medium.com/syncedreview/facebook-ai-proposes-group-normalization-alternative-to-batch-normalization-fb0699bffae7" target="_blank" rel="noopener noreferrer">https://medium.com/syncedreview/facebook-ai-proposes-group-normalization-alternative-to-batch-normalization-fb0699bffae7</a></p>
+</div></div>
+  <div class="card-footer"><div class="post-navs d-flex justify-content-evenly"><div class="post-nav post-prev">
+    <i class="fas fa-fw fa-chevron-left"></i>
+    <a href="/blog/2021-11-06-some-way-make-momey-from-web-scrapping/">Một Số Cách Kiếm Thêm Thu Nhập Từ Cách Cào Dữ Liệu
+</a>
+  </div></div></div>
+</article><div class="card component row post-comments" id="post-comments">
+  <div class="card-header">
+    <h2 class="card-title">Comments</h2>
+  </div>
+  <div class="card-body"><script src="https://utteranc.es/client.js"
+  repo="AlexBlack2202/utterances"
+  issue-term="pathname"
+  label="comment"
+  theme="github-light"
+  crossorigin="anonymous"
+  async>
+</script></div>
+</div></div>
+</div><aside class="col-lg-4 sidebar d-flex">
+  <div class="container d-flex flex-column">
+    
+    <section class="card row text-center profile component">
+  <div class="card-body">
+    <div class="col-12 d-flex align-items-center justify-content-center"><img class="profile-avatar rounded-circle" alt="Đặng Thị Hằng | Phạm Duy Tùng" src="/images/profile.webp" loading="lazy"
+   width="736" height="920"
+   />
+</div>
+    <div class="col-12 profile-meta"><div class="profile-name">Đặng Thị Hằng | Phạm Duy Tùng</div><div class="profile-bio">Gopher, CShaper, Pythoner, Full Stack Engineer.</div><div class="profile-company"><i class="fas fa-fw fa-building"></i>MWG</div><div class="profile-location"><i class="fas fa-fw fa-map-marker-alt"></i>Earth</div><div class="profile-about"><i class="fas fa-fw fa-user"></i><a href="/about/">About</a></div><div class="profile-contact"><i class="fas fa-fw fa-question-circle"></i><a href="/contact/">Contact Us</a></div>
+</div>
+  </div>
+</section>
+  <div class="post-toc row mb-4 card component" id="postTOC">
+  <div class="card-header">
+    <h2 class="card-title">Contents</h2>
+  </div>
+  <div class="card-body">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#batch-normalization-hoạt-động-như-thế-nào">Batch Normalization hoạt động như thế nào</a></li>
+    <li><a href="#khuyết-điểm-của-batch-normalization">Khuyết điểm của Batch Normalization</a></li>
+  </ul>
+</nav>
+  </div>
+</div><section class="recent-posts row card component">
+  <div class="card-header">
+    <h2 class="card-title">Recent Posts</h2>
+  </div>
+  <div class="card-body">
+    <ul class="post-list"><li>
+        <a href="/blog/2022-02-25-normalization/">Các Kỹ Thuật Chuẩn Hóa Trong Deep Learning
+</a>
+      </li><li>
+        <a href="/blog/2021-11-06-some-way-make-momey-from-web-scrapping/">Một Số Cách Kiếm Thêm Thu Nhập Từ Cách Cào Dữ Liệu
+</a>
+      </li><li>
+        <a href="/blog/2021-08-12-china_chess_alpha_beta_ai/">Xây Dựng Chương Trình AI Đơn Giản Cho Game Cờ Tướng
+</a>
+      </li><li>
+        <a href="/blog/2021-07-28-pycaret-flaskapi/">Tìm Hiểu Package PyCaret Trong Python
+</a>
+      </li><li>
+        <a href="/blog/2021-07-02-mo-hinh-phan-quyen/">Mô Hình Phân Quyền - Access Control
+</a>
+      </li></ul>
+  </div>
+</section><section class="series-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="/series">Series</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="/series/kh%C3%B3a-h%E1%BB%8Dc-c&#43;&#43;-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa học c&#43;&#43; căn bản">
+            Khóa học c&#43;&#43; căn bản<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="/series/machine-learning-dataset/" class="badge rounded post-taxonomy" title="Machine learning dataset">
+            Machine learning dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a><a href="/series/tools/" class="badge rounded post-taxonomy" title="tools">
+            tools<span class="badge badge-sm text-white bg-accent ms-1">2</span></a><a href="/series/kh%C3%B3a-h%E1%BB%8Dc-python-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa học python căn bản">
+            Khóa học python căn bản<span class="badge badge-sm text-white bg-accent ms-1">1</span></a></div>
+      </div>
+    </section><section class="categories-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="/categories">Categories</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="/categories/c&#43;&#43;/" class="badge rounded post-taxonomy" title="c&#43;&#43;">
+            c&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="/categories/dataset/" class="badge rounded post-taxonomy" title="dataset">
+            dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a><a href="/categories/python/" class="badge rounded post-taxonomy" title="python">
+            python<span class="badge badge-sm text-white bg-accent ms-1">1</span></a></div>
+      </div>
+    </section><section class="tags-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="/tags">Tags</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="/tags/machine-learning/" class="badge rounded post-taxonomy" title="Machine learning">
+            Machine learning<span class="badge badge-sm text-white bg-accent ms-1">39</span></a><a href="/tags/deeplearning/" class="badge rounded post-taxonomy" title="Deeplearning">
+            Deeplearning<span class="badge badge-sm text-white bg-accent ms-1">20</span></a><a href="/tags/deep-learning/" class="badge rounded post-taxonomy" title="Deep learning">
+            Deep learning<span class="badge badge-sm text-white bg-accent ms-1">16</span></a><a href="/tags/python/" class="badge rounded post-taxonomy" title="python">
+            python<span class="badge badge-sm text-white bg-accent ms-1">10</span></a><a href="/tags/opencv/" class="badge rounded post-taxonomy" title="opencv">
+            opencv<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="/tags/c&#43;&#43;/" class="badge rounded post-taxonomy" title="c&#43;&#43;">
+            c&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/object-detector/" class="badge rounded post-taxonomy" title="object detector">
+            object detector<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/alexnet/" class="badge rounded post-taxonomy" title="AlexNet">
+            AlexNet<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="/tags/d%E1%BB%B1-%C4%91o%C3%A1n/" class="badge rounded post-taxonomy" title="dự đoán">
+            dự đoán<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="/tags/forecast/" class="badge rounded post-taxonomy" title="forecast">
+            forecast<span class="badge badge-sm text-white bg-accent ms-1">3</span></a></div>
+      </div>
+    </section>
+    
+  </div>
+</aside>
+</div>
+    </main><footer class="footer mt-auto py-3 text-center container"><ul class="nav justify-content-between footer-memu mb-3"><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Support
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-github"></i>Repository
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-comments"></i>Discussions
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">Features Request
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">Bug Report
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/contact/"><i class="fas fa-fw fa-info-circle"></i>Contact Us
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/faq/"><i class="fas fa-fw fa-question-circle"></i>FAQs
+</a>
+        </li></ul></li><li class="nav-item"><li class="nav-item">
+      <a class="nav-link" target="_blank" rel="noopener noreferrer">Docs
+</a>
+    </li></li><li class="nav-item"><li class="nav-item">
+      <a class="nav-link" target="_blank" rel="noopener noreferrer">Features
+</a>
+    </li></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Demo
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">Netlify
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">China
+</a>
+        </li></ul></li></ul>
+<div class="copyright mb-2">
+  Copyright © 2016-2022 Phạm Duy Tùng. All Rights Reserved.
+</div>
+<div class="powered-by mb-2">
+  Website chia sẻ kiến thức của Phạm Duy Tùng và Đặng Thị Hằng. Vui lòng liên hệ email alexblack2202@gmail.com nếu bạn có thông tin cần trao đổi.
+</div></footer>
+<script src="/js/main.0f06b653e090cf5f3e595cc4f3150328397d377ee5b405d0803057801eb4f3e5.js" integrity="sha256-Dwa2U&#43;CQz18&#43;WVzE8xUDKDl9N37ltAXQgDBXgB608&#43;U=" crossorigin="anonymous" defer></script><script src="/js/icons.min.8ddcaafc364ff0296c2209c5495287f0de039b852da9b24847f94c198b7639b6.js" integrity="sha256-jdyq/DZP8ClsIgnFSVKH8N4Dm4UtqbJIR/lMGYt2ObY=" crossorigin="anonymous" defer></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('\/service-worker.js').then(function(reg) {
+      console.log('Successfully registered service worker', reg);
+    }).catch(function(err) {
+      console.warn('Error whilst registering service worker', err);
+    });
+  });
+}
+</script><script src="/js/viewer.min.652118a9fbf3403cdfde4026209f97ace22f9e334f0b45a33431a221b3db46a8.js" integrity="sha256-ZSEYqfvzQDzf3kAmIJ&#43;XrOIvnjNPC0WjNDGiIbPbRqg=" crossorigin="anonymous" defer></script><script defer src="/js/katex.min.a575e93a07f02f7e58ee9002aea3b4e75163d4fa8ea3a627e90e7fafd5c718fa.js" integrity="sha256-pXXpOgfwL35Y7pACrqO051Fj1PqOo6Yn6Q5/r9XHGPo=" crossorigin="anonymous"></script>
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-114911596-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+</body>
+</html>
