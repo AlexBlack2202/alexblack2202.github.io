@@ -12,7 +12,7 @@
 <meta name="description" content="Khi làm việc với opencv, chúng ta bắt gặp rất nhiều thuật toán cần phải xét ngưỡng. Vậy giá trị ngưỡng là gì. Ở bài viết này, chúng ta sẽ tìm hiểu và làm rõ nội dung trên nhé" /><meta name="robots" content="index, follow" /><meta itemprop="name" content="Ngưỡng (thresholding) trong opencv">
 <meta itemprop="description" content="Khi làm việc với opencv, chúng ta bắt gặp rất nhiều thuật toán cần phải xét ngưỡng. Vậy giá trị ngưỡng là gì. Ở bài viết này, chúng ta sẽ tìm hiểu và làm rõ nội dung trên nhé"><meta itemprop="datePublished" content="2020-12-25T00:19:00+03:00" />
 <meta itemprop="dateModified" content="2020-12-25T00:19:00+03:00" />
-<meta itemprop="wordCount" content="951">
+<meta itemprop="wordCount" content="927">
 <meta itemprop="keywords" content="python,thresholding,contour,opencv," /><meta property="og:title" content="Ngưỡng (thresholding) trong opencv" />
 <meta property="og:description" content="Khi làm việc với opencv, chúng ta bắt gặp rất nhiều thuật toán cần phải xét ngưỡng. Vậy giá trị ngưỡng là gì. Ở bài viết này, chúng ta sẽ tìm hiểu và làm rõ nội dung trên nhé" />
 <meta property="og:type" content="article" />
@@ -24,9 +24,9 @@
 <meta name="twitter:title" content="Ngưỡng (thresholding) trong opencv"/>
 <meta name="twitter:description" content="Khi làm việc với opencv, chúng ta bắt gặp rất nhiều thuật toán cần phải xét ngưỡng. Vậy giá trị ngưỡng là gì. Ở bài viết này, chúng ta sẽ tìm hiểu và làm rõ nội dung trên nhé"/>
 <meta property="og:image" content="/images/logo.png"/>
-  <meta name="twitter:image" content="/images/logo.png"/><link rel="stylesheet" href="/css/main.min.507afbe6e4670fa3e961a0b35816b5daeb36029866fd6bd7b9d7871fcf88faa5.css" integrity="sha256-UHr75uRnD6PpYaCzWBa12us2Aphm/WvXudeHH8&#43;I&#43;qU=" crossorigin="anonymous"><link rel="stylesheet" href="/css/katex.min.d080a89e03e1eb850f547d835c186b4273f69879aa497eb8b0e88c1578bf1f0b.css" integrity="sha256-0ICongPh64UPVH2DXBhrQnP2mHmqSX64sOiMFXi/Hws=" crossorigin="anonymous">
+  <meta name="twitter:image" content="/images/logo.png"/><link rel="stylesheet" href="/css/main.min.24196952817c68c8b90d8fa573d560fa62766baa0622bdc0e862255f4a4d1307.css" integrity="sha256-JBlpUoF8aMi5DY&#43;lc9Vg&#43;mJ2a6oGIr3A6GIlX0pNEwc=" crossorigin="anonymous"><link rel="stylesheet" href="/css/katex.min.d080a89e03e1eb850f547d835c186b4273f69879aa497eb8b0e88c1578bf1f0b.css" integrity="sha256-0ICongPh64UPVH2DXBhrQnP2mHmqSX64sOiMFXi/Hws=" crossorigin="anonymous">
 <link rel="stylesheet" href="/css/viewer.min.3d228794bcedbbfa0412beb8fbc1ec6973202945e42af7004f742a4d7bd620ab.css" integrity="sha256-PSKHlLztu/oEEr64&#43;8HsaXMgKUXkKvcAT3QqTXvWIKs=" crossorigin="anonymous"></head>
-  <body><script>const items=['mode','palette'];items.forEach(function(a){const b=localStorage.getItem('hbs-'+a);b&&document.body.parentElement.setAttribute('data-'+a,b)})</script><header><nav class="navbar top-app-bar top-app-bar-expand-lg fixed-top">
+  <body><script>const items=["mode","palette"];items.forEach(function(e){const t=localStorage.getItem("hbs-"+e);t&&document.body.parentElement.setAttribute("data-"+e,t)})</script><header><nav class="navbar top-app-bar top-app-bar-expand-lg fixed-top">
   <div class="container">
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
       aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -218,7 +218,9 @@ HOME
     <a class="action" href="#post-comments" role="button" aria-label="Comments" title="Comments">
   <i class="fas fa-fw fa-comments"></i>
 </a>
-    
+    <a class="action" href="#postTOC" aria-controls="Table of contents" role="button" title="Table of contents">
+  <i class="fas fa-fw fa-list-alt"></i>
+</a>
     
   </div>
 </div>
@@ -238,53 +240,50 @@ HOME
 <p>Nói theo kiểu lúa hóa, trong opencv, ngưỡng là một số nằm trong đoạn từ 0 đến 255. Giá trị ngưỡng sẽ chia tách giá trị độ xám của ảnh thành 2 miền riêng biệt. Miền thứ nhất là tập hợp các điểm ảnh có giá trị nhỏ hơn giá trị ngưỡng. Miền thứ hai là tập hợp các các điểm ảnh có giá trị lớn hơn hoặc bằng giá trị ngưỡng.</p>
 <p>Đầu vào của một thuật toán phân ngưỡng trong opencv thường có input là ảnh nguồn (source image) và giá trị ngưỡng. Đầu ra là ảnh đích đã được phân ngưỡng (destination image). Một số thuật toán phân ngưỡng sẽ kèm thêm vài giá trị râu ria khác nữa, chúng ta sẽ không quan tâm đến chúng</p>
 <p>Mã giải của thuật toán phân ngưỡng:</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="ln">1</span>if src[i] &gt;= T:
-<span class="ln">2</span>	dest[i] = MAXVAL
-<span class="ln">3</span>else:
-<span class="ln">4</span>	dest [i] = 0
-<span class="ln">5</span>
-</code></pre></div><p>Có rất nhiều thuật toán phân ngưỡng dựa trên cách chúng ta xác định ngưỡng. Chúng ta sẽ tìm hiểu lần lượt các thuật toán trên.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl">if src[i] &gt;= T:
+</span></span><span class="line"><span class="ln">2</span><span class="cl">	dest[i] = MAXVAL
+</span></span><span class="line"><span class="ln">3</span><span class="cl">else:
+</span></span><span class="line"><span class="ln">4</span><span class="cl">	dest [i] = 0
+</span></span></code></pre></div><p>Có rất nhiều thuật toán phân ngưỡng dựa trên cách chúng ta xác định ngưỡng. Chúng ta sẽ tìm hiểu lần lượt các thuật toán trên.</p>
 <h1 id="thuật-toán-simple-thresholding">Thuật toán Simple Thresholding<a class="anchor ms-1" href="#thuật-toán-simple-thresholding"><i class="fas fa-link"></i></a></h1>
 <p>Simple Thresholding thực hiện phân ngưỡng bằng cách thay thế giá trị lớn hơn hoặc bằng và giá trị bé hơn giá trị ngưỡng bằng một giá trị mới. Cụ thể chúng ta có thể xem mã nguồn bên dưới</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="ln"> 1</span>
-<span class="ln"> 2</span>import cv2
-<span class="ln"> 3</span>import numpy as np
-<span class="ln"> 4</span>from matplotlib import pyplot as plt
-<span class="ln"> 5</span>
-<span class="ln"> 6</span>img = cv2.imread(&#39;gradient.png&#39;,0)
-<span class="ln"> 7</span>ret,thresh1 = cv2.threshold(img,127,255,cv2.THRESH_BINARY)
-<span class="ln"> 8</span>ret,thresh2 = cv2.threshold(img,127,255,cv2.THRESH_BINARY_INV)
-<span class="ln"> 9</span>ret,thresh3 = cv2.threshold(img,127,255,cv2.THRESH_TRUNC)
-<span class="ln">10</span>ret,thresh4 = cv2.threshold(img,127,255,cv2.THRESH_TOZERO)
-<span class="ln">11</span>ret,thresh5 = cv2.threshold(img,127,255,cv2.THRESH_TOZERO_INV)
-<span class="ln">12</span>
-<span class="ln">13</span>titles = [&#39;Original Image&#39;,&#39;BINARY&#39;,&#39;BINARY_INV&#39;,&#39;TRUNC&#39;,&#39;TOZERO&#39;,&#39;TOZERO_INV&#39;]
-<span class="ln">14</span>images = [img, thresh1, thresh2, thresh3, thresh4, thresh5]
-<span class="ln">15</span>
-<span class="ln">16</span>for i in xrange(6):
-<span class="ln">17</span>    plt.subplot(2,3,i+1),plt.imshow(images[i],&#39;gray&#39;)
-<span class="ln">18</span>    plt.title(titles[i])
-<span class="ln">19</span>    plt.xticks([]),plt.yticks([])
-<span class="ln">20</span>
-<span class="ln">21</span>plt.show()
-<span class="ln">22</span>
-</code></pre></div><p><img class="img-fluid" alt="Hình ảnh" src="https://opencv-python-tutroals.readthedocs.io/en/latest/_images/threshold.jpg" loading="lazy"
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln"> 1</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">import cv2
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">import numpy as np
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">from matplotlib import pyplot as plt
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">img = cv2.imread(&#39;gradient.png&#39;,0)
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">ret,thresh1 = cv2.threshold(img,127,255,cv2.THRESH_BINARY)
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">ret,thresh2 = cv2.threshold(img,127,255,cv2.THRESH_BINARY_INV)
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">ret,thresh3 = cv2.threshold(img,127,255,cv2.THRESH_TRUNC)
+</span></span><span class="line"><span class="ln">10</span><span class="cl">ret,thresh4 = cv2.threshold(img,127,255,cv2.THRESH_TOZERO)
+</span></span><span class="line"><span class="ln">11</span><span class="cl">ret,thresh5 = cv2.threshold(img,127,255,cv2.THRESH_TOZERO_INV)
+</span></span><span class="line"><span class="ln">12</span><span class="cl">
+</span></span><span class="line"><span class="ln">13</span><span class="cl">titles = [&#39;Original Image&#39;,&#39;BINARY&#39;,&#39;BINARY_INV&#39;,&#39;TRUNC&#39;,&#39;TOZERO&#39;,&#39;TOZERO_INV&#39;]
+</span></span><span class="line"><span class="ln">14</span><span class="cl">images = [img, thresh1, thresh2, thresh3, thresh4, thresh5]
+</span></span><span class="line"><span class="ln">15</span><span class="cl">
+</span></span><span class="line"><span class="ln">16</span><span class="cl">for i in xrange(6):
+</span></span><span class="line"><span class="ln">17</span><span class="cl">    plt.subplot(2,3,i+1),plt.imshow(images[i],&#39;gray&#39;)
+</span></span><span class="line"><span class="ln">18</span><span class="cl">    plt.title(titles[i])
+</span></span><span class="line"><span class="ln">19</span><span class="cl">    plt.xticks([]),plt.yticks([])
+</span></span><span class="line"><span class="ln">20</span><span class="cl">
+</span></span><span class="line"><span class="ln">21</span><span class="cl">plt.show()
+</span></span></code></pre></div><p><img class="img-fluid" alt="Hình ảnh" src="https://opencv-python-tutroals.readthedocs.io/en/latest/_images/threshold.jpg" loading="lazy"
   
    />
 
 
 <strong>Hình ảnh và thuật toán của mô hình được lấy từ trang opencv-python-tutroals.readthedocs.io</strong></p>
 <p>Ở đoạn code trên, chúng ta thiết lập giá trị ngưỡng là 127, với các điểm ảnh có giá trị lớn hơn hoặc bằng 127, chúng ta sẽ gán lại giá trị của nó thành 255. Và các điểm ảnh có giá trị bé hơn 127 sẽ được gán bằng 0 (mặc định).</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="ln">1</span>
-<span class="ln">2</span>
-<span class="ln">3</span>double cv::threshold	(	InputArray 	src,
-<span class="ln">4</span>OutputArray 	dst,
-<span class="ln">5</span>double 	thresh,
-<span class="ln">6</span>double 	maxval,
-<span class="ln">7</span>int 	type 
-<span class="ln">8</span>)	
-<span class="ln">9</span>
-</code></pre></div><p>Thuật toán sample thresholding của opencv còn có 1 tham số nữa khá quan trọng nữa là loại ngưỡng (type). Hiện tại lúc mình viết bài viết này thì opencv hỗ trợ  8 loại là: THRESH_BINARY,  THRESH_BINARY_INV, THRESH_TRUNC, THRESH_TOZERO, THRESH_TOZERO_INV, THRESH_MASK, THRESH_OTSU, THRESH_TRIANGLE. Ý nghĩa của từng loại như sau:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl">
+</span></span><span class="line"><span class="ln">2</span><span class="cl">
+</span></span><span class="line"><span class="ln">3</span><span class="cl">double cv::threshold	(	InputArray 	src,
+</span></span><span class="line"><span class="ln">4</span><span class="cl">OutputArray 	dst,
+</span></span><span class="line"><span class="ln">5</span><span class="cl">double 	thresh,
+</span></span><span class="line"><span class="ln">6</span><span class="cl">double 	maxval,
+</span></span><span class="line"><span class="ln">7</span><span class="cl">int 	type 
+</span></span><span class="line"><span class="ln">8</span><span class="cl">)	
+</span></span></code></pre></div><p>Thuật toán sample thresholding của opencv còn có 1 tham số nữa khá quan trọng nữa là loại ngưỡng (type). Hiện tại lúc mình viết bài viết này thì opencv hỗ trợ  8 loại là: THRESH_BINARY,  THRESH_BINARY_INV, THRESH_TRUNC, THRESH_TOZERO, THRESH_TOZERO_INV, THRESH_MASK, THRESH_OTSU, THRESH_TRIANGLE. Ý nghĩa của từng loại như sau:</p>
 <ul>
 <li>
 <p>THRESH_BINARY: Có thể dịch là ngưỡng nhị phân. Ý nghĩa y hệt những gì mình đề cập ở trên.</p>
@@ -315,42 +314,41 @@ HOME
 <h1 id="adaptive-thresholding">Adaptive Thresholding<a class="anchor ms-1" href="#adaptive-thresholding"><i class="fas fa-link"></i></a></h1>
 <p>Thuật toán simple thresholding hoạt động khá tốt. Tuy nhiên, nó có 1 nhược điểm là giá trị ngưỡng bị/được gán toàn cục. Thực tế khi chụp, hình ảnh chúng ta nhận được thường bị ảnh hưởng của nhiễu, ví dụ như là bị phơi sáng, bị đèn flask, &hellip;</p>
 <p>Một trong những cách được sử dụng để giải quyết vấn đề trên là chia nhỏ bức ảnh thành những vùng nhỏ (region), và đặt giá trị ngưỡng trên những vùng nhỏ đó -&gt; adaptive thresholding ra đời. Opencv cung cấp cho chúng ta hai cách xác định những vùng nhỏ</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="ln"> 1</span>import cv2 as cv
-<span class="ln"> 2</span>import numpy as np
-<span class="ln"> 3</span>from matplotlib import pyplot as plt
-<span class="ln"> 4</span>img = cv.imread(&#39;sudoku.png&#39;,0)
-<span class="ln"> 5</span>img = cv.medianBlur(img,5)
-<span class="ln"> 6</span>ret,th1 = cv.threshold(img,127,255,cv.THRESH_BINARY)
-<span class="ln"> 7</span>th2 = cv.adaptiveThreshold(img,255,cv.ADAPTIVE_THRESH_MEAN_C,\
-<span class="ln"> 8</span>            cv.THRESH_BINARY,11,2)
-<span class="ln"> 9</span>th3 = cv.adaptiveThreshold(img,255,cv.ADAPTIVE_THRESH_GAUSSIAN_C,\
-<span class="ln">10</span>            cv.THRESH_BINARY,11,2)
-<span class="ln">11</span>titles = [&#39;Original Image&#39;, &#39;Global Thresholding (v = 127)&#39;,
-<span class="ln">12</span>            &#39;Adaptive Mean Thresholding&#39;, &#39;Adaptive Gaussian Thresholding&#39;]
-<span class="ln">13</span>images = [img, th1, th2, th3]
-<span class="ln">14</span>for i in xrange(4):
-<span class="ln">15</span>    plt.subplot(2,2,i+1),plt.imshow(images[i],&#39;gray&#39;)
-<span class="ln">16</span>    plt.title(titles[i])
-<span class="ln">17</span>    plt.xticks([]),plt.yticks([])
-<span class="ln">18</span>plt.show()
-</code></pre></div><p><img class="img-fluid" alt="Hình ảnh" src="https://docs.opencv.org/master/ada_threshold.jpg" loading="lazy"
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln"> 1</span><span class="cl">import cv2 as cv
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">import numpy as np
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">from matplotlib import pyplot as plt
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">img = cv.imread(&#39;sudoku.png&#39;,0)
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">img = cv.medianBlur(img,5)
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">ret,th1 = cv.threshold(img,127,255,cv.THRESH_BINARY)
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">th2 = cv.adaptiveThreshold(img,255,cv.ADAPTIVE_THRESH_MEAN_C,\
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">            cv.THRESH_BINARY,11,2)
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">th3 = cv.adaptiveThreshold(img,255,cv.ADAPTIVE_THRESH_GAUSSIAN_C,\
+</span></span><span class="line"><span class="ln">10</span><span class="cl">            cv.THRESH_BINARY,11,2)
+</span></span><span class="line"><span class="ln">11</span><span class="cl">titles = [&#39;Original Image&#39;, &#39;Global Thresholding (v = 127)&#39;,
+</span></span><span class="line"><span class="ln">12</span><span class="cl">            &#39;Adaptive Mean Thresholding&#39;, &#39;Adaptive Gaussian Thresholding&#39;]
+</span></span><span class="line"><span class="ln">13</span><span class="cl">images = [img, th1, th2, th3]
+</span></span><span class="line"><span class="ln">14</span><span class="cl">for i in xrange(4):
+</span></span><span class="line"><span class="ln">15</span><span class="cl">    plt.subplot(2,2,i+1),plt.imshow(images[i],&#39;gray&#39;)
+</span></span><span class="line"><span class="ln">16</span><span class="cl">    plt.title(titles[i])
+</span></span><span class="line"><span class="ln">17</span><span class="cl">    plt.xticks([]),plt.yticks([])
+</span></span><span class="line"><span class="ln">18</span><span class="cl">plt.show()
+</span></span></code></pre></div><p><img class="img-fluid" alt="Hình ảnh" src="https://docs.opencv.org/master/ada_threshold.jpg" loading="lazy"
   
    />
 
 
 <strong>Hình ảnh và thuật toán của mô hình được lấy từ trang docs.opencv.org</strong></p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="ln"> 1</span>
-<span class="ln"> 2</span>
-<span class="ln"> 3</span>void cv::adaptiveThreshold	(	InputArray 	src,
-<span class="ln"> 4</span>OutputArray 	dst,
-<span class="ln"> 5</span>double 	maxValue,
-<span class="ln"> 6</span>int 	adaptiveMethod,
-<span class="ln"> 7</span>int 	thresholdType,
-<span class="ln"> 8</span>int 	blockSize,
-<span class="ln"> 9</span>double 	C 
-<span class="ln">10</span>)	
-<span class="ln">11</span>
-</code></pre></div><p>Ở đây:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln"> 1</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">void cv::adaptiveThreshold	(	InputArray 	src,
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">OutputArray 	dst,
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">double 	maxValue,
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">int 	adaptiveMethod,
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">int 	thresholdType,
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">int 	blockSize,
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">double 	C 
+</span></span><span class="line"><span class="ln">10</span><span class="cl">)	
+</span></span></code></pre></div><p>Ở đây:</p>
 <p>blockSize: Kích thước của vùng, bắt buộc phải là một số lẻ lớn hơn 0.</p>
 <p>C: hằng số, giá trị từ -255 đến 255. Có thể gán C bằng 0 để đỡ rối.</p>
 <p>adaptiveMethod nhận vào một trong hai giá trị là cv.ADAPTIVE_THRESH_MEAN_C và cv.ADAPTIVE_THRESH_GAUSSIAN_C, đó là các phương pháp tính ngưỡng.</p>
@@ -412,7 +410,20 @@ HOME
 </div>
   </div>
 </section>
-  <section class="recent-posts row card component">
+  <div class="post-toc row mb-4 card component" id="postTOC">
+  <div class="card-header">
+    <h2 class="card-title">Contents</h2>
+  </div>
+  <div class="card-body">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#giá-trị-ngưỡng">Giá trị ngưỡng:</a></li>
+    <li><a href="#thuật-toán-simple-thresholding">Thuật toán Simple Thresholding</a></li>
+    <li><a href="#adaptive-thresholding">Adaptive Thresholding</a></li>
+  </ul>
+</nav>
+  </div>
+</div><section class="recent-posts row card component">
   <div class="card-header">
     <h2 class="card-title">Recent Posts</h2>
   </div>
@@ -442,10 +453,10 @@ HOME
       </div>
       <div class="card-body">
         <div class="py-2"><a href="/series/kh%C3%B3a-h%E1%BB%8Dc-c&#43;&#43;-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa học c&#43;&#43; căn bản">
-            Khóa học c&#43;&#43; căn bản<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="/series/machine-learning-dataset/" class="badge rounded post-taxonomy" title="Machine learning dataset">
+            Khóa học c&#43;&#43; căn bản<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="/series/kh%C3%B3a-h%E1%BB%8Dc-python-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa học python căn bản">
+            Khóa học python căn bản<span class="badge badge-sm text-white bg-accent ms-1">2</span></a><a href="/series/machine-learning-dataset/" class="badge rounded post-taxonomy" title="Machine learning dataset">
             Machine learning dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a><a href="/series/ch%E1%BB%A9ng-kho%C3%A1n-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Chứng khoán căn bản">
-            Chứng khoán căn bản<span class="badge badge-sm text-white bg-accent ms-1">1</span></a><a href="/series/kh%C3%B3a-h%E1%BB%8Dc-python-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa học python căn bản">
-            Khóa học python căn bản<span class="badge badge-sm text-white bg-accent ms-1">1</span></a></div>
+            Chứng khoán căn bản<span class="badge badge-sm text-white bg-accent ms-1">1</span></a></div>
       </div>
     </section><section class="tools-taxonomies row card component">
       <div class="card-header">
@@ -467,7 +478,7 @@ HOME
         <div class="py-2"><a href="/categories/c&#43;&#43;/" class="badge rounded post-taxonomy" title="c&#43;&#43;">
             c&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="/categories/dataset/" class="badge rounded post-taxonomy" title="dataset">
             dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a><a href="/categories/python/" class="badge rounded post-taxonomy" title="python">
-            python<span class="badge badge-sm text-white bg-accent ms-1">1</span></a></div>
+            python<span class="badge badge-sm text-white bg-accent ms-1">2</span></a></div>
       </div>
     </section><section class="tags-taxonomies row card component">
       <div class="card-header">
@@ -480,7 +491,7 @@ HOME
             Machine learning<span class="badge badge-sm text-white bg-accent ms-1">39</span></a><a href="/tags/deeplearning/" class="badge rounded post-taxonomy" title="Deeplearning">
             Deeplearning<span class="badge badge-sm text-white bg-accent ms-1">20</span></a><a href="/tags/deep-learning/" class="badge rounded post-taxonomy" title="Deep learning">
             Deep learning<span class="badge badge-sm text-white bg-accent ms-1">16</span></a><a href="/tags/python/" class="badge rounded post-taxonomy" title="python">
-            python<span class="badge badge-sm text-white bg-accent ms-1">10</span></a><a href="/tags/opencv/" class="badge rounded post-taxonomy" title="opencv">
+            python<span class="badge badge-sm text-white bg-accent ms-1">11</span></a><a href="/tags/opencv/" class="badge rounded post-taxonomy" title="opencv">
             opencv<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="/tags/c&#43;&#43;/" class="badge rounded post-taxonomy" title="c&#43;&#43;">
             c&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/object-detector/" class="badge rounded post-taxonomy" title="object detector">
             object detector<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/alexnet/" class="badge rounded post-taxonomy" title="AlexNet">
@@ -538,7 +549,7 @@ HOME
 <div class="powered-by mb-2">
   Website chia sẻ kiến thức của Phạm Duy Tùng và Đặng Thị Hằng. Vui lòng liên hệ email alexblack2202@gmail.com nếu bạn có thông tin cần trao đổi.
 </div></footer>
-<script src="/js/main.0f06b653e090cf5f3e595cc4f3150328397d377ee5b405d0803057801eb4f3e5.js" integrity="sha256-Dwa2U&#43;CQz18&#43;WVzE8xUDKDl9N37ltAXQgDBXgB608&#43;U=" crossorigin="anonymous" defer></script><script src="/js/icons.min.8ddcaafc364ff0296c2209c5495287f0de039b852da9b24847f94c198b7639b6.js" integrity="sha256-jdyq/DZP8ClsIgnFSVKH8N4Dm4UtqbJIR/lMGYt2ObY=" crossorigin="anonymous" defer></script>
+<script src="/js/main.0f06b653e090cf5f3e595cc4f3150328397d377ee5b405d0803057801eb4f3e5.js" integrity="sha256-Dwa2U&#43;CQz18&#43;WVzE8xUDKDl9N37ltAXQgDBXgB608&#43;U=" crossorigin="anonymous" defer></script><script src="/js/icons.min.acdbd59936764a801998a13fb1741d76453c42dc9aeee26251a97b5a9ff679bb.js" integrity="sha256-rNvVmTZ2SoAZmKE/sXQddkU8Qtya7uJiUal7Wp/2ebs=" crossorigin="anonymous" defer></script>
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
@@ -549,7 +560,7 @@ if ('serviceWorker' in navigator) {
     });
   });
 }
-</script><script src="/js/viewer.min.652118a9fbf3403cdfde4026209f97ace22f9e334f0b45a33431a221b3db46a8.js" integrity="sha256-ZSEYqfvzQDzf3kAmIJ&#43;XrOIvnjNPC0WjNDGiIbPbRqg=" crossorigin="anonymous" defer></script><script defer src="/js/katex.min.a575e93a07f02f7e58ee9002aea3b4e75163d4fa8ea3a627e90e7fafd5c718fa.js" integrity="sha256-pXXpOgfwL35Y7pACrqO051Fj1PqOo6Yn6Q5/r9XHGPo=" crossorigin="anonymous"></script>
+</script><script src="/js/viewer.min.7781ba4e24db35cc3033a16118f338140fbb6694360d281e18a5928a4d16d54a.js" integrity="sha256-d4G6TiTbNcwwM6FhGPM4FA&#43;7ZpQ2DSgeGKWSik0W1Uo=" crossorigin="anonymous" defer></script><script defer src="/js/katex.min.94aec2dfcc8c17ad662f39ab866039f0e9705caf6f362b93496f3750d66a9bfe.js" integrity="sha256-lK7C38yMF61mLzmrhmA58OlwXK9vNiuTSW83UNZqm/4=" crossorigin="anonymous"></script>
 
 <script type="application/javascript">
 var doNotTrack = false;

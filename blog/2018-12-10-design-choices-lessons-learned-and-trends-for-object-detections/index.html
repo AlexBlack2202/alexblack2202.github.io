@@ -12,7 +12,7 @@
 <meta name="description" content="Ở bài viết này, chúng ta sẽ bàn về cách lựa chọn mô hình object detector tối ưu cho bài toán." /><meta name="robots" content="index, follow" /><meta itemprop="name" content="Lựa chọn mô hình object detectors">
 <meta itemprop="description" content="Ở bài viết này, chúng ta sẽ bàn về cách lựa chọn mô hình object detector tối ưu cho bài toán."><meta itemprop="datePublished" content="2018-12-10T00:19:00+03:00" />
 <meta itemprop="dateModified" content="2018-12-10T00:19:00+03:00" />
-<meta itemprop="wordCount" content="1666"><meta itemprop="image" content="/blog/2018-12-10-design-choices-lessons-learned-and-trends-for-object-detections/feature_extraction_accuracy.jpg">
+<meta itemprop="wordCount" content="1658"><meta itemprop="image" content="/blog/2018-12-10-design-choices-lessons-learned-and-trends-for-object-detections/feature_extraction_accuracy.jpg">
 <meta itemprop="keywords" content="Machine learning,Deeplearning,object detector,single shot," /><meta property="og:title" content="Lựa chọn mô hình object detectors" />
 <meta property="og:description" content="Ở bài viết này, chúng ta sẽ bàn về cách lựa chọn mô hình object detector tối ưu cho bài toán." />
 <meta property="og:type" content="article" />
@@ -24,9 +24,9 @@
 <meta name="twitter:image" content="/blog/2018-12-10-design-choices-lessons-learned-and-trends-for-object-detections/feature_extraction_accuracy.jpg"/>
 <meta name="twitter:title" content="Lựa chọn mô hình object detectors"/>
 <meta name="twitter:description" content="Ở bài viết này, chúng ta sẽ bàn về cách lựa chọn mô hình object detector tối ưu cho bài toán."/>
-<link rel="stylesheet" href="/css/main.min.507afbe6e4670fa3e961a0b35816b5daeb36029866fd6bd7b9d7871fcf88faa5.css" integrity="sha256-UHr75uRnD6PpYaCzWBa12us2Aphm/WvXudeHH8&#43;I&#43;qU=" crossorigin="anonymous"><link rel="stylesheet" href="/css/katex.min.d080a89e03e1eb850f547d835c186b4273f69879aa497eb8b0e88c1578bf1f0b.css" integrity="sha256-0ICongPh64UPVH2DXBhrQnP2mHmqSX64sOiMFXi/Hws=" crossorigin="anonymous">
+<link rel="stylesheet" href="/css/main.min.24196952817c68c8b90d8fa573d560fa62766baa0622bdc0e862255f4a4d1307.css" integrity="sha256-JBlpUoF8aMi5DY&#43;lc9Vg&#43;mJ2a6oGIr3A6GIlX0pNEwc=" crossorigin="anonymous"><link rel="stylesheet" href="/css/katex.min.d080a89e03e1eb850f547d835c186b4273f69879aa497eb8b0e88c1578bf1f0b.css" integrity="sha256-0ICongPh64UPVH2DXBhrQnP2mHmqSX64sOiMFXi/Hws=" crossorigin="anonymous">
 <link rel="stylesheet" href="/css/viewer.min.3d228794bcedbbfa0412beb8fbc1ec6973202945e42af7004f742a4d7bd620ab.css" integrity="sha256-PSKHlLztu/oEEr64&#43;8HsaXMgKUXkKvcAT3QqTXvWIKs=" crossorigin="anonymous"></head>
-  <body><script>const items=['mode','palette'];items.forEach(function(a){const b=localStorage.getItem('hbs-'+a);b&&document.body.parentElement.setAttribute('data-'+a,b)})</script><header><nav class="navbar top-app-bar top-app-bar-expand-lg fixed-top">
+  <body><script>const items=["mode","palette"];items.forEach(function(e){const t=localStorage.getItem("hbs-"+e);t&&document.body.parentElement.setAttribute("data-"+e,t)})</script><header><nav class="navbar top-app-bar top-app-bar-expand-lg fixed-top">
   <div class="container">
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
       aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -296,36 +296,36 @@ Trong bài viết này, chúng ta sẽ đề cập đến một số chiến lư
 <p>Hình trên, đường nét liền mô tả độ chính xác khi tăng số lượng proposal. Đường nét đứt thể hiện thời gian xử láy tăng khi tăng số lượng proposal.</p>
 <h2 id="điểm-danh-danh-lại-các-bước-phát-triển-của-object-detection">Điểm danh danh lại các bước phát triển của object detection<a class="anchor ms-1" href="#điểm-danh-danh-lại-các-bước-phát-triển-của-object-detection"><i class="fas fa-link"></i></a></h2>
 <p>Các thuật toán object detection đã phát triển trong một khoảng thời gian dài. Ý tưởng  đầu tiên, đơn giản nhất là chúng ta sẽ sử dụng cửa sổ trượt.</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span>
-<span class="ln">2</span><span class="c1"># Sliding windows</span>
-<span class="ln">3</span><span class="k">for</span> <span class="n">window</span> <span class="ow">in</span> <span class="n">windows</span>
-<span class="ln">4</span>    <span class="n">patch</span> <span class="o">=</span> <span class="n">get_patch</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">window</span><span class="p">)</span>
-<span class="ln">5</span>    <span class="n">results</span> <span class="o">=</span> <span class="n">detector</span><span class="p">(</span><span class="n">patch</span><span class="p">)</span>
-</code></pre></div><p>Để tăng tốc, chúng ta sẽ</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln">1</span><span class="cl">
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="c1"># Sliding windows</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="k">for</span> <span class="n">window</span> <span class="ow">in</span> <span class="n">windows</span>
+</span></span><span class="line"><span class="ln">4</span><span class="cl">    <span class="n">patch</span> <span class="o">=</span> <span class="n">get_patch</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">window</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">5</span><span class="cl">    <span class="n">results</span> <span class="o">=</span> <span class="n">detector</span><span class="p">(</span><span class="n">patch</span><span class="p">)</span>
+</span></span></code></pre></div><p>Để tăng tốc, chúng ta sẽ</p>
 <ol>
 <li>Giảm số lượng windows (R-CNN giảm còn khoảng 2000)</li>
 <li>Giảm các phép tính trong việc tìm ROI (Fast R-CNN sử dụng feature map thay vì toàn bộ image patchs).</li>
 </ol>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span><span class="c1"># Fast R-CNN</span>
-<span class="ln">2</span><span class="n">feature_maps</span> <span class="o">=</span> <span class="n">process</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
-<span class="ln">3</span><span class="n">ROIs</span> <span class="o">=</span> <span class="n">region_proposal</span><span class="p">(</span><span class="n">feature_maps</span><span class="p">)</span>
-<span class="ln">4</span><span class="k">for</span> <span class="n">ROI</span> <span class="ow">in</span> <span class="n">ROIs</span>
-<span class="ln">5</span>    <span class="n">patch</span> <span class="o">=</span> <span class="n">roi_pooling</span><span class="p">(</span><span class="n">feature_maps</span><span class="p">,</span> <span class="n">ROI</span><span class="p">)</span>
-<span class="ln">6</span>    <span class="n">results</span> <span class="o">=</span> <span class="n">detector2</span><span class="p">(</span><span class="n">patch</span><span class="p">)</span>
-</code></pre></div><p>Việc tìm region_proposal cũng tốn khá nhiều thời gian. Faster R-CNN sử dụng một convolution network thay thế cho region proposal ở bước này (làm giảm thời gian từ 2.3s xuống còn 0.3 giây). Faster R-CNN cũng giới thiệu 1 khái nhiệm là anchor giúp cải thiện độ chính xác và việc huấn luyện trở nên dễ dàng hơn.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln">1</span><span class="cl"><span class="c1"># Fast R-CNN</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="n">feature_maps</span> <span class="o">=</span> <span class="n">process</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="n">ROIs</span> <span class="o">=</span> <span class="n">region_proposal</span><span class="p">(</span><span class="n">feature_maps</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">4</span><span class="cl"><span class="k">for</span> <span class="n">ROI</span> <span class="ow">in</span> <span class="n">ROIs</span>
+</span></span><span class="line"><span class="ln">5</span><span class="cl">    <span class="n">patch</span> <span class="o">=</span> <span class="n">roi_pooling</span><span class="p">(</span><span class="n">feature_maps</span><span class="p">,</span> <span class="n">ROI</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">6</span><span class="cl">    <span class="n">results</span> <span class="o">=</span> <span class="n">detector2</span><span class="p">(</span><span class="n">patch</span><span class="p">)</span>
+</span></span></code></pre></div><p>Việc tìm region_proposal cũng tốn khá nhiều thời gian. Faster R-CNN sử dụng một convolution network thay thế cho region proposal ở bước này (làm giảm thời gian từ 2.3s xuống còn 0.3 giây). Faster R-CNN cũng giới thiệu 1 khái nhiệm là anchor giúp cải thiện độ chính xác và việc huấn luyện trở nên dễ dàng hơn.</p>
 <p>R-FCN đưa ra một điều chỉnh nhỏ, là tiến hành tìm position và sensitive score map trên mỗi ROIS độc lập. Và tính trung bình xác suất xuất hiện đối tượng</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span><span class="c1"># R-FCN</span>
-<span class="ln">2</span><span class="n">feature_maps</span> <span class="o">=</span> <span class="n">process</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
-<span class="ln">3</span><span class="n">ROIs</span> <span class="o">=</span> <span class="n">region_proposal</span><span class="p">(</span><span class="n">feature_maps</span><span class="p">)</span>         
-<span class="ln">4</span><span class="n">score_maps</span> <span class="o">=</span> <span class="n">compute_score_map</span><span class="p">(</span><span class="n">feature_maps</span><span class="p">)</span>
-<span class="ln">5</span><span class="k">for</span> <span class="n">ROI</span> <span class="ow">in</span> <span class="n">ROIs</span>
-<span class="ln">6</span>    <span class="n">V</span> <span class="o">=</span> <span class="n">pool</span><span class="p">(</span><span class="n">score_maps</span><span class="p">,</span> <span class="n">ROI</span><span class="p">)</span>     
-<span class="ln">7</span>    <span class="n">class_scores</span> <span class="o">=</span> <span class="n">average</span><span class="p">(</span><span class="n">V</span><span class="p">)</span>         
-<span class="ln">8</span>    <span class="n">class_probabilities</span> <span class="o">=</span> <span class="n">softmax</span><span class="p">(</span><span class="n">class_scores</span><span class="p">)</span>
-</code></pre></div><p>R-FCN chạy khá nhanh, nhưng độ chính xác thì thấp hơn một hút so với Faster R-CNN. Để ý kỹ đoạn mã giả ở trên, chúng ta phải trải qua 2 lần tính toán, một lần là tìm các ROIs, một lần là object detection. Thuật toán Single shot detector được đề xuất để sử dụng 1 lần tính toán.</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="ln">1</span><span class="n">feature_maps</span> <span class="o">=</span> <span class="n">process</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
-<span class="ln">2</span><span class="n">results</span> <span class="o">=</span> <span class="n">detector3</span><span class="p">(</span><span class="n">feature_maps</span><span class="p">)</span> <span class="c1"># No more separate step for ROIs</span>
-</code></pre></div><p>Thuật toán SSD và YOLO đều thuộc nhóm single shot detectors. Cả hai đều sử dụng convolution layer để rút trích đặc trưng và một convolution filter để đưa quyết định. Cả hai đều dùng feature map có độ phân giải thấp (low resolution feature map) để dò tìm đối tượng =&gt; chỉ phát hiện được các đối tượng có kích thước lớn. Một cách tiếp cận là sử dụng các feature map có độ phân giải cao (higher resolution feature map). Nhưng độ chính xác sẽ giảm do thông tin đặc trưng của đối tượng quá hỗn loạn. FPN đưa ra ý tưởng sử dụng feature map trung gian merge giữa feature map high resolution và low resolution. Việc này giúp cho chúng ta vẫn giữ được thông tin đặc trưng hữu ích của đối tượng, đồng thời cũng giữ được thông tin của các đối tượng có kích thước nhỏ. Do đó, độ chính xác cũng tăng lên và phát hiện các đối tượng có các tỷ lệ khác nhau (different scale) tốt hơn.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln">1</span><span class="cl"><span class="c1"># R-FCN</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="n">feature_maps</span> <span class="o">=</span> <span class="n">process</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="n">ROIs</span> <span class="o">=</span> <span class="n">region_proposal</span><span class="p">(</span><span class="n">feature_maps</span><span class="p">)</span>         
+</span></span><span class="line"><span class="ln">4</span><span class="cl"><span class="n">score_maps</span> <span class="o">=</span> <span class="n">compute_score_map</span><span class="p">(</span><span class="n">feature_maps</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">5</span><span class="cl"><span class="k">for</span> <span class="n">ROI</span> <span class="ow">in</span> <span class="n">ROIs</span>
+</span></span><span class="line"><span class="ln">6</span><span class="cl">    <span class="n">V</span> <span class="o">=</span> <span class="n">pool</span><span class="p">(</span><span class="n">score_maps</span><span class="p">,</span> <span class="n">ROI</span><span class="p">)</span>     
+</span></span><span class="line"><span class="ln">7</span><span class="cl">    <span class="n">class_scores</span> <span class="o">=</span> <span class="n">average</span><span class="p">(</span><span class="n">V</span><span class="p">)</span>         
+</span></span><span class="line"><span class="ln">8</span><span class="cl">    <span class="n">class_probabilities</span> <span class="o">=</span> <span class="n">softmax</span><span class="p">(</span><span class="n">class_scores</span><span class="p">)</span>
+</span></span></code></pre></div><p>R-FCN chạy khá nhanh, nhưng độ chính xác thì thấp hơn một hút so với Faster R-CNN. Để ý kỹ đoạn mã giả ở trên, chúng ta phải trải qua 2 lần tính toán, một lần là tìm các ROIs, một lần là object detection. Thuật toán Single shot detector được đề xuất để sử dụng 1 lần tính toán.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln">1</span><span class="cl"><span class="n">feature_maps</span> <span class="o">=</span> <span class="n">process</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="n">results</span> <span class="o">=</span> <span class="n">detector3</span><span class="p">(</span><span class="n">feature_maps</span><span class="p">)</span> <span class="c1"># No more separate step for ROIs</span>
+</span></span></code></pre></div><p>Thuật toán SSD và YOLO đều thuộc nhóm single shot detectors. Cả hai đều sử dụng convolution layer để rút trích đặc trưng và một convolution filter để đưa quyết định. Cả hai đều dùng feature map có độ phân giải thấp (low resolution feature map) để dò tìm đối tượng =&gt; chỉ phát hiện được các đối tượng có kích thước lớn. Một cách tiếp cận là sử dụng các feature map có độ phân giải cao (higher resolution feature map). Nhưng độ chính xác sẽ giảm do thông tin đặc trưng của đối tượng quá hỗn loạn. FPN đưa ra ý tưởng sử dụng feature map trung gian merge giữa feature map high resolution và low resolution. Việc này giúp cho chúng ta vẫn giữ được thông tin đặc trưng hữu ích của đối tượng, đồng thời cũng giữ được thông tin của các đối tượng có kích thước nhỏ. Do đó, độ chính xác cũng tăng lên và phát hiện các đối tượng có các tỷ lệ khác nhau (different scale) tốt hơn.</p>
 <p>Trong quá trình huấn luyện, chúng ta sẽ nhận ra 1 vấn đề rằng backgroup sẽ chiếm 1 phần rất lớn trong bức ảnh. Hoặc một đối tượng nào đó có số mẫu nhiều hơn so với các đối tượng khác. Thuật toán Focal loss được sinh ra để giải quyết vấn đề này.</p>
 <h2 id="lesson-learned">Lesson learned<a class="anchor ms-1" href="#lesson-learned"><i class="fas fa-link"></i></a></h2>
 <ul>
@@ -393,19 +393,23 @@ Trong bài viết này, chúng ta sẽ đề cập đến một số chiến lư
   <div class="card-body">
     <nav id="TableOfContents">
   <ul>
-    <li><a href="#lời-mở-đầu">Lời mở đầu</a></li>
-    <li><a href="#box-encoding-và-loss-function">Box encoding và loss function</a></li>
-    <li><a href="#feature-extraction">Feature extraction</a></li>
-    <li><a href="#feature-extractor-accuracy">Feature extractor accuracy</a></li>
-    <li><a href="#non-max-suppression-nms">Non-max suppression (nms)</a></li>
-    <li><a href="#data-augmentation">Data augmentation</a></li>
-    <li><a href="#feature-map-strides">Feature map strides</a></li>
-    <li><a href="#speed-vs-accuracy">Speed v.s. accuracy</a></li>
-    <li><a href="#object-size">Object size</a></li>
-    <li><a href="#input-image-resolution">Input image resolution</a></li>
-    <li><a href="#number-of-proposals">Number of proposals</a></li>
-    <li><a href="#điểm-danh-danh-lại-các-bước-phát-triển-của-object-detection">Điểm danh danh lại các bước phát triển của object detection</a></li>
-    <li><a href="#lesson-learned">Lesson learned</a></li>
+    <li>
+      <ul>
+        <li><a href="#lời-mở-đầu">Lời mở đầu</a></li>
+        <li><a href="#box-encoding-và-loss-function">Box encoding và loss function</a></li>
+        <li><a href="#feature-extraction">Feature extraction</a></li>
+        <li><a href="#feature-extractor-accuracy">Feature extractor accuracy</a></li>
+        <li><a href="#non-max-suppression-nms">Non-max suppression (nms)</a></li>
+        <li><a href="#data-augmentation">Data augmentation</a></li>
+        <li><a href="#feature-map-strides">Feature map strides</a></li>
+        <li><a href="#speed-vs-accuracy">Speed v.s. accuracy</a></li>
+        <li><a href="#object-size">Object size</a></li>
+        <li><a href="#input-image-resolution">Input image resolution</a></li>
+        <li><a href="#number-of-proposals">Number of proposals</a></li>
+        <li><a href="#điểm-danh-danh-lại-các-bước-phát-triển-của-object-detection">Điểm danh danh lại các bước phát triển của object detection</a></li>
+        <li><a href="#lesson-learned">Lesson learned</a></li>
+      </ul>
+    </li>
   </ul>
 </nav>
   </div>
@@ -439,10 +443,10 @@ Trong bài viết này, chúng ta sẽ đề cập đến một số chiến lư
       </div>
       <div class="card-body">
         <div class="py-2"><a href="/series/kh%C3%B3a-h%E1%BB%8Dc-c&#43;&#43;-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa học c&#43;&#43; căn bản">
-            Khóa học c&#43;&#43; căn bản<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="/series/machine-learning-dataset/" class="badge rounded post-taxonomy" title="Machine learning dataset">
+            Khóa học c&#43;&#43; căn bản<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="/series/kh%C3%B3a-h%E1%BB%8Dc-python-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa học python căn bản">
+            Khóa học python căn bản<span class="badge badge-sm text-white bg-accent ms-1">2</span></a><a href="/series/machine-learning-dataset/" class="badge rounded post-taxonomy" title="Machine learning dataset">
             Machine learning dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a><a href="/series/ch%E1%BB%A9ng-kho%C3%A1n-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Chứng khoán căn bản">
-            Chứng khoán căn bản<span class="badge badge-sm text-white bg-accent ms-1">1</span></a><a href="/series/kh%C3%B3a-h%E1%BB%8Dc-python-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa học python căn bản">
-            Khóa học python căn bản<span class="badge badge-sm text-white bg-accent ms-1">1</span></a></div>
+            Chứng khoán căn bản<span class="badge badge-sm text-white bg-accent ms-1">1</span></a></div>
       </div>
     </section><section class="tools-taxonomies row card component">
       <div class="card-header">
@@ -464,7 +468,7 @@ Trong bài viết này, chúng ta sẽ đề cập đến một số chiến lư
         <div class="py-2"><a href="/categories/c&#43;&#43;/" class="badge rounded post-taxonomy" title="c&#43;&#43;">
             c&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="/categories/dataset/" class="badge rounded post-taxonomy" title="dataset">
             dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a><a href="/categories/python/" class="badge rounded post-taxonomy" title="python">
-            python<span class="badge badge-sm text-white bg-accent ms-1">1</span></a></div>
+            python<span class="badge badge-sm text-white bg-accent ms-1">2</span></a></div>
       </div>
     </section><section class="tags-taxonomies row card component">
       <div class="card-header">
@@ -477,7 +481,7 @@ Trong bài viết này, chúng ta sẽ đề cập đến một số chiến lư
             Machine learning<span class="badge badge-sm text-white bg-accent ms-1">39</span></a><a href="/tags/deeplearning/" class="badge rounded post-taxonomy" title="Deeplearning">
             Deeplearning<span class="badge badge-sm text-white bg-accent ms-1">20</span></a><a href="/tags/deep-learning/" class="badge rounded post-taxonomy" title="Deep learning">
             Deep learning<span class="badge badge-sm text-white bg-accent ms-1">16</span></a><a href="/tags/python/" class="badge rounded post-taxonomy" title="python">
-            python<span class="badge badge-sm text-white bg-accent ms-1">10</span></a><a href="/tags/opencv/" class="badge rounded post-taxonomy" title="opencv">
+            python<span class="badge badge-sm text-white bg-accent ms-1">11</span></a><a href="/tags/opencv/" class="badge rounded post-taxonomy" title="opencv">
             opencv<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="/tags/c&#43;&#43;/" class="badge rounded post-taxonomy" title="c&#43;&#43;">
             c&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/object-detector/" class="badge rounded post-taxonomy" title="object detector">
             object detector<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/alexnet/" class="badge rounded post-taxonomy" title="AlexNet">
@@ -535,7 +539,7 @@ Trong bài viết này, chúng ta sẽ đề cập đến một số chiến lư
 <div class="powered-by mb-2">
   Website chia sẻ kiến thức của Phạm Duy Tùng và Đặng Thị Hằng. Vui lòng liên hệ email alexblack2202@gmail.com nếu bạn có thông tin cần trao đổi.
 </div></footer>
-<script src="/js/main.0f06b653e090cf5f3e595cc4f3150328397d377ee5b405d0803057801eb4f3e5.js" integrity="sha256-Dwa2U&#43;CQz18&#43;WVzE8xUDKDl9N37ltAXQgDBXgB608&#43;U=" crossorigin="anonymous" defer></script><script src="/js/icons.min.8ddcaafc364ff0296c2209c5495287f0de039b852da9b24847f94c198b7639b6.js" integrity="sha256-jdyq/DZP8ClsIgnFSVKH8N4Dm4UtqbJIR/lMGYt2ObY=" crossorigin="anonymous" defer></script>
+<script src="/js/main.0f06b653e090cf5f3e595cc4f3150328397d377ee5b405d0803057801eb4f3e5.js" integrity="sha256-Dwa2U&#43;CQz18&#43;WVzE8xUDKDl9N37ltAXQgDBXgB608&#43;U=" crossorigin="anonymous" defer></script><script src="/js/icons.min.acdbd59936764a801998a13fb1741d76453c42dc9aeee26251a97b5a9ff679bb.js" integrity="sha256-rNvVmTZ2SoAZmKE/sXQddkU8Qtya7uJiUal7Wp/2ebs=" crossorigin="anonymous" defer></script>
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
@@ -546,7 +550,7 @@ if ('serviceWorker' in navigator) {
     });
   });
 }
-</script><script src="/js/viewer.min.652118a9fbf3403cdfde4026209f97ace22f9e334f0b45a33431a221b3db46a8.js" integrity="sha256-ZSEYqfvzQDzf3kAmIJ&#43;XrOIvnjNPC0WjNDGiIbPbRqg=" crossorigin="anonymous" defer></script><script defer src="/js/katex.min.a575e93a07f02f7e58ee9002aea3b4e75163d4fa8ea3a627e90e7fafd5c718fa.js" integrity="sha256-pXXpOgfwL35Y7pACrqO051Fj1PqOo6Yn6Q5/r9XHGPo=" crossorigin="anonymous"></script>
+</script><script src="/js/viewer.min.7781ba4e24db35cc3033a16118f338140fbb6694360d281e18a5928a4d16d54a.js" integrity="sha256-d4G6TiTbNcwwM6FhGPM4FA&#43;7ZpQ2DSgeGKWSik0W1Uo=" crossorigin="anonymous" defer></script><script defer src="/js/katex.min.94aec2dfcc8c17ad662f39ab866039f0e9705caf6f362b93496f3750d66a9bfe.js" integrity="sha256-lK7C38yMF61mLzmrhmA58OlwXK9vNiuTSW83UNZqm/4=" crossorigin="anonymous"></script>
 
 <script type="application/javascript">
 var doNotTrack = false;
