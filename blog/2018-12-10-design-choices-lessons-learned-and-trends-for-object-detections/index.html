@@ -236,7 +236,12 @@ HOME
     8 min read
   </span><span class="post-taxonomies"><a href="/tags/machine-learning/" class="badge post-taxonomy">Machine learning</a><a href="/tags/deeplearning/" class="badge post-taxonomy">Deeplearning</a><a href="/tags/object-detector/" class="badge post-taxonomy">object detector</a><a href="/tags/single-shot/" class="badge post-taxonomy">single shot</a></span>
 </div>
-<div class="post-content mb-3"><h2 id="lời-mở-đầu">Lời mở đầu<a class="anchor ms-1" href="#lời-mở-đầu"><i class="fas fa-link"></i></a></h2>
+<div class="post-content mb-3">
+      
+
+      <img width="100%" style="max-height:450px" src="https://source.unsplash.com/random/900×700"  alt="Lựa chọn mô hình object detectors"  />
+
+  <h2 id="lời-mở-đầu">Lời mở đầu<a class="anchor ms-1" href="#lời-mở-đầu"><i class="fas fa-link"></i></a></h2>
 <p>Các thuật toán phát hiện đối tượng, như các thuật toán thuộc nhóm region proposal hoặc single shot đầu bắt đầu bởi những ý tưởng khác nhau, nhưng sau qua một vài quá trình cập nhật và nâng cấp cho đến thời điểm hiện tại, mô hình chung của chúng đã gần gần giống nhau hơn. Và hai thuật toán trên là hai thuật toán tiêu biểu cạnh tranh nhau danh hiệu thuật toán phát hiện đối tượng nhanh nhất và thuật toán nhận diện chính xác nhất.
 Trong bài viết này, chúng ta sẽ đề cập đến một số chiến lược lựa chọn mô hình cho bài toán object detector và một số benchmarks do team Google Research thực hiện.</p>
 <h2 id="box-encoding-và-loss-function">Box encoding và loss function<a class="anchor ms-1" href="#box-encoding-và-loss-function"><i class="fas fa-link"></i></a></h2>
@@ -316,11 +321,11 @@ Trong bài viết này, chúng ta sẽ đề cập đến một số chiến lư
 <p>R-FCN đưa ra một điều chỉnh nhỏ, là tiến hành tìm position và sensitive score map trên mỗi ROIS độc lập. Và tính trung bình xác suất xuất hiện đối tượng</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln">1</span><span class="cl"><span class="c1"># R-FCN</span>
 </span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="n">feature_maps</span> <span class="o">=</span> <span class="n">process</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
-</span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="n">ROIs</span> <span class="o">=</span> <span class="n">region_proposal</span><span class="p">(</span><span class="n">feature_maps</span><span class="p">)</span>         
+</span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="n">ROIs</span> <span class="o">=</span> <span class="n">region_proposal</span><span class="p">(</span><span class="n">feature_maps</span><span class="p">)</span>
 </span></span><span class="line"><span class="ln">4</span><span class="cl"><span class="n">score_maps</span> <span class="o">=</span> <span class="n">compute_score_map</span><span class="p">(</span><span class="n">feature_maps</span><span class="p">)</span>
 </span></span><span class="line"><span class="ln">5</span><span class="cl"><span class="k">for</span> <span class="n">ROI</span> <span class="ow">in</span> <span class="n">ROIs</span>
-</span></span><span class="line"><span class="ln">6</span><span class="cl">    <span class="n">V</span> <span class="o">=</span> <span class="n">pool</span><span class="p">(</span><span class="n">score_maps</span><span class="p">,</span> <span class="n">ROI</span><span class="p">)</span>     
-</span></span><span class="line"><span class="ln">7</span><span class="cl">    <span class="n">class_scores</span> <span class="o">=</span> <span class="n">average</span><span class="p">(</span><span class="n">V</span><span class="p">)</span>         
+</span></span><span class="line"><span class="ln">6</span><span class="cl">    <span class="n">V</span> <span class="o">=</span> <span class="n">pool</span><span class="p">(</span><span class="n">score_maps</span><span class="p">,</span> <span class="n">ROI</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">7</span><span class="cl">    <span class="n">class_scores</span> <span class="o">=</span> <span class="n">average</span><span class="p">(</span><span class="n">V</span><span class="p">)</span>
 </span></span><span class="line"><span class="ln">8</span><span class="cl">    <span class="n">class_probabilities</span> <span class="o">=</span> <span class="n">softmax</span><span class="p">(</span><span class="n">class_scores</span><span class="p">)</span>
 </span></span></code></pre></div><p>R-FCN chạy khá nhanh, nhưng độ chính xác thì thấp hơn một hút so với Faster R-CNN. Để ý kỹ đoạn mã giả ở trên, chúng ta phải trải qua 2 lần tính toán, một lần là tìm các ROIs, một lần là object detection. Thuật toán Single shot detector được đề xuất để sử dụng 1 lần tính toán.</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln">1</span><span class="cl"><span class="n">feature_maps</span> <span class="o">=</span> <span class="n">process</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
@@ -419,7 +424,7 @@ Trong bài viết này, chúng ta sẽ đề cập đến một số chiến lư
   </div>
   <div class="card-body">
     <ul class="post-list"><li>
-        <a href="/blog/2022-07-31-7-way-open-file/">5 Cách Mở File Trong Python
+        <a href="/blog/2022-07-31-5-way-open-file/">5 Cách Mở File Trong Python
 </a>
       </li><li>
         <a href="/blog/2022-02-25-normalization/">Các Kỹ Thuật Chuẩn Hóa Trong Deep Learning

@@ -236,7 +236,12 @@ HOME
     6 min read
   </span><span class="post-taxonomies"><a href="/tags/machine-learning/" class="badge post-taxonomy">Machine learning</a><a href="/tags/deeplearning/" class="badge post-taxonomy">Deeplearning</a><a href="/tags/stock-prediction/" class="badge post-taxonomy">stock prediction</a><a href="/tags/ch%E1%BB%A9ng-kho%C3%A1n/" class="badge post-taxonomy">chứng khoán</a></span>
 </div>
-<div class="post-content mb-3"><h2 id="lời-mở-đầu">Lời mở đầu<a class="anchor ms-1" href="#lời-mở-đầu"><i class="fas fa-link"></i></a></h2>
+<div class="post-content mb-3">
+      
+
+      <img width="100%" style="max-height:450px" src="https://source.unsplash.com/random/900×700"  alt="Dự đoán giá chứng khoán SP500 sử dụng LSTM"  />
+
+  <h2 id="lời-mở-đầu">Lời mở đầu<a class="anchor ms-1" href="#lời-mở-đầu"><i class="fas fa-link"></i></a></h2>
 <p>Ở bài viết này, mình sẽ xây dựng mô hình hơn giản để áp dụng vào tập dữ liệu giá chứng khoáng. Mục tiêu của bài này là chúng ta sẽ dự đoán chỉ số S&amp;P 500 sử dụng LSTM. Các bạn có nhu cầu tìm hiểu thêm về chỉ số sp 500 có thể đọc thêm ở <a href="https://vi.wikipedia.org/wiki/S%26P_500" target="_blank" rel="noopener noreferrer">https://vi.wikipedia.org/wiki/S%26P_500</a>. Đây là một ứng dụng nhỏ, không có ý nghĩa nhiều ở thực tế do khi phân tích chứng khoán, ta còn xét thêm rất nhiều yếu tố phụ nữa. Mô hình này thực chất chỉ là một trong những mô hình chơi chơi.</p>
 <h2 id="dẫn-nhập">Dẫn nhập<a class="anchor ms-1" href="#dẫn-nhập"><i class="fas fa-link"></i></a></h2>
 <h3 id="phân-tích-dữ-liệu">Phân tích dữ liệu<a class="anchor ms-1" href="#phân-tích-dữ-liệu"><i class="fas fa-link"></i></a></h3>
@@ -332,9 +337,9 @@ HOME
 </span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="k">def</span> <span class="nf">generate_data</span><span class="p">(</span><span class="n">stock_ds</span><span class="p">,</span> <span class="n">seq_len</span><span class="p">):</span>
 </span></span><span class="line"><span class="ln"> 3</span><span class="cl">   <span class="n">data_raw</span> <span class="o">=</span> <span class="n">stock_ds</span><span class="o">.</span><span class="n">as_matrix</span><span class="p">()</span>
 </span></span><span class="line"><span class="ln"> 4</span><span class="cl">   <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
-</span></span><span class="line"><span class="ln"> 5</span><span class="cl">   
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">
 </span></span><span class="line"><span class="ln"> 6</span><span class="cl">   <span class="c1"># create all possible sequences of length seq_len</span>
-</span></span><span class="line"><span class="ln"> 7</span><span class="cl">   <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data_raw</span><span class="p">)</span> <span class="o">-</span> <span class="n">seq_len</span><span class="p">):</span> 
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">   <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data_raw</span><span class="p">)</span> <span class="o">-</span> <span class="n">seq_len</span><span class="p">):</span>
 </span></span><span class="line"><span class="ln"> 8</span><span class="cl">       <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data_raw</span><span class="p">[</span><span class="n">index</span><span class="p">:</span> <span class="n">index</span> <span class="o">+</span> <span class="n">seq_len</span><span class="p">])</span>
 </span></span><span class="line"><span class="ln"> 9</span><span class="cl">   <span class="k">return</span> <span class="n">data</span>
 </span></span><span class="line"><span class="ln">10</span><span class="cl">
@@ -342,18 +347,18 @@ HOME
 </span></span><span class="line"><span class="ln">12</span><span class="cl"><span class="k">def</span> <span class="nf">generate_train_test</span><span class="p">(</span><span class="n">data_ds</span><span class="p">,</span><span class="n">split_percent</span><span class="o">=</span><span class="mf">0.8</span><span class="p">):</span>
 </span></span><span class="line"><span class="ln">13</span><span class="cl">   <span class="nb">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data_ds</span><span class="p">))</span>
 </span></span><span class="line"><span class="ln">14</span><span class="cl">   <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">data_ds</span><span class="p">)</span>
-</span></span><span class="line"><span class="ln">15</span><span class="cl">  
+</span></span><span class="line"><span class="ln">15</span><span class="cl">
 </span></span><span class="line"><span class="ln">16</span><span class="cl">   <span class="n">data_size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 </span></span><span class="line"><span class="ln">17</span><span class="cl">   <span class="n">train_end</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">split_percent</span><span class="o">*</span><span class="n">data_size</span><span class="p">))</span>
-</span></span><span class="line"><span class="ln">18</span><span class="cl">   
+</span></span><span class="line"><span class="ln">18</span><span class="cl">
 </span></span><span class="line"><span class="ln">19</span><span class="cl">   <span class="n">x_train</span> <span class="o">=</span> <span class="n">data</span><span class="p">[:</span><span class="n">train_end</span><span class="p">,:</span><span class="o">-</span><span class="mi">1</span><span class="p">,:]</span>
 </span></span><span class="line"><span class="ln">20</span><span class="cl">   <span class="n">y_train</span> <span class="o">=</span> <span class="n">data</span><span class="p">[:</span><span class="n">train_end</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,:]</span>
-</span></span><span class="line"><span class="ln">21</span><span class="cl">   
+</span></span><span class="line"><span class="ln">21</span><span class="cl">
 </span></span><span class="line"><span class="ln">22</span><span class="cl">
-</span></span><span class="line"><span class="ln">23</span><span class="cl">   
+</span></span><span class="line"><span class="ln">23</span><span class="cl">
 </span></span><span class="line"><span class="ln">24</span><span class="cl">   <span class="n">x_test</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">train_end</span><span class="p">:,:</span><span class="o">-</span><span class="mi">1</span><span class="p">,:]</span>
 </span></span><span class="line"><span class="ln">25</span><span class="cl">   <span class="n">y_test</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">train_end</span><span class="p">:,</span><span class="o">-</span><span class="mi">1</span><span class="p">,:]</span>
-</span></span><span class="line"><span class="ln">26</span><span class="cl">   
+</span></span><span class="line"><span class="ln">26</span><span class="cl">
 </span></span><span class="line"><span class="ln">27</span><span class="cl">   <span class="k">return</span> <span class="p">[</span><span class="n">x_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">x_test</span><span class="p">,</span> <span class="n">y_test</span><span class="p">]</span>
 </span></span><span class="line"><span class="ln">28</span><span class="cl">
 </span></span><span class="line"><span class="ln">29</span><span class="cl">
@@ -447,19 +452,19 @@ HOME
 </span></span></code></pre></div><p>Hiện đã có bản tensorflow 2 có tích hợp keras, mình update lại code</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln">  1</span><span class="cl">
 </span></span><span class="line"><span class="ln">  2</span><span class="cl"><span class="kn">from</span> <span class="nn">re</span> <span class="kn">import</span> <span class="n">T</span>
-</span></span><span class="line"><span class="ln">  3</span><span class="cl"><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span> 
-</span></span><span class="line"><span class="ln">  4</span><span class="cl"><span class="c1"># linear algebra </span>
-</span></span><span class="line"><span class="ln">  5</span><span class="cl"><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span> 
+</span></span><span class="line"><span class="ln">  3</span><span class="cl"><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+</span></span><span class="line"><span class="ln">  4</span><span class="cl"><span class="c1"># linear algebra</span>
+</span></span><span class="line"><span class="ln">  5</span><span class="cl"><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 </span></span><span class="line"><span class="ln">  6</span><span class="cl"><span class="kn">from</span> <span class="nn">tensorflow.keras.models</span> <span class="kn">import</span> <span class="n">Sequential</span>
 </span></span><span class="line"><span class="ln">  7</span><span class="cl"><span class="kn">from</span> <span class="nn">tensorflow.keras.layers</span> <span class="kn">import</span> <span class="n">Dense</span>
 </span></span><span class="line"><span class="ln">  8</span><span class="cl"><span class="kn">from</span> <span class="nn">tensorflow.keras.layers</span> <span class="kn">import</span> <span class="n">LSTM</span>
-</span></span><span class="line"><span class="ln">  9</span><span class="cl"><span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">MinMaxScaler</span> 
+</span></span><span class="line"><span class="ln">  9</span><span class="cl"><span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">MinMaxScaler</span>
 </span></span><span class="line"><span class="ln"> 10</span><span class="cl"><span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
 </span></span><span class="line"><span class="ln"> 11</span><span class="cl"><span class="kn">import</span> <span class="nn">joblib</span>
 </span></span><span class="line"><span class="ln"> 12</span><span class="cl">
 </span></span><span class="line"><span class="ln"> 13</span><span class="cl"><span class="kn">import</span> <span class="nn">matplotlib</span>
 </span></span><span class="line"><span class="ln"> 14</span><span class="cl"><span class="n">matplotlib</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="s1">&#39;TkAgg&#39;</span><span class="p">)</span>
-</span></span><span class="line"><span class="ln"> 15</span><span class="cl"><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span> 
+</span></span><span class="line"><span class="ln"> 15</span><span class="cl"><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 </span></span><span class="line"><span class="ln"> 16</span><span class="cl">
 </span></span><span class="line"><span class="ln"> 17</span><span class="cl">
 </span></span><span class="line"><span class="ln"> 18</span><span class="cl"><span class="n">file_name</span> <span class="o">=</span><span class="s1">&#39;GSPC.csv&#39;</span>
@@ -489,9 +494,9 @@ HOME
 </span></span><span class="line"><span class="ln"> 42</span><span class="cl">
 </span></span><span class="line"><span class="ln"> 43</span><span class="cl"><span class="c1">#data as numpy array</span>
 </span></span><span class="line"><span class="ln"> 44</span><span class="cl"><span class="k">def</span> <span class="nf">generate_train_test</span><span class="p">(</span><span class="n">data_x</span><span class="p">,</span><span class="n">data_y</span><span class="p">,</span><span class="n">split_percent</span><span class="o">=</span><span class="mf">0.8</span><span class="p">):</span>
-</span></span><span class="line"><span class="ln"> 45</span><span class="cl">   
+</span></span><span class="line"><span class="ln"> 45</span><span class="cl">
 </span></span><span class="line"><span class="ln"> 46</span><span class="cl">   <span class="n">train_end</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">split_percent</span><span class="o">*</span><span class="n">data_x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
-</span></span><span class="line"><span class="ln"> 47</span><span class="cl">   
+</span></span><span class="line"><span class="ln"> 47</span><span class="cl">
 </span></span><span class="line"><span class="ln"> 48</span><span class="cl">   <span class="n">x_train</span><span class="p">,</span><span class="n">x_test</span><span class="o">=</span><span class="n">data_x</span><span class="p">[:</span><span class="n">train_end</span><span class="p">,:],</span><span class="n">data_x</span><span class="p">[</span><span class="n">train_end</span><span class="p">:,:]</span>
 </span></span><span class="line"><span class="ln"> 49</span><span class="cl">   <span class="n">y_train</span><span class="p">,</span><span class="n">y_test</span> <span class="o">=</span> <span class="n">data_y</span><span class="p">[:</span><span class="n">train_end</span><span class="p">],</span><span class="n">data_y</span><span class="p">[</span><span class="n">train_end</span><span class="p">:]</span>
 </span></span><span class="line"><span class="ln"> 50</span><span class="cl">   <span class="k">return</span> <span class="n">x_train</span><span class="p">,</span><span class="n">y_train</span><span class="p">,</span><span class="n">x_test</span><span class="p">,</span><span class="n">y_test</span>
@@ -551,7 +556,7 @@ HOME
 </span></span><span class="line"><span class="ln">104</span><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="n">y_hat</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
 </span></span><span class="line"><span class="ln">105</span><span class="cl"><span class="c1"># y_hat = model.predict(x_test)</span>
 </span></span><span class="line"><span class="ln">106</span><span class="cl"><span class="c1"># import matplotlib</span>
-</span></span><span class="line"><span class="ln">107</span><span class="cl"><span class="c1"># matplotlib.use(&#39;GTKAgg&#39;) </span>
+</span></span><span class="line"><span class="ln">107</span><span class="cl"><span class="c1"># matplotlib.use(&#39;GTKAgg&#39;)</span>
 </span></span><span class="line"><span class="ln">108</span><span class="cl"><span class="c1"># print(&#39;plot&#39;)</span>
 </span></span><span class="line"><span class="ln">109</span><span class="cl">
 </span></span><span class="line"><span class="ln">110</span><span class="cl"><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span> <span class="n">y_test</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;target&#39;</span><span class="p">)</span>
@@ -632,7 +637,7 @@ HOME
   </div>
   <div class="card-body">
     <ul class="post-list"><li>
-        <a href="/blog/2022-07-31-7-way-open-file/">5 Cách Mở File Trong Python
+        <a href="/blog/2022-07-31-5-way-open-file/">5 Cách Mở File Trong Python
 </a>
       </li><li>
         <a href="/blog/2022-02-25-normalization/">Các Kỹ Thuật Chuẩn Hóa Trong Deep Learning
