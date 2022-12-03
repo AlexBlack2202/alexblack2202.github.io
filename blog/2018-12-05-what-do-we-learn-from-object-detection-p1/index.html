@@ -12,7 +12,7 @@
 <meta name="description" content="Ở bài viết này, chúng ta sẽ tìm hiểu khái niệm region based object detectors và ứng dụng của nó trên các thuật toán Faster R-CNN, R-FCN, FPN." /><meta name="robots" content="index, follow" /><meta itemprop="name" content="Tìm hiểu region based object detectors">
 <meta itemprop="description" content="Ở bài viết này, chúng ta sẽ tìm hiểu khái niệm region based object detectors và ứng dụng của nó trên các thuật toán Faster R-CNN, R-FCN, FPN."><meta itemprop="datePublished" content="2018-12-05T00:19:00+03:00" />
 <meta itemprop="dateModified" content="2018-12-05T00:19:00+03:00" />
-<meta itemprop="wordCount" content="2289"><meta itemprop="image" content="/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/anchorsbox_feature_map.png">
+<meta itemprop="wordCount" content="2264"><meta itemprop="image" content="/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/anchorsbox_feature_map.png">
 <meta itemprop="keywords" content="Machine learning,Deeplearning,object detector,region base," /><meta property="og:title" content="Tìm hiểu region based object detectors" />
 <meta property="og:description" content="Ở bài viết này, chúng ta sẽ tìm hiểu khái niệm region based object detectors và ứng dụng của nó trên các thuật toán Faster R-CNN, R-FCN, FPN." />
 <meta property="og:type" content="article" />
@@ -31,8 +31,7 @@
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
       aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
       <i class="fas fa-bars"></i>
-    </button><a class="navbar-brand flex-grow-1 flex-lg-grow-0 text-center text-lg-start mx-auto me-lg-3" href="/">1234
-<img class="logo" alt="Logo" src="/images/logo.webp" loading="lazy"  title="Logo"
+    </button><a class="navbar-brand flex-grow-1 flex-lg-grow-0 text-center text-lg-start mx-auto me-lg-3" href="/"><img class="logo" alt="Logo" src="/images/logo.webp" loading="lazy"  title="Logo"
    width="400" height="400"
    />
 HOME
@@ -239,37 +238,36 @@ HOME
 </div>
 <div class="post-content mb-3">
       
-      <img src="/thumbnails/sliding-window.jpg" alt="Tìm hiểu region based object detectors"   title="Tìm hiểu region based object detectors"/>
+      <figure>
+      <img src="/thumbnails/sliding-window.jpg" alt="Tìm hiểu region based object detectors"   />
+
+      <figcaption>Tìm hiểu region based object detectors</figcaption>
+    </figure>
       <h2 id="sliding-window-detectors">Sliding-window detectors<a class="anchor ms-1" href="#sliding-window-detectors"><i class="fas fa-link"></i></a></h2>
 <p>Bắt đầu từ năm 2012, sau khi mạng AlexNet giành giải nhất cuộc thi 2012 ILSVRC, mọi nghiên cứu về phân lớp dữ liệu đều sử dụng mạng CNN. Kể từ đó đến đây, CNN được coi như là thuật toán thống trị trên mọi publish paper về các bài toán phân lớp đối tượng. Trong khi đó, để nhận dạng 1 đối tượng trong ảnh, các đơn giản nhất là thiết lập một cửa sổ trượt có kích thước là window size trượt từ trái qua phải, từ trên xuống dưới, quét qua toàn bộ bức ảnh. Để phát hiện các đối tượng khác nhau ở các góc nhìn khác nhau, chúng ta sẽ sử dụng cửa sổ trượt có kích thước thay đổi  và ảnh đầu vào có kích thước thay đổi.</p>
-<p>1234
-<img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/sliding-window.gif" loading="lazy"  title="Hình ảnh"
+<p><img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/sliding-window.gif" loading="lazy"  title="Hình ảnh"
   
    />
 
 </p>
-<p>1234
-<img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/region-base-various-windowsize.png" loading="lazy"  title="Hình ảnh"
+<p><img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/region-base-various-windowsize.png" loading="lazy"  title="Hình ảnh"
   
    />
 
 </p>
-<p>1234
-<img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/region-base-various-windowsize1.jpg" loading="lazy"  title="Hình ảnh"
+<p><img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/region-base-various-windowsize1.jpg" loading="lazy"  title="Hình ảnh"
   
    />
 
 </p>
 <p>Dựa vào windowsize, chúng ta có thể cắt tấm hình bự thành các tấm hình nhỏ, sau đó sẽ rescale các phần nhỏ của bức ảnh thành các bức ảnh có kích thước cố định.</p>
-<p>1234
-<img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/fixed-size-image.jpg" loading="lazy"  title="Hình ảnh"
+<p><img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/fixed-size-image.jpg" loading="lazy"  title="Hình ảnh"
   
    />
 
 </p>
 <p>Các phần của bức ảnh sau đó sẽ được đem qua bộ phân lớp CNN để rút trích các đặc trưng, sau đó sử dụng một hàm phân lớp (như svm, logictic regression) để xác định lớp của bức hình và sử dụng linear regressor để tìm bao đóng của đối tượng.</p>
-<p>1234
-<img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/sliding-window-detector.png" loading="lazy"  title="Hình ảnh"
+<p><img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/sliding-window-detector.png" loading="lazy"  title="Hình ảnh"
   
    />
 
@@ -282,8 +280,7 @@ HOME
 <h2 id="selective-search">Selective Search<a class="anchor ms-1" href="#selective-search"><i class="fas fa-link"></i></a></h2>
 <p>Thay vì hướng tiếp cận brute force ở trên, chúng ta sử dụng phương pháp region proposal để tạo các region of interest (ROIs) để phát hiện đối tượng. Selective search là một phương pháp nằm trong nhóm region proposal. Trong phương pháp selective search(SS), chúng ta bắt đầu bằng cách xem các pixel là mỗi nhóm, các lần lặp tiếp theo, chúng ta sẽ tính khoảng cách ngữ nghĩa (ví dụ như là màu sắc, cường độ ánh sáng) giữa các nhóm và gom các nhóm có khoảng cách gần nhau về chung 1 nhóm để tìm ra phân vùng có khả năng cao nhất chứa đối tượng (ưu tiên gom những nhóm nhỏ trước).</p>
 <p>Như hình bên dưới, dòng đầu tiên, bức ảnh đâu tiên là ta có một vài nhóm nhỏ ở thời điểm X nào đó, ở hình thứ 2 là thực hiện gom nhớm theo cường độ màu sắc của hình số 1, và ở bước cuối cùng, ta thu được hình số 3. Những hình chữ nhật màu xanh ở dòng thứ 2 là những ROIS mô phỏng quá trình gom nhóm để tìm phân vùng có khả năng chứa đối tượng.</p>
-<p>1234
-<img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/selectivesearch.jpg" loading="lazy"  title="Hình ảnh"
+<p><img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/selectivesearch.jpg" loading="lazy"  title="Hình ảnh"
   
    />
 
@@ -291,15 +288,13 @@ HOME
 <em>selective search</em></p>
 <h2 id="mạng-r-cnn">Mạng R-CNN<a class="anchor ms-1" href="#mạng-r-cnn"><i class="fas fa-link"></i></a></h2>
 <p>Mạng R-CNN sử dụng phương pháp region proposal để tạo ra khoảng 2000 ROIs. Các vùng sau đó sẽ được rescale theo một kích thước cố định nào đó và được đưa vào mô hình CNN có lớp cuối cùng kà một full conected layer để phân lớp đối tượng và để lọc ra boundary box (bao đóng) của đối tượng.</p>
-<p>1234
-<img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/region-proposals-cnn.jpg" loading="lazy"  title="Hình ảnh"
+<p><img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/region-proposals-cnn.jpg" loading="lazy"  title="Hình ảnh"
   
    />
 
 
 <em>Mô phỏng việc sử dụng region proposal</em></p>
-<p>1234
-<img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/region-proposals-r-cnn.png" loading="lazy"  title="Hình ảnh"
+<p><img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/region-proposals-r-cnn.png" loading="lazy"  title="Hình ảnh"
   
    />
 
@@ -314,15 +309,13 @@ HOME
 <h2 id="mạng-fast-r-cnn">Mạng Fast R-CNN<a class="anchor ms-1" href="#mạng-fast-r-cnn"><i class="fas fa-link"></i></a></h2>
 <p>Trong thực tế, các phân vùng của mạng R-CNN bị chồng lấp một phần / toàn bộ với các phân vùng khác. Do đó, việc huấn luyện và thực thi ( inference ) mạng R-CNN diễn ra khá chậm. Nếu chúng ta có 2000 proposal của mạng R-CNN, chúng ta phải thực hiện 2000 lần việc rút trích đặc trưng, một con số khác lớn.</p>
 <p>Thay vì phải rút trích đặc trưng của mỗi proposal, chúng ta có thể dùng CNN rút trích đặc trưng của toàn bộ bức ảnh trước (được feature map), đồng thời rút trích các proposal, lấy các proposal tương ứng trên feature map, rescale và cuối cùng là phân lớp và tìm vị trí của object. Với việc không phải lặp lại 2000 lần việc rút trích đặc trưng, Fast R-CNN giảm thời gian xử lý một cách đáng kể.</p>
-<p>1234
-<img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/region-proposals-fast-r-cnn.jpg" loading="lazy"  title="Hình ảnh"
+<p><img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/region-proposals-fast-r-cnn.jpg" loading="lazy"  title="Hình ảnh"
   
    />
 
 
 <em>Mô phỏngviệc sử dụng propoxal trên feature map và các bước tiếp theo của Fast R-CNN</em></p>
-<p>1234
-<img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/region-proposals-fast-r-cnn-network-model.jpg" loading="lazy"  title="Hình ảnh"
+<p><img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/region-proposals-fast-r-cnn-network-model.jpg" loading="lazy"  title="Hình ảnh"
   
    />
 
@@ -339,8 +332,7 @@ HOME
 <h2 id="roi-pooling">ROI Pooling<a class="anchor ms-1" href="#roi-pooling"><i class="fas fa-link"></i></a></h2>
 <p>Vì Fast R-CNN sử dụng full connected layter ở lớp cuối, nên đòi hỏi input của chúng phải có kích thước cố định, nên ta phải resize lại feature về 1 kích thước cố định (do 2000 proposal có kích thước không cố định). Ở đây, các tác giả sử dụng ROI pooling để resize. Thuật toán ở đây được sử dụng như sau:</p>
 <p>Giả sử đơn giản là chúng ta có một proposal có kích thước 5x7, và chúng ta cần resize về hình dạng 2x2. Chúng ta xem kỹ hình bên dưới.</p>
-<p>1234
-<img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/roi-pooling-example.png" loading="lazy"  title="Hình ảnh"
+<p><img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/roi-pooling-example.png" loading="lazy"  title="Hình ảnh"
   
    />
 
@@ -359,15 +351,13 @@ HOME
 </span></span><span class="line"><span class="ln">4</span><span class="cl">   <span class="n">patch</span> <span class="o">=</span> <span class="n">roi_pooling</span><span class="p">(</span><span class="n">feature_maps</span><span class="p">,</span> <span class="n">ROI</span><span class="p">)</span>
 </span></span><span class="line"><span class="ln">5</span><span class="cl">   <span class="n">results</span> <span class="o">=</span> <span class="n">detector2</span><span class="p">(</span><span class="n">patch</span><span class="p">)</span>
 </span></span></code></pre></div><p>Thuật toán Faster R-CNN sử dụng mô hình gần như tương tự Fast R-CNN, ngoài việc sử dụng thuật toán interal deep network thay cho selective search để tìm region proposal. Thuật toán mới chạy hiệu quả hơn khi tìm tất cả các ROIs trên mỗi bức ảnh với tốc độ 10ms/</p>
-<p>1234
-<img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/region-proposals-fater-r-cnn.png" loading="lazy"  title="Hình ảnh"
+<p><img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/region-proposals-fater-r-cnn.png" loading="lazy"  title="Hình ảnh"
   
    />
 
 
 <em>Mô hình của Faster R-CNN</em></p>
-<p>1234
-<img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/region-proposals-fater-r-cnn-model.jpg" loading="lazy"  title="Hình ảnh"
+<p><img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/region-proposals-fater-r-cnn-model.jpg" loading="lazy"  title="Hình ảnh"
   
    />
 
@@ -375,15 +365,13 @@ HOME
 <em>Đồ hình của Faster R-CNN</em></p>
 <h2 id="region-proposal-network">Region proposal network<a class="anchor ms-1" href="#region-proposal-network"><i class="fas fa-link"></i></a></h2>
 <p>Mạng region proposal sử dụng feature map làm input đầu vào (như hình trên đã mô phỏng). Mạng sử dụng 1 bộ lọc 3x3, sau đó là một mô hình CNN như ZF hoặc VGG hoặc ResNet ( mô hình càng phức tạp thì độ chính xác cao, nhưng bù lại thời gian tìm kiếm sẽ lâu hơn) để dự đoán boundary box và object score (để xét xem trong bodary box trên có chứa đối tượng hay không. Trong thực tế, mạng Faster R-CNN trả về 2 lớp, lớp thứ nhất là có chứa object, lớp thứ 2 là không chứa object ( ví dụ lớp màu nền - background, lớp abc gì gì đó)) .</p>
-<p>1234
-<img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/region-proposals-r-cnn-example.jpg" loading="lazy"  title="Hình ảnh"
+<p><img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/region-proposals-r-cnn-example.jpg" loading="lazy"  title="Hình ảnh"
   
    />
 
 
 <em>Ví dụ Region proposal network</em></p>
-<p>1234
-<img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/region-proposal-network-1.jpg" loading="lazy"  title="Hình ảnh"
+<p><img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/region-proposal-network-1.jpg" loading="lazy"  title="Hình ảnh"
   
    />
 
@@ -393,8 +381,7 @@ HOME
 <p>Hình 1: ta có feature map với kích thước 8x8, vùng hình vuông được tô là filter đang xét có kích thước 3x3.
 Hình 2: Giả sử xét điểm có chấm xanh. Tại điểm đó, ta có k=3 sau khi chạy RPN, và ta được 3 hình chữ nhật như hình.</p>
 <p>Tuy nhiên, tại mỗi điểm, ta chỉ cần 1 boundary box tốt nhất. Cách đơn giản nhất là chọn ngẫu nhiên 1 cái. Nhưng như vậy thì ngay từ đầu ta chọn k=1 luôn cho khoẻ, mắc công gì phải chọn k=3. Trong thực tế, Faster R-CNN không sử dụng phương pháp random select. Thay vào đó, thuật toán một reference boxs hay còn được gọi với tên là anchors và tìm mức độ liên quan của k boundary box với k reference boxs và chọn ra boundary box có độ liên quan lớn nhất.</p>
-<p>1234
-<img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/anchors-box.png" loading="lazy"  title="Hình ảnh"
+<p><img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/anchors-box.png" loading="lazy"  title="Hình ảnh"
   
    />
 
@@ -402,8 +389,7 @@ Hình 2: Giả sử xét điểm có chấm xanh. Tại điểm đó, ta có k=3
 <em>Ví dụ anchors box</em></p>
 <p>Các anchors này được lựa chọn trước đó và được xem là config của mô hình. Faster R-CNN sử dụng 9 anchor boxs (tương ứng với k =3) với 3 box đầu tiên có tỷ lệ width, height khác nhau (ví dụ 2x3, 3x3, 3x2), tiếp đó sẽ scale các box trên với các tỷ lệ khác khau (ví dụ 1.5,3,7) để đạt được 9 anchor boxs.</p>
 <p>Vì mỗi điểm sử dụng 9 anchors, nên ta có tổng cộng 2x9 score và 4x9 location (toạ độ)</p>
-<p>1234
-<img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/anchorsbox_feature_map.png" loading="lazy"  title="Hình ảnh"
+<p><img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/anchorsbox_feature_map.png" loading="lazy"  title="Hình ảnh"
   
    />
 
@@ -411,16 +397,14 @@ Hình 2: Giả sử xét điểm có chấm xanh. Tại điểm đó, ta có k=3
 <p>Anchor box có thể được goijlaf priors hoặc default boundary boxes trong mỗi bài báo khác nhau.</p>
 <h2 id="hiệu-năng-của-mô-hình-r-cnn">Hiệu năng của mô hình R-CNN<a class="anchor ms-1" href="#hiệu-năng-của-mô-hình-r-cnn"><i class="fas fa-link"></i></a></h2>
 <p>Hình bên dưới mô tả benchmark của các mô hình dẫn xuất từ R-CNN, ta thấy Faster R-CNN có tốc độ tốt nhất.</p>
-<p>1234
-<img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/f-rcnn-performance.jpg" loading="lazy"  title="Hình ảnh"
+<p><img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/f-rcnn-performance.jpg" loading="lazy"  title="Hình ảnh"
   
    />
 
 </p>
 <h2 id="region-based-fully-convolutional-networks">Region-based Fully Convolutional Networks<a class="anchor ms-1" href="#region-based-fully-convolutional-networks"><i class="fas fa-link"></i></a></h2>
 <p>Giả sử chúng ta chỉ có toạ độ của mắt phải trong khuôn mặt, chúng ta có thể nội suy ra được vị trí của khuôn mặt. Vì ta biết rằng mắt phải nằm ở vị trí trái trái trong bức hình, và ta từ đó suy ra vị trí của các phần còn lại (xem hình).</p>
-<p>1234
-<img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/f-rcnn-image1.jpg" loading="lazy"  title="Hình ảnh"
+<p><img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/f-rcnn-image1.jpg" loading="lazy"  title="Hình ảnh"
   
    />
 
@@ -442,45 +426,39 @@ Hình 2: Giả sử xét điểm có chấm xanh. Tại điểm đó, ta có k=3
 </span></span><span class="line"><span class="ln">6</span><span class="cl">    <span class="n">class_scores</span><span class="p">,</span> <span class="n">box</span> <span class="o">=</span> <span class="n">average</span><span class="p">(</span><span class="n">V</span><span class="p">)</span>                   <span class="c1"># Much simpler, faster.</span>
 </span></span><span class="line"><span class="ln">7</span><span class="cl">    <span class="n">class_probabilities</span> <span class="o">=</span> <span class="n">softmax</span><span class="p">(</span><span class="n">class_scores</span><span class="p">)</span>
 </span></span></code></pre></div><p>Xét feature map M có kích thước 5x5, trong đó có chứa một hình vuông màu xanh, hình vuông xanh là đối tượng thực tế ta cần tìm.</p>
-<p>1234
-<img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/region-proposals-r-cnn-example1.jpg" loading="lazy"  title="Hình ảnh"
+<p><img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/region-proposals-r-cnn-example1.jpg" loading="lazy"  title="Hình ảnh"
   
    />
 
 </p>
 <p>Ta chia hình vuông thành phân vùng có kích thước 3x3 (hình 2). Sau đó, chúng ta tạo một feature mới để từ M để tìm ra góc trái trên của hình vuông (chỉ tìm góc trái trên) (hình 3). Feature map mới giống hình thứ 3, chỉ có ô được tô màu vàng ở vị trí [2,2] được bật.</p>
 <p>Với mỗi 9 phần của hình vuông, chúng ta có 9 feature map cho mỗi phần, nhận dạng 9 vùng tương ứng cho một đối tượng. Những feature map này được gọi là position sensitive score map, bởi vì chúng detect ra điểm (score) và sub region của một đối tượng (Xem hình bên dưới).</p>
-<p>1234
-<img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/region-proposals-r-cnn-example2.jpg" loading="lazy"  title="Hình ảnh"
+<p><img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/region-proposals-r-cnn-example2.jpg" loading="lazy"  title="Hình ảnh"
   
    />
 
 </p>
 <p>Xét ảnh bên dưới, giả sử vùng được tô gạch đỏ là proposal (hình 1). Chúng ta cũng chia nó thành những phân vùng con có kích thước 3x3 (hình 2). Và tìm xem mức độ giống nhau của mỗi vùng con của proposal và vùng con của feature map như thế nào. Kết quả sẽ được lưu vào một ma trận 3x3 như hình số 3.</p>
-<p>1234
-<img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/region-proposals-r-cnn-example3.jpg" loading="lazy"  title="Hình ảnh"
+<p><img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/region-proposals-r-cnn-example3.jpg" loading="lazy"  title="Hình ảnh"
   
    />
 
 </p>
 <p>Quá trình ánh xạ điểm từ score maps và ROIS vào mảng vote_array được gọi là position sensitive ROI pool.</p>
-<p>1234
-<img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/region-proposals-r-cnn-example4.png" loading="lazy"  title="Hình ảnh"
+<p><img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/region-proposals-r-cnn-example4.png" loading="lazy"  title="Hình ảnh"
   
    />
 
 </p>
 <p>Sau khi tính toán hết các giá trị của position-sensitive ROI pool, chúng ta sẽ tính trung bình của vote_array để lấy điểm của lớp (class score).</p>
-<p>1234
-<img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/region-proposals-r-cnn-example5.png" loading="lazy"  title="Hình ảnh"
+<p><img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/region-proposals-r-cnn-example5.png" loading="lazy"  title="Hình ảnh"
   
    />
 
 </p>
 <p>Giả sử mô hình chúng ta phải nhận dạng k lớp, do có thêm lớp background nên chúng ta có tổng cộng k+1 lớp. Với mỗi lớp chúng ta có 3x3 score map, suy ra chúng ta có tổng cộng là (k+1)x3x3 score maps, (k+1) điểm, và dùng softmax ta sẽ thu được xác suất của mỗi lớp.</p>
 <p>Luồng dữ liệu của mô hình</p>
-<p>1234
-<img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/region-proposals-r-cnn-data-flow.png" loading="lazy"  title="Hình ảnh"
+<p><img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/region-proposals-r-cnn-data-flow.png" loading="lazy"  title="Hình ảnh"
   
    />
 
@@ -515,8 +493,7 @@ Hình 2: Giả sử xét điểm có chấm xanh. Tại điểm đó, ta có k=3
     
     <section class="card row text-center profile component">
   <div class="card-body">
-    <div class="col-12 d-flex align-items-center justify-content-center">1234
-<img class="profile-avatar rounded-circle" alt="Đặng Thị Hằng | Phạm Duy Tùng" src="/images/profile.webp" loading="lazy"  title="Đặng Thị Hằng | Phạm Duy Tùng"
+    <div class="col-12 d-flex align-items-center justify-content-center"><img class="profile-avatar rounded-circle" alt="Đặng Thị Hằng | Phạm Duy Tùng" src="/images/profile.webp" loading="lazy"  title="Đặng Thị Hằng | Phạm Duy Tùng"
    width="736" height="920"
    />
 </div>
