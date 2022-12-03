@@ -31,10 +31,12 @@
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
       aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
       <i class="fas fa-bars"></i>
-    </button><a class="navbar-brand flex-grow-1 flex-lg-grow-0 text-center text-lg-start mx-auto me-lg-3" href="/"><img class="logo" alt="Logo" src="/images/logo.webp" loading="lazy"  title="Logo"
+    </button><a class="navbar-brand flex-grow-1 flex-lg-grow-0 text-center text-lg-start mx-auto me-lg-3" href="/"><figure>
+<img class="logo" alt="Logo" src="/images/logo.webp" loading="lazy"  title="Logo"
    width="400" height="400"
    />
-HOME
+  <figcaption></figcaption>
+</figure>HOME
     </a>
     <div class="offcanvas offcanvas-bottom surface" tabindex="-1" id="offcanvasSocialShare" aria-labelledby="offcanvasSocialShare">
   <div class="offcanvas-header">
@@ -248,20 +250,24 @@ HOME
 Trong bài viết này, chúng ta sẽ đề cập đến một số chiến lược lựa chọn mô hình cho bài toán object detector và một số benchmarks do team Google Research thực hiện.</p>
 <h2 id="box-encoding-và-loss-function">Box encoding và loss function<a class="anchor ms-1" href="#box-encoding-và-loss-function"><i class="fas fa-link"></i></a></h2>
 <p>Có rất nhiều hàm lỗi và box encoding được sử dụng trong các thuật toán phát hiện đối tượng. Ví dụ, SSD trả ra căn bậc hai của Width và height để giảm tỷ lệ độ lỗi.</p>
-<p><img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-10-design-choices-lessons-learned-and-trends-for-object-detections/box_encoding_architerch.jpg" loading="lazy"  title="Hình ảnh"
+<p><figure>
+<img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-10-design-choices-lessons-learned-and-trends-for-object-detections/box_encoding_architerch.jpg" loading="lazy"  title="Hình ảnh"
   
    />
-
+  <figcaption></figcaption>
+</figure>
 </p>
 <p>Các bạn có thể để ý kỹ hơn SSD phiên bản custom không sử dụng cặp toạ độ trái trên - phải dưới mà là cặp tâm - căn bậc hai của with, căn bậc hai của height. Một số thuật toán lại dùng log width, log height, một số lại dùng tâm là Wc/Wa, Wy/ha, với Wc và Wy là toạ độ tâm của đối tượng, wa và ha là chiều dài và rộng của anchor khớp nhất (matching anchor). Các bạn có thể tham khảo thêm ở <a href="https://arxiv.org/pdf/1611.10012.pdf" target="_blank" rel="noopener noreferrer">https://arxiv.org/pdf/1611.10012.pdf</a>.</p>
 <p>Để huấn luyện mô hình tốt hơn, Các nhà nghiên cứu sử dụng các trọng số khác nhau cho các hàm lỗi, YOLO và một ví dụ minh hoạ.</p>
 <h2 id="feature-extraction">Feature extraction<a class="anchor ms-1" href="#feature-extraction"><i class="fas fa-link"></i></a></h2>
 <p>Trong thực tế, Feature extraction ảnh hưởng lớn trên 2 phần tradeoff là độ chính xác và tốc độ. Nhóm thuật toán ResNet và Inception đi theo tiêu chí là độ chính xác quan trọng hơn tốc độ (và quả thật nhóm thuật toán thuộc họ này có độ chính xác khá cao). MobileNet cung cấp cho chúng ta một mô hình khá nhỏ gọn, sử dụng SSD, mục tiêu của nhóm này là có thể xử lý được trên các thiết bị di động và thời gian xử lý là realtime.</p>
 <h2 id="feature-extractor-accuracy">Feature extractor accuracy<a class="anchor ms-1" href="#feature-extractor-accuracy"><i class="fas fa-link"></i></a></h2>
-<p><img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-10-design-choices-lessons-learned-and-trends-for-object-detections/feature_extraction_accuracy.jpg" loading="lazy"  title="Hình ảnh"
+<p><figure>
+<img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-10-design-choices-lessons-learned-and-trends-for-object-detections/feature_extraction_accuracy.jpg" loading="lazy"  title="Hình ảnh"
   
    />
-
+  <figcaption></figcaption>
+</figure>
 </p>
 <p>Nhìn vào hình trên, chúng ta có thể thấy rõ ràng rằng Faster R-CNN và R-FCN đều cho độ chính xác khá tốt trên feature extraction. Ngược lại SSD có kết quả khá tệ.</p>
 <h2 id="non-max-suppression-nms">Non-max suppression (nms)<a class="anchor ms-1" href="#non-max-suppression-nms"><i class="fas fa-link"></i></a></h2>
@@ -272,33 +278,41 @@ Trong bài viết này, chúng ta sẽ đề cập đến một số chiến lư
 <p>Thuật toán thuộc nhóm single shot thường có tuỳ chọn layter feature map nào được sử dụng để nhận dạng đối tượng. Feature map có stride là 2 nếu chúng ta thực hiện giảm 2 lần độ phân giải. Feature map có độ phân giải thấp thường giữ lại những thông tin đặc trưng tốt của đối tượng và giúp cho detector thực hiện tốt hơn. Tuy nhiên, những đối tượng có kính thước nhỏ sẽ bị mất thông tin trầm trọng và khó để phát hiện ra chúng.</p>
 <h2 id="speed-vs-accuracy">Speed v.s. accuracy<a class="anchor ms-1" href="#speed-vs-accuracy"><i class="fas fa-link"></i></a></h2>
 <p>Thật khó để trả lời rằng thuật toán nhận dạng đối tượng nào tốt hơn, mà câu trả lời phụ thuộc vào bài toán của bạn đang gặp. Nếu bài toán cần độ chính xác cao, hãy sử dụng ResNet hoặc Inception, nếu bạn cần chạy realtime và độ chính xác tạm chấp nhận, hãy sử dụng MobileNet hoặc YOLO. Không có (chưa có - ít nhất đến thời điểm hiện tại) có thuật toán nào đáp ứng cả 2 tiêu chí là vừa có độ chính xác cao, vừa chạy nhanh cả. Đó là một tradeoff giữa Speed và Accuracy.</p>
-<p><img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-10-design-choices-lessons-learned-and-trends-for-object-detections/gpu-time-resnet-inception-mobilenet.jpg" loading="lazy"  title="Hình ảnh"
+<p><figure>
+<img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-10-design-choices-lessons-learned-and-trends-for-object-detections/gpu-time-resnet-inception-mobilenet.jpg" loading="lazy"  title="Hình ảnh"
   
    />
-
+  <figcaption></figcaption>
+</figure>
 </p>
 <h2 id="object-size">Object size<a class="anchor ms-1" href="#object-size"><i class="fas fa-link"></i></a></h2>
 <p>Với những hình ảnh có kích thước lớn, SSD thực hiện rút trích đặc trưng rất tốt (nên nhớ rằng mô hình rút trích đặc trưng của SSD rất đơn giản). Với những hình ảnh dạng này, SSD có thể so sánh với các thuật toán khác khác về độ chính xác.</p>
 <p>Với nhưng hình ảnh có kích thước nhỏ, chúng ta không nên/không bao giờ xài SSD.</p>
-<p><img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-10-design-choices-lessons-learned-and-trends-for-object-detections/object_size_compatiple.jpg" loading="lazy"  title="Hình ảnh"
+<p><figure>
+<img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-10-design-choices-lessons-learned-and-trends-for-object-detections/object_size_compatiple.jpg" loading="lazy"  title="Hình ảnh"
   
    />
-
+  <figcaption></figcaption>
+</figure>
 </p>
 <p>Nhìn hình ở trên, chúng ta thấy rõ độ chính xác của SSD và các thuật oán khác trên các tập dữ liệu có kích thước khác nhau. Và phụ thuộc vào kích thước dữ liệu của bạn để chọn ra mô hình tối ưu nhất.</p>
 <h2 id="input-image-resolution">Input image resolution<a class="anchor ms-1" href="#input-image-resolution"><i class="fas fa-link"></i></a></h2>
-<p><img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-10-design-choices-lessons-learned-and-trends-for-object-detections/resolution_reduce.jpg" loading="lazy"  title="Hình ảnh"
+<p><figure>
+<img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-10-design-choices-lessons-learned-and-trends-for-object-detections/resolution_reduce.jpg" loading="lazy"  title="Hình ảnh"
   
    />
-
+  <figcaption></figcaption>
+</figure>
 </p>
 <p>Nhìn hình trên các bạn cũng có thể nhìn thấy rõ. Ảnh có độ phân giải lớn giúp nhận dạng đối tượng tốt hơn rất nhiều so với ảnh có độ phân giải nhỏ. Khi giảm 2 lần độ phân giải trên mỗi chiều (từ 600x600 xuống còn 300x300), trung bình độ chính xác giảm 15.88% trong quá trình huấn luyện, và trung bình giảm 27.4% trong inference.</p>
 <h2 id="number-of-proposals">Number of proposals<a class="anchor ms-1" href="#number-of-proposals"><i class="fas fa-link"></i></a></h2>
 <p>Số lượng proposal được sinh ra ảnh hưởng trực tiếp đến tốc độ của nhóm R-CNN. Ví dụ, Faster R-CNN có thể tăng tốc độ nhận dạng đối tượng gấp 3 lần nếu ta chỉ sử dụng 50 proposal thay vì 300 proposal. Độ chính xác chỉ giảm 4%</p>
-<p><img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-10-design-choices-lessons-learned-and-trends-for-object-detections/number-proposal-f-rcnn.jpg" loading="lazy"  title="Hình ảnh"
+<p><figure>
+<img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-10-design-choices-lessons-learned-and-trends-for-object-detections/number-proposal-f-rcnn.jpg" loading="lazy"  title="Hình ảnh"
   
    />
-
+  <figcaption></figcaption>
+</figure>
 </p>
 <p>Hình trên, đường nét liền mô tả độ chính xác khi tăng số lượng proposal. Đường nét đứt thể hiện thời gian xử láy tăng khi tăng số lượng proposal.</p>
 <h2 id="điểm-danh-danh-lại-các-bước-phát-triển-của-object-detection">Điểm danh danh lại các bước phát triển của object detection<a class="anchor ms-1" href="#điểm-danh-danh-lại-các-bước-phát-triển-của-object-detection"><i class="fas fa-link"></i></a></h2>
@@ -385,10 +399,12 @@ Trong bài viết này, chúng ta sẽ đề cập đến một số chiến lư
     
     <section class="card row text-center profile component">
   <div class="card-body">
-    <div class="col-12 d-flex align-items-center justify-content-center"><img class="profile-avatar rounded-circle" alt="Đặng Thị Hằng | Phạm Duy Tùng" src="/images/profile.webp" loading="lazy"  title="Đặng Thị Hằng | Phạm Duy Tùng"
+    <div class="col-12 d-flex align-items-center justify-content-center"><figure>
+<img class="profile-avatar rounded-circle" alt="Đặng Thị Hằng | Phạm Duy Tùng" src="/images/profile.webp" loading="lazy"  title="Đặng Thị Hằng | Phạm Duy Tùng"
    width="736" height="920"
    />
-</div>
+  <figcaption></figcaption>
+</figure></div>
     <div class="col-12 profile-meta"><div class="profile-name">Đặng Thị Hằng | Phạm Duy Tùng</div><div class="profile-bio">Gopher, CShaper, Pythoner, Full Stack Engineer.</div><div class="profile-company"><i class="fas fa-fw fa-building"></i>MWG</div><div class="profile-location"><i class="fas fa-fw fa-map-marker-alt"></i>Earth</div><div class="profile-about"><i class="fas fa-fw fa-user"></i><a href="/about/">About</a></div><div class="profile-contact"><i class="fas fa-fw fa-question-circle"></i><a href="/contact/">Contact Us</a></div>
 </div>
   </div>
