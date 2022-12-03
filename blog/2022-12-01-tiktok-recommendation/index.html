@@ -12,7 +12,7 @@
 <meta name="description" content="Nhân dịp đầu tháng, mình khai bút với chủ đề Real Time Recommendation. Paper này mình đọc cũng khá lâu rồi, giờ mới có dịp note lại chia sẻ. Các kỹ sư của ByteDance vừa mới cung cấp một paper nêu ra một vài hướng nghiên cứu của họ về Real Time Recommendation mà họ đã áp dụng thành công trong sản phẩm tiktok. Chủ đề này liên quan nhiều đến MLOpts - xây dựng kiến trúc hệ thống." /><meta name="robots" content="index, follow" /><meta itemprop="name" content="Tiktol Real Time Recommendation">
 <meta itemprop="description" content="Nhân dịp đầu tháng, mình khai bút với chủ đề Real Time Recommendation. Paper này mình đọc cũng khá lâu rồi, giờ mới có dịp note lại chia sẻ. Các kỹ sư của ByteDance vừa mới cung cấp một paper nêu ra một vài hướng nghiên cứu của họ về Real Time Recommendation mà họ đã áp dụng thành công trong sản phẩm tiktok. Chủ đề này liên quan nhiều đến MLOpts - xây dựng kiến trúc hệ thống."><meta itemprop="datePublished" content="2022-12-01T00:19:00+03:00" />
 <meta itemprop="dateModified" content="2022-12-01T00:19:00+03:00" />
-<meta itemprop="wordCount" content="4758">
+<meta itemprop="wordCount" content="4589">
 <meta itemprop="keywords" content="machine learning,normalization,deep learning," /><meta property="og:title" content="Tiktol Real Time Recommendation" />
 <meta property="og:description" content="Nhân dịp đầu tháng, mình khai bút với chủ đề Real Time Recommendation. Paper này mình đọc cũng khá lâu rồi, giờ mới có dịp note lại chia sẻ. Các kỹ sư của ByteDance vừa mới cung cấp một paper nêu ra một vài hướng nghiên cứu của họ về Real Time Recommendation mà họ đã áp dụng thành công trong sản phẩm tiktok. Chủ đề này liên quan nhiều đến MLOpts - xây dựng kiến trúc hệ thống." />
 <meta property="og:type" content="article" />
@@ -31,11 +31,10 @@
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
       aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
       <i class="fas fa-bars"></i>
-    </button><a class="navbar-brand flex-grow-1 flex-lg-grow-0 text-center text-lg-start mx-auto me-lg-3" href="/"><figure>
-<img class="logo" alt="Logo" src="/images/logo.webp" loading="lazy"  title="Logo"
+    </button><a class="navbar-brand flex-grow-1 flex-lg-grow-0 text-center text-lg-start mx-auto me-lg-3" href="/"><img class="logo" alt="Logo" src="/images/logo.webp" loading="lazy"  title="Logo"
    width="400" height="400"
    />
-  <figcaption style="text-align: center;"><b>Logo</b></figcaption></figure>HOME
+HOME
     </a>
     <div class="offcanvas offcanvas-bottom surface" tabindex="-1" id="offcanvasSocialShare" aria-labelledby="offcanvasSocialShare">
   <div class="offcanvas-header">
@@ -234,16 +233,13 @@
   <span class="post-date" title="created on 2022-12-01 04:19:00 &#43;0700 &#43;07.">
     Dec 1, 2022
   </span><span class="post-reading-time">
-    23 min read
+    22 min read
   </span><span class="post-taxonomies"><a href="/tags/machine-learning/" class="badge post-taxonomy">Machine learning</a><a href="/tags/normalization/" class="badge post-taxonomy">normalization</a><a href="/tags/deep-learning/" class="badge post-taxonomy">Deep learning</a></span>
 </div>
 <div class="post-content mb-3">
       
-      <figure>
       <img src="//images.unsplash.com/photo-1627873649417-c67f701f1949" alt="Tiktol Real Time Recommendation"   />
 
-      <figcaption>Tiktol Real Time Recommendation</figcaption>
-    </figure>
       <p>Như các bạn đã biết, tiktok hiện nay là một ứng dụng giải trí phổ biến và đứng top 1 trong số lượt tải xuống từ CH play và AppStore. Thành công của tiktok là do họ đã xây dựng khá thành công thuật toán gợi ý video cho người dùng, làm cho người dùng &ldquo;cuốn&rdquo; vào các video họ đề xuất, mà không biết chán. Ngày 27/09/2022, họ đã công bố bài báo có tự đề Monolith: Real Time Recommendation System With Collisionless Embedding Table tại địa chỉ <a href="https://arxiv.org/pdf/2209.07663.pdf" target="_blank" rel="noopener noreferrer">https://arxiv.org/pdf/2209.07663.pdf</a>. Chủ đề này khá nặng về khả năng xây dựng hệ thống để làm sao đạt được mô hình chất lượng với thời gian near-realtime. Để có thể hiểu sâu bài này, các bạn có nên có kiến thức về Recurrent Neural Networks for Recommendations.</p>
 <div class="toc">
     <nav id="TableOfContents">
@@ -313,11 +309,10 @@
 </li>
 </ul>
 <h1 id="1-phần-giới-thiệu">1. Phần giới thiệu<a class="anchor ms-1" href="#1-phần-giới-thiệu"><i class="fas fa-link"></i></a></h1>
-<p><figure>
-<img class="img-fluid" alt="Hình 1: Monolith Online Training Architecture - Hình ảnh được cắt từ paper" src="/blog/2022-12-01-tiktok-recommendation/images/figure1.png" loading="lazy"  title="Hình 1: Monolith Online Training Architecture - Hình ảnh được cắt từ paper"
+<p><img class="img-fluid" alt="Hình 1: Monolith Online Training Architecture - Hình ảnh được cắt từ paper" src="/blog/2022-12-01-tiktok-recommendation/images/figure1.png" loading="lazy"  title="Hình 1: Monolith Online Training Architecture - Hình ảnh được cắt từ paper"
   
    />
-  <figcaption style="text-align: center;"><b>Hình 1: Monolith Online Training Architecture - Hình ảnh được cắt từ paper</b></figcaption></figure>
+
 </p>
 <p>Data của recommendation khác xa data của language modeling hoặc  computer vision ở 2 khía cạnh:</p>
 <ol>
@@ -356,20 +351,18 @@ for YouTube Recommendations. Proceedings of the 10th ACM Conference on Recommend
 </ol>
 <p>Dựa vào kiến trúc này, mô hình monolith vượt trội hơn so với các hệ thống sử dụng collisions hash table với dung lượng bộ nhớ sử dụng là tương đương nhau</p>
 <h1 id="2-design-colisionless-hash-table-và-online-training">2. Design colisionless Hash Table và Online Training<a class="anchor ms-1" href="#2-design-colisionless-hash-table-và-online-training"><i class="fas fa-link"></i></a></h1>
-<p><figure>
-<img class="img-fluid" alt="Hình 2: Worker-PS Architecture - Hình ảnh được cắt từ paper" src="/blog/2022-12-01-tiktok-recommendation/images/figure2.png" loading="lazy"  title="Hình 2: Worker-PS Architecture - Hình ảnh được cắt từ paper"
+<p><img class="img-fluid" alt="Hình 2: Worker-PS Architecture - Hình ảnh được cắt từ paper" src="/blog/2022-12-01-tiktok-recommendation/images/figure2.png" loading="lazy"  title="Hình 2: Worker-PS Architecture - Hình ảnh được cắt từ paper"
   
    />
-  <figcaption style="text-align: center;"><b>Hình 2: Worker-PS Architecture - Hình ảnh được cắt từ paper</b></figcaption></figure>
+
 </p>
 <p>Kiến trúc của Monolith sử dụng TensorFlow’s distributed Worker-ParameterServer (Worker-PS) như hình trên.  Trong mô hình, các máy được phân công với các nhiệm vụ khác nhau. Worker machine chịu trách nhiệm tính toán  theo định nghĩa trước, PS machine lưu trữ các tham số và cập nhật kết quả tham số theo workers.</p>
 <p>Trong mô hình recommendation, các tham số được phân loại làm hai nhóm: nhóm dense và nhóm sparse.  Các tham số Dense là các trọng số của mô hình DNN, các tham số sparse tham chiếu tới embedding table tương ứng với các sparse feature. Cả Dense parameter và sparse parameter đều là các phần của TensorFlow Graph, và được lưu trữ trên parameters servers.</p>
 <h2 id="21-xây-dựng-hash-table">2.1 Xây dựng Hash Table<a class="anchor ms-1" href="#21-xây-dựng-hash-table"><i class="fas fa-link"></i></a></h2>
-<p><figure>
-<img class="img-fluid" alt="Hình 3: Cuckoo HashMap. - Hình ảnh được cắt từ paper" src="/blog/2022-12-01-tiktok-recommendation/images/figure3.png" loading="lazy"  title="Hình 3: Cuckoo HashMap. - Hình ảnh được cắt từ paper"
+<p><img class="img-fluid" alt="Hình 3: Cuckoo HashMap. - Hình ảnh được cắt từ paper" src="/blog/2022-12-01-tiktok-recommendation/images/figure3.png" loading="lazy"  title="Hình 3: Cuckoo HashMap. - Hình ảnh được cắt từ paper"
   
    />
-  <figcaption style="text-align: center;"><b>Hình 3: Cuckoo HashMap. - Hình ảnh được cắt từ paper</b></figcaption></figure>
+
 </p>
 <p>Nguyên tắc đầu tiên để xây dựng các tham số biểu diễn tính thưa là tránh thu gọn thông tin từ các IDs khác nhau về cùng một fixed-sze embedding.</p>
 <p>Việc xây dựng một embedding table sử dụng TensorFlow Variable sẽ dẫn đến việc đụng độ ID khi số lượng ID mới và table tăng lênh. Do đó, thay vì xây embedding table dựa trên Variable, tác giả đã phát triển một key-value HashTable cho các tham số thưa.</p>
@@ -407,11 +400,10 @@ for YouTube Recommendations. Proceedings of the 10th ACM Conference on Recommend
 </li>
 </ol>
 <h3 id="221-streaming-engine">2.2.1 Streaming Engine<a class="anchor ms-1" href="#221-streaming-engine"><i class="fas fa-link"></i></a></h3>
-<p><figure>
-<img class="img-fluid" alt="Hình 4: Streaming Engine. The information feedback loop from [User → Model Server → Training Worker → Model Server → User] would spend a long time when taking the Batch Training path, while the Online Training will close the loop more instantly - Hình ảnh được cắt từ paper" src="/blog/2022-12-01-tiktok-recommendation/images/figure4.png" loading="lazy"  title="Hình 4: Streaming Engine. The information feedback loop from [User → Model Server → Training Worker → Model Server → User] would spend a long time when taking the Batch Training path, while the Online Training will close the loop more instantly - Hình ảnh được cắt từ paper"
+<p><img class="img-fluid" alt="Hình 4: Streaming Engine. The information feedback loop from [User → Model Server → Training Worker → Model Server → User] would spend a long time when taking the Batch Training path, while the Online Training will close the loop more instantly - Hình ảnh được cắt từ paper" src="/blog/2022-12-01-tiktok-recommendation/images/figure4.png" loading="lazy"  title="Hình 4: Streaming Engine. The information feedback loop from [User → Model Server → Training Worker → Model Server → User] would spend a long time when taking the Batch Training path, while the Online Training will close the loop more instantly - Hình ảnh được cắt từ paper"
   
    />
-  <figcaption style="text-align: center;"><b>Hình 4: Streaming Engine. The information feedback loop from [User → Model Server → Training Worker → Model Server → User] would spend a long time when taking the Batch Training path, while the Online Training will close the loop more instantly - Hình ảnh được cắt từ paper</b></figcaption></figure>
+
 </p>
 <p>Hình 4 phía trên mô tả việc chuyển đổi liền mạch giữa batch training và online training.</p>
 <p>Mô hình sử dụng Kafka Queue (Jay Kreps. 2011. Kafka : a Distributed Messaging System for Log Processing.) để log lại các hành động của user ( click item, like item, thả tim&hellip;. ) và một Kafka queue khác lưu lại các đặc trưng. Core engine là Flink  (Paris Carbone, Asterios Katsifodimos, Stephan Ewen, Volker Markl, Seif Haridi, and Kostas Tzoumas. 2015. Apache Flink™: Stream and Batch Processing in a Single Engine. IEEE Data Eng. Bull. 38 (2015),28–38.) stream job cho online feature joiner. Online joiner kết hợp các đặc trưng với nhãn từ user action tạo thành training example, sau đó đẩy vào kafka queue. Queue cho training example được consumer bới online training và batch training.</p>
@@ -424,11 +416,10 @@ for YouTube Recommendations. Proceedings of the 10th ACM Conference on Recommend
 </li>
 </ul>
 <h3 id="22-2-online-joiner">2.2 .2 Online Joiner<a class="anchor ms-1" href="#22-2-online-joiner"><i class="fas fa-link"></i></a></h3>
-<p><figure>
-<img class="img-fluid" alt="Hình 5: : Online Joiner - Hình ảnh được cắt từ paper" src="/blog/2022-12-01-tiktok-recommendation/images/figure5.png" loading="lazy"  title="Hình 5: : Online Joiner - Hình ảnh được cắt từ paper"
+<p><img class="img-fluid" alt="Hình 5: : Online Joiner - Hình ảnh được cắt từ paper" src="/blog/2022-12-01-tiktok-recommendation/images/figure5.png" loading="lazy"  title="Hình 5: : Online Joiner - Hình ảnh được cắt từ paper"
   
    />
-  <figcaption style="text-align: center;"><b>Hình 5: : Online Joiner - Hình ảnh được cắt từ paper</b></figcaption></figure>
+
 </p>
 <p>Trong ứng dụng thực tế, hành động của user và feature của user được stream vào online joiner mà không đảm bảo thứ tự về thời gian. Do đó, cần phát sinh một unique key cho mỗi request để đảm bảo pair được chúng với nhau.</p>
 <p>Việc user bị lag cũng là một vấn đề cần được xem xét. Ví dụ, một user có khả năng mất vài ngày mới ra quyết định mua một sản phẩm mà họ đã xem vài ngày trước đó. Đây là một thách thức thật sự, bởi vì nếu toàn bộ các đặc trưng được lưu trữ trong bộ nhớ chính, thì chúng ta sẽ không đủ bộ nhớ để lưu trữ. Nhóm tác giả đã sử dụng on-disk key-value storage để lưu trữ các đặc trưng của người dùng ở quá khứ. Khi log của người dùng được đẩy vào hệ thống, trước hết nó sẽ được tìm kiếm trong memory cache, trong trường hợp mising cache, nó sẽ tìm trong key-value storage.</p>
@@ -484,11 +475,10 @@ for YouTube Recommendations. Proceedings of the 10th ACM Conference on Recommend
 <h2 id="31-thiết-lập-thí-nghiệm">3.1 Thiết lập thí nghiệm<a class="anchor ms-1" href="#31-thiết-lập-thí-nghiệm"><i class="fas fa-link"></i></a></h2>
 <h3 id="311-xây-dựng-embedding-table">3.1.1 Xây dựng embedding table<a class="anchor ms-1" href="#311-xây-dựng-embedding-table"><i class="fas fa-link"></i></a></h3>
 <p>Như mô tả ở mục 2.1, embedding table trong monolith là collisionless hashtable. Để chứng minh sự cần thiết của việc tránh đụng độ trong việc thiết kế embedding table và lợi ích nhận được từ phiên bản collisionless mà mô hình đề xuất, chúng ta thực hiện hai nhóm thí nghiệm trên tập Movielens và  trong tập internal production dataset của ByteDance.</p>
-<p><figure>
-<img class="img-fluid" alt="Hình 6: DeepFM model architecture - Hình ảnh được cắt từ paper" src="/blog/2022-12-01-tiktok-recommendation/images/figure6.png" loading="lazy"  title="Hình 6: DeepFM model architecture - Hình ảnh được cắt từ paper"
+<p><img class="img-fluid" alt="Hình 6: DeepFM model architecture - Hình ảnh được cắt từ paper" src="/blog/2022-12-01-tiktok-recommendation/images/figure6.png" loading="lazy"  title="Hình 6: DeepFM model architecture - Hình ảnh được cắt từ paper"
   
    />
-  <figcaption style="text-align: center;"><b>Hình 6: DeepFM model architecture - Hình ảnh được cắt từ paper</b></figcaption></figure>
+
 </p>
 <ol>
 <li>MovieLens. Là tập dataset chuẩn , mở, bao gồm 25 triệu đánh giá từ xấp xỉ 162000 user và 62000 bộ phim:</li>
@@ -543,11 +533,10 @@ dataset (<a href="https://www.kaggle.com/competitions/criteo-display-ad-challeng
 </ol>
 <h2 id="32-kết-quả-và-phân-tích">3.2 Kết quả và phân tích<a class="anchor ms-1" href="#32-kết-quả-và-phân-tích"><i class="fas fa-link"></i></a></h2>
 <h3 id="321-hiệu-quả-của-embedding-collision">3.2.1 Hiệu quả của embedding collision<a class="anchor ms-1" href="#321-hiệu-quả-của-embedding-collision"><i class="fas fa-link"></i></a></h3>
-<p><figure>
-<img class="img-fluid" alt="Hình 7: Effect of Embedding Collision On DeepFM, MovieLens" src="/blog/2022-12-01-tiktok-recommendation/images/figure7.png" loading="lazy"  title="Hình 7: Effect of Embedding Collision On DeepFM, MovieLens"
+<p><img class="img-fluid" alt="Hình 7: Effect of Embedding Collision On DeepFM, MovieLens" src="/blog/2022-12-01-tiktok-recommendation/images/figure7.png" loading="lazy"  title="Hình 7: Effect of Embedding Collision On DeepFM, MovieLens"
   
    />
-  <figcaption style="text-align: center;"><b>Hình 7: Effect of Embedding Collision On DeepFM, MovieLens</b></figcaption></figure>
+
 </p>
 <p>Cả hai kết quả từ MovieLens dataset và Internal recommedation dataset đều chỉ ra rằng  collisions embedding gây tổn hại cho chất lượng của mô hình.</p>
 <ol>
@@ -565,17 +554,15 @@ dataset (<a href="https://www.kaggle.com/competitions/criteo-display-ad-challeng
 <li>Tính thưa của data được sinh ra bởi collisionless embedding table sẽ không làm cho mô hình bị overfit. Như kết quả ở hình 7, mô hình không bị overfit sau khi nó đã hội tụ</li>
 </ol>
 <h3 id="322-online-training-trading-off-reliability-for-realtime">3.2.2 Online Training: Trading-off Reliability For Realtime.<a class="anchor ms-1" href="#322-online-training-trading-off-reliability-for-realtime"><i class="fas fa-link"></i></a></h3>
-<p><figure>
-<img class="img-fluid" alt="Hình 8: Effect of Embedding Collision On A Recommendation Model In Production" src="/blog/2022-12-01-tiktok-recommendation/images/figure8.png" loading="lazy"  title="Hình 8: Effect of Embedding Collision On A Recommendation Model In Production"
+<p><img class="img-fluid" alt="Hình 8: Effect of Embedding Collision On A Recommendation Model In Production" src="/blog/2022-12-01-tiktok-recommendation/images/figure8.png" loading="lazy"  title="Hình 8: Effect of Embedding Collision On A Recommendation Model In Production"
   
    />
-  <figcaption style="text-align: center;"><b>Hình 8: Effect of Embedding Collision On A Recommendation Model In Production</b></figcaption></figure>
+
 </p>
-<p><figure>
-<img class="img-fluid" alt="Hình 9: : Online training v.s. Batch training on Criteo dataset. Blue lines: AUC of models with online training; Yellow lines: AUC of batch training models evaluated against streaming data." src="/blog/2022-12-01-tiktok-recommendation/images/figure9.png" loading="lazy"  title="Hình 9: : Online training v.s. Batch training on Criteo dataset. Blue lines: AUC of models with online training; Yellow lines: AUC of batch training models evaluated against streaming data."
+<p><img class="img-fluid" alt="Hình 9: : Online training v.s. Batch training on Criteo dataset. Blue lines: AUC of models with online training; Yellow lines: AUC of batch training models evaluated against streaming data." src="/blog/2022-12-01-tiktok-recommendation/images/figure9.png" loading="lazy"  title="Hình 9: : Online training v.s. Batch training on Criteo dataset. Blue lines: AUC of models with online training; Yellow lines: AUC of batch training models evaluated against streaming data."
   
    />
-  <figcaption style="text-align: center;"><b>Hình 9: : Online training v.s. Batch training on Criteo dataset. Blue lines: AUC of models with online training; Yellow lines: AUC of batch training models evaluated against streaming data.</b></figcaption></figure>
+
 </p>
 <p>Chúng ta khám phá ra rằng việc đồng bộ các tham số với tầng suất cao thì luôn luôn cải tiến online serving AUC, và mô hình tốt hơn so với kỳ vọng.</p>
 <ol>
@@ -617,11 +604,10 @@ dataset (<a href="https://www.kaggle.com/competitions/criteo-display-ad-challeng
 </table>
 <p>Bảng 2: Average AUC comparison for DeepFM model on
 Criteo dataset</p>
-<p><figure>
-<img class="img-fluid" alt="Hình 10: Comparison of different sync intervals for online training." src="/blog/2022-12-01-tiktok-recommendation/images/figure10.png" loading="lazy"  title="Hình 10: Comparison of different sync intervals for online training."
+<p><img class="img-fluid" alt="Hình 10: Comparison of different sync intervals for online training." src="/blog/2022-12-01-tiktok-recommendation/images/figure10.png" loading="lazy"  title="Hình 10: Comparison of different sync intervals for online training."
   
    />
-  <figcaption style="text-align: center;"><b>Hình 10: Comparison of different sync intervals for online training.</b></figcaption></figure>
+
 </p>
 <p>Bên cạnh các quan sát này, chúng ta thực hiện đồng bộ sparse parameter vào serving PS với tầng suất càng sớm càng tốt (theo phút) để mở rộng khả năng tính toán và độ tin cậy của hệ thống.</p>
 <p>Giả sử rằng các dense parameter yêu cầu  tầng suất cập nhật ít hơn như thảo luận ở mục 2.2.3, chúng ta sẽ cập nhật chúng ở mức ngày, và xác xuất hệ thống bị quá tải sẽ rất thấp. Ví dụ chúng ta có 100k ID được cập nhật trong 1 phút, embedding có kích thước 1024, tổng kích thước của data cần để chuyển 4KB x 100000 = 40000 MB một phút. Với dense parameter, nếu chúng ta thực hiện daily sync, chúng ta sẽ chọn thời điểm sync mà traffice là thấp nhất ( gần sáng chẳng hạn)</p>
@@ -662,11 +648,10 @@ Criteo dataset</p>
     
     <section class="card row text-center profile component">
   <div class="card-body">
-    <div class="col-12 d-flex align-items-center justify-content-center"><figure>
-<img class="profile-avatar rounded-circle" alt="Đặng Thị Hằng | Phạm Duy Tùng" src="/images/profile.webp" loading="lazy"  title="Đặng Thị Hằng | Phạm Duy Tùng"
+    <div class="col-12 d-flex align-items-center justify-content-center"><img class="profile-avatar rounded-circle" alt="Đặng Thị Hằng | Phạm Duy Tùng" src="/images/profile.webp" loading="lazy"  title="Đặng Thị Hằng | Phạm Duy Tùng"
    width="736" height="920"
    />
-  <figcaption style="text-align: center;"><b>Đặng Thị Hằng | Phạm Duy Tùng</b></figcaption></figure></div>
+</div>
     <div class="col-12 profile-meta"><div class="profile-name">Đặng Thị Hằng | Phạm Duy Tùng</div><div class="profile-bio">Gopher, CShaper, Pythoner, Full Stack Engineer.</div><div class="profile-company"><i class="fas fa-fw fa-building"></i>MWG</div><div class="profile-location"><i class="fas fa-fw fa-map-marker-alt"></i>Earth</div><div class="profile-about"><i class="fas fa-fw fa-user"></i><a href="/about/">About</a></div><div class="profile-contact"><i class="fas fa-fw fa-question-circle"></i><a href="/contact/">Contact Us</a></div>
 </div>
   </div>

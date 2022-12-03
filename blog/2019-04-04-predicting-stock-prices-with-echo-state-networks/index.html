@@ -12,7 +12,7 @@
 <meta name="description" content="Hàng thập kỷ qua, rất nhiều người trên thế giới đã và đang cố gắng dự đoán quy luật của thị trường chứng khoán và hầu hết đều thất bại. Liệu rằng mô hình deep learning với mạng neural network có thể giải được bài toán này? Trong bài viết này, mình sẽ thử nghiệm mô hình với tập dữ liệu chứng khoán của amazone và của thế giới di động" /><meta name="robots" content="index, follow" /><meta itemprop="name" content="Dự đoán giá cổ phiếu bằng mô hình mạng Echo State Networks">
 <meta itemprop="description" content="Hàng thập kỷ qua, rất nhiều người trên thế giới đã và đang cố gắng dự đoán quy luật của thị trường chứng khoán và hầu hết đều thất bại. Liệu rằng mô hình deep learning với mạng neural network có thể giải được bài toán này? Trong bài viết này, mình sẽ thử nghiệm mô hình với tập dữ liệu chứng khoán của amazone và của thế giới di động"><meta itemprop="datePublished" content="2019-04-04T00:13:00+03:00" />
 <meta itemprop="dateModified" content="2019-04-04T00:13:00+03:00" />
-<meta itemprop="wordCount" content="3185">
+<meta itemprop="wordCount" content="3167">
 <meta itemprop="keywords" content="machine learning,deep learning,neural network,amazone,thế giới di động,mwg," /><meta property="og:title" content="Dự đoán giá cổ phiếu bằng mô hình mạng Echo State Networks" />
 <meta property="og:description" content="Hàng thập kỷ qua, rất nhiều người trên thế giới đã và đang cố gắng dự đoán quy luật của thị trường chứng khoán và hầu hết đều thất bại. Liệu rằng mô hình deep learning với mạng neural network có thể giải được bài toán này? Trong bài viết này, mình sẽ thử nghiệm mô hình với tập dữ liệu chứng khoán của amazone và của thế giới di động" />
 <meta property="og:type" content="article" />
@@ -31,11 +31,10 @@
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
       aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
       <i class="fas fa-bars"></i>
-    </button><a class="navbar-brand flex-grow-1 flex-lg-grow-0 text-center text-lg-start mx-auto me-lg-3" href="/"><figure>
-<img class="logo" alt="Logo" src="/images/logo.webp" loading="lazy"  title="Logo"
+    </button><a class="navbar-brand flex-grow-1 flex-lg-grow-0 text-center text-lg-start mx-auto me-lg-3" href="/"><img class="logo" alt="Logo" src="/images/logo.webp" loading="lazy"  title="Logo"
    width="400" height="400"
    />
-  <figcaption style="text-align: center;"><b>Logo</b></figcaption></figure>HOME
+HOME
     </a>
     <div class="offcanvas offcanvas-bottom surface" tabindex="-1" id="offcanvasSocialShare" aria-labelledby="offcanvasSocialShare">
   <div class="offcanvas-header">
@@ -239,11 +238,8 @@
 </div>
 <div class="post-content mb-3">
       
-      <figure>
       <img src="/thumbnails/chung_khoan_1.png" alt="Dự đoán giá cổ phiếu bằng mô hình mạng Echo State Networks"   />
 
-      <figcaption>Dự đoán giá cổ phiếu bằng mô hình mạng Echo State Networks</figcaption>
-    </figure>
       <p>Trong cuốn The West Wing Script Book của Aaron Sorkin, ông ấy đã có một câu như thế này &ldquo;There (is) order and even great beauty in what looks like total chaos. If we look closely enough at the randomness around us, patterns will start to emerge.&rdquo;. Mình xin phép không dịch câu nói trên ra, bởi vì mình dịch khá tệ, và câu nói này khá nổi tiếng (đã được trích dẫn khá nhiều trên các bài viết của các bloger khác). Nhưng câu nói đó khá phù hợp với môi trường chứng khoán, nơi mà mọi thứ đều không rõ ràng và khá &ldquo;hỗn loạn&rdquo;.</p>
 <h2 id="dự-đoán-chuỗi-thời-gian">Dự đoán chuỗi thời gian<a class="anchor ms-1" href="#dự-đoán-chuỗi-thời-gian"><i class="fas fa-link"></i></a></h2>
 <p>Giá cổ phiếu trên thị trường chứng khoán thường được quy vào bài toán là time series. Các công ty đầu tư hoặc các nhà nghiên cứu, các nhà đầu tư hiện nay thường sử dụng phương pháp stochastic hoặc các cải tiến của phương pháp stochastic (ví dụ mô hình ARIMA, RegARIMA,&hellip;) để đưa ra các dự đoán hợp lý phù hợp với các giá trị quá khứ. Mục tiêu cuối cùng là tìm ra một mô hình khả dĩ nhất để phản ánh quy luật của thị trường và sử dụng nó để sinh ra lợi nhuận (trở nên giàu có hơn :)).</p>
@@ -254,38 +250,34 @@
 <ul>
 <li>Giá trị trung bình không thay đổi. Nếu giá trị trung bình thay đổi, chuỗi thời gian sẽ có khuynh hướng đi lên hoặc đi xuống. Hình ảnh bên dưới, mô tả trực quan một chuỗi thời gian có tính dừng (trung bình không thay đổi), và một chuỗi thời gian không có tính dừng (trung bình thay đổi).</li>
 </ul>
-<p><figure>
-<img class="img-fluid" alt="Hình ảnh" src="/blog/2019-04-04-predicting-stock-prices-with-echo-state-networks/const_mean_stationary_series.png" loading="lazy"  title="Hình ảnh"
+<p><img class="img-fluid" alt="Hình ảnh" src="/blog/2019-04-04-predicting-stock-prices-with-echo-state-networks/const_mean_stationary_series.png" loading="lazy"  title="Hình ảnh"
   
    />
-  <figcaption style="text-align: center;"><b>Hình ảnh</b></figcaption></figure>
+
 </p>
 <ul>
 <li>Giá trị phương sai không thay đổi. Thuộc tính này còn được gọi là đồng đẳng (homoscedasticity). Hình bên dưới mô tả một chuỗi có phương sai thay đổi (không có tính dừng) và một chuỗi có phương sai bất biến (có tính dừng).</li>
 </ul>
-<p><figure>
-<img class="img-fluid" alt="Hình ảnh" src="/blog/2019-04-04-predicting-stock-prices-with-echo-state-networks/const_variance_stationary_series.png" loading="lazy"  title="Hình ảnh"
+<p><img class="img-fluid" alt="Hình ảnh" src="/blog/2019-04-04-predicting-stock-prices-with-echo-state-networks/const_variance_stationary_series.png" loading="lazy"  title="Hình ảnh"
   
    />
-  <figcaption style="text-align: center;"><b>Hình ảnh</b></figcaption></figure>
+
 </p>
 <ul>
 <li>Tính tự tương tự không phụ thuộc vào thời gian</li>
 </ul>
-<p><figure>
-<img class="img-fluid" alt="Hình ảnh" src="/blog/2019-04-04-predicting-stock-prices-with-echo-state-networks/autocorrelation_stationary_series.png" loading="lazy"  title="Hình ảnh"
+<p><img class="img-fluid" alt="Hình ảnh" src="/blog/2019-04-04-predicting-stock-prices-with-echo-state-networks/autocorrelation_stationary_series.png" loading="lazy"  title="Hình ảnh"
   
    />
-  <figcaption style="text-align: center;"><b>Hình ảnh</b></figcaption></figure>
+
 </p>
 <h2 id="vì-sao-chúng-ta-lại-quan-tâm-đến-tính-dừng-của-dữ-liệu">Vì sao chúng ta lại quan tâm đến tính dừng của dữ liệu<a class="anchor ms-1" href="#vì-sao-chúng-ta-lại-quan-tâm-đến-tính-dừng-của-dữ-liệu"><i class="fas fa-link"></i></a></h2>
 <p>Chúng ta quan tâm đến tính dừng của dữ liệu, đơn giản là bởi vì nếu dữ liệu không có tính dừng, chúng ta không thể xây dựng mô hình chuỗi thời gian (như đã nói ở trên, các nghiên cứu hiện nay đều dựa trên một cơ sở là dữ liệu có tính dừng). Trong trường hợp bạn có trong tay dữ liệu thuộc dạng time series, và một tiêu chí nào đó trong 3 tiêu chí mình đã liệu kê ở trên bị vi phạm, suy ra là dữ liệu của bạn không có tính dừng. Bạn phải chuyển đổi dữ liệu bạn đang có để cho nó có tính dừng. May mắn rằng cũng có nhiều nghiên cứu thực hiện việc này, ví dụ như &ldquo;khử xu hướng (detrending)&rdquo;, khử sai biệt (differencing)&hellip;</p>
 <p>Nếu bạn mới chỉ bắt đầu phân tích chuỗi thời gian, bạn sẽ thấy việc làm trên khá là stupid. Lý thuyết tốt nhất hiện nay cho chuỗi thời gian là chia nhỏ nó ra thành các thành phần như là xu hướng (linear trend), mùa vụ (seasonal), chu kỳ, và yếu tố ngẫu nhiên. Dự đoán cho từng phần một, sau đó lấy tổng chúng lại.</p>
-<p><figure>
-<img class="img-fluid" alt="Hình ảnh" src="/blog/2019-04-04-predicting-stock-prices-with-echo-state-networks/arima.png" loading="lazy"  title="Hình ảnh"
+<p><img class="img-fluid" alt="Hình ảnh" src="/blog/2019-04-04-predicting-stock-prices-with-echo-state-networks/arima.png" loading="lazy"  title="Hình ảnh"
   
    />
-  <figcaption style="text-align: center;"><b>Hình ảnh</b></figcaption></figure>
+
 </p>
 <p>Đối với những ai đã quen thuộc với biến đổi Fourier, thì sẽ dễ dàng &ldquo;cảm&rdquo; hơn cái mình vừa nói ở trên.</p>
 <h2 id="cách-xác-định-tính-dừng-của-dữ-liệu">Cách xác định tính dừng của dữ liệu<a class="anchor ms-1" href="#cách-xác-định-tính-dừng-của-dữ-liệu"><i class="fas fa-link"></i></a></h2>
@@ -293,11 +285,10 @@
 <h2 id="phương-pháp-dự-đoán-chuỗi-thời-gian-cơ-bản">Phương pháp dự đoán chuỗi thời gian cơ bản<a class="anchor ms-1" href="#phương-pháp-dự-đoán-chuỗi-thời-gian-cơ-bản"><i class="fas fa-link"></i></a></h2>
 <p>Phương pháp cơ bản nhất, đơn giản nhất, và để áp dụng nhất dược sử dụng để dự đoán chuỗi thời gian là moving average. Mô hình này thực hiện tính trung bình của t giá trị cuối cùng làm giá trị dự đoán của điểm tiếp theo. Ví dụ như để dự đoán giá chứng khoán của ngày thứ 2 của tuần tiếp theo, chúng ta sẽ lấy trung bình giá đóng của của 5 ngày trước đó (giá từ thứ hai đến thứ sáu tuần này).</p>
 <p>Đến đây, các bạn đã có một số hiểu biết về time series. Một mô hình khá nổi tiếng là ARIMA đã được sử dụng nhiều để phân tích và dự báo. Cách thực hiện của mô hình trên được trình bày tóm gọn trong hình mô tả bên dưới.</p>
-<p><figure>
-<img class="img-fluid" alt="Hình ảnh" src="/blog/2019-04-04-predicting-stock-prices-with-echo-state-networks/arima1.png" loading="lazy"  title="Hình ảnh"
+<p><img class="img-fluid" alt="Hình ảnh" src="/blog/2019-04-04-predicting-stock-prices-with-echo-state-networks/arima1.png" loading="lazy"  title="Hình ảnh"
   
    />
-  <figcaption style="text-align: center;"><b>Hình ảnh</b></figcaption></figure>
+
 </p>
 <h2 id="phương-pháp-dự-đoán-dựa-vào-mạng-neural-network">Phương pháp dự đoán dựa vào mạng neural network<a class="anchor ms-1" href="#phương-pháp-dự-đoán-dựa-vào-mạng-neural-network"><i class="fas fa-link"></i></a></h2>
 <p>Thực tế, có rất nhiều mạng neural network đã được áp dụng để dự đoán mô hình chứng khoán. Các bạn có thể tìm đọc lại các bài viết trước đây của mình về sử dụng LSTM trong dự báo chứng khoán. Mô hình chứng khoán bằng mạng neural network nói chung phải đối mặt với một vấn đề khá &ldquo;xương xẩu&rdquo; là xử lý nhiễu và vanishing gradients. Trong đó, việc xử lý vanishing gradients là quan trọng nhất. Bản chất của mạng neural network là tối ưu hoá hàm lan truyền ngược bằng cách sử dụng đạo hàm giữa các lớp layer để chúng &lsquo;học&rsquo;. Trải qua nhiều layer, giá trị của đạo hàm sẽ càng ngày nhỏ dần vào xấp xỉ bằng 0. Giả sử chúng ta có một mô hình có 100 lớp hidden layer, chúng ta nhân 100 lần số 0.1 với nhau và boom, giá trị cuối cùng chung ta nhận được là 0, nghĩa là chúng ta chẳng học được cái gì cả.</p>
@@ -315,18 +306,16 @@
 </ul>
 <p>Kỹ thuật clipping gradients sử dụng một mẹo là khi giá trị đạo hàm quá lớn hoặc quá nhỏ, chúng ta sẽ không lấy đạo hàm nữa. Kỹ thuật này thoạt nhìn có vẻ hay, nhưng nó không thể ngăn chúng ta mất mát thông tin và đây là một ý tưởng khá tệ.</p>
 <p>RNN (LSTM hoặc GRU) là một kỹ thuật khác là điều chỉnh các kết nối theo một vài quy luật nhất định, ví dụ output của layer tầng 1 có thể là input của layer tầng 10, chứ không nhất thiết là input của layer tầng 2 như cách thông thường. Kỹ thuật này khá tốt về mặt lý thuyết. Tuy nhiên, có một vấn đề khá lớn khi sử dụng là chúng ta phải tính toán kỹ các kết nối để đảm bảo hệ thống hoạt động ổn đinh. Mô hình được xây dựng trên kỹ thuật này khá bự, làm cho thuật toán chạy chậm. Ngoài ra, tính hội tụ của thuật toán không được đảm bảo. Mô hình LSTM đơn giản mình có để ở hình bên dưới.</p>
-<p><figure>
-<img class="img-fluid" alt="Hình ảnh" src="/blog/2019-04-04-predicting-stock-prices-with-echo-state-networks/lstm.png" loading="lazy"  title="Hình ảnh"
+<p><img class="img-fluid" alt="Hình ảnh" src="/blog/2019-04-04-predicting-stock-prices-with-echo-state-networks/lstm.png" loading="lazy"  title="Hình ảnh"
   
    />
-  <figcaption style="text-align: center;"><b>Hình ảnh</b></figcaption></figure>
+
 </p>
 <p>Mạng echo states network, là một mô hình mới được nghiên cứu gần đây, bản chất nó là một mảng recurrent neural network với các hidden layer liên kết &ldquo;lỏng lẻo&rdquo; với nhau. Lớp này được gọi là &lsquo;reservoir&rsquo; (như hình mô tả bên dưới).</p>
-<p><figure>
-<img class="img-fluid" alt="Hình ảnh" src="/blog/2019-04-04-predicting-stock-prices-with-echo-state-networks/echo_state_network.png" loading="lazy"  title="Hình ảnh"
+<p><img class="img-fluid" alt="Hình ảnh" src="/blog/2019-04-04-predicting-stock-prices-with-echo-state-networks/echo_state_network.png" loading="lazy"  title="Hình ảnh"
   
    />
-  <figcaption style="text-align: center;"><b>Hình ảnh</b></figcaption></figure>
+
 </p>
 <p>Trong mô hình mạng  echo state network, chúng ta chỉ cần huấn luyện lại trọng số của lớp output, việc này giúp chúng ta rút ngắn thời gian huấn luyện mô hình, và tăng tốc qusa trình training.</p>
 <h2 id="sử-dụng-mạng-echo-state-networks">Sử dụng mạng Echo State Networks<a class="anchor ms-1" href="#sử-dụng-mạng-echo-state-networks"><i class="fas fa-link"></i></a></h2>
@@ -401,11 +390,10 @@
 </span></span><span class="line"><span class="ln">50</span><span class="cl"><span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">fontsize</span><span class="o">=</span><span class="s1">&#39;xx-large&#39;</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="s1">&#39;best&#39;</span><span class="p">)</span>
 </span></span><span class="line"><span class="ln">51</span><span class="cl"><span class="n">sns</span><span class="o">.</span><span class="n">despine</span><span class="p">()</span>
 </span></span><span class="line"><span class="ln">52</span><span class="cl"><span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-</span></span></code></pre></div><p><figure>
-<img class="img-fluid" alt="Hình ảnh" src="/blog/2019-04-04-predicting-stock-prices-with-echo-state-networks/echo_state_network_p1.png" loading="lazy"  title="Hình ảnh"
+</span></span></code></pre></div><p><img class="img-fluid" alt="Hình ảnh" src="/blog/2019-04-04-predicting-stock-prices-with-echo-state-networks/echo_state_network_p1.png" loading="lazy"  title="Hình ảnh"
   
    />
-  <figcaption style="text-align: center;"><b>Hình ảnh</b></figcaption></figure>
+
 </p>
 <p>Độ phức tạp của mô hình là khá nhỏ khi so với mô hình RNN. Lý do là về bản chất, chúng ta chỉ huấn luyện trên trọng số của output layer, nó là một hàm tuyến tính. Do vậy, độ phức tạp tính toán chỉ giống như là việc tính một hàm hồi quy tuyến tính. Trong thực tế, độ phức tạp tính toán sẽ là O(N) với N là ố lượng hidden unit trong reservoir.</p>
 <h4 id="tối-ưu-hoá-các-tham-số-hyper-parameters">Tối ưu hoá các tham số Hyper parameters<a class="anchor ms-1" href="#tối-ưu-hoá-các-tham-số-hyper-parameters"><i class="fas fa-link"></i></a></h4>
@@ -516,11 +504,10 @@
 </span></span><span class="line"><span class="ln">57</span><span class="cl"><span class="p">(</span><span class="s1">&#39;rho = &#39;</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">,</span> <span class="s1">&#39;, noise = &#39;</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">,</span> <span class="s1">&#39;, MSE = &#39;</span><span class="p">,</span> <span class="mf">75.94229622771246</span><span class="p">)</span>
 </span></span></code></pre></div><p>Kết quả thu được là giá trị MSE tốt nhất là spectrum radius =  1.5 và nnoise  = 0.0001</p>
 <p>Thử dự đoán giá cổ phiếu của tập đoàn thế giới di động (Mã cổ phiếu MWG) xem sao</p>
-<p><figure>
-<img class="img-fluid" alt="Hình ảnh" src="/blog/2019-04-04-predicting-stock-prices-with-echo-state-networks/echo_state_network_mwg.jpg" loading="lazy"  title="Hình ảnh"
+<p><img class="img-fluid" alt="Hình ảnh" src="/blog/2019-04-04-predicting-stock-prices-with-echo-state-networks/echo_state_network_mwg.jpg" loading="lazy"  title="Hình ảnh"
   
    />
-  <figcaption style="text-align: center;"><b>Hình ảnh</b></figcaption></figure>
+
 </p>
 <p>Ở hình trên, mình không tiến hành grid search mà lấy lại các hyper parameters cũ để huấn luyện mô hình. Kết quả như hình trên  mình thấy cũng khá tốt rồi, nên mình không tiến hành grid search lại để tìm kết quả tốt hơn.</p>
 <p>Dựa vào kết quả chúng ta thu được, có thể nói rằng mô hình ESN dự đoán khá tốt dữ liệu thuộc dạng time series với độ hỗn loạn cao. Đây là một kết luận nhỏ của mình dựa vào bằng chứng trên việc mình test trên tập dữ liệu ngẫu nhiên mà mình có.</p>
@@ -553,11 +540,10 @@
     
     <section class="card row text-center profile component">
   <div class="card-body">
-    <div class="col-12 d-flex align-items-center justify-content-center"><figure>
-<img class="profile-avatar rounded-circle" alt="Đặng Thị Hằng | Phạm Duy Tùng" src="/images/profile.webp" loading="lazy"  title="Đặng Thị Hằng | Phạm Duy Tùng"
+    <div class="col-12 d-flex align-items-center justify-content-center"><img class="profile-avatar rounded-circle" alt="Đặng Thị Hằng | Phạm Duy Tùng" src="/images/profile.webp" loading="lazy"  title="Đặng Thị Hằng | Phạm Duy Tùng"
    width="736" height="920"
    />
-  <figcaption style="text-align: center;"><b>Đặng Thị Hằng | Phạm Duy Tùng</b></figcaption></figure></div>
+</div>
     <div class="col-12 profile-meta"><div class="profile-name">Đặng Thị Hằng | Phạm Duy Tùng</div><div class="profile-bio">Gopher, CShaper, Pythoner, Full Stack Engineer.</div><div class="profile-company"><i class="fas fa-fw fa-building"></i>MWG</div><div class="profile-location"><i class="fas fa-fw fa-map-marker-alt"></i>Earth</div><div class="profile-about"><i class="fas fa-fw fa-user"></i><a href="/about/">About</a></div><div class="profile-contact"><i class="fas fa-fw fa-question-circle"></i><a href="/contact/">Contact Us</a></div>
 </div>
   </div>
