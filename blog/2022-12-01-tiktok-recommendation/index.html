@@ -12,7 +12,7 @@
 <meta name="description" content="Nhân dịp đầu tháng, mình khai bút với chủ đề Real Time Recommendation. Paper này mình đọc cũng khá lâu rồi, giờ mới có dịp note lại chia sẻ. Các kỹ sư của ByteDance vừa mới cung cấp một paper nêu ra một vài hướng nghiên cứu của họ về Real Time Recommendation mà họ đã áp dụng thành công trong sản phẩm tiktok. Chủ đề này liên quan nhiều đến MLOpts - xây dựng kiến trúc hệ thống." /><meta name="robots" content="index, follow" /><meta itemprop="name" content="Tiktol Real Time Recommendation">
 <meta itemprop="description" content="Nhân dịp đầu tháng, mình khai bút với chủ đề Real Time Recommendation. Paper này mình đọc cũng khá lâu rồi, giờ mới có dịp note lại chia sẻ. Các kỹ sư của ByteDance vừa mới cung cấp một paper nêu ra một vài hướng nghiên cứu của họ về Real Time Recommendation mà họ đã áp dụng thành công trong sản phẩm tiktok. Chủ đề này liên quan nhiều đến MLOpts - xây dựng kiến trúc hệ thống."><meta itemprop="datePublished" content="2022-12-01T00:19:00+03:00" />
 <meta itemprop="dateModified" content="2022-12-01T00:19:00+03:00" />
-<meta itemprop="wordCount" content="4758">
+<meta itemprop="wordCount" content="5242">
 <meta itemprop="keywords" content="machine learning,Tikok,deep learning,ByteDance,Recommendation," /><meta property="og:title" content="Tiktol Real Time Recommendation" />
 <meta property="og:description" content="Nhân dịp đầu tháng, mình khai bút với chủ đề Real Time Recommendation. Paper này mình đọc cũng khá lâu rồi, giờ mới có dịp note lại chia sẻ. Các kỹ sư của ByteDance vừa mới cung cấp một paper nêu ra một vài hướng nghiên cứu của họ về Real Time Recommendation mà họ đã áp dụng thành công trong sản phẩm tiktok. Chủ đề này liên quan nhiều đến MLOpts - xây dựng kiến trúc hệ thống." />
 <meta property="og:type" content="article" />
@@ -233,7 +233,7 @@ HOME
   <span class="post-date" title="created on 2022-12-01 04:19:00 &#43;0700 &#43;07.">
     Dec 1, 2022
   </span><span class="post-reading-time">
-    23 min read
+    25 min read
   </span><span class="post-taxonomies"><a href="/tags/machine-learning/" class="badge post-taxonomy">Machine learning</a><a href="/tags/tikok/" class="badge post-taxonomy">Tikok</a><a href="/tags/deep-learning/" class="badge post-taxonomy">Deep learning</a><a href="/tags/bytedance/" class="badge post-taxonomy">ByteDance</a><a href="/tags/recommendation/" class="badge post-taxonomy">Recommendation</a></span>
 </div>
 <div class="post-content mb-3">
@@ -258,7 +258,10 @@ HOME
           <ul>
             <li><a href="#221-streaming-engine">2.2.1 Streaming Engine</a></li>
             <li><a href="#22-2-online-joiner">2.2 .2 Online Joiner</a></li>
-            <li><a href="#223-parameter-synchronization">2.2.3 Parameter Synchronization</a></li>
+          </ul>
+        </li>
+        <li><a href="#223-parameter-synchronization">2.2.3 Parameter Synchronization</a>
+          <ul>
             <li><a href="#23-fault-tolerance">2.3 Fault Tolerance</a></li>
           </ul>
         </li>
@@ -280,6 +283,7 @@ HOME
         </li>
       </ul>
     </li>
+    <li><a href="#tài-liệu-tham-khảo-của-paper">Tài liệu tham khảo của paper</a></li>
     <li><a href="#tham-khảo">Tham khảo</a></li>
   </ul>
 </nav>
@@ -321,7 +325,7 @@ HOME
 <p>Hầu hết các đặc trưng rất thưa, có tính phân loại và thay đổi linh hoạt.</p>
 </li>
 <li>
-<p>Phân phối của data là không dừng (non-stationary) , vd Concept Drift. Đọc paper João Gama, Indre Žliobait ˙ e, Albert Bifet, Mykola Pechenizkiy, and A. Bouchachia. 2014. A survey on concept drift adaptation. ACM Computing Surveys (CSUR) 46 (2014), 1 – 37 để hiểu lý do</p>
+<p>Phân phối của data là không dừng (non-stationary) , vd Concept Drift. [8]</p>
 </li>
 </ol>
 <h2 id="11-sparsity-và-dynamism">1.1 Sparsity và Dynamism<a class="anchor ms-1" href="#11-sparsity-và-dynamism"><i class="fas fa-link"></i></a></h2>
@@ -331,12 +335,10 @@ HOME
 <p>Không giống như các mô hình ngôn ngữ có số lượng từ hạn chế, data user ranking item thường rất rất lớn. Khả năng cao là 1 máy chủ siêu mạnh hiện nay của các doanh nghiệp không chứa nổi Embedding table trên bộ nhớ chính.</p>
 </li>
 <li>
-<p>Trường hợp tệ nhất,kích thước của Embedding table sẽ tiếp tục tăng theo thời gian do người dùng và sản phẩm mới liên tục được thêm vào hệ thống. Trong khi đó, một số frameword recommendation sử dụng fixed-size dense variables để biểu diễn embedding table. Ví dụ framework (Martín Abadi, Paul Barham, Jianmin Chen, Z. Chen, Andy Davis, Jeffrey Dean, Matthieu Devin, Sanjay Ghemawat, Geoffrey Irving, Michael Isard, Manjunath Kudlur, Josh Levenberg, Rajat Monga, Sherry Moore, Derek Gordon Murray, Benoit Steiner, Paul A. Tucker, Vijay Vasudevan, Pete Warden, Martin Wicke, Yuan Yu, and Xiaoqiang Zhang. 2016. TensorFlow: A system for large-scale machine learning. ArXiv abs/1605.08695 (2016). và  Adam Paszke, Sam Gross, Francisco Massa, Adam Lerer, James Bradbury, Gregory Chanan, Trevor Killeen, Zeming Lin, Natalia Gimelshein, Luca Antiga, Alban Desmaison, Andreas Köpf, Edward Yang, Zach DeVito, Martin Raison, Alykhan Tejani, Sasank Chilamkurthy, Benoit Steiner, Lu Fang, Junjie Bai, and Soumith Chintala. 2019. PyTorch: An Imperative Style, High-Performance Deep Learning Library. In NeurIPS. )</p>
+<p>Trường hợp tệ nhất,kích thước của Embedding table sẽ tiếp tục tăng theo thời gian do người dùng và sản phẩm mới liên tục được thêm vào hệ thống. Trong khi đó, một số frameword recommendation sử dụng fixed-size dense variables để biểu diễn embedding table. Ví dụ framework [1,17]</p>
 </li>
 </ul>
-<p>Trong thực tế, nhiều thuật toán đã dùng vài &ldquo;mẹo&rdquo;, như xài hashing như bài báo
-[3] Thomas Bredillet. 2019. Core modeling at Instagram. <a href="https://instagram-engineering.com/core-modeling-at-instagram-a51e0158aa48" target="_blank" rel="noopener noreferrer">https://instagram-engineering.com/core-modeling-at-instagram-a51e0158aa48</a> và bài báo [6] Paul Covington, Jay K. Adams, and Emre Sargin. 2016. Deep Neural Networks
-for YouTube Recommendations. Proceedings of the 10th ACM Conference on Recommender Systems (2016), để giảm lượng memory tiêu thụ và cho phép tăng ID. Ý tưởng này dựa trên giả định là ID trong Embedding table phân phối đều và việc collisions thì vô hại. Giả định này không đúng trong hiện thực, khi mà một nhóm nhỏ user hoặc item có tầng suất xuất hiện cao hơn. Với sự tăng trưởng tự nhiên của embedding table, xác suất hash key đụng độ sẽ càng cao, dẫn đến giảm chất lượng mô hình.</p>
+<p>Trong thực tế, nhiều thuật toán đã dùng vài &ldquo;mẹo&rdquo;, như xài hashing như bài báo [3] và bài báo [6] , để giảm lượng memory tiêu thụ và cho phép tăng ID. Ý tưởng này dựa trên giả định là ID trong Embedding table phân phối đều và việc collisions thì vô hại. Giả định này không đúng trong hiện thực, khi mà một nhóm nhỏ user hoặc item có tầng suất xuất hiện cao hơn. Với sự tăng trưởng tự nhiên của embedding table, xác suất hash key đụng độ sẽ càng cao, dẫn đến giảm chất lượng mô hình.</p>
 <p>Do đó, nhu cầu tự nhiên của một hệ thống gợi ý là có khả năng capture càng nhiều đặc trưng trong chính các tham số của mô hình, và có khả năng điều chỉnh linh hoạt số user và số item mà nó có khả năng lưu giữ.</p>
 <h2 id="12-non-stationary-distribution">1.2 Non-stationary Distribution<a class="anchor ms-1" href="#12-non-stationary-distribution"><i class="fas fa-link"></i></a></h2>
 <p>Các pattern mới về hình ảnh và ngôn ngữ trong bài toán xử lý ảnh và xử lý ngôn ngữ thường không thay đổi nhiều trong hàng thế kỷ. Trong khi đó, sự quan tâm của người dùng về một chủ đề nào đó có thể thay đổi từng phút một. Kết quả là, phân phối của dữ liệu người dùng là không cố định, và hiện tượng này thường được gọi với tên là Concept Drift.</p>
@@ -369,8 +371,7 @@ for YouTube Recommendations. Proceedings of the 10th ACM Conference on Recommend
 <strong>Hình 3: Cuckoo HashMap. - Hình ảnh được cắt từ paper</strong></p>
 <p>Nguyên tắc đầu tiên để xây dựng các tham số biểu diễn tính thưa là tránh thu gọn thông tin từ các IDs khác nhau về cùng một fixed-sze embedding.</p>
 <p>Việc xây dựng một embedding table sử dụng TensorFlow Variable sẽ dẫn đến việc đụng độ ID khi số lượng ID mới và table tăng lênh. Do đó, thay vì xây embedding table dựa trên Variable, tác giả đã phát triển một key-value HashTable cho các tham số thưa.</p>
-<p>HashTable này sử dụng Cuckoo Hashmap (paper R. Pagh and Flemming Friche Rodler. 2001. Cuckoo Hashing. In ESA.
-), hỗ trợ việc thêm một key mới mà không đụng độ với key cũ. Cuckoo Hashing trong trường hợp xấu nhất có độ phức tạp O(1) trong việc tìm kiếm và xoá, và O(1) cho việc thêm mới. Như trong hình 3, nó sử dụng hai bảng T0 và T1 với hai hàm hash khác nhau có tên là h0(x) và h1(x), và một phần tử sẽ được lưu trữ trong một trong hai bảng trên. Khi cố gán thêm một phần tử A vào T0, đầu tiên, nó cố gán đặt A vào h0(A). Nếu h0(A) đã hold 1 phần tử B nào đó, nó sẽ xoá B từ T0 và gán B vào T1 với logic tương tự. Quá trình này được lặp đi lặp lại đến khi  ổn định.</p>
+<p>HashTable này sử dụng Cuckoo Hashmap  [16], hỗ trợ việc thêm một key mới mà không đụng độ với key cũ. Cuckoo Hashing trong trường hợp xấu nhất có độ phức tạp O(1) trong việc tìm kiếm và xoá, và O(1) cho việc thêm mới. Như trong hình 3, nó sử dụng hai bảng T0 và T1 với hai hàm hash khác nhau có tên là h0(x) và h1(x), và một phần tử sẽ được lưu trữ trong một trong hai bảng trên. Khi cố gán thêm một phần tử A vào T0, đầu tiên, nó cố gán đặt A vào h0(A). Nếu h0(A) đã hold 1 phần tử B nào đó, nó sẽ xoá B từ T0 và gán B vào T1 với logic tương tự. Quá trình này được lặp đi lặp lại đến khi  ổn định.</p>
 <p>Việc giảm bộ nhớ lưu trữ cũng là một yếu tố quang trọng trong thiết kế hệ thống. Một cách tự nhiên, việc mỗi lần thêm 1 phần tử mới vào HashTable sẽ làm cho bộ nhớ nhanh chóng đầy. Có 2 kết luận có thể được rút ra:</p>
 <ol>
 <li>
@@ -410,7 +411,7 @@ for YouTube Recommendations. Proceedings of the 10th ACM Conference on Recommend
 
 <strong>Hình 4: Streaming Engine. The information feedback loop from [User → Model Server → Training Worker → Model Server → User] would spend a long time when taking the Batch Training path, while the Online Training will close the loop more instantly - Hình ảnh được cắt từ paper</strong></p>
 <p>Hình 4 phía trên mô tả việc chuyển đổi liền mạch giữa batch training và online training.</p>
-<p>Mô hình sử dụng Kafka Queue (Jay Kreps. 2011. Kafka : a Distributed Messaging System for Log Processing.) để log lại các hành động của user ( click item, like item, thả tim&hellip;. ) và một Kafka queue khác lưu lại các đặc trưng. Core engine là Flink  (Paris Carbone, Asterios Katsifodimos, Stephan Ewen, Volker Markl, Seif Haridi, and Kostas Tzoumas. 2015. Apache Flink™: Stream and Batch Processing in a Single Engine. IEEE Data Eng. Bull. 38 (2015),28–38.) stream job cho online feature joiner. Online joiner kết hợp các đặc trưng với nhãn từ user action tạo thành training example, sau đó đẩy vào kafka queue. Queue cho training example được consumer bới online training và batch training.</p>
+<p>Mô hình sử dụng Kafka Queue [13] để log lại các hành động của user ( click item, like item, thả tim&hellip;. ) và một Kafka queue khác lưu lại các đặc trưng. Core engine là Flink  [4] stream job cho online feature joiner. Online joiner kết hợp các đặc trưng với nhãn từ user action tạo thành training example, sau đó đẩy vào kafka queue. Queue cho training example được consumer bới online training và batch training.</p>
 <ul>
 <li>
 <p>Với online training, training worker trực tiếp đọc dữ liệu từ kafka Queue.</p>
@@ -428,8 +429,8 @@ for YouTube Recommendations. Proceedings of the 10th ACM Conference on Recommend
 <strong>Hình 5: : Online Joiner - Hình ảnh được cắt từ paper</strong></p>
 <p>Trong ứng dụng thực tế, hành động của user và feature của user được stream vào online joiner mà không đảm bảo thứ tự về thời gian. Do đó, cần phát sinh một unique key cho mỗi request để đảm bảo pair được chúng với nhau.</p>
 <p>Việc user bị lag cũng là một vấn đề cần được xem xét. Ví dụ, một user có khả năng mất vài ngày mới ra quyết định mua một sản phẩm mà họ đã xem vài ngày trước đó. Đây là một thách thức thật sự, bởi vì nếu toàn bộ các đặc trưng được lưu trữ trong bộ nhớ chính, thì chúng ta sẽ không đủ bộ nhớ để lưu trữ. Nhóm tác giả đã sử dụng on-disk key-value storage để lưu trữ các đặc trưng của người dùng ở quá khứ. Khi log của người dùng được đẩy vào hệ thống, trước hết nó sẽ được tìm kiếm trong memory cache, trong trường hợp mising cache, nó sẽ tìm trong key-value storage.</p>
-<p>Một vấn đề nữa là phân bố mẫu âm và mẫu dương trong data không đồng đều. Trong đó, lượng mẫu dương thường cao hơn rất nhiều so với mẫu âm. Để ngăn chặng thằng mẫu dương thống trị, một chiến lược thường hay được sử dụng là sampling mẫu âm.  Tất nhiên việc này sẽ làm thay đổi phân bố của mô hình huấn luyện. Và sử dụng log odds corection trong quá trình serving (paper HaiYing Wang, Aonan Zhang, and Chong Wang. 2021. Nonuniform Negative Sampling and Log Odds Correction with Rare Events Data. In Advances in Neural Information Processing Systems)</p>
-<h3 id="223-parameter-synchronization">2.2.3 Parameter Synchronization<a class="anchor ms-1" href="#223-parameter-synchronization"><i class="fas fa-link"></i></a></h3>
+<p>Một vấn đề nữa là phân bố mẫu âm và mẫu dương trong data không đồng đều. Trong đó, lượng mẫu dương thường cao hơn rất nhiều so với mẫu âm. Để ngăn chặng thằng mẫu dương thống trị, một chiến lược thường hay được sử dụng là sampling mẫu âm.  Tất nhiên việc này sẽ làm thay đổi phân bố của mô hình huấn luyện. Và sử dụng log odds corection trong quá trình serving [19]</p>
+<h2 id="223-parameter-synchronization">2.2.3 Parameter Synchronization<a class="anchor ms-1" href="#223-parameter-synchronization"><i class="fas fa-link"></i></a></h2>
 <p>Trong suốt quá trình training, dữ liệu sẽ liên tục đổ về online serving module và cập nhật tham số trên PS. Trong môi trường thật, sẽ có một vài thách thức:</p>
 <ol>
 <li>
@@ -631,6 +632,30 @@ Criteo dataset</p>
 <p>b. Với các đặc trưng Dense, chúng ta cập nhật khá chậm, như thảo luận ở mục 2.2.3, việc mất 1 ngày update của 1000 PS là không đáng kể.</p>
 <p>Qua những quan sát và tính toán ở trên, chúng ta có thể kết luận rằng tầng xuất snapshot thấp không ảnh hưởng nhiều đến khả năng chịu lỗi, và giảm khả năng xử lý của hệ thống.</p>
 <p>Cảm ơn nhóm kỹ sư ByteDance đã cung cấp rất nhiều thông tin hữu ích trong bài viết. Hi vọng lần sau sẽ đọc được nhiều bài chất lượng hơn thế nữa.</p>
+<h1 id="tài-liệu-tham-khảo-của-paper">Tài liệu tham khảo của paper<a class="anchor ms-1" href="#tài-liệu-tham-khảo-của-paper"><i class="fas fa-link"></i></a></h1>
+<p>[1] &ldquo;Martín Abadi, Paul Barham, Jianmin Chen, Z. Chen, Andy Davis, Jeffrey Dean, Matthieu Devin, Sanjay Ghemawat, Geoffrey Irving, Michael Isard, Manjunath Kudlur, Josh Levenberg, Rajat Monga, Sherry Moore, Derek Gordon Murray, Benoit Steiner, Paul A. Tucker, Vijay Vasudevan, Pete Warden, Martin Wicke, Yuan Yu, and Xiaoqiang Zhang. 2016. TensorFlow: A system for large-scale machine learning. ArXiv abs/1605.08695 (2016).&rdquo;</p>
+<p>[2] Andrew P. Bradley. 1997. The use of the area under the ROC curve in the evaluation of machine learning algorithms. Pattern Recognit. 30 (1997), 1145–1159.</p>
+<p>[3] Thomas Bredillet. 2019. Core modeling at Instagram. https://instagramengineering.com/core-modeling-at-instagram-a51e0158aa48</p>
+<p>[4] Paris Carbone, Asterios Katsifodimos, Stephan Ewen, Volker Markl, Seif Haridi, and Kostas Tzoumas. 2015. Apache Flink™: Stream and Batch Processing in a Single Engine. IEEE Data Eng. Bull. 38 (2015), 28–38.</p>
+<p>[5] Heng-Tze Cheng, Levent Koc, Jeremiah Harmsen, Tal Shaked, Tushar Chandra, Hrishikesh B. Aradhye, Glen Anderson, Gregory S. Corrado, Wei Chai, Mustafa Ispir, Rohan Anil, Zakaria Haque, Lichan Hong, Vihan Jain, Xiaobing Liu, and Hemal Shah. 2016. Wide &amp; Deep Learning for Recommender Systems. Proceedings of the 1st Workshop on Deep Learning for Recommender Systems (2016).</p>
+<p>[6] Paul Covington, Jay K. Adams, and Emre Sargin. 2016. Deep Neural Networks for YouTube Recommendations. Proceedings of the 10th ACM Conference on Recommender Systems (2016).</p>
+<p>[7] Alexandra Egg. 2021. Online Learning for Recommendations at Grubhub. Fifteenth ACM Conference on Recommender Systems (2021).</p>
+<p>[8] João Gama, Indre Žliobait ˙ e, Albert Bifet, Mykola Pechenizkiy, and A. Bouchachia. 2014. A survey on concept drift adaptation. ACM Computing Surveys (CSUR) 46 (2014), 1 – 37.</p>
+<p>[9] Huifeng Guo, Ruiming Tang, Yunming Ye, Zhenguo Li, and Xiuqiang He. 2017.
+DeepFM: A Factorization-Machine based Neural Network for CTR Prediction. In
+IJCAI.</p>
+<p>[10] Udit Gupta, Xiaodong Wang, Maxim Naumov, Carole-Jean Wu, Brandon Reagen, David M. Brooks, Bradford Cottel, Kim M. Hazelwood, Bill Jia, Hsien-Hsin S. Lee, Andrey Malevich, Dheevatsa Mudigere, Mikhail Smelyanskiy, Liang Xiong, and Xuan Zhang. 2020. The Architectural Implications of Facebook’s DNN-Based Personalized Recommendation. 2020 IEEE International Symposium on High Performance Computer Architecture (HPCA) (2020), 488–501.</p>
+<p>[11] F. Maxwell Harper and Joseph A. Konstan. 2015. The MovieLens Datasets: History and Context. ACM Trans. Interact. Intell. Syst. 5 (2015), 19:1–19:19.</p>
+<p>[12] Biye Jiang, Chao Deng, Huimin Yi, Zelin Hu, Guorui Zhou, Yang Zheng, Sui Huang, Xinyang Guo, Dongyue Wang, Yue Song, Liqin Zhao, Zhi Wang, PengSun, Yu Zhang, Di Zhang, Jinhui Li, Jian Xu, Xiaoqiang Zhu, and Kun Gai. 2019 XDL: an industrial deep learning framework for high-dimensional sparse data. Proceedings of the 1st International Workshop on Deep Learning Practice for HighDimensional Sparse Data (2019).</p>
+<p>[13] Jay Kreps. 2011. Kafka : a Distributed Messaging System for Log Processing.</p>
+<p>[14] Xiangru Lian, Binhang Yuan, Xuefeng Zhu, Yulong Wang, Yongjun He, Honghuan Wu, Lei Sun, Haodong Lyu, Chengjun Liu, Xing Dong, Yiqiao Liao, Mingnan Luo, Congfei Zhang, Jingru Xie, Haonan Li, Lei Chen, Renjie Huang, Jianying Lin, Chengchun Shu, Xue-Bo Qiu, Zhishan Liu, Dongying Kong, Lei Yuan, Haibo Yu, Sen Yang, Ce Zhang, and Ji Liu. 2021. Persia: An Open, Hybrid System Scaling Deep Learning-based Recommenders up to 100 Trillion Parameters. ArXivabs/2111.05897 (2021).</p>
+<p>[15] Meituan. 2021. Distributed Training Optimization for TensorFlow in Recommender Systems (in Chinese). <a href="https://tech.meituan.com/202112/09/meituantensorflow-in-recommender-systems.html" target="_blank" rel="noopener noreferrer">https://tech.meituan.com/202112/09/meituantensorflow-in-recommender-systems.html</a></p>
+<p>[16] R. Pagh and Flemming Friche Rodler. 2001. Cuckoo Hashing. In ESA.</p>
+<p>[17] Adam Paszke, Sam Gross, Francisco Massa, Adam Lerer, James Bradbury, Gregory Chanan, Trevor Killeen, Zeming Lin, Natalia Gimelshein, Luca Antiga, Alban Desmaison, Andreas Köpf, Edward Yang, Zach DeVito, Martin Raison, Alykhan Tejani, Sasank Chilamkurthy, Benoit Steiner, Lu Fang, Junjie Bai, and Soumith Chintala. 2019. PyTorch: An Imperative Style, High-Performance Deep Learning Library. In NeurIPS.</p>
+<p>[18] Konstantin V. Shvachko, Hairong Kuang, Sanjay R. Radia, and Robert J. Chansler. 2010. The Hadoop Distributed File System. 2010 IEEE 26th Symposium on Mass Storage Systems and Technologies (MSST) (2010), 1–10.</p>
+<p>[19] HaiYing Wang, Aonan Zhang, and Chong Wang. 2021. Nonuniform Negative Sampling and Log Odds Correction with Rare Events Data. In Advances in Neural Information Processing Systems.</p>
+<p>[20] Minhui Xie, Kai Ren, Youyou Lu, Guangxu Yang, Qingxing Xu, Bihai Wu, Jiazhen Lin, Hongbo Ao, Wanhong Xu, and Jiwu Shu. 2020. Kraken: Memory-Efficient Continual Learning for Large-Scale Real-Time Recommendations. SC20: International Conference for High Performance Computing, Networking, Storage and Analysis (2020), 1–17.</p>
+<p>[21] Weijie Zhao, Jingyuan Zhang, Deping Xie, Yulei Qian, Ronglai Jia, and Ping Li.2019. AIBox: CTR Prediction Model Training on a Single Node. Proceedings of the 28th ACM International Conference on Information and Knowledge Management (2019).</p>
 <h1 id="tham-khảo">Tham khảo<a class="anchor ms-1" href="#tham-khảo"><i class="fas fa-link"></i></a></h1>
 <p><a href="https://arxiv.org/pdf/2209.07663.pdf" target="_blank" rel="noopener noreferrer">https://arxiv.org/pdf/2209.07663.pdf</a></p>
 <p>Cảm ơn các bạn đã dành thời gian đọc bài tóm tắt này của mình. Nếu có bất kỳ vấn đề gì, hãy để lại comment bên dưới hoặc email cho mình qua địa chỉ <a href="mailto:alexblack2202@gmail.com">alexblack2202@gmail.com</a>. Hẹn gặp lại các bạn ở bài viết tiếp theo.</p>
@@ -687,7 +712,10 @@ Criteo dataset</p>
           <ul>
             <li><a href="#221-streaming-engine">2.2.1 Streaming Engine</a></li>
             <li><a href="#22-2-online-joiner">2.2 .2 Online Joiner</a></li>
-            <li><a href="#223-parameter-synchronization">2.2.3 Parameter Synchronization</a></li>
+          </ul>
+        </li>
+        <li><a href="#223-parameter-synchronization">2.2.3 Parameter Synchronization</a>
+          <ul>
             <li><a href="#23-fault-tolerance">2.3 Fault Tolerance</a></li>
           </ul>
         </li>
@@ -709,6 +737,7 @@ Criteo dataset</p>
         </li>
       </ul>
     </li>
+    <li><a href="#tài-liệu-tham-khảo-của-paper">Tài liệu tham khảo của paper</a></li>
     <li><a href="#tham-khảo">Tham khảo</a></li>
   </ul>
 </nav>
