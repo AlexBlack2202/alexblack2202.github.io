@@ -1,0 +1,636 @@
+<!doctype html><html lang="en" data-palette="blue"
+   data-mode="dark">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Phân cụm của hàng để đưa ra quyết định thông minh hơn - Lý thuyết - Phạm Duy Tùng Machine Learning Blog</title>
+    <meta name="a.validate.02" content="1QZXZ8oi7g57H-GxBrBPkTYBydwii-Ic9iJu" /><link rel="apple-touch-icon" href="/images/icons/icon-180x180.png" sizes="180x180">
+<link rel="icon" href="/images/icons/icon-32x32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="/images/icons/icon-16x16.png" sizes="16x16" type="image/png">
+<link rel="icon" href="/images/icons/favicon.ico">
+<link rel="manifest" href="/manifest.json">
+<meta name="keywords" content="" />
+<meta name="description" content="Phân cụm theo cửa hàng, phân cụm theo danh mục, phân cụm theo nhóm danh mục, là một trong các yếu tố | công cụ tốt giúp cho khối sale, khối marketing đưa ra các quyết định sáng suốt. Thông thường thì chúng ta sẽ phân loại các siêu thị thành các cụm, tuy nhiên, có vẻ như việc phân loại theo nhóm danh mục hoặc danh mục sẽ phù hợp hơn với mục tiêu kinh doanh | mục tiêu marketing. Ví dụ, việc phân loại theo danh mục sẽ cho phép chúng ta tiếp cận đến khoảng mục tiêu (target range) tốt hơn, và đưa ra các chương trình khuyến mãi phù hợp nhất với những nhu cầu của nhóm đó mang tới." /><meta name="robots" content="index, follow" /><meta itemprop="name" content="Phân cụm của hàng để đưa ra quyết định thông minh hơn - Lý thuyết">
+<meta itemprop="description" content="Phân cụm theo cửa hàng, phân cụm theo danh mục, phân cụm theo nhóm danh mục, là một trong các yếu tố | công cụ tốt giúp cho khối sale, khối marketing đưa ra các quyết định sáng suốt. Thông thường thì chúng ta sẽ phân loại các siêu thị thành các cụm, tuy nhiên, có vẻ như việc phân loại theo nhóm danh mục hoặc danh mục sẽ phù hợp hơn với mục tiêu kinh doanh | mục tiêu marketing. Ví dụ, việc phân loại theo danh mục sẽ cho phép chúng ta tiếp cận đến khoảng mục tiêu (target range) tốt hơn, và đưa ra các chương trình khuyến mãi phù hợp nhất với những nhu cầu của nhóm đó mang tới."><meta itemprop="datePublished" content="2023-07-29T00:19:00+03:00" />
+<meta itemprop="dateModified" content="2023-07-29T00:19:00+03:00" />
+<meta itemprop="wordCount" content="1444">
+<meta itemprop="keywords" content="retails," /><meta property="og:title" content="Phân cụm của hàng để đưa ra quyết định thông minh hơn - Lý thuyết" />
+<meta property="og:description" content="Phân cụm theo cửa hàng, phân cụm theo danh mục, phân cụm theo nhóm danh mục, là một trong các yếu tố | công cụ tốt giúp cho khối sale, khối marketing đưa ra các quyết định sáng suốt. Thông thường thì chúng ta sẽ phân loại các siêu thị thành các cụm, tuy nhiên, có vẻ như việc phân loại theo nhóm danh mục hoặc danh mục sẽ phù hợp hơn với mục tiêu kinh doanh | mục tiêu marketing. Ví dụ, việc phân loại theo danh mục sẽ cho phép chúng ta tiếp cận đến khoảng mục tiêu (target range) tốt hơn, và đưa ra các chương trình khuyến mãi phù hợp nhất với những nhu cầu của nhóm đó mang tới." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="/blog/2023-07-29-store-clustering/" /><meta property="article:section" content="blog" />
+<meta property="article:published_time" content="2023-07-29T00:19:00+03:00" />
+<meta property="article:modified_time" content="2023-07-29T00:19:00+03:00" />
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Phân cụm của hàng để đưa ra quyết định thông minh hơn - Lý thuyết"/>
+<meta name="twitter:description" content="Phân cụm theo cửa hàng, phân cụm theo danh mục, phân cụm theo nhóm danh mục, là một trong các yếu tố | công cụ tốt giúp cho khối sale, khối marketing đưa ra các quyết định sáng suốt. Thông thường thì chúng ta sẽ phân loại các siêu thị thành các cụm, tuy nhiên, có vẻ như việc phân loại theo nhóm danh mục hoặc danh mục sẽ phù hợp hơn với mục tiêu kinh doanh | mục tiêu marketing. Ví dụ, việc phân loại theo danh mục sẽ cho phép chúng ta tiếp cận đến khoảng mục tiêu (target range) tốt hơn, và đưa ra các chương trình khuyến mãi phù hợp nhất với những nhu cầu của nhóm đó mang tới."/>
+<meta property="og:image" content="/images/logo.png"/>
+  <meta name="twitter:image" content="/images/logo.png"/><link rel="stylesheet" href="/css/main.min.c06cf34535ee1f60ba08893b4d57e76b2bbd5e11c17ab12ef976f02983a51b54.css" integrity="sha256-wGzzRTXuH2C6CIk7TVfnayu9XhHBerEu&#43;XbwKYOlG1Q=" crossorigin="anonymous"><link rel="stylesheet" href="/css/katex.min.d080a89e03e1eb850f547d835c186b4273f69879aa497eb8b0e88c1578bf1f0b.css" integrity="sha256-0ICongPh64UPVH2DXBhrQnP2mHmqSX64sOiMFXi/Hws=" crossorigin="anonymous">
+<link rel="stylesheet" href="/css/viewer.min.3d228794bcedbbfa0412beb8fbc1ec6973202945e42af7004f742a4d7bd620ab.css" integrity="sha256-PSKHlLztu/oEEr64&#43;8HsaXMgKUXkKvcAT3QqTXvWIKs=" crossorigin="anonymous"></head>
+  <body><script>const items=["mode","palette"];items.forEach(function(e){const t=localStorage.getItem("hbs-"+e);t&&document.body.parentElement.setAttribute("data-"+e,t)})</script><header><nav class="navbar top-app-bar top-app-bar-expand-lg fixed-top">
+  <div class="container">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <i class="fas fa-bars"></i>
+    </button><a class="navbar-brand flex-grow-1 flex-lg-grow-0 text-center text-lg-start mx-auto me-lg-3" href="/"><img class="logo" alt="Logo" src="/images/logo.webp" loading="lazy"  title="Logo"
+   width="400" height="400"
+   />
+HOME
+    </a>
+    <div class="offcanvas offcanvas-bottom surface" tabindex="-1" id="offcanvasSocialShare" aria-labelledby="offcanvasSocialShare">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Share</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body">
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Twitter Share Button"
+      target="_blank" href="https://twitter.com/intent/tweet?title=Ph%c3%a2n%20c%e1%bb%a5m%20c%e1%bb%a7a%20h%c3%a0ng%20%c4%91%e1%bb%83%20%c4%91%c6%b0a%20ra%20quy%e1%ba%bft%20%c4%91%e1%bb%8bnh%20th%c3%b4ng%20minh%20h%c6%a1n%20-%20L%c3%bd%20thuy%e1%ba%bft&url=%2fblog%2f2023-07-29-store-clustering%2f">
+      <i class="fab fa-fw fa-twitter"></i> Twitter
+    </a>
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Facebook Share Button"
+      target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=%2fblog%2f2023-07-29-store-clustering%2f">
+      <i class="fab fa-fw fa-facebook-f"></i> Facebook
+    </a>
+  </div>
+</div>
+    <button class="navbar-settings" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSettings"
+  aria-controls="offcanvasSettings" aria-label="Toggle settings">
+  <i class="fas fa-ellipsis-v"></i>
+</button>
+
+<div class="offcanvas offcanvas-end surface h-100" tabindex="-1" id="offcanvasSettings" aria-labelledby="offcanvasSettings">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Settings</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body d-flex flex-column">
+
+
+
+<section class="setting">
+  <form class="font-size-switcher-form row">
+    <div class="col-auto">
+      <label for="fontSize" class="form-label"><i class="fas fa-fw fa-font"></i> Font Size</label>
+    </div>
+    <div class="col-auto ms-auto">
+      <input type="range" class="form-range" min="-2" max="2" id="fontSize">
+    </div>
+  </form>
+</section>
+
+
+<section class="setting palettes">
+  <form class="row">
+    <div class="col-auto">
+      <label><i class="fas fa-fw fa-palette"></i> Palette</label>
+    </div>
+    <div class="col-auto ms-auto">
+      <a id="btnPalette" class="btn btn-sm btn-outline-primary" role="button" aria-label="palettePicker">
+        <i class="fas fa-eye-dropper"></i>
+      </a>
+    </div>
+  </form>
+  <div class="mt-2 d-flex justify-content-between visually-hidden" id="palettePicker"><button type="button" id="palette-blue" aria-label="Blue"
+        class="btn btn-sm w-100 palette" data-palette="blue">
+      </button><button type="button" id="palette-blue-gray" aria-label="Blue Gray"
+        class="btn btn-sm w-100 palette" data-palette="blue-gray">
+      </button><button type="button" id="palette-brown" aria-label="Brown"
+        class="btn btn-sm w-100 palette" data-palette="brown">
+      </button><button type="button" id="palette-cyan" aria-label="Cyan"
+        class="btn btn-sm w-100 palette" data-palette="cyan">
+      </button><button type="button" id="palette-green" aria-label="Green"
+        class="btn btn-sm w-100 palette" data-palette="green">
+      </button><button type="button" id="palette-indigo" aria-label="Indigo"
+        class="btn btn-sm w-100 palette" data-palette="indigo">
+      </button><button type="button" id="palette-orange" aria-label="Orange"
+        class="btn btn-sm w-100 palette" data-palette="orange">
+      </button><button type="button" id="palette-pink" aria-label="Pink"
+        class="btn btn-sm w-100 palette" data-palette="pink">
+      </button><button type="button" id="palette-purple" aria-label="Purple"
+        class="btn btn-sm w-100 palette" data-palette="purple">
+      </button><button type="button" id="palette-red" aria-label="Red"
+        class="btn btn-sm w-100 palette" data-palette="red">
+      </button><button type="button" id="palette-teal" aria-label="Teal"
+        class="btn btn-sm w-100 palette" data-palette="teal">
+      </button><button type="button" id="palette-yellow" aria-label="Yellow"
+        class="btn btn-sm w-100 palette" data-palette="yellow">
+      </button></div>
+</section>
+<section class="setting actions d-flex justify-content-around mt-auto overflow-auto">
+  <a role="button" class="action action-go-back" href="javascript: window.history.back();">
+    <span class="action-icon"><i class="fas fa-2x fa-arrow-left"></i></span> Go back
+  </a>
+  <a role="button" class="action action-reload-page">
+    <span class="action-icon"><i class="fas fa-2x fa-redo-alt"></i></span> Reload
+  </a>
+  <a role="button" class="action action-copy-url">
+    <span class="action-icon"><i class="fas fa-2x fa-link"></i></span> Copy URL
+  </a><a class="action action-social-share" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSocialShare"
+    aria-controls="offcanvasSocialShare" aria-label="Toggle social share">
+    <span class="action-icon"><i class="fas fa-2x fa-share-alt"></i></span> Share
+  </a></section>
+
+</div>
+</div>
+
+    <div class="collapse navbar-collapse" tabindex="-1" id="navbarSupportedContent" aria-labelledby="navbarSupportedContent">
+      <form class="search-bar my-1" action="/search">
+  <div class="input-group input-group-sm">
+    <span class="btn btn-search disabled position-absolute left-0"><i class="fas fa-fw fa-search"></i></span>
+    <input class="form-control rounded-pill" name="q" type="search" aria-label="Search">
+  </div>
+</form>
+      <ul class="navbar-nav ms-auto"><li class="nav-item">
+          <a class="nav-link" href="/series/">
+            <i class="fas fa-fw fa-columns"></i>Courses
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="/tools/">
+            <i class="fas fa-fw fa-folder"></i>Tools
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="/categories/">
+            <i class="fas fa-fw fa-folder"></i>Categories
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="/archives/">
+            <i class="fas fa-fw fa-file-archive"></i>Archives
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="/tags/">
+            <i class="fas fa-fw fa-tags"></i>Tags
+          </a>
+        </li><li class="nav-item dropdown">
+          <a class="nav-link" id="navbarDropdownSupport" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-fw fa-chevron-circle-down"></i>Support
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdownSupport"><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Repository
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Discussions
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Features Request
+              </a>
+            </li><li><hr class="dropdown-divider"></li><li>
+              <a class="dropdown-item"
+                href="/faq/">
+                FAQs
+              </a>
+            </li></ul>
+        </li></ul>
+    </div>
+  </div>
+</nav>
+</header>
+<main role="main" class="container">
+      <div class="row content">
+<div class="col-lg-8">
+  <div class="container"><nav class="row card component" aria-label="breadcrumb">
+  <div class="card-body">
+    <ol class="breadcrumb "><li class="breadcrumb-item"><a href="/">Home</a></li><li class="breadcrumb-item"><a href="/blog/">Blogs</a></li><li class="breadcrumb-item active">Phân Cụm Của Hàng Để Đưa Ra Quyết Định Thông Minh Hơn - Lý Thuyết</li></ol>
+  </div>
+</nav>
+<div class="post-panel-wrapper">
+  <div class="d-flex flex-column component rounded post-panel">
+    
+    <a class="action action-panel-toggler" role="button" title="Panel toggler">
+      <i class="fas fa-fw fa-chevron-circle-down"></i>
+    </a>
+    <a id="sidebarToggler" class="action d-none d-lg-block" role="button" title="Sidebar toggler">
+  <i class="fas fa-fw fa-expand-alt" data-fa-transform="rotate-45"></i>
+</a>
+
+    
+
+    
+    
+    <a class="action" href="#post-comments" role="button" aria-label="Comments" title="Comments">
+  <i class="fas fa-fw fa-comments"></i>
+</a>
+    <a class="action" href="#postTOC" aria-controls="Table of contents" role="button" title="Table of contents">
+  <i class="fas fa-fw fa-list-alt"></i>
+</a>
+    
+  </div>
+</div>
+<article class="row card component mb-4 post">
+  <div class="card-header ">
+    <h1 class="card-title post-title">Phân Cụm Của Hàng Để Đưa Ra Quyết Định Thông Minh Hơn - Lý Thuyết
+</h1>
+  </div>
+  <div class="card-body"><div class="post-meta">
+  <span class="post-date" title="created on 2023-07-29 04:19:00 &#43;0700 &#43;07.">
+    Jul 29, 2023
+  </span><span class="post-reading-time">
+    7 min read
+  </span><span class="post-taxonomies"><a href="/tags/retails/" class="badge post-taxonomy">retails</a></span>
+</div>
+<div class="post-content mb-3">
+      
+      <img data-original="//images.unsplash.com/photo-1517702087178-fa967a8e8169" style="max-height:450px;width: 100%;
+      cursor: pointer;
+      max-width: 100%;" src="//images.unsplash.com/photo-1517702087178-fa967a8e8169" alt="Phân cụm của hàng để đưa ra quyết định thông minh hơn - Lý thuyết"   />
+
+      <div class="toc">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#đặt-vấn-đề">Đặt vấn đề</a></li>
+    <li><a href="#cách-thức-thực-hiện">Cách thức thực hiện</a></li>
+    <li><a href="#cách-tiếp-cận">Cách tiếp cận</a>
+      <ul>
+        <li><a href="#store-capacity-clustering">Store Capacity Clustering</a></li>
+        <li><a href="#store-attribute-clustering">Store Attribute Clustering</a></li>
+        <li><a href="#category-sales-clustering">Category Sales Clustering</a></li>
+        <li><a href="#productivity-based-clustering">Productivity-based Clustering</a></li>
+        <li><a href="#price-based-clustering">Price-based Clustering</a></li>
+        <li><a href="#multi-dimensional-clustering">Multi-dimensional clustering</a></li>
+      </ul>
+    </li>
+    <li><a href="#một-số-ví-dụ-thực-tiễn">Một số ví dụ thực tiễn</a>
+      <ul>
+        <li><a href="#tự-thiết-lập-phân-khúc-giá">Tự thiết lập phân khúc giá.</a></li>
+        <li><a href="#lập-kế-hoạch-phát-tờ-rơi-quảng-cáo">Lập kế hoạch phát tờ rơi quảng cáo</a></li>
+        <li><a href="#bài-toán-tài-xế-giao-hàng-grab">Bài toán tài xế giao hàng grab</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+<p>Bài viết này là góc nhìn của một ông IT đang tập tành Data Driven Development, viết note lại chơi chơi dựa vào các tài liệu đọc được vào từ khoá store clustering retail, viết bậy viết bạ, các bạn có ý tưởng hay ho có thể góp ý giúp mình có thêm nhiều góc nhìn hơn nha.</p>
+<h1 id="đặt-vấn-đề">Đặt vấn đề<a class="anchor ms-1" href="#đặt-vấn-đề"><i class="fas fa-link"></i></a></h1>
+<p>Trong mô hình kinh doanh bán lẻ, có hai mô hình dạng chuỗi cửa hàng khác nhau, mỗi mô hình đều có ưu và nhược điểm riêng:</p>
+<p>Dạng chuỗi mà tất cả các cửa hàng giống hệt nhau ( ví dụ Starbucks), dạng chuỗi này thì việc vận hành đơn giản, theo quy trình có sẵn, đồng nhất, nhất quán, mang lại trải nghiệm xuyên suốt với khách hàng. Hầu như là quản lý khá nhàn.</p>
+<p>Dạng chuỗi thứ 2,  các Quản lý được xem như là ông chủ nhỏ của cửa hàng,  có quyền tự quyết trong việc phân loại, định giá, và khuyến mãi. Ví dụ: các nhà bán lẻ như Tập đoàn Aeon , ICA, Metro, hoặc bách hoá xanh của Việt Nam trao khá nhiều quyền kiểm soát cho các quản lý cửa hàng.</p>
+<p>Dù mô hình kinh doanh là dạng 1 hay dạng 2, thì việc nhóm các siêu thị có tính chất tương đồng thành các nhóm đồng nhất với nhau về các khía cạnh nào đó ( trong machine learning  gọi là gom cụm), cũng giúp cho người điều hành có thể scale được các chiến lược marketing, sử dụng cách tiếp cận cookie-cutter  (( từ khoá  cookie cutter approach in business) đại loại là nếu 1 mô hình marketing thành công cho cửa hàng A, thì cũng có thể scale out và thành công ở các cửa hàng A1.. An có cùng cụm với cửa hàng A.) , cách tiếp cận này  cũng có thể  áp dụng với mô hình kinh doanh nhượng quyền (franchisee).</p>
+<h1 id="cách-thức-thực-hiện">Cách thức thực hiện<a class="anchor ms-1" href="#cách-thức-thực-hiện"><i class="fas fa-link"></i></a></h1>
+<p>Khái niệm phân loại cửa hàng không mới, nhưng có rất ít nhà bán lẻ ở các thị trường nhỏ sử dụng các phương thức khoa học để tạo mô hình. Và rất rất ít nhà bán lẻ hệ thống hoá quy trình phân loại | gom cụm, có thể là lý do tài chính không cho phép, hoặc việc thuê đơn vị tư vấn độc lập khá tốn kém. Mô hình mình đề cập tới ở đây là: Data Science lập phân tích, Business kiểm chứng, và cần có sự thông suốt về mặt data giữa Data Science và Business.</p>
+<ul>
+<li>
+<p>Các yếu tố tham chiếu chính:</p>
+<ul>
+<li>
+<p>% bán hàng trên deal với nhà cung cấp</p>
+</li>
+<li>
+<p>% tỷ lệ bán hàng hỗn hợp hợp(category mix) &hellip;</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Các yếu tố tham chiếu bổ sung bên cạnh đó:</p>
+<ul>
+<li>
+<p>Sự hiện diện của đối thủ</p>
+</li>
+<li>
+<p>Vị trí địa lý</p>
+</li>
+<li>
+<p>Nhân khẩu học &hellip;</p>
+</li>
+</ul>
+</li>
+</ul>
+<p>Ở đây, mình chỉ liệt kê một vài yếu tố, một vài yếu tố chi tiết được liệt kê ở phần tiếp theo.</p>
+<p>Các yếu tố tham chiếu bổ sung sẽ giúp chúng ta phân biệt các cụm rõ ràng hơn và nhìn thấy sự khác nhau giữa các cụm đó.</p>
+<p>theo solvoyo.com, ngày nay, người ta thường phân loại theo category level thay vì store level. Category level mạng lại sự chính xác cao hơn, nhưng khi thực hiện lại phức tạp hơn</p>
+<p>Sau đó, chúng ta sẽ xây dựng model dựa trên các yếu tố trên, và kiểm chứng model. Có một vài mô hình clustering trong machine learning các bạn có thể sử dụng như KNN, SVC, DBScan, kmean &hellip;</p>
+<p>Thông qua việc sử dụng phân cụm, các nhà bán lẻ có thể số hoá nhu cầu của từng khu vực và đề ra những phương án vận hành (mới) hiệu quả hơn (tất nhiên, đây mới chỉ là phần lý thuyết, cần thử nghiệm để chứng minh tính đúng đắn xem rằng các cụm chúng ta đề xuất có thật sự liên quan mạnh với nhau hay không, hay còn yếu tố ẩn quan trọng nào đó mà chúng ta đã bỏ lỡ trong quá trình thu thập dữ liệu).</p>
+<p>Ví dụ: một chuỗi cửa hàng tiện lợi có thể điều chỉnh cách tiếp cận khách hàng bằng cách bán hàng theo giỏ hàng, chia thành gói giỏ hàng buổi sáng, giỏ hàng buổi trưa, giỏ hàng buổi tối, phù hợp với mục tiêu mua sắm và vị trí của khách hàng.</p>
+<p>Ví dụ khác: Cửa hàng cà phê mới, cửa hàng bánh ngọt mới, cửa hàng phở mới, ở gần vị trí địa lý, kích thước gần giống nhau, nhưng triển vọng phát triển có thể sẽ khác nhau, do triển vọng phát triển của thực phẩm mang đi khác hoàn toàn với thực phẩm ăn tại chỗ.</p>
+<p>Việc phân cụm cửa hàng là bước đầu giúp cho các nhà quản lý có một bức tranh ướm chừng khi đưa ra quyết định, và giúp họ đưa ra kết luận một cách định lượng hơn.</p>
+<h1 id="cách-tiếp-cận">Cách tiếp cận<a class="anchor ms-1" href="#cách-tiếp-cận"><i class="fas fa-link"></i></a></h1>
+<h2 id="store-capacity-clustering">Store Capacity Clustering<a class="anchor ms-1" href="#store-capacity-clustering"><i class="fas fa-link"></i></a></h2>
+<ul>
+<li>
+<p>Net selling space ( đo lượng trên đơn vị mét vuông)</p>
+</li>
+<li>
+<p>Shelf capacity ( đo lượng trên đơn vị số lượng sản phẩm / đơn vị chuẩn (kệ))</p>
+</li>
+<li>
+<p>Option capacity ( số lượng sku trên mỗi cửa hàng có thể được trưng bày tại 1 thời điểm)</p>
+</li>
+<li>
+<p>Unit capacity ( Số lượng sản phẩm có thể trưng bày tại 1 thời điểm)</p>
+</li>
+</ul>
+<h2 id="store-attribute-clustering">Store Attribute Clustering<a class="anchor ms-1" href="#store-attribute-clustering"><i class="fas fa-link"></i></a></h2>
+<ul>
+<li>
+<p>Lượt khách trung bình của cửa hàng</p>
+</li>
+<li>
+<p>Vị trí ( độ thị, nông thôn, khu công nghiệp, khu chế xuất, khu xây dựng mới)</p>
+</li>
+<li>
+<p>Income profiles</p>
+</li>
+<li>
+<p>Cultural profiles ( xét trên khách hàng trung thành, ví dụ như dân tộc)</p>
+</li>
+<li>
+<p>Mall type ( đại siêu thị, cửa hàng nhỏ)</p>
+</li>
+<li>
+<p>&hellip;</p>
+</li>
+</ul>
+<h2 id="category-sales-clustering">Category Sales Clustering<a class="anchor ms-1" href="#category-sales-clustering"><i class="fas fa-link"></i></a></h2>
+<ul>
+<li>
+<p>Weekly unit sales</p>
+</li>
+<li>
+<p>Weekly revenue</p>
+</li>
+<li>
+<p>Inventory turn (dựa trên yếu tố bao lâu hàng về một lần)</p>
+</li>
+</ul>
+<h2 id="productivity-based-clustering">Productivity-based Clustering<a class="anchor ms-1" href="#productivity-based-clustering"><i class="fas fa-link"></i></a></h2>
+<ul>
+<li>
+<p>Revenue per square meter (or sq. foot)</p>
+</li>
+<li>
+<p>GM per square meter</p>
+</li>
+<li>
+<p>Unit sales per product (option, or SKU)</p>
+</li>
+</ul>
+<h2 id="price-based-clustering">Price-based Clustering<a class="anchor ms-1" href="#price-based-clustering"><i class="fas fa-link"></i></a></h2>
+<ul>
+<li>
+<p>Average unit retail</p>
+</li>
+<li>
+<p>Price profile performance (dựa trên sự đóng góp của doanh số bán hàng từ các phân khúc giá khác nhau như cao, trung bình, thấp hoặc dựa trên sự đóng góp của doanh số giảm giá và bán hàng nguyên giá)</p>
+</li>
+<li>
+<p>Price elasticity (dựa trên sự thay đổi về nhu cầu để đáp ứng với những thay đổi về giá, thường được sử dụng trong các hệ thống lập kế hoạch khuyến mãi và tối ưu hóa giảm giá)</p>
+</li>
+</ul>
+<h2 id="multi-dimensional-clustering">Multi-dimensional clustering<a class="anchor ms-1" href="#multi-dimensional-clustering"><i class="fas fa-link"></i></a></h2>
+<p>Đây là phương pháp nhóm các cửa hàng dựa trên các metric và các attributes được đề cập ở phía trên.</p>
+<p>Ví dụ, với mỗi category của  cửa hàng, có thể được phân cụm dựa vào sale performance, capacity, price performance</p>
+<h1 id="một-số-ví-dụ-thực-tiễn">Một số ví dụ thực tiễn<a class="anchor ms-1" href="#một-số-ví-dụ-thực-tiễn"><i class="fas fa-link"></i></a></h1>
+<h2 id="tự-thiết-lập-phân-khúc-giá">Tự thiết lập phân khúc giá.<a class="anchor ms-1" href="#tự-thiết-lập-phân-khúc-giá"><i class="fas fa-link"></i></a></h2>
+<p>Các nơi có tỷ lệ khách hàng mua một lần cao thường sẽ thiết lập một mức giá cao hơn những nơi có tỷ lệ khách hàng trung thành cao. Ví dụ:</p>
+<ul>
+<li>
+<p>Các website hãng</p>
+</li>
+<li>
+<p>Sản phẩm được bán ở sân bay so với bán ở các cửa hàng xung quanh nơi bạn sinh sống.</p>
+</li>
+</ul>
+<p>Tất nhiên, sẽ có nhiều bạn sẽ cải lại rằng giá ở sân bay cao do các chi phí thuê nhân viên, chi phí mặt bằng, chi phí từ abc đến xyz cao &hellip;</p>
+<p>Việc phân cụm, định danh các nhóm cửa hàng có đặc điểm riêng biệt như trên, ví dụ như cửa hàng liền kề khu du lịch, sẽ giúp các bạn có góc nhìn khoa học hơn vào quy hoạch phân vùng giá hoặc quy trình bán hàng.</p>
+<h2 id="lập-kế-hoạch-phát-tờ-rơi-quảng-cáo">Lập kế hoạch phát tờ rơi quảng cáo<a class="anchor ms-1" href="#lập-kế-hoạch-phát-tờ-rơi-quảng-cáo"><i class="fas fa-link"></i></a></h2>
+<ul>
+<li>
+<p>Tối ưu hoá chi phí in ấn</p>
+</li>
+<li>
+<p>Đa dạng hoá tờ rơi</p>
+</li>
+<li>
+<p>Dự đoán được tỷ lệ mua hàng , đề ra chiến lược mua bán hợp lý hơn.</p>
+</li>
+</ul>
+<h2 id="bài-toán-tài-xế-giao-hàng-grab">Bài toán tài xế giao hàng grab<a class="anchor ms-1" href="#bài-toán-tài-xế-giao-hàng-grab"><i class="fas fa-link"></i></a></h2>
+<p>Trong bất kỳ sự thay đổi nào về mặt vận hành và quản lý, chúng ta nên đo lường sự tăng trưởng và kiểm định lại để chứng minh giá trị thay đổi là đúng đắn và hỗ trợ tốt cho việc triển khai ra quy mô lớn.</p>
+<p>Cảm ơn các bạn đã theo dõi bài viết, hẹn gặp lại ở các bài viết tiếp theo</p>
+<p>Tài liệu tham khảo</p>
+<p><a href="https://analyticsindiamag.com/analytics-driven-store-clustering-sales-and-profits-retail/" target="_blank" rel="noopener noreferrer">https://analyticsindiamag.com/analytics-driven-store-clustering-sales-and-profits-retail/</a></p>
+<p><a href="https://www.solvoyo.com/whitepapers/approaches-to-retail-store-clustering/" target="_blank" rel="noopener noreferrer">https://www.solvoyo.com/whitepapers/approaches-to-retail-store-clustering/</a></p>
+<p><a href="https://www.davinciretail.com/resources/what-is-retail-store-clustering" target="_blank" rel="noopener noreferrer">https://www.davinciretail.com/resources/what-is-retail-store-clustering</a></p>
+<p><a href="https://www.forbes.com/sites/forbestechcouncil/2022/04/20/clustering-the-new-world-of-retail-product-segmentation" target="_blank" rel="noopener noreferrer">https://www.forbes.com/sites/forbestechcouncil/2022/04/20/clustering-the-new-world-of-retail-product-segmentation</a></p>
+</div></div>
+  <div class="card-footer"><div class="post-navs d-flex justify-content-evenly"><div class="post-nav post-prev">
+    <i class="fas fa-fw fa-chevron-left"></i>
+    <a href="/blog/2023-07-23-product-mindset/">Tư Duy Làm Sản Phẩm - The Product Mindset
+</a>
+  </div></div></div>
+</article><div class="card component row post-comments" id="post-comments">
+  <div class="card-header">
+    <h2 class="card-title">Comments</h2>
+  </div>
+  <div class="card-body"><script src="https://utteranc.es/client.js"
+  repo="AlexBlack2202/utterances"
+  issue-term="pathname"
+  label="comment"
+  theme="github-dark"
+  crossorigin="anonymous"
+  async>
+</script></div>
+</div></div>
+</div><aside class="col-lg-4 sidebar d-flex">
+  <div class="container d-flex flex-column">
+    
+    <section class="card row text-center profile component">
+  <div class="card-body">
+    <div class="col-12 d-flex align-items-center justify-content-center"><img class="profile-avatar rounded-circle" alt="Đặng Thị Hằng | Phạm Duy Tùng" src="/images/profile.webp" loading="lazy"  title="Đặng Thị Hằng | Phạm Duy Tùng"
+   width="736" height="920"
+   />
+</div>
+    <div class="col-12 profile-meta"><div class="profile-name">Đặng Thị Hằng | Phạm Duy Tùng</div><div class="profile-bio">Gopher, CShaper, Pythoner, Full Stack Engineer.</div><div class="profile-company"><i class="fas fa-fw fa-building"></i>MWG</div><div class="profile-location"><i class="fas fa-fw fa-map-marker-alt"></i>Earth</div><div class="profile-about"><i class="fas fa-fw fa-user"></i><a href="/about/">About</a></div><div class="profile-contact"><i class="fas fa-fw fa-question-circle"></i><a href="/contact/">Contact Us</a></div>
+</div>
+  </div>
+</section>
+  <div class="post-toc row mb-4 card component" id="postTOC">
+  <div class="card-header">
+    <h2 class="card-title">Contents</h2>
+  </div>
+  <div class="card-body">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#đặt-vấn-đề">Đặt vấn đề</a></li>
+    <li><a href="#cách-thức-thực-hiện">Cách thức thực hiện</a></li>
+    <li><a href="#cách-tiếp-cận">Cách tiếp cận</a>
+      <ul>
+        <li><a href="#store-capacity-clustering">Store Capacity Clustering</a></li>
+        <li><a href="#store-attribute-clustering">Store Attribute Clustering</a></li>
+        <li><a href="#category-sales-clustering">Category Sales Clustering</a></li>
+        <li><a href="#productivity-based-clustering">Productivity-based Clustering</a></li>
+        <li><a href="#price-based-clustering">Price-based Clustering</a></li>
+        <li><a href="#multi-dimensional-clustering">Multi-dimensional clustering</a></li>
+      </ul>
+    </li>
+    <li><a href="#một-số-ví-dụ-thực-tiễn">Một số ví dụ thực tiễn</a>
+      <ul>
+        <li><a href="#tự-thiết-lập-phân-khúc-giá">Tự thiết lập phân khúc giá.</a></li>
+        <li><a href="#lập-kế-hoạch-phát-tờ-rơi-quảng-cáo">Lập kế hoạch phát tờ rơi quảng cáo</a></li>
+        <li><a href="#bài-toán-tài-xế-giao-hàng-grab">Bài toán tài xế giao hàng grab</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div><section class="recent-posts row card component">
+  <div class="card-header">
+    <h2 class="card-title">Recent Posts</h2>
+  </div>
+  <div class="card-body">
+    <ul class="post-list"><li>
+        <a href="/blog/2023-07-29-store-clustering/">Phân Cụm Của Hàng Để Đưa Ra Quyết Định Thông Minh Hơn - Lý Thuyết
+</a>
+      </li><li>
+        <a href="/blog/2023-07-23-product-mindset/">Tư Duy Làm Sản Phẩm - The Product Mindset
+</a>
+      </li><li>
+        <a href="/blog/2023-03-25-elasticsearch-opensearch-ngram/">N-Gram Trong Elastic Search Và Opensearch - Khi Nào Không Nên Sử Dụng
+</a>
+      </li><li>
+        <a href="/blog/2023-02-18-symbolic-vs-connectionist/">Symbolic AI Và Connectionist AI
+</a>
+      </li><li>
+        <a href="/blog/2022-12-03-marketing-with-python/">Marketing Thực Chiến - Phân Loại Khách Hàng Sử Dụng RFM Analysis
+</a>
+      </li></ul>
+  </div>
+</section><section class="series-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="/series">series</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="/series/kh%C3%B3a-h%E1%BB%8Dc-python-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa học python căn bản">
+            Khóa học python căn bản<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="/series/kh%C3%B3a-h%E1%BB%8Dc-c&#43;&#43;-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa học c&#43;&#43; căn bản">
+            Khóa học c&#43;&#43; căn bản<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="/series/machine-learning-dataset/" class="badge rounded post-taxonomy" title="Machine learning dataset">
+            Machine learning dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a><a href="/series/ch%E1%BB%A9ng-kho%C3%A1n-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Chứng khoán căn bản">
+            Chứng khoán căn bản<span class="badge badge-sm text-white bg-accent ms-1">1</span></a></div>
+      </div>
+    </section><section class="tools-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="/tools">tools</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="/tools/tool-random/" class="badge rounded post-taxonomy" title="Tool Random">
+            Tool Random<span class="badge badge-sm text-white bg-accent ms-1">2</span></a></div>
+      </div>
+    </section><section class="categories-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="/categories">categories</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="/categories/python/" class="badge rounded post-taxonomy" title="python">
+            python<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="/categories/c&#43;&#43;/" class="badge rounded post-taxonomy" title="c&#43;&#43;">
+            c&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="/categories/dataset/" class="badge rounded post-taxonomy" title="dataset">
+            dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a></div>
+      </div>
+    </section><section class="tags-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="/tags">tags</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="/tags/machine-learning/" class="badge rounded post-taxonomy" title="Machine learning">
+            Machine learning<span class="badge badge-sm text-white bg-accent ms-1">42</span></a><a href="/tags/deeplearning/" class="badge rounded post-taxonomy" title="Deeplearning">
+            Deeplearning<span class="badge badge-sm text-white bg-accent ms-1">20</span></a><a href="/tags/deep-learning/" class="badge rounded post-taxonomy" title="Deep learning">
+            Deep learning<span class="badge badge-sm text-white bg-accent ms-1">19</span></a><a href="/tags/python/" class="badge rounded post-taxonomy" title="python">
+            python<span class="badge badge-sm text-white bg-accent ms-1">14</span></a><a href="/tags/opencv/" class="badge rounded post-taxonomy" title="opencv">
+            opencv<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="/tags/c&#43;&#43;/" class="badge rounded post-taxonomy" title="c&#43;&#43;">
+            c&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/object-detector/" class="badge rounded post-taxonomy" title="object detector">
+            object detector<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/recommendation/" class="badge rounded post-taxonomy" title="Recommendation">
+            Recommendation<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/alexnet/" class="badge rounded post-taxonomy" title="AlexNet">
+            AlexNet<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="/tags/d%E1%BB%B1-%C4%91o%C3%A1n/" class="badge rounded post-taxonomy" title="dự đoán">
+            dự đoán<span class="badge badge-sm text-white bg-accent ms-1">3</span></a></div>
+      </div>
+    </section>
+    
+  </div>
+</aside>
+</div>
+    </main><footer class="footer mt-auto py-3 text-center container"><ul class="nav justify-content-between footer-memu mb-3"><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Support
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-github"></i>Repository
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-comments"></i>Discussions
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">Features Request
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">Bug Report
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/contact/"><i class="fas fa-fw fa-info-circle"></i>Contact Us
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/faq/"><i class="fas fa-fw fa-question-circle"></i>FAQs
+</a>
+        </li></ul></li><li class="nav-item"><li class="nav-item">
+      <a class="nav-link" target="_blank" rel="noopener noreferrer">Docs
+</a>
+    </li></li><li class="nav-item"><li class="nav-item">
+      <a class="nav-link" target="_blank" rel="noopener noreferrer">Features
+</a>
+    </li></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Demo
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">Netlify
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">China
+</a>
+        </li></ul></li></ul>
+<div class="copyright mb-2">
+  Copyright © 2016-2023 Phạm Duy Tùng. All Rights Reserved.
+</div>
+<div class="powered-by mb-2">
+  Website chia sẻ kiến thức của Phạm Duy Tùng và Đặng Thị Hằng. Vui lòng liên hệ email alexblack2202@gmail.com nếu bạn có thông tin cần trao đổi.
+</div></footer>
+<script src="/js/main.ed2053ad82a243b263761567b5c1aaf974487aa84adacb89ae3ddf803ecc248a.js" integrity="sha256-7SBTrYKiQ7JjdhVntcGq&#43;XRIeqhK2suJrj3fgD7MJIo=" crossorigin="anonymous" defer></script><script src="/js/icons.min.acdbd59936764a801998a13fb1741d76453c42dc9aeee26251a97b5a9ff679bb.js" integrity="sha256-rNvVmTZ2SoAZmKE/sXQddkU8Qtya7uJiUal7Wp/2ebs=" crossorigin="anonymous" defer></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('\/service-worker.js').then(function(reg) {
+      console.log('Successfully registered service worker', reg);
+    }).catch(function(err) {
+      console.warn('Error whilst registering service worker', err);
+    });
+  });
+}
+</script><script src="/js/viewer.min.7781ba4e24db35cc3033a16118f338140fbb6694360d281e18a5928a4d16d54a.js" integrity="sha256-d4G6TiTbNcwwM6FhGPM4FA&#43;7ZpQ2DSgeGKWSik0W1Uo=" crossorigin="anonymous" defer></script><script defer src="/js/katex.min.94aec2dfcc8c17ad662f39ab866039f0e9705caf6f362b93496f3750d66a9bfe.js" integrity="sha256-lK7C38yMF61mLzmrhmA58OlwXK9vNiuTSW83UNZqm/4=" crossorigin="anonymous"></script>
+
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-114911596-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+<script data-cfasync="false" type="text/javascript" data-adel="atag" src="//acscdn.com/script/atg.js" czid="eul3gyjdmm"></script>
+  </body>
+</html>
