@@ -1,0 +1,1266 @@
+<!doctype html><html lang="en" data-palette="blue"
+   data-mode="dark">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Sử dụng mô hình Double DQN  huấn luyện mô hình Reinforcement Learning với game mario - Phạm Duy Tùng Machine Learning Blog</title>
+    <meta name="a.validate.02" content="1QZXZ8oi7g57H-GxBrBPkTYBydwii-Ic9iJu" /><link rel="apple-touch-icon" href="/images/icons/icon-180x180.png" sizes="180x180">
+<link rel="icon" href="/images/icons/icon-32x32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="/images/icons/icon-16x16.png" sizes="16x16" type="image/png">
+<link rel="icon" href="/images/icons/favicon.ico">
+<link rel="manifest" href="/manifest.json">
+<meta name="keywords" content="" />
+<meta name="description" content="Chào các bạn, sau một thời gian ở ẩn, chúng ta lại tiếp tục với việc thực chiến AI, ở bài viết này, chúng ta sẽ train mô hình AI Reinforcement Learning với tựa game đã đi vào bao nhiêu thế hệ trẻ thơ, Mario, tuy nhiên, để bắt đầu bài viết, mình sẽ note lại một vài ý về Reinforcement Learning, Q learning, và cải tiến của Deep Q-Network là Double Deep Q-Network , trong phần code mình sẽ sử dụng  Double Deep Q-Network" /><meta name="robots" content="index, follow" />
+  <meta itemprop="name" content="Sử dụng mô hình Double DQN  huấn luyện mô hình Reinforcement Learning với game mario">
+  <meta itemprop="description" content="Chào các bạn, sau một thời gian ở ẩn, chúng ta lại tiếp tục với việc thực chiến AI, ở bài viết này, chúng ta sẽ train mô hình AI Reinforcement Learning với tựa game đã đi vào bao nhiêu thế hệ trẻ thơ, Mario, tuy nhiên, để bắt đầu bài viết, mình sẽ note lại một vài ý về Reinforcement Learning, Q learning, và cải tiến của Deep Q-Network là Double Deep Q-Network , trong phần code mình sẽ sử dụng  Double Deep Q-Network">
+  <meta itemprop="datePublished" content="2024-10-27T00:19:00+03:00">
+  <meta itemprop="dateModified" content="2024-10-27T00:19:00+03:00">
+  <meta itemprop="wordCount" content="6584">
+  <meta itemprop="keywords" content="Reinformation_learning,Deeplearning"><meta property="og:url" content="/blog/2024-10-27-mario-reinfomation-learning-double-dqn/">
+  <meta property="og:site_name" content="Phạm Duy Tùng Machine Learning Blog">
+  <meta property="og:title" content="Sử dụng mô hình Double DQN  huấn luyện mô hình Reinforcement Learning với game mario">
+  <meta property="og:description" content="Chào các bạn, sau một thời gian ở ẩn, chúng ta lại tiếp tục với việc thực chiến AI, ở bài viết này, chúng ta sẽ train mô hình AI Reinforcement Learning với tựa game đã đi vào bao nhiêu thế hệ trẻ thơ, Mario, tuy nhiên, để bắt đầu bài viết, mình sẽ note lại một vài ý về Reinforcement Learning, Q learning, và cải tiến của Deep Q-Network là Double Deep Q-Network , trong phần code mình sẽ sử dụng  Double Deep Q-Network">
+  <meta property="og:locale" content="en">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2024-10-27T00:19:00+03:00">
+    <meta property="article:modified_time" content="2024-10-27T00:19:00+03:00">
+    <meta property="article:tag" content="Reinformation_learning">
+    <meta property="article:tag" content="Deeplearning">
+<meta name="twitter:card" content="summary"><meta name="twitter:title" content="Sử dụng mô hình Double DQN  huấn luyện mô hình Reinforcement Learning với game mario">
+<meta name="twitter:description" content="Chào các bạn, sau một thời gian ở ẩn, chúng ta lại tiếp tục với việc thực chiến AI, ở bài viết này, chúng ta sẽ train mô hình AI Reinforcement Learning với tựa game đã đi vào bao nhiêu thế hệ trẻ thơ, Mario, tuy nhiên, để bắt đầu bài viết, mình sẽ note lại một vài ý về Reinforcement Learning, Q learning, và cải tiến của Deep Q-Network là Double Deep Q-Network , trong phần code mình sẽ sử dụng  Double Deep Q-Network">
+<meta property="og:image" content="/images/logo.png"/>
+  <meta name="twitter:image" content="/images/logo.png"/><link rel="stylesheet" href="/css/main.min.c06cf34535ee1f60ba08893b4d57e76b2bbd5e11c17ab12ef976f02983a51b54.css" integrity="sha256-wGzzRTXuH2C6CIk7TVfnayu9XhHBerEu&#43;XbwKYOlG1Q=" crossorigin="anonymous"><link rel="stylesheet" href="/css/katex.min.d080a89e03e1eb850f547d835c186b4273f69879aa497eb8b0e88c1578bf1f0b.css" integrity="sha256-0ICongPh64UPVH2DXBhrQnP2mHmqSX64sOiMFXi/Hws=" crossorigin="anonymous">
+<link rel="stylesheet" href="/css/viewer.min.3d228794bcedbbfa0412beb8fbc1ec6973202945e42af7004f742a4d7bd620ab.css" integrity="sha256-PSKHlLztu/oEEr64&#43;8HsaXMgKUXkKvcAT3QqTXvWIKs=" crossorigin="anonymous"><style>
+    .bgcover {
+        display: block;
+        overflow: hidden;
+        height: 450px;
+        background: no-repeat center center;
+        -webkit-background-size: cover;
+        -moz-background-size: cover;
+        -o-background-size: cover;
+        background-size: cover;
+        position: relative;
+        margin-bottom: -65px;
+    }
+    .bgcover {
+        margin-bottom: 0 !important;
+    }
+
+    .bgcover .bgtrans {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        display: block;
+        overflow: hidden;
+        height: inherit;
+        background: rgba(0,0,0,.8);
+        background: -webkit-gradient(linear,0% 0%,0% 100%,from(rgba(0,0,0,.8)),to (rgba(0,0,0,.6)),to(rgba(255,255,255,0)));
+        background: -webkit-linear-gradient(top,rgba(255,255,255,0),rgba(0,0,0,.6),rgba(0,0,0,.8));
+        background: -moz-linear-gradient(top,rgba(255,255,255,0),rgba(0,0,0,.6),rgba(0,0,0,.8));
+        background: -ms-linear-gradient(top,rgba(255,255,255,0),rgba(0,0,0,.6),rgba(0,0,0,.8));
+        background: -o-linear-gradient(top,rgba(255,255,255,0),rgba(0,0,0,.6),rgba(0,0,0,.8));
+    }
+
+    .bgcover .bgtrans h1 {
+        display: block;
+        overflow: hidden;
+        font-size: 45px;
+        line-height: 55px;
+        color: #fff;
+        width: 800px;
+        margin: auto;
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 50px;
+        font-family: 'Roboto Condensed',sans-serif;
+        font-weight: 600;
+    }
+</style></head>
+  <body><script>const items=["mode","palette"];items.forEach(function(e){const t=localStorage.getItem("hbs-"+e);t&&document.body.parentElement.setAttribute("data-"+e,t)})</script><header><nav class="navbar top-app-bar top-app-bar-expand-lg fixed-top">
+  <div class="container">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <i class="fas fa-bars"></i>
+    </button><a class="navbar-brand flex-grow-1 flex-lg-grow-0 text-center text-lg-start mx-auto me-lg-3" href="/"><img class="logo" alt="Logo" src="/images/logo.webp" loading="lazy"  title="Logo"
+   width="400" height="400"
+   />
+HOME
+    </a>
+    <div class="offcanvas offcanvas-bottom surface" tabindex="-1" id="offcanvasSocialShare" aria-labelledby="offcanvasSocialShare">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Share</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body">
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Twitter Share Button"
+      target="_blank" href="https://twitter.com/intent/tweet?title=S%e1%bb%ad%20d%e1%bb%a5ng%20m%c3%b4%20h%c3%acnh%20Double%20DQN%20%20hu%e1%ba%a5n%20luy%e1%bb%87n%20m%c3%b4%20h%c3%acnh%20Reinforcement%20Learning%20v%e1%bb%9bi%20game%20mario&url=%2fblog%2f2024-10-27-mario-reinfomation-learning-double-dqn%2f">
+      <i class="fab fa-fw fa-twitter"></i> Twitter
+    </a>
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Facebook Share Button"
+      target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=%2fblog%2f2024-10-27-mario-reinfomation-learning-double-dqn%2f">
+      <i class="fab fa-fw fa-facebook-f"></i> Facebook
+    </a>
+  </div>
+</div>
+    <button class="navbar-settings" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSettings"
+  aria-controls="offcanvasSettings" aria-label="Toggle settings">
+  <i class="fas fa-ellipsis-v"></i>
+</button>
+
+<div class="offcanvas offcanvas-end surface h-100" tabindex="-1" id="offcanvasSettings" aria-labelledby="offcanvasSettings">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Settings</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body d-flex flex-column">
+
+
+
+<section class="setting">
+  <form class="font-size-switcher-form row">
+    <div class="col-auto">
+      <label for="fontSize" class="form-label"><i class="fas fa-fw fa-font"></i> Font Size</label>
+    </div>
+    <div class="col-auto ms-auto">
+      <input type="range" class="form-range" min="-2" max="2" id="fontSize">
+    </div>
+  </form>
+</section>
+
+
+<section class="setting palettes">
+  <form class="row">
+    <div class="col-auto">
+      <label><i class="fas fa-fw fa-palette"></i> Palette</label>
+    </div>
+    <div class="col-auto ms-auto">
+      <a id="btnPalette" class="btn btn-sm btn-outline-primary" role="button" aria-label="palettePicker">
+        <i class="fas fa-eye-dropper"></i>
+      </a>
+    </div>
+  </form>
+  <div class="mt-2 d-flex justify-content-between visually-hidden" id="palettePicker"><button type="button" id="palette-blue" aria-label="Blue"
+        class="btn btn-sm w-100 palette" data-palette="blue">
+      </button><button type="button" id="palette-blue-gray" aria-label="Blue Gray"
+        class="btn btn-sm w-100 palette" data-palette="blue-gray">
+      </button><button type="button" id="palette-brown" aria-label="Brown"
+        class="btn btn-sm w-100 palette" data-palette="brown">
+      </button><button type="button" id="palette-cyan" aria-label="Cyan"
+        class="btn btn-sm w-100 palette" data-palette="cyan">
+      </button><button type="button" id="palette-green" aria-label="Green"
+        class="btn btn-sm w-100 palette" data-palette="green">
+      </button><button type="button" id="palette-indigo" aria-label="Indigo"
+        class="btn btn-sm w-100 palette" data-palette="indigo">
+      </button><button type="button" id="palette-orange" aria-label="Orange"
+        class="btn btn-sm w-100 palette" data-palette="orange">
+      </button><button type="button" id="palette-pink" aria-label="Pink"
+        class="btn btn-sm w-100 palette" data-palette="pink">
+      </button><button type="button" id="palette-purple" aria-label="Purple"
+        class="btn btn-sm w-100 palette" data-palette="purple">
+      </button><button type="button" id="palette-red" aria-label="Red"
+        class="btn btn-sm w-100 palette" data-palette="red">
+      </button><button type="button" id="palette-teal" aria-label="Teal"
+        class="btn btn-sm w-100 palette" data-palette="teal">
+      </button><button type="button" id="palette-yellow" aria-label="Yellow"
+        class="btn btn-sm w-100 palette" data-palette="yellow">
+      </button></div>
+</section>
+<section class="setting actions d-flex justify-content-around mt-auto overflow-auto">
+  <a role="button" class="action action-go-back" href="javascript: window.history.back();">
+    <span class="action-icon"><i class="fas fa-2x fa-arrow-left"></i></span> Go back
+  </a>
+  <a role="button" class="action action-reload-page">
+    <span class="action-icon"><i class="fas fa-2x fa-redo-alt"></i></span> Reload
+  </a>
+  <a role="button" class="action action-copy-url">
+    <span class="action-icon"><i class="fas fa-2x fa-link"></i></span> Copy URL
+  </a><a class="action action-social-share" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSocialShare"
+    aria-controls="offcanvasSocialShare" aria-label="Toggle social share">
+    <span class="action-icon"><i class="fas fa-2x fa-share-alt"></i></span> Share
+  </a></section>
+
+</div>
+</div>
+
+    <div class="collapse navbar-collapse" tabindex="-1" id="navbarSupportedContent" aria-labelledby="navbarSupportedContent">
+      <form class="search-bar my-1" action="/search">
+  <div class="input-group input-group-sm">
+    <span class="btn btn-search disabled position-absolute left-0"><i class="fas fa-fw fa-search"></i></span>
+    <input class="form-control rounded-pill" name="q" type="search" aria-label="Search">
+  </div>
+</form>
+      <ul class="navbar-nav ms-auto"><li class="nav-item">
+          <a class="nav-link" href="/series/">
+            <i class="fas fa-fw fa-columns"></i>Courses
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="/tools/">
+            <i class="fas fa-fw fa-folder"></i>Tools
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="/categories/">
+            <i class="fas fa-fw fa-folder"></i>Categories
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="/archives/">
+            <i class="fas fa-fw fa-file-archive"></i>Archives
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="/tags/">
+            <i class="fas fa-fw fa-tags"></i>Tags
+          </a>
+        </li><li class="nav-item dropdown">
+          <a class="nav-link" id="navbarDropdownSupport" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-fw fa-chevron-circle-down"></i>Support
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdownSupport"><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Repository
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Discussions
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Features Request
+              </a>
+            </li><li><hr class="dropdown-divider"></li><li>
+              <a class="dropdown-item"
+                href="/faq/">
+                FAQs
+              </a>
+            </li></ul>
+        </li></ul>
+    </div>
+  </div>
+</nav>
+</header>
+<main role="main" class="container">
+      <div class="row content">
+<div class="col-lg-8">
+  <div class="container"><nav class="row card component" aria-label="breadcrumb">
+  <div class="card-body">
+    <ol class="breadcrumb "><li class="breadcrumb-item"><a href="/">Home</a></li><li class="breadcrumb-item"><a href="/blog/">Blogs</a></li><li class="breadcrumb-item active">Sử Dụng Mô Hình Double DQN  Huấn Luyện Mô Hình Reinforcement Learning Với Game Mario</li></ol>
+  </div>
+</nav>
+<div class="post-panel-wrapper">
+  <div class="d-flex flex-column component rounded post-panel">
+    
+    <a class="action action-panel-toggler" role="button" title="Panel toggler">
+      <i class="fas fa-fw fa-chevron-circle-down"></i>
+    </a>
+    <a id="sidebarToggler" class="action d-none d-lg-block" role="button" title="Sidebar toggler">
+  <i class="fas fa-fw fa-expand-alt" data-fa-transform="rotate-45"></i>
+</a>
+
+    
+
+    
+    
+    <a class="action" href="#post-comments" role="button" aria-label="Comments" title="Comments">
+  <i class="fas fa-fw fa-comments"></i>
+</a>
+    <a class="action" href="#postTOC" aria-controls="Table of contents" role="button" title="Table of contents">
+  <i class="fas fa-fw fa-list-alt"></i>
+</a>
+    
+  </div>
+</div>
+<article class="row card component mb-4 post">
+  <div class="card-header ">
+    
+    <div class="bgcover" style="background-image:url( //source.unsplash.com/random/1280x720?orientation=landscape )">
+      <div class="bgtrans">
+          <h1>Sử Dụng Mô Hình Double DQN  Huấn Luyện Mô Hình Reinforcement Learning Với Game Mario
+</h1>
+      </div>
+  </div>
+    
+  </div>
+  <div class="card-body"><div class="post-meta">
+  <span class="post-date" title="created on 2024-10-27 04:19:00 &#43;0700 &#43;07.">
+    Oct 27, 2024
+  </span><span class="post-reading-time">
+    31 min read
+  </span><span class="post-taxonomies"><a href="/tags/reinformation_learning/" class="badge post-taxonomy">reinformation_learning</a><a href="/tags/deeplearning/" class="badge post-taxonomy">Deeplearning</a></span>
+</div>
+<div class="post-content mb-3"><div class="toc">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#lý-thuyết-căn-bản-reinforcement-learning">Lý thuyết căn bản Reinforcement Learning</a>
+      <ul>
+        <li><a href="#các-thành-phần-cơ-bản-của-reinforcement-learning">Các thành phần cơ bản của Reinforcement Learning</a>
+          <ul>
+            <li><a href="#lý-thuyết-toán-học">Lý thuyết toán học</a></li>
+          </ul>
+        </li>
+        <li><a href="#q-learning">Q-Learning</a>
+          <ul>
+            <li><a href="#các-khái-niệm-trong-q-learning">Các khái niệm trong Q-learning</a></li>
+            <li><a href="#cách-q-learning-hoạt-động">Cách Q-learning hoạt động</a></li>
+          </ul>
+        </li>
+        <li><a href="#double-deep-q-network">Double Deep Q-Network</a>
+          <ul>
+            <li><a href="#1-vấn-đề-của-q-learning-overestimation-bias">1. <strong>Vấn đề của Q-learning (Overestimation Bias)</strong>:</a></li>
+            <li><a href="#2-cải-tiến-của-double-deep-q-network-ddqn">2. <strong>Cải tiến của Double Deep Q-Network (DDQN)</strong>:</a></li>
+            <li><a href="#3-lợi-ích-của-ddqn-so-với-dqnq-learning">3. <strong>Lợi ích của DDQN so với DQN/Q-learning</strong>:</a></li>
+            <li><a href="#4-ví-dụ-trực-quan-về-sự-khác-biệt">4. <strong>Ví dụ trực quan về sự khác biệt</strong>:</a></li>
+            <li><a href="#tóm-lại">Tóm lại:</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+    <li><a href="#thực-hành-với-chương-trình-mario">Thực hành với chương trình mario</a>
+      <ul>
+        <li><a href="#environment">Environment</a>
+          <ul>
+            <li><a href="#khởi-tạo-môi-trường">Khởi tạo môi trường</a></li>
+            <li><a href="#xử-lý-dữ-liệu">Xử lý dữ liệu</a></li>
+          </ul>
+        </li>
+        <li><a href="#agent">Agent</a>
+          <ul>
+            <li><a href="#act">Act</a></li>
+            <li><a href="#remember">Remember</a></li>
+            <li><a href="#learn">Learn</a></li>
+          </ul>
+        </li>
+        <li><a href="#play">Play</a></li>
+        <li><a href="#kết-quả">Kết quả</a></li>
+      </ul>
+    </li>
+    <li><a href="#tham-khảo">Tham khảo</a></li>
+  </ul>
+</nav>
+  </div>
+<p>Chào các bạn, sau một thời gian ở ẩn, chúng ta lại tiếp tục với việc thực chiến AI, ở bài viết này, chúng ta sẽ train mô hình AI Reinforcement Learning với tựa game đã đi vào bao nhiêu thế hệ trẻ thơ, Mario, tuy nhiên, để bắt đầu bài viết, mình sẽ note lại một vài ý về Reinforcement Learning, Q learning, và cải tiến của Deep Q-Network là Double Deep Q-Network , trong phần code mình sẽ sử dụng  Double Deep Q-Network</p>
+<h1 id="lý-thuyết-căn-bản-reinforcement-learning">Lý thuyết căn bản Reinforcement Learning<a class="anchor ms-1" href="#lý-thuyết-căn-bản-reinforcement-learning"><i class="fas fa-link"></i></a></h1>
+<h2 id="các-thành-phần-cơ-bản-của-reinforcement-learning">Các thành phần cơ bản của Reinforcement Learning<a class="anchor ms-1" href="#các-thành-phần-cơ-bản-của-reinforcement-learning"><i class="fas fa-link"></i></a></h2>
+<p>Theo lý thuyết Reinforcement Learning, chúng ta cần các thành phần sau:</p>
+<p>Agent: là đối tượng giữ các hành động (Action), thực hiện các hành động</p>
+<p>Environment : Môi trường xung quanh nơi agent tương tác</p>
+<p>Action : Danh sách các hành động mà Agent thực hiện, ví dụ nhảy, chạy, đi lên trước 1 bước, đi lùi 1 bước, bắn đạn &hellip; Khi Agent thực hiện các action, thì environment thay đổi</p>
+<p>State : Danh sách các trạng thái của environment khi có action từ agent</p>
+<p>Optimal Action-Value function : Hàm Q*(s,a), chữ Q có thể hiểu là viết tắt của từ quality</p>
+<p>Reward : Agent nhận reward từ Environment khi có action</p>
+<p>Ví dụ, Agent là con robot, Ation là [dậm chân, vỗ tay ], khi con robot dậm chân, môi trường thay đổi, đất lún hơn một chút, lúc này State là 1 bức tranh có 1 con rô bốt với chân con rô bốt hơi hơi lún một chút xuống đất, và environment sẽ trả về 1 giá trị Reward nào đó cho Agent sau hành động dậm chân của Agent, dễ hiểu phải không các bạn.</p>
+<p>Reward của hành động dậm chân có thể sẽ có giá trị khác so với reward của hành động vỗ tay.</p>
+<p>Vì chúng ta không biết khi nào hành động kết thúc, nên rewards sẽ là một chuỗi vô hạn các reward sau thời điểm action xảy ra, tính từ thời điểm t_0 ban đầu.</p>
+<p>Chuỗi vô hạn không có hội tụ, nên người ta chế (trick) sẽ thêm 1 tham số là discount factor hay discount rate, để chuỗi này hội tụ.</p>
+<p>Lý thuyết toán học đứng đằng sau là Markov decision process và sử dụng nền tản là phương trình Bellman, Markov decision process đã được đề xuất từ năm 1950s, bạn có thể tra google để tìm hiểu thêm. Giờ mình hiểu là có lý thuyết toán học đảm bảo chuỗi này hội tụ rồi, triển thôi.</p>
+<h3 id="lý-thuyết-toán-học">Lý thuyết toán học<a class="anchor ms-1" href="#lý-thuyết-toán-học"><i class="fas fa-link"></i></a></h3>
+<p>Ở mục này mình đề cập một chút về Markov decision process và phương trình Bellman, các bạn có thể bỏ qua nếu thấy ngán, mình note lại để sau này khỏi mất công tìm</p>
+<p>Phương trình của Markov Decision Process (MDP) chính là biểu thức mô tả cách giá trị của các trạng thái hoặc hành động được cập nhật thông qua quá trình ra quyết định. Tuy nhiên, bản thân <strong>MDP</strong> không có một phương trình duy nhất cụ thể, mà thường được mô tả qua các thành phần cơ bản như tập trạng thái, hành động, xác suất chuyển trạng thái, phần thưởng, và hệ số chiết khấu.</p>
+<p>Phương trình chính xác nhất liên quan đến MDP là <strong>phương trình Bellman</strong>, mà chúng ta có thể viết theo hai dạng: dạng <strong>hàm giá trị trạng thái</strong> và dạng <strong>hàm giá trị hành động</strong>. Hai phương trình này thể hiện rõ cách tính toán tổng phần thưởng kỳ vọng.</p>
+<ol>
+<li><strong>Markov Decision Process (MDP)</strong></li>
+</ol>
+<p>MDP là một khung toán học dùng để mô tả các bài toán ra quyết định trong môi trường không chắc chắn. Một MDP bao gồm các thành phần sau:</p>
+<ul>
+<li><strong>S (State space)</strong>: Tập hợp các trạng thái có thể xảy ra trong môi trường.</li>
+<li><strong>A (Action space)</strong>: Tập hợp các hành động mà người ra quyết định (agent) có thể thực hiện ở mỗi trạng thái.</li>
+<li><strong>P (Transition probability)</strong>: Xác suất chuyển trạng thái ( P(s&rsquo;|s, a) ), biểu thị xác suất trạng thái kế tiếp ( s&rsquo; ) xảy ra khi thực hiện hành động ( a ) tại trạng thái ( s ).</li>
+<li><strong>R (Reward function)</strong>: Hàm thưởng ( R(s, a) ), là phần thưởng tức thì nhận được khi thực hiện hành động ( a ) tại trạng thái ( s ).</li>
+<li><strong>(\gamma) (Discount factor)</strong>: Hệ số chiết khấu ( \gamma \in [0, 1] ), xác định mức độ ưu tiên cho phần thưởng tức thì so với phần thưởng trong tương lai. Khi ( \gamma ) gần bằng 1, giá trị các phần thưởng trong tương lai càng được đánh giá cao.</li>
+</ul>
+<p>Mục tiêu của MDP là tìm ra <strong>chính sách tối ưu</strong> ( \pi^* ), tức là một chuỗi các hành động giúp tối đa hóa tổng phần thưởng kỳ vọng trong dài hạn.</p>
+<ol start="2">
+<li><strong>Phương trình Bellman</strong></li>
+</ol>
+<p>Phương trình Bellman mô tả mối quan hệ đệ quy giữa giá trị của một trạng thái hoặc một hành động với các trạng thái kế tiếp hoặc hành động tiếp theo. Nó thường được sử dụng để tính toán giá trị kỳ vọng của các trạng thái hoặc hành động, giúp đánh giá và tìm ra chính sách tối ưu.</p>
+<p>a. <strong>Phương trình Bellman cho hàm giá trị trạng thái ( V(s) )</strong></p>
+<p>Hàm giá trị trạng thái ( V(s) ) cho biết tổng phần thưởng kỳ vọng khi bắt đầu từ trạng thái ( s ) và theo chính sách tối ưu. Phương trình Bellman cho hàm giá trị trạng thái là:</p>
+<p>[
+V(s) = \max_{a} \left[ R(s, a) + \gamma \sum_{s&rsquo;} P(s&rsquo;|s, a)V(s&rsquo;) \right]
+]</p>
+<p>Ở đây:</p>
+<ul>
+<li>( V(s) ) là giá trị của trạng thái ( s ).</li>
+<li>( R(s, a) ) là phần thưởng nhận được khi thực hiện hành động ( a ) tại trạng thái ( s ).</li>
+<li>( P(s&rsquo;|s, a) ) là xác suất chuyển từ trạng thái ( s ) sang trạng thái ( s&rsquo; ) khi thực hiện hành động ( a ).</li>
+<li>( \gamma ) là hệ số chiết khấu, và ( \sum_{s&rsquo;} P(s&rsquo;|s, a)V(s&rsquo;) ) là giá trị kỳ vọng của các trạng thái tiếp theo.</li>
+</ul>
+<p>b. <strong>Phương trình Bellman cho hàm giá trị hành động ( Q(s, a) )</strong></p>
+<p>Hàm giá trị hành động ( Q(s, a) ) biểu diễn tổng phần thưởng kỳ vọng khi bắt đầu từ trạng thái ( s ), thực hiện hành động ( a ), và sau đó tiếp tục theo chính sách tối ưu. Phương trình Bellman cho hàm giá trị hành động là:</p>
+<p>[
+Q(s, a) = R(s, a) + \gamma \sum_{s&rsquo;} P(s&rsquo;|s, a) \max_{a&rsquo;} Q(s&rsquo;, a&rsquo;)
+]</p>
+<p>Ở đây:</p>
+<ul>
+<li>( Q(s, a) ) là giá trị của hành động ( a ) ở trạng thái ( s ).</li>
+<li>( \max_{a&rsquo;} Q(s&rsquo;, a&rsquo;) ) là giá trị tối ưu của hành động tiếp theo ở trạng thái kế tiếp ( s&rsquo; ).</li>
+</ul>
+<h2 id="q-learning">Q-Learning<a class="anchor ms-1" href="#q-learning"><i class="fas fa-link"></i></a></h2>
+<p>Q-learning là một thuật toán trong nhóm học tăng cường (reinforcement learning) , thuộc nhóm  model-free, value-based, off-policy. Thuật toán sẽ  tìm ra chuỗi hành động tốt nhất dựa trên trạng thái hiện tại của agent. “Q” đại diện cho chất lượng. Chất lượng biểu thị giá trị của hành động trong việc tối đa hóa (cực đại hóa) phần thưởng ở tương lai.</p>
+<p>Có một số key word cần làm rõ một chút.</p>
+<p>Chúng ta có hai nhóm thuật toán là model-base và model-free</p>
+<ul>
+<li>
+<p>model-base dùng 2 hàm là  transition và reward để ước tính đường đi tối ưu, chúng ta phải vắt óc suy nghĩ 2 hàm này, tưởng tượng bạn chơi cờ và dự đoán trước các nước đi của đối thủ, biết được đối thủ sẽ đi như thế nào, nên ta có thể chọn những nước đi sao cho kết quả cuối cùng ta sẽ thắng.</p>
+</li>
+<li>
+<p>model-free học từ chuỗi hành động, rút ra kinh nghiệm, và vấp ngã đâu , đứng dậy ở đó, không cần định nghĩa transition function và reward function. Tưởng tượng  bạn tự mình học cách đi xe đạp, bạn ngã, rút kinh nghiệm từ lỗi lầm và dần dần đi được mà không cần bản hướng dẫn chi tiết nào, cứ ôm xe đạp mà tập dần.</p>
+</li>
+</ul>
+<p>Tiếp tới, chúng ta có 2 loại phương thức là value-based và policy-based</p>
+<ul>
+<li>
+<p>Phương pháp  value-based , huấn luyện hàm giá trị, huấn luyện làm sao để  hàm giá trị có thể tìm ra trạng thái mà trạng thái đó làm cho hàm giá trị đạt giá trị lớn nhất, đạt giá trị cực đại, từ đó quyết định sử dụng  hành động đó. Nói cách khác, nó giúp agent hiểu xem ở trạng thái nào thì hành động nào sẽ mang lại phần thưởng cao nhất. Ví dụ, bạn chọn môn học có giá trị nhất để học trước nhằm đạt điểm số cao nhất.</p>
+</li>
+<li>
+<p>Phương pháp  policy-based  đưa ra các policy quy định ứng với từng state, ta sẽ đưa ra các action gì, nó học cách đưa ra quyết định tốt nhất trong từng trạng thái. Giống như khi bạn không chỉ học lý thuyết mà thực sự thực hành để biết cách hành động tốt nhất trong từng tình huống cụ thể.</p>
+</li>
+</ul>
+<p>Cuối cùng, có 2 cái chính sách đối lập là  off-policy và on-policy</p>
+<ul>
+<li>
+<p>off-policy thuật toán đánh giá và cập nhật lại policy mới, policy mới khác  với policy đang thực hiện action.  Nghĩa là nó không cần theo đúng chính sách hiện hành mà có thể học và cải thiện chính sách mới dựa trên dữ liệu và kinh nghiệm thu thập được, kiểu như là vừa chơi game vừa nghĩ ra chiến lược mới thay vì bám sát chiến lược cũ.</p>
+</li>
+<li>
+<p>on-policy  nó không chỉ dùng chính sách hiện tại mà còn điều chỉnh và cải thiện chính sách đó liên tục dựa trên những gì đã học được từ mỗi hành động. Như cách bạn tiếp tục hoàn thiện chiến lược chơi game của mình mỗi lần chơi dựa trên những gì đã trải qua.</p>
+</li>
+</ul>
+<h3 id="các-khái-niệm-trong-q-learning">Các khái niệm trong Q-learning<a class="anchor ms-1" href="#các-khái-niệm-trong-q-learning"><i class="fas fa-link"></i></a></h3>
+<p>Kế thừa các key trong Reinforcement Learning, chúng ta có</p>
+<p>States(s) : vị trí hiện tại của agent trong environment</p>
+<p>Action(a) : Hành động của agent trong một state cụ thể</p>
+<p>Rewards : Giá trị phần thưởng  hoặc giá trị phạt khi một Action xảy ra</p>
+<p>Episodes: Kết thúc state, khi Agent không thể thực hiện một action mới. Episodes xảy ra khi agent phá đảo hoặc agent bị die</p>
+<p>Q(S_t+1, a) : Giá trị kỳ vọng đạt được  Q value ở state t+1 và hành động a</p>
+<h3 id="cách-q-learning-hoạt-động">Cách Q-learning hoạt động<a class="anchor ms-1" href="#cách-q-learning-hoạt-động"><i class="fas fa-link"></i></a></h3>
+<h4 id="q-table">Q-Table<a class="anchor ms-1" href="#q-table"><i class="fas fa-link"></i></a></h4>
+<p>Q-Table về cơ bản là một bảng tra cứu, trong đó mỗi hàng đại diện cho một trạng thái có thể có, và mỗi cột đại diện cho một hành động có thể thực hiện. Bảng này lưu trữ các giá trị Q-values (phần thưởng kỳ vọng) cho mỗi cặp trạng thái-hành động. Theo thời gian, Agent sẽ cập nhật bảng này để học cách lựa chọn hành động tốt nhất trong mỗi trạng thái.</p>
+<h4 id="q-value">Q-value<a class="anchor ms-1" href="#q-value"><i class="fas fa-link"></i></a></h4>
+<p>Q-value đại diện cho phần thưởng tương lai, kỳ vọng mà Agent sẽ nhận được khi thực hiện một hành động nhất định từ trạng thái hiện tại, và sau đó thực hiện theo  policy tốt nhất (tối đa hóa phần thưởng).</p>
+<h4 id="q-learning-function">Q-learning Function<a class="anchor ms-1" href="#q-learning-function"><i class="fas fa-link"></i></a></h4>
+<p>Là một model-free reinforcement learning, sử dụng phương trình Bellman, cập nhật bảng Q thông qua việc học từ sự tương tác với môi trường. Khi Agent thực hiện một hành động, nó sẽ quan sát phần thưởng và trạng thái mới mà nó chuyển đến. Thuật toán sau đó sẽ cập nhật giá trị Q cho cặp trạng thái-hành động đó theo quy tắc cập nhật sau:</p>
+<p>[
+Q(s, a) \leftarrow Q(s, a) + \alpha \left( r + \gamma \max_a&rsquo; Q(s&rsquo;, a&rsquo;) - Q(s, a) \right)
+]</p>
+<p>Trong đó:</p>
+<ul>
+<li>( Q(s, a) ) là giá trị Q cho trạng thái ( s ) và hành động ( a )</li>
+<li>( \alpha ) là tốc độ học (quyết định mức độ mà thông tin mới ghi đè thông tin cũ)</li>
+<li>( r ) là phần thưởng nhận được sau khi thực hiện hành động ( a ) ở trạng thái ( s )</li>
+<li>( \gamma ) là hệ số chiết khấu (xác định mức độ phần thưởng tương lai được tính đến)</li>
+<li>( \max_a&rsquo; Q(s&rsquo;, a&rsquo;) ) là phần thưởng kỳ vọng lớn nhất cho trạng thái tiếp theo ( s&rsquo; ) sau hành động ( a&rsquo; )</li>
+</ul>
+<p>Theo thời gian, Agent sử dụng Q-learning sẽ dần dần hoàn thiện bảng Q của mình và học được cách thực hiện các hành động tối ưu cho mỗi trạng thái để tối đa hóa phần thưởng kỳ vọng.</p>
+<h4 id="q-learning-algorithm">Q-learning algorithm<a class="anchor ms-1" href="#q-learning-algorithm"><i class="fas fa-link"></i></a></h4>
+<p>Init Q_table -&gt; Choose action -&gt; Do action -&gt; Mesure reward -&gt; Update Q Table -&gt; Choose action &hellip;</p>
+<h5 id="init-q_table">Init Q_table<a class="anchor ms-1" href="#init-q_table"><i class="fas fa-link"></i></a></h5>
+<p>Xây dựng bảng bao gồm hàng là các state, cột là các action , đầu tiên có thể khởi tạo giá trị của bảng này là 0.</p>
+<h5 id="choose-action">Choose action<a class="anchor ms-1" href="#choose-action"><i class="fas fa-link"></i></a></h5>
+<p>Ở lần chạy đầu tiên, chúng ta có thể random action, ở lần chạy sau, chúng ta lấy action ở bảng Q Table ở trên</p>
+<h5 id="do-action">Do action<a class="anchor ms-1" href="#do-action"><i class="fas fa-link"></i></a></h5>
+<p>Thực hiện chọn hành động và thực hiện hành động đến khi quá trình train dừng lại.</p>
+<p>Với mỗi lần Choose action và Do action, chúng ta sẽ:</p>
+<p>Ở lần chạy đầu tiên, chúng ta lấy ngẫu nhiên 1 hành động, sau đó Agent sẽ thực hiện hành động và nhận reward, update Q Table sử dụng  Q-learning Function đã nêu phía trên. Ở các lần chạy sau, chúng ta lấy ra hành động tốt nhất để Agent thực hiện hành động  và chúng ta lại update Q Table tiếp.</p>
+<p>Vì lý do là Agent cần tối đa hóa phần thưởng đạt được, nên ở đây xuất hiện 2 khái niệm là exploration (khám phá) và exploitation (khai thác), và cần cân bằng cả 2</p>
+<p><strong>Exploration (Khám phá)</strong>:</p>
+<ul>
+<li>Khám phá là khi Agent thử những hành động mới hoặc chưa từng thử trước đó để tìm hiểu thêm về môi trường. Điều này có nghĩa là Agent có thể sẽ không chọn hành động có phần thưởng cao nhất dựa trên thông tin hiện tại mà thay vào đó thử các hành động chưa rõ kết quả.</li>
+<li>Lý do: Nếu Agent chỉ khai thác các hành động có phần thưởng cao hiện tại mà không khám phá các hành động khác, nó có thể bỏ lỡ những hành động tốt hơn ở tương lai. Môi trường có thể phức tạp và thay đổi, nên Agent cần tiếp tục tìm hiểu để có dữ liệu đầy đủ.</li>
+</ul>
+<p><strong>Exploitation (Khai thác)</strong>:</p>
+<ul>
+<li>Khai thác là khi Agent chọn hành động dựa trên thông tin mà nó đã học được để tối ưu hóa phần thưởng. Trong trường hợp này, Agent chọn hành động mà nó tin là có phần thưởng cao nhất dựa trên những gì nó đã trải nghiệm.</li>
+<li>Lý do: Sau khi đã tích lũy đủ thông tin về môi trường, Agent cần tập trung khai thác các hành động đã được biết là có lợi để tối đa hóa phần thưởng trong dài hạn.</li>
+</ul>
+<p>Tại sao cần có cả hai?</p>
+<ul>
+<li><strong>Cân bằng</strong>: Nếu chỉ <strong>khai thác</strong> mà không khám phá, Agent có thể rơi vào cái gọi là <strong>local optimum</strong> (cực đại cục bộ) mà bỏ lỡ cơ hội đạt được <strong>global optimum</strong> (cực đại toàn cục), tức là giải pháp tốt nhất. Mặt khác, nếu chỉ <strong>khám phá</strong> mà không khai thác, Agent sẽ không thể tận dụng những gì nó đã học được, dẫn đến không tối ưu hóa phần thưởng.</li>
+</ul>
+<p>Ví dụ:</p>
+<ul>
+<li><strong>Exploration</strong>: Bạn đi ăn ở một nhà hàng mới mà bạn chưa bao giờ thử, hy vọng tìm được món ăn ngon hơn.</li>
+<li><strong>Exploitation</strong>: Bạn quay lại một nhà hàng quen thuộc mà bạn biết chắc món ăn ở đó rất ngon.</li>
+</ul>
+<p>Trong thực tế, các thuật toán như <strong>epsilon-greedy</strong> sử dụng một chiến lược kết hợp cả khám phá và khai thác, cho phép Agent thực hiện phần lớn các hành động khai thác nhưng đôi khi vẫn khám phá những hành động mới với một xác suất nhỏ (epsilon).</p>
+<p>Trong Q-learning, ở giai đoạn đầu, giá trị epsilon thường lớn để xác xuất Exploration xuất hiện nhiều, qua mỗi lần lặp, Agent càng ngày càng tự tin với các giá trị học được đã được cập nhật ở Q table, nên  giá trị Exploration ở các lần lặp sau sẽ giảm bớt, nhỏ đần, từ đó xác xuất chọn action từ Q table sẽ lớn hơn.</p>
+<h5 id="measuring-the-rewards">Measuring the Rewards<a class="anchor ms-1" href="#measuring-the-rewards"><i class="fas fa-link"></i></a></h5>
+<p>Sau khi thực hiện hành động, chúng ta sẽ thu được kết quả và phần thưởng</p>
+<p>Có nhiều cách cho thưởng, tùy , một dạng đơn giản nhất đó là</p>
+<p>Nếu về đích , +1 điểm thưởng</p>
+<p>Nếu thất bại, chưa về đích , 0 điểm</p>
+<h5 id="update-q-table">Update Q Table<a class="anchor ms-1" href="#update-q-table"><i class="fas fa-link"></i></a></h5>
+<p>Trong Q-learning, khi một Agent cập nhật giá trị Q cho một cặp trạng thái-hành động, quá trình này dựa trên sự kết hợp giữa <strong>giá trị Q cũ (former Q-value)</strong> và <strong>giá trị Q mới ước tính (new Q-value estimation)</strong>. Đây là hai khía cạnh quan trọng của công thức cập nhật Q-value trong Q-learning:</p>
+<p><strong>Former Q-value (Giá trị Q cũ)</strong>:</p>
+<ul>
+<li>
+<p>Đây là giá trị Q hiện tại cho một cặp trạng thái-hành động cụ thể mà Agent đã ghi nhận trước đó. Nó thể hiện phần thưởng kỳ vọng mà Agent đã tính toán từ các lần tương tác trước đó với môi trường.</p>
+</li>
+<li>
+<p>Trong công thức cập nhật Q-learning:</p>
+<p>[
+Q(s, a) \leftarrow Q(s, a) + \alpha \left( r + \gamma \max_a&rsquo; Q(s&rsquo;, a&rsquo;) - Q(s, a) \right)
+]</p>
+<p>Phần <strong>( Q(s, a) )</strong> bên phải của dấu mũi tên là giá trị Q cũ.</p>
+</li>
+</ul>
+<p><strong>New Q-value estimation (Giá trị Q mới ước tính)</strong>:</p>
+<ul>
+<li>Đây là giá trị Q được cập nhật dựa trên phần thưởng vừa nhận được và dự đoán phần thưởng trong tương lai (dựa trên trạng thái tiếp theo và hành động tốt nhất có thể thực hiện).</li>
+<li>Phần <strong>( r + \gamma \max_a&rsquo; Q(s&rsquo;, a&rsquo;) )</strong> trong công thức là phần thưởng mới và giá trị kỳ vọng của trạng thái tiếp theo. Điều này đại diện cho sự ước tính mới về phần thưởng nếu Agent tiếp tục thực hiện chính sách tối ưu từ trạng thái tiếp theo.</li>
+</ul>
+<p><strong>Alpha (α) - Hệ số học (Learning Rate)</strong>:</p>
+<ul>
+<li><strong>Ý nghĩa</strong>: Alpha kiểm soát mức độ mà các giá trị Q hiện tại được cập nhật bằng thông tin mới. Nó quyết định xem tác nhân sẽ học nhanh chóng từ các trải nghiệm mới hay học dần dần.</li>
+<li><strong>Phạm vi</strong>: ( 0 \leq \alpha \leq 1 )</li>
+<li><strong>Giải thích</strong>:
+<ul>
+<li><strong>α = 1</strong>: Tác nhân hoàn toàn bỏ qua thông tin cũ và chỉ dùng giá trị mới ước tính. Nghĩa là mỗi khi có một trải nghiệm mới, giá trị Q cũ sẽ được thay thế hoàn toàn.</li>
+<li><strong>α = 0</strong>: Tác nhân hoàn toàn không cập nhật giá trị Q cũ, có nghĩa là tác nhân sẽ không học gì từ trải nghiệm mới.</li>
+<li><strong>Giá trị trung gian (0 &lt; α &lt; 1)</strong>: Kết hợp giữa giá trị Q cũ và giá trị mới, tức là học tập từ cả kinh nghiệm cũ và mới một cách từ từ. Trong thực tế, alpha thường được chọn là một giá trị nhỏ (ví dụ: 0.1 hoặc 0.01) để tác nhân có thể học ổn định và không thay đổi quá đột ngột.</li>
+</ul>
+</li>
+</ul>
+<p><strong>Gamma (γ) - Hệ số chiết khấu (Discount Factor)</strong>:</p>
+<ul>
+<li><strong>Ý nghĩa</strong>: Gamma xác định mức độ mà tác nhân coi trọng các phần thưởng trong tương lai. Nó cho phép tác nhân cân nhắc giữa việc nhận phần thưởng ngay lập tức và phần thưởng tiềm năng trong tương lai.</li>
+<li><strong>Phạm vi</strong>: ( 0 \leq \gamma \leq 1 )</li>
+<li><strong>Giải thích</strong>:
+<ul>
+<li><strong>γ = 0</strong>: Tác nhân chỉ quan tâm đến phần thưởng tức thì mà không để ý đến phần thưởng tương lai. Điều này khiến tác nhân chỉ tối ưu hóa cho lợi ích ngắn hạn.</li>
+<li><strong>γ = 1</strong>: Tác nhân đánh giá phần thưởng hiện tại và tương lai một cách cân bằng, tức là phần thưởng trong tương lai xa có cùng trọng số với phần thưởng ngay lập tức.</li>
+<li><strong>Giá trị trung gian (0 &lt; γ &lt; 1)</strong>: Đây là lựa chọn phổ biến trong các bài toán thực tế. Gamma sẽ giảm dần giá trị của các phần thưởng càng xa trong tương lai, nhưng vẫn đảm bảo rằng tác nhân quan tâm đến việc tối đa hóa phần thưởng dài hạn.</li>
+</ul>
+</li>
+</ul>
+<p>Tóm lại,  vai trò của α và γ:</p>
+<ul>
+<li><strong>Alpha (α)</strong>: Điều chỉnh tốc độ học, tức là mức độ cập nhật giá trị Q dựa trên thông tin mới.</li>
+<li><strong>Gamma (γ)</strong>: Điều chỉnh sự ưu tiên giữa phần thưởng hiện tại và phần thưởng trong tương lai.</li>
+</ul>
+<p>Cả hai tham số này ảnh hưởng trực tiếp đến hiệu quả học tập của tác nhân trong môi trường và cần được tinh chỉnh phù hợp cho từng bài toán cụ thể.</p>
+<h2 id="double-deep-q-network">Double Deep Q-Network<a class="anchor ms-1" href="#double-deep-q-network"><i class="fas fa-link"></i></a></h2>
+<p>Sau khi tìm hiểu Q learning, chúng ta sẽ tìm hiểu 1 cải tiến của nó là Double Deep Q-Network</p>
+<p><strong>Double Deep Q-Network (DDQN)</strong> là một cải tiến của <strong>Q-learning</strong> (cụ thể là DQN - Deep Q-Network) nhằm giải quyết một số vấn đề quan trọng trong quá trình học tập. So với Q-learning, DDQN giúp giảm <strong>sự thiên lệch ước lượng</strong> (overestimation bias) và cải thiện độ chính xác trong việc chọn hành động. Dưới đây là chi tiết về các cải tiến của DDQN so với Q-learning:</p>
+<h3 id="1-vấn-đề-của-q-learning-overestimation-bias">1. Vấn đề của Q-learning (Overestimation Bias):<a class="anchor ms-1" href="#1-vấn-đề-của-q-learning-overestimation-bias"><i class="fas fa-link"></i></a></h3>
+<ul>
+<li>
+<p><strong>Q-learning tiêu chuẩn</strong> (bao gồm cả DQN, phiên bản mở rộng với mạng nơ-ron) có xu hướng gặp phải vấn đề gọi là <strong>thiên lệch ước lượng quá mức (overestimation bias)</strong>. Khi tính toán giá trị Q, Q-learning chọn hành động dựa trên giá trị Q lớn nhất trong Q-table (hoặc mạng Q trong DQN). Tuy nhiên, do sự ngẫu nhiên trong môi trường và các lỗi nhỏ khi ước tính, tác nhân có thể đánh giá quá cao giá trị Q của một số hành động.</p>
+</li>
+<li>
+<p><strong>Công thức cập nhật Q-learning</strong>:</p>
+<p>[
+Q(s, a) \leftarrow Q(s, a) + \alpha \left( r + \gamma \max_a Q(s&rsquo;, a&rsquo;) - Q(s, a) \right)
+]</p>
+<p>Trong đó, <strong>( \max_a Q(s&rsquo;, a&rsquo;) )</strong> chọn hành động có giá trị Q cao nhất cho trạng thái tiếp theo ( s&rsquo; ). Việc sử dụng cùng một mạng để chọn và đánh giá hành động này có thể dẫn đến thiên lệch khi các giá trị Q bị phóng đại một cách không chính xác.</p>
+</li>
+</ul>
+<h3 id="2-cải-tiến-của-double-deep-q-network-ddqn">2. Cải tiến của Double Deep Q-Network (DDQN):<a class="anchor ms-1" href="#2-cải-tiến-của-double-deep-q-network-ddqn"><i class="fas fa-link"></i></a></h3>
+<ul>
+<li>
+<p><strong>DDQN</strong> được phát triển để khắc phục vấn đề <strong>thiên lệch ước lượng quá mức</strong> trong Q-learning/DQN bằng cách <strong>tách biệt việc chọn hành động và đánh giá giá trị của hành động</strong>. Trong DDQN, hai mạng nơ-ron khác nhau được sử dụng để thực hiện hai nhiệm vụ này:</p>
+<ul>
+<li><strong>Mạng chính (main network)</strong>: Được sử dụng để chọn hành động tốt nhất cho trạng thái tiếp theo.</li>
+<li><strong>Mạng mục tiêu (target network)</strong>: Được sử dụng để ước tính giá trị của hành động đó.</li>
+</ul>
+</li>
+<li>
+<p><strong>Công thức cập nhật DDQN</strong>:</p>
+<p>[
+Q(s, a) \leftarrow Q(s, a) + \alpha \left( r + \gamma Q_{\text{target}}(s&rsquo;, \arg\max_a Q_{\text{main}}(s&rsquo;, a&rsquo;)) - Q(s, a) \right)
+]</p>
+<p>Trong đó:</p>
+<ul>
+<li><strong>( Q_{\text{main}}(s&rsquo;, a&rsquo;) )</strong>: Mạng chính được dùng để chọn hành động tốt nhất tại trạng thái ( s&rsquo; ) (tức là hành động có giá trị Q cao nhất).</li>
+<li><strong>( Q_{\text{target}}(s&rsquo;, a&rsquo;) )</strong>: Mạng mục tiêu được dùng để đánh giá giá trị Q của hành động đó.</li>
+</ul>
+</li>
+<li>
+<p><strong>Ý tưởng chính</strong>: Bằng cách sử dụng hai mạng riêng biệt (một để chọn hành động, một để đánh giá), DDQN tránh được việc phóng đại giá trị Q do cùng một mạng chọn và đánh giá hành động trong Q-learning/DQN tiêu chuẩn. Điều này giúp giảm thiên lệch và cải thiện hiệu quả học tập.</p>
+</li>
+</ul>
+<h3 id="3-lợi-ích-của-ddqn-so-với-dqnq-learning">3. Lợi ích của DDQN so với DQN/Q-learning:<a class="anchor ms-1" href="#3-lợi-ích-của-ddqn-so-với-dqnq-learning"><i class="fas fa-link"></i></a></h3>
+<ul>
+<li><strong>Giảm thiên lệch ước lượng (Overestimation Bias)</strong>: DDQN cải thiện độ chính xác của ước tính giá trị Q bằng cách tách rời nhiệm vụ chọn và đánh giá hành động.</li>
+<li><strong>Học tập ổn định hơn</strong>: Việc giảm thiên lệch giúp DDQN ổn định hơn trong quá trình học tập, đặc biệt khi các tác nhân tương tác với những môi trường phức tạp và ngẫu nhiên.</li>
+<li><strong>Cải thiện độ hội tụ (Convergence)</strong>: Do các giá trị Q không bị phóng đại một cách sai lầm, quá trình học tập của tác nhân trở nên hiệu quả và nhanh hơn, giúp hệ thống hội tụ về giải pháp tốt hơn.</li>
+</ul>
+<h3 id="4-ví-dụ-trực-quan-về-sự-khác-biệt">4. Ví dụ trực quan về sự khác biệt:<a class="anchor ms-1" href="#4-ví-dụ-trực-quan-về-sự-khác-biệt"><i class="fas fa-link"></i></a></h3>
+<ul>
+<li><strong>DQN</strong>: Nếu có hai hành động A và B, và DQN đánh giá hành động A có giá trị Q là 10 (thực tế là 8) và B là 9 (thực tế là 7), DQN sẽ chọn A vì ( \max(10, 9) = 10 ). Tuy nhiên, giá trị thực của A chỉ là 8, dẫn đến đánh giá sai.</li>
+<li><strong>DDQN</strong>: Trong DDQN, mạng chính sẽ chọn A, nhưng mạng mục tiêu sẽ đánh giá A dựa trên giá trị thực tế của nó, làm giảm khả năng phóng đại giá trị và giúp lựa chọn chính xác hơn.</li>
+</ul>
+<h3 id="tóm-lại">Tóm lại:<a class="anchor ms-1" href="#tóm-lại"><i class="fas fa-link"></i></a></h3>
+<ul>
+<li><strong>Q-learning/DQN</strong>: Chỉ dùng một mạng để chọn và đánh giá, dễ gặp tình trạng ước lượng quá cao (overestimation).</li>
+<li><strong>DDQN</strong>: Tách biệt việc chọn và đánh giá hành động, giúp giảm thiên lệch và cải thiện quá trình học tập.</li>
+</ul>
+<h1 id="thực-hành-với-chương-trình-mario">Thực hành với chương trình mario<a class="anchor ms-1" href="#thực-hành-với-chương-trình-mario"><i class="fas fa-link"></i></a></h1>
+<p>Ở bài thực hành này, mình kế thừa code từ blog chính chủ của pytorch <a href="https://pytorch.org/tutorials/intermediate/mario_rl_tutorial.html" target="_blank" rel="noopener noreferrer">https://pytorch.org/tutorials/intermediate/mario_rl_tutorial.html</a></p>
+<p>Train trò chơi mario sử dụng Reinforcement Learning</p>
+<p>các nguyên liệu cần thiết</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln">1</span><span class="cl"><span class="n">pip</span> <span class="n">install</span> <span class="n">gym</span><span class="o">==</span><span class="mf">0.22.0</span> <span class="o">--</span><span class="n">update</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="n">pip</span> <span class="n">install</span> <span class="n">gym</span><span class="o">-</span><span class="nb">super</span><span class="o">-</span><span class="n">mario</span><span class="o">-</span><span class="n">bros</span><span class="o">==</span><span class="mf">7.4.0</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="n">pip</span> <span class="n">install</span> <span class="n">tensordict</span><span class="o">==</span><span class="mf">0.3.0</span>
+</span></span><span class="line"><span class="ln">4</span><span class="cl"><span class="n">pip</span> <span class="n">install</span> <span class="n">torchrl</span><span class="o">==</span><span class="mf">0.3.0</span>
+</span></span></code></pre></div><p>Các bạn lưu ý sử dụng đúng phiên bản để khỏi bị lỗi</p>
+<h2 id="environment">Environment<a class="anchor ms-1" href="#environment"><i class="fas fa-link"></i></a></h2>
+<h3 id="khởi-tạo-môi-trường">Khởi tạo môi trường<a class="anchor ms-1" href="#khởi-tạo-môi-trường"><i class="fas fa-link"></i></a></h3>
+<p>Trong trò chơi mario, chúng ta có nhiều đối tượng khi chơi, là cây nấm , các ống trụ màu xanh, các viên gạch &hellip;</p>
+<p>Khi chúng ta thực hiện một hành động ( ấn nút trên Joypad ), trò chơi sẽ phản hồi lại next_state là hình ảnh của khung hình sau khi ta nhấn nút, reward, done, info</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="n">env</span> <span class="o">=</span> <span class="n">gym_super_mario_bros</span><span class="o">.</span><span class="n">make</span><span class="p">(</span><span class="s2">&#34;SuperMarioBros-1-1-v0&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl"><span class="c1"># Limit the action-space to</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl"><span class="c1">#   0. walk right</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl"><span class="c1">#   1. jump right</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl"><span class="n">env</span> <span class="o">=</span> <span class="n">JoypadSpace</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="p">[[</span><span class="s2">&#34;right&#34;</span><span class="p">],</span> <span class="p">[</span><span class="s2">&#34;right&#34;</span><span class="p">,</span> <span class="s2">&#34;A&#34;</span><span class="p">]])</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl"><span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl"><span class="n">next_state</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">done</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">action</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span><span class="n">next_state</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">,</span><span class="se">\n</span><span class="s2"> </span><span class="si">{</span><span class="n">reward</span><span class="si">}</span><span class="s2">,</span><span class="se">\n</span><span class="s2"> </span><span class="si">{</span><span class="n">done</span><span class="si">}</span><span class="s2">,</span><span class="se">\n</span><span class="s2"> </span><span class="si">{</span><span class="n">info</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl">
+</span></span><span class="line"><span class="ln">13</span><span class="cl">
+</span></span><span class="line"><span class="ln">14</span><span class="cl"><span class="p">(</span><span class="mi">240</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl"> <span class="mf">0.0</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">16</span><span class="cl"> <span class="kc">False</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">17</span><span class="cl"> <span class="p">{</span><span class="s1">&#39;coins&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;flag_get&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;life&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;score&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;stage&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;small&#39;</span><span class="p">,</span> <span class="s1">&#39;time&#39;</span><span class="p">:</span> <span class="mi">400</span><span class="p">,</span> <span class="s1">&#39;world&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;x_pos&#39;</span><span class="p">:</span> <span class="mi">40</span><span class="p">,</span> <span class="s1">&#39;y_pos&#39;</span><span class="p">:</span> <span class="mi">79</span><span class="p">}</span>
+</span></span></code></pre></div><h3 id="xử-lý-dữ-liệu">Xử lý dữ liệu<a class="anchor ms-1" href="#xử-lý-dữ-liệu"><i class="fas fa-link"></i></a></h3>
+<p>Dữ liệu của state là một hình có kích thước (240, 256, 3) , hệ bgr, chúng ta sẽ convert về GrayScale  (1 ,240, 256) và resize về hình vuông có kích thước 84x84 để tăng thời gian xử lý . Các bạn có thể thay đổi thành 112x112 hoặc 96x96 tùy thích.</p>
+<p>Ngoài ra, do hình trước khi ấn và hình sau khi ấn nút thường sẽ gần gần giống nhau, nên chúng ta sẽ thêm một lớp SkipFrame, hiểu đúng như tên, chúng ta sẽ cộng dồn giá trị reward để trả ra cho mô hình thực hiện cập nhật trọng số. Ví dụ SkipFrame(4), nghĩa là ta sẽ cộng dồn giá trị reward của 4 hình liên tiếp thành tổng reward và cập nhật trọng số, cái này giúp cho mô hình chạy nhanh hơn xíu mà vẫn đảm bảo thông tin, tất nhiên số lượng frame bị skip cần be bé thôi</p>
+<p>Chúng ta sẽ tạo các lớp , implement từ gym.Wrapper</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="k">class</span> <span class="nc">SkipFrame</span><span class="p">(</span><span class="n">gym</span><span class="o">.</span><span class="n">Wrapper</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env</span><span class="p">,</span> <span class="n">skip</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">        <span class="s2">&#34;&#34;&#34;Return only every `skip`-th frame&#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">env</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">        <span class="bp">self</span><span class="o">.</span><span class="n">_skip</span> <span class="o">=</span> <span class="n">skip</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">        <span class="s2">&#34;&#34;&#34;Repeat action, and sum reward&#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">        <span class="n">total_reward</span> <span class="o">=</span> <span class="mf">0.0</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl">        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_skip</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl">            <span class="c1"># Accumulate reward and repeat the same action</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl">            <span class="n">obs</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">done</span><span class="p">,</span> <span class="n">trunk</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">14</span><span class="cl">            <span class="n">total_reward</span> <span class="o">+=</span> <span class="n">reward</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl">            <span class="k">if</span> <span class="n">done</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln">16</span><span class="cl">                <span class="k">break</span>
+</span></span><span class="line"><span class="ln">17</span><span class="cl">        <span class="k">return</span> <span class="n">obs</span><span class="p">,</span> <span class="n">total_reward</span><span class="p">,</span> <span class="n">done</span><span class="p">,</span> <span class="n">trunk</span><span class="p">,</span> <span class="n">info</span>
+</span></span><span class="line"><span class="ln">18</span><span class="cl">
+</span></span><span class="line"><span class="ln">19</span><span class="cl">
+</span></span><span class="line"><span class="ln">20</span><span class="cl"><span class="k">class</span> <span class="nc">GrayScaleObservation</span><span class="p">(</span><span class="n">gym</span><span class="o">.</span><span class="n">ObservationWrapper</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">21</span><span class="cl">    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">22</span><span class="cl">        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">env</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">23</span><span class="cl">        <span class="n">obs_shape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">observation_space</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span>
+</span></span><span class="line"><span class="ln">24</span><span class="cl">        <span class="bp">self</span><span class="o">.</span><span class="n">observation_space</span> <span class="o">=</span> <span class="n">Box</span><span class="p">(</span><span class="n">low</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">obs_shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">25</span><span class="cl">
+</span></span><span class="line"><span class="ln">26</span><span class="cl">    <span class="k">def</span> <span class="nf">permute_orientation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">observation</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">27</span><span class="cl">        <span class="c1"># permute [H, W, C] array to [C, H, W] tensor</span>
+</span></span><span class="line"><span class="ln">28</span><span class="cl">        <span class="n">observation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">observation</span><span class="p">,</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+</span></span><span class="line"><span class="ln">29</span><span class="cl">        <span class="n">observation</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">observation</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">30</span><span class="cl">        <span class="k">return</span> <span class="n">observation</span>
+</span></span><span class="line"><span class="ln">31</span><span class="cl">
+</span></span><span class="line"><span class="ln">32</span><span class="cl">    <span class="k">def</span> <span class="nf">observation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">observation</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">33</span><span class="cl">        <span class="n">observation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">permute_orientation</span><span class="p">(</span><span class="n">observation</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">34</span><span class="cl">        <span class="n">transform</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">Grayscale</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">35</span><span class="cl">        <span class="n">observation</span> <span class="o">=</span> <span class="n">transform</span><span class="p">(</span><span class="n">observation</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">36</span><span class="cl">        <span class="k">return</span> <span class="n">observation</span>
+</span></span><span class="line"><span class="ln">37</span><span class="cl">
+</span></span><span class="line"><span class="ln">38</span><span class="cl">
+</span></span><span class="line"><span class="ln">39</span><span class="cl"><span class="k">class</span> <span class="nc">ResizeObservation</span><span class="p">(</span><span class="n">gym</span><span class="o">.</span><span class="n">ObservationWrapper</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">40</span><span class="cl">    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env</span><span class="p">,</span> <span class="n">shape</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">41</span><span class="cl">        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">env</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">42</span><span class="cl">        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">43</span><span class="cl">            <span class="bp">self</span><span class="o">.</span><span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">shape</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">44</span><span class="cl">        <span class="k">else</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln">45</span><span class="cl">            <span class="bp">self</span><span class="o">.</span><span class="n">shape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">46</span><span class="cl">
+</span></span><span class="line"><span class="ln">47</span><span class="cl">        <span class="n">obs_shape</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">observation_space</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span>
+</span></span><span class="line"><span class="ln">48</span><span class="cl">        <span class="bp">self</span><span class="o">.</span><span class="n">observation_space</span> <span class="o">=</span> <span class="n">Box</span><span class="p">(</span><span class="n">low</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="mi">255</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">obs_shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">49</span><span class="cl">
+</span></span><span class="line"><span class="ln">50</span><span class="cl">    <span class="k">def</span> <span class="nf">observation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">observation</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">51</span><span class="cl">        <span class="n">transforms</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">Compose</span><span class="p">(</span>
+</span></span><span class="line"><span class="ln">52</span><span class="cl">            <span class="p">[</span><span class="n">T</span><span class="o">.</span><span class="n">Resize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">antialias</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="n">T</span><span class="o">.</span><span class="n">Normalize</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">)]</span>
+</span></span><span class="line"><span class="ln">53</span><span class="cl">        <span class="p">)</span>
+</span></span><span class="line"><span class="ln">54</span><span class="cl">        <span class="n">observation</span> <span class="o">=</span> <span class="n">transforms</span><span class="p">(</span><span class="n">observation</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">55</span><span class="cl">        <span class="k">return</span> <span class="n">observation</span>
+</span></span><span class="line"><span class="ln">56</span><span class="cl">
+</span></span><span class="line"><span class="ln">57</span><span class="cl">
+</span></span><span class="line"><span class="ln">58</span><span class="cl"><span class="c1"># Apply Wrappers to environment</span>
+</span></span><span class="line"><span class="ln">59</span><span class="cl"><span class="n">env</span> <span class="o">=</span> <span class="n">SkipFrame</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">skip</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">60</span><span class="cl"><span class="n">env</span> <span class="o">=</span> <span class="n">GrayScaleObservation</span><span class="p">(</span><span class="n">env</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">61</span><span class="cl"><span class="n">env</span> <span class="o">=</span> <span class="n">ResizeObservation</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="mi">84</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">62</span><span class="cl">
+</span></span><span class="line"><span class="ln">63</span><span class="cl"><span class="n">env</span> <span class="o">=</span> <span class="n">FrameStack</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">num_stack</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+</span></span></code></pre></div><p>Cuối cùng, chúng ta sẽ đóng các khai báo trên vào một FrameStack với số lượng lớp là 4, nghĩa là chúng ta sẽ đưa vào 4 hình có kích thước  (240, 256, 3), kết quả là  hình có kích thươc (4, 84, 84)</p>
+<h2 id="agent">Agent<a class="anchor ms-1" href="#agent"><i class="fas fa-link"></i></a></h2>
+<p>Chúng ta chơi mario, nên tạo 1 Agent tên là mario , theo lý thuyết, chúng ta sẽ có các hành động cho agent</p>
+<ul>
+<li>
+<p>Act : Trả về 1 hành động tối ưu , trong danh sách các hành động dựa trên hình ảnh hiệnt tại</p>
+</li>
+<li>
+<p>Remember experiences. Experience = (current state, current action, reward, next state). Mario sẽ lưu lại các hành động (cache) và nhớ lại các hành động của mình để rút ra bài học</p>
+</li>
+<li>
+<p>Learn: Cập nhật trọng số</p>
+</li>
+</ul>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="k">class</span> <span class="nc">Mario</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">    <span class="k">def</span> <span class="fm">__init__</span><span class="p">():</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">        <span class="k">pass</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">    <span class="k">def</span> <span class="nf">act</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">        <span class="s2">&#34;&#34;&#34;Given a state, choose an epsilon-greedy action&#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">        <span class="k">pass</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">
+</span></span><span class="line"><span class="ln">10</span><span class="cl">    <span class="k">def</span> <span class="nf">cache</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">experience</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl">        <span class="s2">&#34;&#34;&#34;Add the experience to memory&#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl">        <span class="k">pass</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl">
+</span></span><span class="line"><span class="ln">14</span><span class="cl">    <span class="k">def</span> <span class="nf">recall</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl">        <span class="s2">&#34;&#34;&#34;Sample experiences from memory&#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="ln">16</span><span class="cl">        <span class="k">pass</span>
+</span></span><span class="line"><span class="ln">17</span><span class="cl">
+</span></span><span class="line"><span class="ln">18</span><span class="cl">    <span class="k">def</span> <span class="nf">learn</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">19</span><span class="cl">        <span class="s2">&#34;&#34;&#34;Update online action value (Q) function with a batch of experiences&#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="ln">20</span><span class="cl">        <span class="k">pass</span>
+</span></span></code></pre></div><h3 id="act">Act<a class="anchor ms-1" href="#act"><i class="fas fa-link"></i></a></h3>
+<p>Khi chơi mario, hành động chúng ta sẽ thực hiện sẽ là lấy  ngẫu nhiên 1 hành động trong tập lệnh (explore), hoặc là thực hiện lệnh tối ưu do mô hình gợi ý (exploit). Để đạt được tính năng này, chúng ta sẽ sử dụng exploration_rate để điều khiển xác xuất chọn explore hay exploit.</p>
+<p>Ngoài ra, do là mô hình AI, nên chúng ta cần xây dựng một lớp CNN tên là MarioNet  để hàm learn cập nhật trọng số</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="k">class</span> <span class="nc">Mario</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state_dim</span><span class="p">,</span> <span class="n">action_dim</span><span class="p">,</span> <span class="n">save_dir</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">        <span class="bp">self</span><span class="o">.</span><span class="n">state_dim</span> <span class="o">=</span> <span class="n">state_dim</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">        <span class="bp">self</span><span class="o">.</span><span class="n">action_dim</span> <span class="o">=</span> <span class="n">action_dim</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">        <span class="bp">self</span><span class="o">.</span><span class="n">save_dir</span> <span class="o">=</span> <span class="n">save_dir</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">        <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="s2">&#34;cuda&#34;</span> <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span> <span class="k">else</span> <span class="s2">&#34;cpu&#34;</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">
+</span></span><span class="line"><span class="ln">10</span><span class="cl">        <span class="c1"># Mario&#39;s DNN to predict the most optimal action - we implement this in the Learn section</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl">        <span class="bp">self</span><span class="o">.</span><span class="n">net</span> <span class="o">=</span> <span class="n">MarioNet</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">state_dim</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">action_dim</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl">        <span class="bp">self</span><span class="o">.</span><span class="n">net</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl">
+</span></span><span class="line"><span class="ln">14</span><span class="cl">        <span class="bp">self</span><span class="o">.</span><span class="n">exploration_rate</span> <span class="o">=</span> <span class="mi">1</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl">        <span class="bp">self</span><span class="o">.</span><span class="n">exploration_rate_decay</span> <span class="o">=</span> <span class="mf">0.99999975</span>
+</span></span><span class="line"><span class="ln">16</span><span class="cl">        <span class="bp">self</span><span class="o">.</span><span class="n">exploration_rate_min</span> <span class="o">=</span> <span class="mf">0.1</span>
+</span></span><span class="line"><span class="ln">17</span><span class="cl">        <span class="bp">self</span><span class="o">.</span><span class="n">curr_step</span> <span class="o">=</span> <span class="mi">0</span>
+</span></span><span class="line"><span class="ln">18</span><span class="cl">
+</span></span><span class="line"><span class="ln">19</span><span class="cl">        <span class="bp">self</span><span class="o">.</span><span class="n">save_every</span> <span class="o">=</span> <span class="mf">5e5</span>  <span class="c1"># no. of experiences between saving Mario Net</span>
+</span></span><span class="line"><span class="ln">20</span><span class="cl">
+</span></span><span class="line"><span class="ln">21</span><span class="cl">    <span class="k">def</span> <span class="nf">act</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">22</span><span class="cl">        <span class="s2">&#34;&#34;&#34;
+</span></span></span><span class="line"><span class="ln">23</span><span class="cl"><span class="s2">    Given a state, choose an epsilon-greedy action and update value of step.
+</span></span></span><span class="line"><span class="ln">24</span><span class="cl"><span class="s2">
+</span></span></span><span class="line"><span class="ln">25</span><span class="cl"><span class="s2">    Inputs:
+</span></span></span><span class="line"><span class="ln">26</span><span class="cl"><span class="s2">    state(``LazyFrame``): A single observation of the current state, dimension is (state_dim)
+</span></span></span><span class="line"><span class="ln">27</span><span class="cl"><span class="s2">    Outputs:
+</span></span></span><span class="line"><span class="ln">28</span><span class="cl"><span class="s2">    ``action_idx`` (``int``): An integer representing which action Mario will perform
+</span></span></span><span class="line"><span class="ln">29</span><span class="cl"><span class="s2">    &#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="ln">30</span><span class="cl">        <span class="c1"># EXPLORE</span>
+</span></span><span class="line"><span class="ln">31</span><span class="cl">        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">()</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">exploration_rate</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln">32</span><span class="cl">            <span class="n">action_idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">action_dim</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">33</span><span class="cl">
+</span></span><span class="line"><span class="ln">34</span><span class="cl">        <span class="c1"># EXPLOIT</span>
+</span></span><span class="line"><span class="ln">35</span><span class="cl">        <span class="k">else</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln">36</span><span class="cl">            <span class="n">state</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">__array__</span><span class="p">()</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span> <span class="k">else</span> <span class="n">state</span><span class="o">.</span><span class="n">__array__</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">37</span><span class="cl">            <span class="n">state</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span><span class="o">.</span><span class="n">unsqueeze</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">38</span><span class="cl">            <span class="n">action_values</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">&#34;online&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">39</span><span class="cl">            <span class="n">action_idx</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">action_values</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">40</span><span class="cl">
+</span></span><span class="line"><span class="ln">41</span><span class="cl">        <span class="c1"># decrease exploration_rate</span>
+</span></span><span class="line"><span class="ln">42</span><span class="cl">        <span class="bp">self</span><span class="o">.</span><span class="n">exploration_rate</span> <span class="o">*=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exploration_rate_decay</span>
+</span></span><span class="line"><span class="ln">43</span><span class="cl">        <span class="bp">self</span><span class="o">.</span><span class="n">exploration_rate</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">exploration_rate_min</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">exploration_rate</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">44</span><span class="cl">
+</span></span><span class="line"><span class="ln">45</span><span class="cl">        <span class="c1"># increment step</span>
+</span></span><span class="line"><span class="ln">46</span><span class="cl">        <span class="bp">self</span><span class="o">.</span><span class="n">curr_step</span> <span class="o">+=</span> <span class="mi">1</span>
+</span></span><span class="line"><span class="ln">47</span><span class="cl">        <span class="k">return</span> <span class="n">action_idx</span>
+</span></span></code></pre></div><h3 id="remember">Remember<a class="anchor ms-1" href="#remember"><i class="fas fa-link"></i></a></h3>
+<p>Phần này gồm 2 hàm là cache và recall.  cache, hiểu đúng như tên, là lưu lại các giá trị state, next_state, action, reward, done. recall là lấy các giá trị đã được nhớ ra</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="k">class</span> <span class="nc">Mario</span><span class="p">(</span><span class="n">Mario</span><span class="p">):</span>  <span class="c1"># subclassing for continuity</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state_dim</span><span class="p">,</span> <span class="n">action_dim</span><span class="p">,</span> <span class="n">save_dir</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">state_dim</span><span class="p">,</span> <span class="n">action_dim</span><span class="p">,</span> <span class="n">save_dir</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">        <span class="bp">self</span><span class="o">.</span><span class="n">memory</span> <span class="o">=</span> <span class="n">TensorDictReplayBuffer</span><span class="p">(</span><span class="n">storage</span><span class="o">=</span><span class="n">LazyMemmapStorage</span><span class="p">(</span><span class="mi">100000</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&#34;cpu&#34;</span><span class="p">)))</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">        <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span> <span class="o">=</span> <span class="mi">32</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">    <span class="k">def</span> <span class="nf">cache</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">next_state</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">done</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">        <span class="s2">&#34;&#34;&#34;
+</span></span></span><span class="line"><span class="ln">10</span><span class="cl"><span class="s2">        Store the experience to self.memory (replay buffer)
+</span></span></span><span class="line"><span class="ln">11</span><span class="cl"><span class="s2">
+</span></span></span><span class="line"><span class="ln">12</span><span class="cl"><span class="s2">        Inputs:
+</span></span></span><span class="line"><span class="ln">13</span><span class="cl"><span class="s2">        state (``LazyFrame``),
+</span></span></span><span class="line"><span class="ln">14</span><span class="cl"><span class="s2">        next_state (``LazyFrame``),
+</span></span></span><span class="line"><span class="ln">15</span><span class="cl"><span class="s2">        action (``int``),
+</span></span></span><span class="line"><span class="ln">16</span><span class="cl"><span class="s2">        reward (``float``),
+</span></span></span><span class="line"><span class="ln">17</span><span class="cl"><span class="s2">        done(``bool``))
+</span></span></span><span class="line"><span class="ln">18</span><span class="cl"><span class="s2">        &#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="ln">19</span><span class="cl">        <span class="k">def</span> <span class="nf">first_if_tuple</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">20</span><span class="cl">            <span class="k">return</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span> <span class="k">else</span> <span class="n">x</span>
+</span></span><span class="line"><span class="ln">21</span><span class="cl">        <span class="n">state</span> <span class="o">=</span> <span class="n">first_if_tuple</span><span class="p">(</span><span class="n">state</span><span class="p">)</span><span class="o">.</span><span class="n">__array__</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">22</span><span class="cl">        <span class="n">next_state</span> <span class="o">=</span> <span class="n">first_if_tuple</span><span class="p">(</span><span class="n">next_state</span><span class="p">)</span><span class="o">.</span><span class="n">__array__</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">23</span><span class="cl">
+</span></span><span class="line"><span class="ln">24</span><span class="cl">        <span class="n">state</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">25</span><span class="cl">        <span class="n">next_state</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">next_state</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">26</span><span class="cl">        <span class="n">action</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="n">action</span><span class="p">])</span>
+</span></span><span class="line"><span class="ln">27</span><span class="cl">        <span class="n">reward</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="n">reward</span><span class="p">])</span>
+</span></span><span class="line"><span class="ln">28</span><span class="cl">        <span class="n">done</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="n">done</span><span class="p">])</span>
+</span></span><span class="line"><span class="ln">29</span><span class="cl">
+</span></span><span class="line"><span class="ln">30</span><span class="cl">        <span class="c1"># self.memory.append((state, next_state, action, reward, done,))</span>
+</span></span><span class="line"><span class="ln">31</span><span class="cl">        <span class="bp">self</span><span class="o">.</span><span class="n">memory</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">TensorDict</span><span class="p">({</span><span class="s2">&#34;state&#34;</span><span class="p">:</span> <span class="n">state</span><span class="p">,</span> <span class="s2">&#34;next_state&#34;</span><span class="p">:</span> <span class="n">next_state</span><span class="p">,</span> <span class="s2">&#34;action&#34;</span><span class="p">:</span> <span class="n">action</span><span class="p">,</span> <span class="s2">&#34;reward&#34;</span><span class="p">:</span> <span class="n">reward</span><span class="p">,</span> <span class="s2">&#34;done&#34;</span><span class="p">:</span> <span class="n">done</span><span class="p">},</span> <span class="n">batch_size</span><span class="o">=</span><span class="p">[]))</span>
+</span></span><span class="line"><span class="ln">32</span><span class="cl">
+</span></span><span class="line"><span class="ln">33</span><span class="cl">    <span class="k">def</span> <span class="nf">recall</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">34</span><span class="cl">        <span class="s2">&#34;&#34;&#34;
+</span></span></span><span class="line"><span class="ln">35</span><span class="cl"><span class="s2">        Retrieve a batch of experiences from memory
+</span></span></span><span class="line"><span class="ln">36</span><span class="cl"><span class="s2">        &#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="ln">37</span><span class="cl">        <span class="n">batch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">memory</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">38</span><span class="cl">        <span class="n">state</span><span class="p">,</span> <span class="n">next_state</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">done</span> <span class="o">=</span> <span class="p">(</span><span class="n">batch</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&#34;state&#34;</span><span class="p">,</span> <span class="s2">&#34;next_state&#34;</span><span class="p">,</span> <span class="s2">&#34;action&#34;</span><span class="p">,</span> <span class="s2">&#34;reward&#34;</span><span class="p">,</span> <span class="s2">&#34;done&#34;</span><span class="p">))</span>
+</span></span><span class="line"><span class="ln">39</span><span class="cl">        <span class="k">return</span> <span class="n">state</span><span class="p">,</span> <span class="n">next_state</span><span class="p">,</span> <span class="n">action</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(),</span> <span class="n">reward</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(),</span> <span class="n">done</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
+</span></span></code></pre></div><h3 id="learn">Learn<a class="anchor ms-1" href="#learn"><i class="fas fa-link"></i></a></h3>
+<p>Ở phần init trên, chúng ta có cái khai báo MarioNet, ở đây, chúng ta sử dụng mô hình DDQN  - Double Q-learning <a href="https://arxiv.org/pdf/1509.06461" target="_blank" rel="noopener noreferrer">https://arxiv.org/pdf/1509.06461</a></p>
+<p>DDQN sử dụng hai CNN đặt tên là Q_online và Q_target. Hai mô hình cnn này độc lập với nhau</p>
+<p>Chúng ta sẽ chia sẽ chung features  của Q_online và Q_target, nhưng FC classifiers sẽ độc lập nhau, các giá trị trọng số của Q_target sẽ bị frozen để ngăng cập nhật trọng số từ  backprop</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="k">class</span> <span class="nc">MarioNet</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">    <span class="s2">&#34;&#34;&#34;mini CNN structure
+</span></span></span><span class="line"><span class="ln"> 4</span><span class="cl"><span class="s2">  input -&gt; (conv2d + relu) x 3 -&gt; flatten -&gt; (dense + relu) x 2 -&gt; output
+</span></span></span><span class="line"><span class="ln"> 5</span><span class="cl"><span class="s2">  &#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_dim</span><span class="p">,</span> <span class="n">output_dim</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">        <span class="n">c</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="n">input_dim</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">
+</span></span><span class="line"><span class="ln">11</span><span class="cl">        <span class="k">if</span> <span class="n">h</span> <span class="o">!=</span> <span class="mi">84</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;Expecting input height: 84, got: </span><span class="si">{</span><span class="n">h</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl">        <span class="k">if</span> <span class="n">w</span> <span class="o">!=</span> <span class="mi">84</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln">14</span><span class="cl">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;Expecting input width: 84, got: </span><span class="si">{</span><span class="n">w</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl">
+</span></span><span class="line"><span class="ln">16</span><span class="cl">        <span class="bp">self</span><span class="o">.</span><span class="n">online</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__build_cnn</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">output_dim</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">17</span><span class="cl">
+</span></span><span class="line"><span class="ln">18</span><span class="cl">        <span class="bp">self</span><span class="o">.</span><span class="n">target</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__build_cnn</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">output_dim</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">19</span><span class="cl">        <span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">online</span><span class="o">.</span><span class="n">state_dict</span><span class="p">())</span>
+</span></span><span class="line"><span class="ln">20</span><span class="cl">
+</span></span><span class="line"><span class="ln">21</span><span class="cl">        <span class="c1"># Q_target parameters are frozen.</span>
+</span></span><span class="line"><span class="ln">22</span><span class="cl">        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">parameters</span><span class="p">():</span>
+</span></span><span class="line"><span class="ln">23</span><span class="cl">            <span class="n">p</span><span class="o">.</span><span class="n">requires_grad</span> <span class="o">=</span> <span class="kc">False</span>
+</span></span><span class="line"><span class="ln">24</span><span class="cl">
+</span></span><span class="line"><span class="ln">25</span><span class="cl">    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="n">model</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">26</span><span class="cl">        <span class="k">if</span> <span class="n">model</span> <span class="o">==</span> <span class="s2">&#34;online&#34;</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln">27</span><span class="cl">            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">online</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">28</span><span class="cl">        <span class="k">elif</span> <span class="n">model</span> <span class="o">==</span> <span class="s2">&#34;target&#34;</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln">29</span><span class="cl">            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">target</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">30</span><span class="cl">
+</span></span><span class="line"><span class="ln">31</span><span class="cl">    <span class="k">def</span> <span class="nf">__build_cnn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">output_dim</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">32</span><span class="cl">        <span class="k">return</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+</span></span><span class="line"><span class="ln">33</span><span class="cl">            <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_channels</span><span class="o">=</span><span class="n">c</span><span class="p">,</span> <span class="n">out_channels</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">4</span><span class="p">),</span>
+</span></span><span class="line"><span class="ln">34</span><span class="cl">            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
+</span></span><span class="line"><span class="ln">35</span><span class="cl">            <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_channels</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">out_channels</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span>
+</span></span><span class="line"><span class="ln">36</span><span class="cl">            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
+</span></span><span class="line"><span class="ln">37</span><span class="cl">            <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_channels</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">out_channels</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+</span></span><span class="line"><span class="ln">38</span><span class="cl">            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
+</span></span><span class="line"><span class="ln">39</span><span class="cl">            <span class="n">nn</span><span class="o">.</span><span class="n">Flatten</span><span class="p">(),</span>
+</span></span><span class="line"><span class="ln">40</span><span class="cl">            <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">3136</span><span class="p">,</span> <span class="mi">512</span><span class="p">),</span>
+</span></span><span class="line"><span class="ln">41</span><span class="cl">            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
+</span></span><span class="line"><span class="ln">42</span><span class="cl">            <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="n">output_dim</span><span class="p">),</span>
+</span></span><span class="line"><span class="ln">43</span><span class="cl">        <span class="p">)</span>
+</span></span></code></pre></div><h4 id="estimate">Estimate<a class="anchor ms-1" href="#estimate"><i class="fas fa-link"></i></a></h4>
+<p>Do chúng ta có 2 lớp cnn, nên chúng ta cần xây 2 hàm Estimate</p>
+<p>Với Q_online, chúng ta thực hiện infer, xong.</p>
+<p>Với Q_target, giá trị  reward hơi phức tạp một chút, phân tích chúng</p>
+<p>chúng ta có giá trị reward hiện tại</p>
+<p>Chúng ta cần kết hợp với reward của Q_target, nhưng action thì không biết, vậy nên chúng ta sẽ lấy action tối ưu từ Q_online với state hiện tại</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="k">class</span> <span class="nc">Mario</span><span class="p">(</span><span class="n">Mario</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state_dim</span><span class="p">,</span> <span class="n">action_dim</span><span class="p">,</span> <span class="n">save_dir</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">state_dim</span><span class="p">,</span> <span class="n">action_dim</span><span class="p">,</span> <span class="n">save_dir</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">        <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span> <span class="o">=</span> <span class="mf">0.9</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">    <span class="k">def</span> <span class="nf">td_estimate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">action</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">        <span class="n">current_Q</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">&#34;online&#34;</span><span class="p">)[</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">            <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">),</span> <span class="n">action</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">        <span class="p">]</span>  <span class="c1"># Q_online(s,a)</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl">        <span class="k">return</span> <span class="n">current_Q</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl">
+</span></span><span class="line"><span class="ln">13</span><span class="cl">    <span class="nd">@torch.no_grad</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">14</span><span class="cl">    <span class="k">def</span> <span class="nf">td_target</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">next_state</span><span class="p">,</span> <span class="n">done</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl">        <span class="n">next_state_Q</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="p">(</span><span class="n">next_state</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">&#34;online&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">16</span><span class="cl">        <span class="n">best_action</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">next_state_Q</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">17</span><span class="cl">        <span class="n">next_Q</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="p">(</span><span class="n">next_state</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s2">&#34;target&#34;</span><span class="p">)[</span>
+</span></span><span class="line"><span class="ln">18</span><span class="cl">            <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">),</span> <span class="n">best_action</span>
+</span></span><span class="line"><span class="ln">19</span><span class="cl">        <span class="p">]</span>
+</span></span><span class="line"><span class="ln">20</span><span class="cl">        <span class="k">return</span> <span class="p">(</span><span class="n">reward</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">done</span><span class="o">.</span><span class="n">float</span><span class="p">())</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span> <span class="o">*</span> <span class="n">next_Q</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
+</span></span></code></pre></div><h4 id="cập-nhật-model">Cập nhật model<a class="anchor ms-1" href="#cập-nhật-model"><i class="fas fa-link"></i></a></h4>
+<p>Sử dụng cnn, nên chúng ta cần định nghĩa là loss và hàm optimizer, sau khi update trọng số của Q_online, chúng ta sẽ cập nhật trọng số đó cho Q_target</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="k">class</span> <span class="nc">Mario</span><span class="p">(</span><span class="n">Mario</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state_dim</span><span class="p">,</span> <span class="n">action_dim</span><span class="p">,</span> <span class="n">save_dir</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">state_dim</span><span class="p">,</span> <span class="n">action_dim</span><span class="p">,</span> <span class="n">save_dir</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">        <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.00025</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">        <span class="bp">self</span><span class="o">.</span><span class="n">loss_fn</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">SmoothL1Loss</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">    <span class="k">def</span> <span class="nf">update_Q_online</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">td_estimate</span><span class="p">,</span> <span class="n">td_target</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">        <span class="n">loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss_fn</span><span class="p">(</span><span class="n">td_estimate</span><span class="p">,</span> <span class="n">td_target</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">        <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl">        <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl">        <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl">        <span class="k">return</span> <span class="n">loss</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">14</span><span class="cl">
+</span></span><span class="line"><span class="ln">15</span><span class="cl">    <span class="k">def</span> <span class="nf">sync_Q_target</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">16</span><span class="cl">        <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">online</span><span class="o">.</span><span class="n">state_dict</span><span class="p">())</span>
+</span></span></code></pre></div><h4 id="save-checkpoint">Save checkpoint<a class="anchor ms-1" href="#save-checkpoint"><i class="fas fa-link"></i></a></h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="k">class</span> <span class="nc">Mario</span><span class="p">(</span><span class="n">Mario</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">        <span class="n">save_path</span> <span class="o">=</span> <span class="p">(</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">            <span class="bp">self</span><span class="o">.</span><span class="n">save_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&#34;mario_net_</span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">curr_step</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_every</span><span class="p">)</span><span class="si">}</span><span class="s2">.chkpt&#34;</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">        <span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">        <span class="n">torch</span><span class="o">.</span><span class="n">save</span><span class="p">(</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">            <span class="nb">dict</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">state_dict</span><span class="p">(),</span> <span class="n">exploration_rate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">exploration_rate</span><span class="p">),</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">            <span class="n">save_path</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">        <span class="p">)</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;MarioNet saved to </span><span class="si">{</span><span class="n">save_path</span><span class="si">}</span><span class="s2"> at step </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">curr_step</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span></code></pre></div><h4 id="gom-vào-hàm-learn">Gom vào hàm learn<a class="anchor ms-1" href="#gom-vào-hàm-learn"><i class="fas fa-link"></i></a></h4>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="k">class</span> <span class="nc">Mario</span><span class="p">(</span><span class="n">Mario</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state_dim</span><span class="p">,</span> <span class="n">action_dim</span><span class="p">,</span> <span class="n">save_dir</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">state_dim</span><span class="p">,</span> <span class="n">action_dim</span><span class="p">,</span> <span class="n">save_dir</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">        <span class="bp">self</span><span class="o">.</span><span class="n">burnin</span> <span class="o">=</span> <span class="mf">1e4</span>  <span class="c1"># min. experiences before training</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">        <span class="bp">self</span><span class="o">.</span><span class="n">learn_every</span> <span class="o">=</span> <span class="mi">3</span>  <span class="c1"># no. of experiences between updates to Q_online</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">        <span class="bp">self</span><span class="o">.</span><span class="n">sync_every</span> <span class="o">=</span> <span class="mf">1e4</span>  <span class="c1"># no. of experiences between Q_target &amp; Q_online sync</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">    <span class="k">def</span> <span class="nf">learn</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">curr_step</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">sync_every</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl">            <span class="bp">self</span><span class="o">.</span><span class="n">sync_Q_target</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl">
+</span></span><span class="line"><span class="ln">13</span><span class="cl">        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">curr_step</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_every</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln">14</span><span class="cl">            <span class="bp">self</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl">
+</span></span><span class="line"><span class="ln">16</span><span class="cl">        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">curr_step</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">burnin</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln">17</span><span class="cl">            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+</span></span><span class="line"><span class="ln">18</span><span class="cl">
+</span></span><span class="line"><span class="ln">19</span><span class="cl">        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">curr_step</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">learn_every</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln">20</span><span class="cl">            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+</span></span><span class="line"><span class="ln">21</span><span class="cl">
+</span></span><span class="line"><span class="ln">22</span><span class="cl">        <span class="c1"># Sample from memory</span>
+</span></span><span class="line"><span class="ln">23</span><span class="cl">        <span class="n">state</span><span class="p">,</span> <span class="n">next_state</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">done</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">recall</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">24</span><span class="cl">
+</span></span><span class="line"><span class="ln">25</span><span class="cl">        <span class="c1"># Get TD Estimate</span>
+</span></span><span class="line"><span class="ln">26</span><span class="cl">        <span class="n">td_est</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">td_estimate</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">action</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">27</span><span class="cl">
+</span></span><span class="line"><span class="ln">28</span><span class="cl">        <span class="c1"># Get TD Target</span>
+</span></span><span class="line"><span class="ln">29</span><span class="cl">        <span class="n">td_tgt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">td_target</span><span class="p">(</span><span class="n">reward</span><span class="p">,</span> <span class="n">next_state</span><span class="p">,</span> <span class="n">done</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">30</span><span class="cl">
+</span></span><span class="line"><span class="ln">31</span><span class="cl">        <span class="c1"># Backpropagate loss through Q_online</span>
+</span></span><span class="line"><span class="ln">32</span><span class="cl">        <span class="n">loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">update_Q_online</span><span class="p">(</span><span class="n">td_est</span><span class="p">,</span> <span class="n">td_tgt</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">33</span><span class="cl">
+</span></span><span class="line"><span class="ln">34</span><span class="cl">        <span class="k">return</span> <span class="p">(</span><span class="n">td_est</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span> <span class="n">loss</span><span class="p">)</span>
+</span></span></code></pre></div><h2 id="play">Play<a class="anchor ms-1" href="#play"><i class="fas fa-link"></i></a></h2>
+<p>Chúng ta thực hiện learn 40000 lần</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="n">use_cuda</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;Using CUDA: </span><span class="si">{</span><span class="n">use_cuda</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl"><span class="nb">print</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl"><span class="n">save_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s2">&#34;checkpoints&#34;</span><span class="p">)</span> <span class="o">/</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&#34;%Y-%m-</span><span class="si">%d</span><span class="s2">T%H-%M-%S&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl"><span class="n">save_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl"><span class="n">mario</span> <span class="o">=</span> <span class="n">Mario</span><span class="p">(</span><span class="n">state_dim</span><span class="o">=</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">84</span><span class="p">,</span> <span class="mi">84</span><span class="p">),</span> <span class="n">action_dim</span><span class="o">=</span><span class="n">env</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="n">save_dir</span><span class="o">=</span><span class="n">save_dir</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">
+</span></span><span class="line"><span class="ln">11</span><span class="cl"><span class="n">logger</span> <span class="o">=</span> <span class="n">MetricLogger</span><span class="p">(</span><span class="n">save_dir</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl">
+</span></span><span class="line"><span class="ln">13</span><span class="cl"><span class="n">episodes</span> <span class="o">=</span> <span class="mi">40000</span>
+</span></span><span class="line"><span class="ln">14</span><span class="cl"><span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">episodes</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl">
+</span></span><span class="line"><span class="ln">16</span><span class="cl">    <span class="n">state</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">17</span><span class="cl">
+</span></span><span class="line"><span class="ln">18</span><span class="cl">    <span class="c1"># Play the game!</span>
+</span></span><span class="line"><span class="ln">19</span><span class="cl">    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln">20</span><span class="cl">
+</span></span><span class="line"><span class="ln">21</span><span class="cl">        <span class="c1"># Run agent on the state</span>
+</span></span><span class="line"><span class="ln">22</span><span class="cl">        <span class="n">action</span> <span class="o">=</span> <span class="n">mario</span><span class="o">.</span><span class="n">act</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">23</span><span class="cl">
+</span></span><span class="line"><span class="ln">24</span><span class="cl">        <span class="c1"># Agent performs action</span>
+</span></span><span class="line"><span class="ln">25</span><span class="cl">        <span class="n">next_state</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">done</span><span class="p">,</span> <span class="n">trunc</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">26</span><span class="cl">
+</span></span><span class="line"><span class="ln">27</span><span class="cl">        <span class="c1"># Remember</span>
+</span></span><span class="line"><span class="ln">28</span><span class="cl">        <span class="n">mario</span><span class="o">.</span><span class="n">cache</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">next_state</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">done</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">29</span><span class="cl">
+</span></span><span class="line"><span class="ln">30</span><span class="cl">        <span class="c1"># Learn</span>
+</span></span><span class="line"><span class="ln">31</span><span class="cl">        <span class="n">q</span><span class="p">,</span> <span class="n">loss</span> <span class="o">=</span> <span class="n">mario</span><span class="o">.</span><span class="n">learn</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">32</span><span class="cl">
+</span></span><span class="line"><span class="ln">33</span><span class="cl">        <span class="c1"># Logging</span>
+</span></span><span class="line"><span class="ln">34</span><span class="cl">        <span class="n">logger</span><span class="o">.</span><span class="n">log_step</span><span class="p">(</span><span class="n">reward</span><span class="p">,</span> <span class="n">loss</span><span class="p">,</span> <span class="n">q</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">35</span><span class="cl">
+</span></span><span class="line"><span class="ln">36</span><span class="cl">        <span class="c1"># Update state</span>
+</span></span><span class="line"><span class="ln">37</span><span class="cl">        <span class="n">state</span> <span class="o">=</span> <span class="n">next_state</span>
+</span></span><span class="line"><span class="ln">38</span><span class="cl">
+</span></span><span class="line"><span class="ln">39</span><span class="cl">        <span class="c1"># Check if end of game</span>
+</span></span><span class="line"><span class="ln">40</span><span class="cl">        <span class="k">if</span> <span class="n">done</span> <span class="ow">or</span> <span class="n">info</span><span class="p">[</span><span class="s2">&#34;flag_get&#34;</span><span class="p">]:</span>
+</span></span><span class="line"><span class="ln">41</span><span class="cl">            <span class="k">break</span>
+</span></span><span class="line"><span class="ln">42</span><span class="cl">
+</span></span><span class="line"><span class="ln">43</span><span class="cl">    <span class="n">logger</span><span class="o">.</span><span class="n">log_episode</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">44</span><span class="cl">
+</span></span><span class="line"><span class="ln">45</span><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">e</span> <span class="o">%</span> <span class="mi">20</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">e</span> <span class="o">==</span> <span class="n">episodes</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">46</span><span class="cl">        <span class="n">logger</span><span class="o">.</span><span class="n">record</span><span class="p">(</span><span class="n">episode</span><span class="o">=</span><span class="n">e</span><span class="p">,</span> <span class="n">epsilon</span><span class="o">=</span><span class="n">mario</span><span class="o">.</span><span class="n">exploration_rate</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="n">mario</span><span class="o">.</span><span class="n">curr_step</span><span class="p">)</span>
+</span></span></code></pre></div><h2 id="kết-quả">Kết quả<a class="anchor ms-1" href="#kết-quả"><i class="fas fa-link"></i></a></h2>
+<p>Đợi tầm 48h khi chạy bằng GPU, mình train bằng RTX 4060 TI 16G, kết quả không thực sự tốt lắm, chưa về đích được, mình dự đoán phải chạy train tầm 1-2 tuần, hoặc với phần cứng mạnh hơn, như RTX 4090, hoặc A100, hoặc đổi một model mạnh hơn như Proximal Policy Optimizatio</p>
+<p><img class="img-fluid" alt="Mario 1-1  Phạm Duy Tùng" src="/blog/2024-10-27-mario-reinfomation-learning-double-dqn/videos/mario-1-1.mp4" loading="lazy"  title="Mario 1-1  Phạm Duy Tùng"
+  
+   />
+
+</p>
+<h1 id="tham-khảo">Tham khảo<a class="anchor ms-1" href="#tham-khảo"><i class="fas fa-link"></i></a></h1>
+<p><a href="https://arxiv.org/pdf/1509.06461" target="_blank" rel="noopener noreferrer">https://arxiv.org/pdf/1509.06461</a></p>
+<p><a href="https://www.geeksforgeeks.org/what-is-reinforcement-learning/" target="_blank" rel="noopener noreferrer">https://www.geeksforgeeks.org/what-is-reinforcement-learning/</a></p>
+<p><a href="https://pytorch.org/tutorials/intermediate/mario_rl_tutorial.html" target="_blank" rel="noopener noreferrer">https://pytorch.org/tutorials/intermediate/mario_rl_tutorial.html</a></p>
+<p><a href="https://github.com/yfeng997/MadMario" target="_blank" rel="noopener noreferrer">https://github.com/yfeng997/MadMario</a></p>
+<p><a href="https://towardsdatascience.com/reinforcement-learning-101-e24b50e1d292" target="_blank" rel="noopener noreferrer">https://towardsdatascience.com/reinforcement-learning-101-e24b50e1d292</a></p>
+<p>Cảm ơn các bạn đã theo dõi bài viết. Xin cảm ơn và hẹn gặp lại.</p>
+</div></div>
+  <div class="card-footer"><div class="post-navs d-flex justify-content-evenly"><div class="post-nav post-prev">
+    <i class="fas fa-fw fa-chevron-left"></i>
+    <a href="/blog/2024-09-05-system-design-top-10-interview/">Top 10 Thuật Toán System Design Các Bạn Nên Biết - Consistent Hashing
+</a>
+  </div></div></div>
+</article><div class="card component row post-comments" id="post-comments">
+  <div class="card-header">
+    <h2 class="card-title">Comments</h2>
+  </div>
+  <div class="card-body"><script src="https://utteranc.es/client.js"
+  repo="AlexBlack2202/utterances"
+  issue-term="pathname"
+  label="comment"
+  theme="github-dark"
+  crossorigin="anonymous"
+  async>
+</script></div>
+</div></div>
+</div><aside class="col-lg-4 sidebar d-flex">
+  <div class="container d-flex flex-column">
+    
+    <section class="card row text-center profile component">
+  <div class="card-body">
+    <div class="col-12 d-flex align-items-center justify-content-center"><img class="profile-avatar rounded-circle" alt="Đặng Thị Hằng | Phạm Duy Tùng" src="/images/profile.webp" loading="lazy"  title="Đặng Thị Hằng | Phạm Duy Tùng"
+   width="736" height="920"
+   />
+</div>
+    <div class="col-12 profile-meta"><div class="profile-name">Đặng Thị Hằng | Phạm Duy Tùng</div><div class="profile-bio">Gopher, CShaper, Pythoner, Full Stack Engineer.</div><div class="profile-company"><i class="fas fa-fw fa-building"></i>MWG</div><div class="profile-location"><i class="fas fa-fw fa-map-marker-alt"></i>Earth</div><div class="profile-about"><i class="fas fa-fw fa-user"></i><a href="/about/">About</a></div><div class="profile-contact"><i class="fas fa-fw fa-question-circle"></i><a href="/contact/">Contact Us</a></div>
+</div>
+  </div>
+</section>
+  <div class="post-toc row mb-4 card component" id="postTOC">
+  <div class="card-header">
+    <h2 class="card-title">Contents</h2>
+  </div>
+  <div class="card-body">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#lý-thuyết-căn-bản-reinforcement-learning">Lý thuyết căn bản Reinforcement Learning</a>
+      <ul>
+        <li><a href="#các-thành-phần-cơ-bản-của-reinforcement-learning">Các thành phần cơ bản của Reinforcement Learning</a>
+          <ul>
+            <li><a href="#lý-thuyết-toán-học">Lý thuyết toán học</a></li>
+          </ul>
+        </li>
+        <li><a href="#q-learning">Q-Learning</a>
+          <ul>
+            <li><a href="#các-khái-niệm-trong-q-learning">Các khái niệm trong Q-learning</a></li>
+            <li><a href="#cách-q-learning-hoạt-động">Cách Q-learning hoạt động</a></li>
+          </ul>
+        </li>
+        <li><a href="#double-deep-q-network">Double Deep Q-Network</a>
+          <ul>
+            <li><a href="#1-vấn-đề-của-q-learning-overestimation-bias">1. <strong>Vấn đề của Q-learning (Overestimation Bias)</strong>:</a></li>
+            <li><a href="#2-cải-tiến-của-double-deep-q-network-ddqn">2. <strong>Cải tiến của Double Deep Q-Network (DDQN)</strong>:</a></li>
+            <li><a href="#3-lợi-ích-của-ddqn-so-với-dqnq-learning">3. <strong>Lợi ích của DDQN so với DQN/Q-learning</strong>:</a></li>
+            <li><a href="#4-ví-dụ-trực-quan-về-sự-khác-biệt">4. <strong>Ví dụ trực quan về sự khác biệt</strong>:</a></li>
+            <li><a href="#tóm-lại">Tóm lại:</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+    <li><a href="#thực-hành-với-chương-trình-mario">Thực hành với chương trình mario</a>
+      <ul>
+        <li><a href="#environment">Environment</a>
+          <ul>
+            <li><a href="#khởi-tạo-môi-trường">Khởi tạo môi trường</a></li>
+            <li><a href="#xử-lý-dữ-liệu">Xử lý dữ liệu</a></li>
+          </ul>
+        </li>
+        <li><a href="#agent">Agent</a>
+          <ul>
+            <li><a href="#act">Act</a></li>
+            <li><a href="#remember">Remember</a></li>
+            <li><a href="#learn">Learn</a></li>
+          </ul>
+        </li>
+        <li><a href="#play">Play</a></li>
+        <li><a href="#kết-quả">Kết quả</a></li>
+      </ul>
+    </li>
+    <li><a href="#tham-khảo">Tham khảo</a></li>
+  </ul>
+</nav>
+  </div>
+</div><section class="recent-posts row card component">
+  <div class="card-header">
+    <h2 class="card-title">Recent Posts</h2>
+  </div>
+  <div class="card-body">
+    <ul class="post-list"><li>
+        <a href="/blog/2024-10-27-mario-reinfomation-learning-double-dqn/">Sử Dụng Mô Hình Double DQN  Huấn Luyện Mô Hình Reinforcement Learning Với Game Mario
+</a>
+      </li><li>
+        <a href="/blog/2024-09-05-system-design-top-10-interview/">Top 10 Thuật Toán System Design Các Bạn Nên Biết - Consistent Hashing
+</a>
+      </li><li>
+        <a href="/blog/2024-07-06-llm-applications-in-real/">Các Ứng Dụng Của LLM Trong Thực Tế
+</a>
+      </li><li>
+        <a href="/blog/2021-11-06-some-way-make-momey-from-web-scrapping/">Một Số Thư Viện Tính Toán Song Song Thay Thế Cho Cuda
+</a>
+      </li><li>
+        <a href="/blog/2024-06-12-big_data_analytics_methology/">Các Phương Pháp Phân Tích Dữ Liệu Lớn
+</a>
+      </li></ul>
+  </div>
+</section><section class="series-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="/series">series</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="/series/kh%C3%B3a-h%E1%BB%8Dc-python-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học Python Căn Bản">
+            Khóa Học Python Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="/series/kh%C3%B3a-h%E1%BB%8Dc-c&#43;&#43;-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học C&#43;&#43; Căn Bản">
+            Khóa Học C&#43;&#43; Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="/series/machine-learning-dataset/" class="badge rounded post-taxonomy" title="Machine Learning Dataset">
+            Machine Learning Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a><a href="/series/ch%E1%BB%A9ng-kho%C3%A1n-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Chứng Khoán Căn Bản">
+            Chứng Khoán Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">1</span></a></div>
+      </div>
+    </section><section class="tools-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="/tools">tools</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="/tools/tool-random/" class="badge rounded post-taxonomy" title="Tool Random">
+            Tool Random<span class="badge badge-sm text-white bg-accent ms-1">2</span></a></div>
+      </div>
+    </section><section class="categories-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="/categories">categories</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="/categories/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="/categories/c&#43;&#43;/" class="badge rounded post-taxonomy" title="C&#43;&#43;">
+            C&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="/categories/dataset/" class="badge rounded post-taxonomy" title="Dataset">
+            Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a></div>
+      </div>
+    </section><section class="tags-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="/tags">tags</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="/tags/machine-learning/" class="badge rounded post-taxonomy" title="Machine Learning">
+            Machine Learning<span class="badge badge-sm text-white bg-accent ms-1">42</span></a><a href="/tags/deeplearning/" class="badge rounded post-taxonomy" title="Deeplearning">
+            Deeplearning<span class="badge badge-sm text-white bg-accent ms-1">21</span></a><a href="/tags/deep-learning/" class="badge rounded post-taxonomy" title="Deep Learning">
+            Deep Learning<span class="badge badge-sm text-white bg-accent ms-1">19</span></a><a href="/tags/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">14</span></a><a href="/tags/opencv/" class="badge rounded post-taxonomy" title="Opencv">
+            Opencv<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="/tags/bigdata/" class="badge rounded post-taxonomy" title="Bigdata">
+            Bigdata<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/c&#43;&#43;/" class="badge rounded post-taxonomy" title="C&#43;&#43;">
+            C&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/object-detector/" class="badge rounded post-taxonomy" title="Object Detector">
+            Object Detector<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/recommendation/" class="badge rounded post-taxonomy" title="Recommendation">
+            Recommendation<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/alexnet/" class="badge rounded post-taxonomy" title="AlexNet">
+            AlexNet<span class="badge badge-sm text-white bg-accent ms-1">3</span></a></div>
+      </div>
+    </section>
+    
+  </div>
+</aside>
+</div>
+    </main><footer class="footer mt-auto py-3 text-center container"><ul class="nav justify-content-between footer-memu mb-3"><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Support
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-github"></i>Repository
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-comments"></i>Discussions
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/contact/"><i class="fas fa-fw fa-info-circle"></i>Contact Us
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/faq/"><i class="fas fa-fw fa-question-circle"></i>FAQs
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Docs
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="/team_of_services" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-users"></i>Điều khoản sử dụng
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/privacy" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-lock"></i>Chính sách bảo mật
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Features
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.phamduytung.com/utils/gen_paswords/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-paw"></i>Tạo password ngẫu nhiên
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Liên kết khác
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">Netlify
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">facebook
+</a>
+        </li></ul></li></ul>
+<div class="copyright mb-2">
+  Copyright © 2016-2024 Phạm Duy Tùng. All Rights Reserved.
+</div>
+<div class="powered-by mb-2">
+  Website chia sẻ kiến thức của Phạm Duy Tùng và Đặng Thị Hằng. Vui lòng liên hệ email alexblack2202@gmail.com nếu bạn có thông tin cần trao đổi.
+</div></footer>
+<script src="/js/main.ed2053ad82a243b263761567b5c1aaf974487aa84adacb89ae3ddf803ecc248a.js" integrity="sha256-7SBTrYKiQ7JjdhVntcGq&#43;XRIeqhK2suJrj3fgD7MJIo=" crossorigin="anonymous" defer></script><script src="/js/icons.min.8ff200851002b8138e6b35314683092e02edc155465d9dbfb7d115460f8f1fbe.js" integrity="sha256-j/IAhRACuBOOazUxRoMJLgLtwVVGXZ2/t9EVRg&#43;PH74=" crossorigin="anonymous" defer></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('\/service-worker.js').then(function(reg) {
+      console.log('Successfully registered service worker', reg);
+    }).catch(function(err) {
+      console.warn('Error whilst registering service worker', err);
+    });
+  });
+}
+</script><script src="/js/viewer.min.ec58d2aa1a8916addf393be975fdf0070e8c872b0caef1673cb9f7eea067ce57.js" integrity="sha256-7FjSqhqJFq3fOTvpdf3wBw6MhysMrvFnPLn37qBnzlc=" crossorigin="anonymous" defer></script><script defer src="/js/katex.min.062d19072aa2321fd592929a93ade0afc09c491db47671a28d54d6637ea131a1.js" integrity="sha256-Bi0ZByqiMh/VkpKak63gr8CcSR20dnGijVTWY36hMaE=" crossorigin="anonymous"></script>
+
+  
+    
+      
+    
+  
+
+
+<script  data-ad-client="ca-pub-4644989745435991"  async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4644989745435991"
+     crossorigin="anonymous"></script><script data-cfasync="false" type="text/javascript" data-adel="atag" src="//acscdn.com/script/atg.js" czid="eul3gyjdmm"></script>
+  </body>
+</html>
