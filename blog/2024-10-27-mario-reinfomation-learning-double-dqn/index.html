@@ -15,7 +15,7 @@
   <meta itemprop="description" content="Chào các bạn, sau một thời gian ở ẩn, chúng ta lại tiếp tục với việc thực chiến AI, ở bài viết này, chúng ta sẽ train mô hình AI Reinforcement Learning với tựa game đã đi vào bao nhiêu thế hệ trẻ thơ, Mario, tuy nhiên, để bắt đầu bài viết, mình sẽ note lại một vài ý về Reinforcement Learning, Q learning, và cải tiến của Deep Q-Network là Double Deep Q-Network , trong phần code mình sẽ sử dụng  Double Deep Q-Network">
   <meta itemprop="datePublished" content="2024-10-27T00:19:00+03:00">
   <meta itemprop="dateModified" content="2024-10-27T00:19:00+03:00">
-  <meta itemprop="wordCount" content="6584">
+  <meta itemprop="wordCount" content="6939">
   <meta itemprop="keywords" content="Reinformation_learning,Deeplearning"><meta property="og:url" content="/blog/2024-10-27-mario-reinfomation-learning-double-dqn/">
   <meta property="og:site_name" content="Phạm Duy Tùng Machine Learning Blog">
   <meta property="og:title" content="Sử dụng mô hình Double DQN  huấn luyện mô hình Reinforcement Learning với game mario">
@@ -293,7 +293,7 @@ HOME
   <span class="post-date" title="created on 2024-10-27 04:19:00 &#43;0700 &#43;07.">
     Oct 27, 2024
   </span><span class="post-reading-time">
-    31 min read
+    33 min read
   </span><span class="post-taxonomies"><a href="/tags/reinformation_learning/" class="badge post-taxonomy">reinformation_learning</a><a href="/tags/deeplearning/" class="badge post-taxonomy">Deeplearning</a></span>
 </div>
 <div class="post-content mb-3"><div class="toc">
@@ -314,11 +314,11 @@ HOME
         </li>
         <li><a href="#double-deep-q-network">Double Deep Q-Network</a>
           <ul>
-            <li><a href="#1-vấn-đề-của-q-learning-overestimation-bias">1. <strong>Vấn đề của Q-learning (Overestimation Bias)</strong>:</a></li>
-            <li><a href="#2-cải-tiến-của-double-deep-q-network-ddqn">2. <strong>Cải tiến của Double Deep Q-Network (DDQN)</strong>:</a></li>
-            <li><a href="#3-lợi-ích-của-ddqn-so-với-dqnq-learning">3. <strong>Lợi ích của DDQN so với DQN/Q-learning</strong>:</a></li>
-            <li><a href="#4-ví-dụ-trực-quan-về-sự-khác-biệt">4. <strong>Ví dụ trực quan về sự khác biệt</strong>:</a></li>
-            <li><a href="#tóm-lại">Tóm lại:</a></li>
+            <li><a href="#1-vấn-đề-của-q-learning-overestimation-bias">1. Vấn đề của Q-learning (Overestimation Bias):</a></li>
+            <li><a href="#2-cải-tiến-của-double-deep-q-network-ddqn">2. Cải tiến của Double Deep Q-Network (DDQN):</a></li>
+            <li><a href="#3-lợi-ích-của-ddqn-so-với-dqnq-learning">3. Lợi ích của DDQN so với DQN/Q-learning:</a></li>
+            <li><a href="#4-ví-dụ-trực-quan-về-sự-khác-biệt">4. Ví dụ trực quan về sự khác biệt:</a></li>
+            <li><a href="#5-tóm-lại">5. Tóm lại:</a></li>
           </ul>
         </li>
       </ul>
@@ -339,6 +339,7 @@ HOME
           </ul>
         </li>
         <li><a href="#play">Play</a></li>
+        <li><a href="#replay">Replay</a></li>
         <li><a href="#kết-quả">Kết quả</a></li>
       </ul>
     </li>
@@ -374,30 +375,34 @@ HOME
 <li><strong>A (Action space)</strong>: Tập hợp các hành động mà người ra quyết định (agent) có thể thực hiện ở mỗi trạng thái.</li>
 <li><strong>P (Transition probability)</strong>: Xác suất chuyển trạng thái ( P(s&rsquo;|s, a) ), biểu thị xác suất trạng thái kế tiếp ( s&rsquo; ) xảy ra khi thực hiện hành động ( a ) tại trạng thái ( s ).</li>
 <li><strong>R (Reward function)</strong>: Hàm thưởng ( R(s, a) ), là phần thưởng tức thì nhận được khi thực hiện hành động ( a ) tại trạng thái ( s ).</li>
-<li><strong>(\gamma) (Discount factor)</strong>: Hệ số chiết khấu ( \gamma \in [0, 1] ), xác định mức độ ưu tiên cho phần thưởng tức thì so với phần thưởng trong tương lai. Khi ( \gamma ) gần bằng 1, giá trị các phần thưởng trong tương lai càng được đánh giá cao.</li>
+<li><strong>$(\gamma) (Discount factor)$</strong>: Hệ số chiết khấu $( \gamma \in [0, 1] )$, xác định mức độ ưu tiên cho phần thưởng tức thì so với phần thưởng trong tương lai. Khi $( \gamma )$ gần bằng 1, giá trị các phần thưởng trong tương lai càng được đánh giá cao.</li>
 </ul>
-<p>Mục tiêu của MDP là tìm ra <strong>chính sách tối ưu</strong> ( \pi^* ), tức là một chuỗi các hành động giúp tối đa hóa tổng phần thưởng kỳ vọng trong dài hạn.</p>
+<p>Mục tiêu của MDP là tìm ra <strong>chính sách tối ưu - optimal policy</strong> $( \pi^* )$, tức là một chuỗi các hành động giúp tối đa hóa tổng phần thưởng kỳ vọng trong dài hạn.</p>
 <ol start="2">
 <li><strong>Phương trình Bellman</strong></li>
 </ol>
 <p>Phương trình Bellman mô tả mối quan hệ đệ quy giữa giá trị của một trạng thái hoặc một hành động với các trạng thái kế tiếp hoặc hành động tiếp theo. Nó thường được sử dụng để tính toán giá trị kỳ vọng của các trạng thái hoặc hành động, giúp đánh giá và tìm ra chính sách tối ưu.</p>
 <p>a. <strong>Phương trình Bellman cho hàm giá trị trạng thái ( V(s) )</strong></p>
 <p>Hàm giá trị trạng thái ( V(s) ) cho biết tổng phần thưởng kỳ vọng khi bắt đầu từ trạng thái ( s ) và theo chính sách tối ưu. Phương trình Bellman cho hàm giá trị trạng thái là:</p>
-<p>[
+<p>$$
+[
 V(s) = \max_{a} \left[ R(s, a) + \gamma \sum_{s&rsquo;} P(s&rsquo;|s, a)V(s&rsquo;) \right]
-]</p>
+]
+$$</p>
 <p>Ở đây:</p>
 <ul>
 <li>( V(s) ) là giá trị của trạng thái ( s ).</li>
 <li>( R(s, a) ) là phần thưởng nhận được khi thực hiện hành động ( a ) tại trạng thái ( s ).</li>
 <li>( P(s&rsquo;|s, a) ) là xác suất chuyển từ trạng thái ( s ) sang trạng thái ( s&rsquo; ) khi thực hiện hành động ( a ).</li>
-<li>( \gamma ) là hệ số chiết khấu, và ( \sum_{s&rsquo;} P(s&rsquo;|s, a)V(s&rsquo;) ) là giá trị kỳ vọng của các trạng thái tiếp theo.</li>
+<li>$( \gamma )$ là hệ số chiết khấu, và $( \sum_{s&rsquo;} P(s&rsquo;|s, a)V(s&rsquo;) )$ là giá trị kỳ vọng của các trạng thái tiếp theo.</li>
 </ul>
 <p>b. <strong>Phương trình Bellman cho hàm giá trị hành động ( Q(s, a) )</strong></p>
 <p>Hàm giá trị hành động ( Q(s, a) ) biểu diễn tổng phần thưởng kỳ vọng khi bắt đầu từ trạng thái ( s ), thực hiện hành động ( a ), và sau đó tiếp tục theo chính sách tối ưu. Phương trình Bellman cho hàm giá trị hành động là:</p>
-<p>[
+<p>$$
+[
 Q(s, a) = R(s, a) + \gamma \sum_{s&rsquo;} P(s&rsquo;|s, a) \max_{a&rsquo;} Q(s&rsquo;, a&rsquo;)
-]</p>
+]
+$$</p>
 <p>Ở đây:</p>
 <ul>
 <li>( Q(s, a) ) là giá trị của hành động ( a ) ở trạng thái ( s ).</li>
@@ -439,7 +444,7 @@ Q(s, a) = R(s, a) + \gamma \sum_{s&rsquo;} P(s&rsquo;|s, a) \max_{a&rsquo;} Q(s&
 <p>Action(a) : Hành động của agent trong một state cụ thể</p>
 <p>Rewards : Giá trị phần thưởng  hoặc giá trị phạt khi một Action xảy ra</p>
 <p>Episodes: Kết thúc state, khi Agent không thể thực hiện một action mới. Episodes xảy ra khi agent phá đảo hoặc agent bị die</p>
-<p>Q(S_t+1, a) : Giá trị kỳ vọng đạt được  Q value ở state t+1 và hành động a</p>
+<p>$Q(S_t+1, a)$ : Giá trị kỳ vọng đạt được  Q value ở state t+1 và hành động a</p>
 <h3 id="cách-q-learning-hoạt-động">Cách Q-learning hoạt động<a class="anchor ms-1" href="#cách-q-learning-hoạt-động"><i class="fas fa-link"></i></a></h3>
 <h4 id="q-table">Q-Table<a class="anchor ms-1" href="#q-table"><i class="fas fa-link"></i></a></h4>
 <p>Q-Table về cơ bản là một bảng tra cứu, trong đó mỗi hàng đại diện cho một trạng thái có thể có, và mỗi cột đại diện cho một hành động có thể thực hiện. Bảng này lưu trữ các giá trị Q-values (phần thưởng kỳ vọng) cho mỗi cặp trạng thái-hành động. Theo thời gian, Agent sẽ cập nhật bảng này để học cách lựa chọn hành động tốt nhất trong mỗi trạng thái.</p>
@@ -447,16 +452,18 @@ Q(s, a) = R(s, a) + \gamma \sum_{s&rsquo;} P(s&rsquo;|s, a) \max_{a&rsquo;} Q(s&
 <p>Q-value đại diện cho phần thưởng tương lai, kỳ vọng mà Agent sẽ nhận được khi thực hiện một hành động nhất định từ trạng thái hiện tại, và sau đó thực hiện theo  policy tốt nhất (tối đa hóa phần thưởng).</p>
 <h4 id="q-learning-function">Q-learning Function<a class="anchor ms-1" href="#q-learning-function"><i class="fas fa-link"></i></a></h4>
 <p>Là một model-free reinforcement learning, sử dụng phương trình Bellman, cập nhật bảng Q thông qua việc học từ sự tương tác với môi trường. Khi Agent thực hiện một hành động, nó sẽ quan sát phần thưởng và trạng thái mới mà nó chuyển đến. Thuật toán sau đó sẽ cập nhật giá trị Q cho cặp trạng thái-hành động đó theo quy tắc cập nhật sau:</p>
-<p>[
+<p>$$
+[
 Q(s, a) \leftarrow Q(s, a) + \alpha \left( r + \gamma \max_a&rsquo; Q(s&rsquo;, a&rsquo;) - Q(s, a) \right)
-]</p>
+]
+$$</p>
 <p>Trong đó:</p>
 <ul>
-<li>( Q(s, a) ) là giá trị Q cho trạng thái ( s ) và hành động ( a )</li>
-<li>( \alpha ) là tốc độ học (quyết định mức độ mà thông tin mới ghi đè thông tin cũ)</li>
-<li>( r ) là phần thưởng nhận được sau khi thực hiện hành động ( a ) ở trạng thái ( s )</li>
-<li>( \gamma ) là hệ số chiết khấu (xác định mức độ phần thưởng tương lai được tính đến)</li>
-<li>( \max_a&rsquo; Q(s&rsquo;, a&rsquo;) ) là phần thưởng kỳ vọng lớn nhất cho trạng thái tiếp theo ( s&rsquo; ) sau hành động ( a&rsquo; )</li>
+<li>$( Q(s, a) )$ là giá trị Q cho trạng thái ( s ) và hành động ( a )</li>
+<li>$( \alpha )$ là tốc độ học (quyết định mức độ mà thông tin mới ghi đè thông tin cũ)</li>
+<li>$( r )$ là phần thưởng nhận được sau khi thực hiện hành động ( a ) ở trạng thái ( s )</li>
+<li>$( \gamma )$ là hệ số chiết khấu (xác định mức độ phần thưởng tương lai được tính đến)</li>
+<li>$( \max_a&rsquo; Q(s&rsquo;, a&rsquo;) )$ là phần thưởng kỳ vọng lớn nhất cho trạng thái tiếp theo ( s&rsquo; ) sau hành động ( a&rsquo; )</li>
 </ul>
 <p>Theo thời gian, Agent sử dụng Q-learning sẽ dần dần hoàn thiện bảng Q của mình và học được cách thực hiện các hành động tối ưu cho mỗi trạng thái để tối đa hóa phần thưởng kỳ vọng.</p>
 <h4 id="q-learning-algorithm">Q-learning algorithm<a class="anchor ms-1" href="#q-learning-algorithm"><i class="fas fa-link"></i></a></h4>
@@ -505,33 +512,39 @@ Q(s, a) \leftarrow Q(s, a) + \alpha \left( r + \gamma \max_a&rsquo; Q(s&rsquo;, 
 </li>
 <li>
 <p>Trong công thức cập nhật Q-learning:</p>
-<p>[
-Q(s, a) \leftarrow Q(s, a) + \alpha \left( r + \gamma \max_a&rsquo; Q(s&rsquo;, a&rsquo;) - Q(s, a) \right)
-]</p>
-<p>Phần <strong>( Q(s, a) )</strong> bên phải của dấu mũi tên là giá trị Q cũ.</p>
 </li>
 </ul>
-<p><strong>New Q-value estimation (Giá trị Q mới ước tính)</strong>:</p>
-<ul>
-<li>Đây là giá trị Q được cập nhật dựa trên phần thưởng vừa nhận được và dự đoán phần thưởng trong tương lai (dựa trên trạng thái tiếp theo và hành động tốt nhất có thể thực hiện).</li>
-<li>Phần <strong>( r + \gamma \max_a&rsquo; Q(s&rsquo;, a&rsquo;) )</strong> trong công thức là phần thưởng mới và giá trị kỳ vọng của trạng thái tiếp theo. Điều này đại diện cho sự ước tính mới về phần thưởng nếu Agent tiếp tục thực hiện chính sách tối ưu từ trạng thái tiếp theo.</li>
-</ul>
+<p>$$
+[
+Q(s, a) \leftarrow Q(s, a) + \alpha \left( r + \gamma \max_a&rsquo; Q(s&rsquo;, a&rsquo;) - Q(s, a) \right)
+]
+$$</p>
+<p>Phần <strong>$( Q(s, a) )$</strong> bên phải của dấu mũi tên là giá trị Q cũ.</p>
+<p><strong>New Q-value estimation (Giá trị Q mới ước tính)</strong>: Đây là giá trị Q được cập nhật dựa trên phần thưởng vừa nhận được và dự đoán phần thưởng trong tương lai (dựa trên trạng thái tiếp theo và hành động tốt nhất có thể thực hiện).</p>
+<p>Phần <strong>( r + \gamma \max_a&rsquo; Q(s&rsquo;, a&rsquo;) )</strong> trong công thức là phần thưởng mới và giá trị kỳ vọng của trạng thái tiếp theo. Điều này đại diện cho sự ước tính mới về phần thưởng nếu Agent tiếp tục thực hiện chính sách tối ưu từ trạng thái tiếp theo.</p>
 <p><strong>Alpha (α) - Hệ số học (Learning Rate)</strong>:</p>
+<p>-<strong>Ý nghĩa</strong>: Alpha kiểm soát mức độ mà các giá trị Q hiện tại được cập nhật bằng thông tin mới. Nó quyết định xem tác nhân sẽ học nhanh chóng từ các trải nghiệm mới hay học dần dần.</p>
 <ul>
-<li><strong>Ý nghĩa</strong>: Alpha kiểm soát mức độ mà các giá trị Q hiện tại được cập nhật bằng thông tin mới. Nó quyết định xem tác nhân sẽ học nhanh chóng từ các trải nghiệm mới hay học dần dần.</li>
-<li><strong>Phạm vi</strong>: ( 0 \leq \alpha \leq 1 )</li>
-<li><strong>Giải thích</strong>:
-<ul>
-<li><strong>α = 1</strong>: Tác nhân hoàn toàn bỏ qua thông tin cũ và chỉ dùng giá trị mới ước tính. Nghĩa là mỗi khi có một trải nghiệm mới, giá trị Q cũ sẽ được thay thế hoàn toàn.</li>
-<li><strong>α = 0</strong>: Tác nhân hoàn toàn không cập nhật giá trị Q cũ, có nghĩa là tác nhân sẽ không học gì từ trải nghiệm mới.</li>
-<li><strong>Giá trị trung gian (0 &lt; α &lt; 1)</strong>: Kết hợp giữa giá trị Q cũ và giá trị mới, tức là học tập từ cả kinh nghiệm cũ và mới một cách từ từ. Trong thực tế, alpha thường được chọn là một giá trị nhỏ (ví dụ: 0.1 hoặc 0.01) để tác nhân có thể học ổn định và không thay đổi quá đột ngột.</li>
-</ul>
+<li>
+<p><strong>Phạm vi</strong>: $( 0 \leq \alpha \leq 1 )$</p>
+</li>
+<li>
+<p><strong>Giải thích</strong>:</p>
+</li>
+<li>
+<p><strong>α = 1</strong>: Tác nhân hoàn toàn bỏ qua thông tin cũ và chỉ dùng giá trị mới ước tính. Nghĩa là mỗi khi có một trải nghiệm mới, giá trị Q cũ sẽ được thay thế hoàn toàn.</p>
+</li>
+<li>
+<p><strong>α = 0</strong>: Tác nhân hoàn toàn không cập nhật giá trị Q cũ, có nghĩa là tác nhân sẽ không học gì từ trải nghiệm mới.</p>
+</li>
+<li>
+<p><strong>Giá trị trung gian (0 &lt; α &lt; 1)</strong>: Kết hợp giữa giá trị Q cũ và giá trị mới, tức là học tập từ cả kinh nghiệm cũ và mới một cách từ từ. Trong thực tế, alpha thường được chọn là một giá trị nhỏ (ví dụ: 0.1 hoặc 0.01) để tác nhân có thể học ổn định và không thay đổi quá đột ngột.</p>
 </li>
 </ul>
 <p><strong>Gamma (γ) - Hệ số chiết khấu (Discount Factor)</strong>:</p>
 <ul>
 <li><strong>Ý nghĩa</strong>: Gamma xác định mức độ mà tác nhân coi trọng các phần thưởng trong tương lai. Nó cho phép tác nhân cân nhắc giữa việc nhận phần thưởng ngay lập tức và phần thưởng tiềm năng trong tương lai.</li>
-<li><strong>Phạm vi</strong>: ( 0 \leq \gamma \leq 1 )</li>
+<li><strong>Phạm vi</strong>: $( 0 \leq \gamma \leq 1 )$</li>
 <li><strong>Giải thích</strong>:
 <ul>
 <li><strong>γ = 0</strong>: Tác nhân chỉ quan tâm đến phần thưởng tức thì mà không để ý đến phần thưởng tương lai. Điều này khiến tác nhân chỉ tối ưu hóa cho lợi ích ngắn hạn.</li>
@@ -556,12 +569,14 @@ Q(s, a) \leftarrow Q(s, a) + \alpha \left( r + \gamma \max_a&rsquo; Q(s&rsquo;, 
 </li>
 <li>
 <p><strong>Công thức cập nhật Q-learning</strong>:</p>
-<p>[
-Q(s, a) \leftarrow Q(s, a) + \alpha \left( r + \gamma \max_a Q(s&rsquo;, a&rsquo;) - Q(s, a) \right)
-]</p>
-<p>Trong đó, <strong>( \max_a Q(s&rsquo;, a&rsquo;) )</strong> chọn hành động có giá trị Q cao nhất cho trạng thái tiếp theo ( s&rsquo; ). Việc sử dụng cùng một mạng để chọn và đánh giá hành động này có thể dẫn đến thiên lệch khi các giá trị Q bị phóng đại một cách không chính xác.</p>
 </li>
 </ul>
+<p>$$
+[
+Q(s, a) \leftarrow Q(s, a) + \alpha \left( r + \gamma \max_a Q(s&rsquo;, a&rsquo;) - Q(s, a) \right)
+]
+$$</p>
+<p>Trong đó, <strong>( \max_a Q(s&rsquo;, a&rsquo;) )</strong> chọn hành động có giá trị Q cao nhất cho trạng thái tiếp theo ( s&rsquo; ). Việc sử dụng cùng một mạng để chọn và đánh giá hành động này có thể dẫn đến thiên lệch khi các giá trị Q bị phóng đại một cách không chính xác.</p>
 <h3 id="2-cải-tiến-của-double-deep-q-network-ddqn">2. Cải tiến của Double Deep Q-Network (DDQN):<a class="anchor ms-1" href="#2-cải-tiến-của-double-deep-q-network-ddqn"><i class="fas fa-link"></i></a></h3>
 <ul>
 <li>
@@ -573,14 +588,20 @@ Q(s, a) \leftarrow Q(s, a) + \alpha \left( r + \gamma \max_a Q(s&rsquo;, a&rsquo
 </li>
 <li>
 <p><strong>Công thức cập nhật DDQN</strong>:</p>
-<p>[
+</li>
+</ul>
+<p>$$
+[
 Q(s, a) \leftarrow Q(s, a) + \alpha \left( r + \gamma Q_{\text{target}}(s&rsquo;, \arg\max_a Q_{\text{main}}(s&rsquo;, a&rsquo;)) - Q(s, a) \right)
-]</p>
+]
+$$</p>
 <p>Trong đó:</p>
 <ul>
-<li><strong>( Q_{\text{main}}(s&rsquo;, a&rsquo;) )</strong>: Mạng chính được dùng để chọn hành động tốt nhất tại trạng thái ( s&rsquo; ) (tức là hành động có giá trị Q cao nhất).</li>
-<li><strong>( Q_{\text{target}}(s&rsquo;, a&rsquo;) )</strong>: Mạng mục tiêu được dùng để đánh giá giá trị Q của hành động đó.</li>
-</ul>
+<li>
+<p><strong>( Q_{\text{main}}(s&rsquo;, a&rsquo;) )</strong>: Mạng chính được dùng để chọn hành động tốt nhất tại trạng thái ( s&rsquo; ) (tức là hành động có giá trị Q cao nhất).</p>
+</li>
+<li>
+<p><strong>( Q_{\text{target}}(s&rsquo;, a&rsquo;) )</strong>: Mạng mục tiêu được dùng để đánh giá giá trị Q của hành động đó.</p>
 </li>
 <li>
 <p><strong>Ý tưởng chính</strong>: Bằng cách sử dụng hai mạng riêng biệt (một để chọn hành động, một để đánh giá), DDQN tránh được việc phóng đại giá trị Q do cùng một mạng chọn và đánh giá hành động trong Q-learning/DQN tiêu chuẩn. Điều này giúp giảm thiên lệch và cải thiện hiệu quả học tập.</p>
@@ -594,16 +615,16 @@ Q(s, a) \leftarrow Q(s, a) + \alpha \left( r + \gamma Q_{\text{target}}(s&rsquo;
 </ul>
 <h3 id="4-ví-dụ-trực-quan-về-sự-khác-biệt">4. Ví dụ trực quan về sự khác biệt:<a class="anchor ms-1" href="#4-ví-dụ-trực-quan-về-sự-khác-biệt"><i class="fas fa-link"></i></a></h3>
 <ul>
-<li><strong>DQN</strong>: Nếu có hai hành động A và B, và DQN đánh giá hành động A có giá trị Q là 10 (thực tế là 8) và B là 9 (thực tế là 7), DQN sẽ chọn A vì ( \max(10, 9) = 10 ). Tuy nhiên, giá trị thực của A chỉ là 8, dẫn đến đánh giá sai.</li>
+<li><strong>DQN</strong>: Nếu có hai hành động A và B, và DQN đánh giá hành động A có giá trị Q là 10 (thực tế là 8) và B là 9 (thực tế là 7), DQN sẽ chọn A vì $( \max(10, 9) = 10 )$. Tuy nhiên, giá trị thực của A chỉ là 8, dẫn đến đánh giá sai.</li>
 <li><strong>DDQN</strong>: Trong DDQN, mạng chính sẽ chọn A, nhưng mạng mục tiêu sẽ đánh giá A dựa trên giá trị thực tế của nó, làm giảm khả năng phóng đại giá trị và giúp lựa chọn chính xác hơn.</li>
 </ul>
-<h3 id="tóm-lại">Tóm lại:<a class="anchor ms-1" href="#tóm-lại"><i class="fas fa-link"></i></a></h3>
+<h3 id="5-tóm-lại">5. Tóm lại:<a class="anchor ms-1" href="#5-tóm-lại"><i class="fas fa-link"></i></a></h3>
 <ul>
 <li><strong>Q-learning/DQN</strong>: Chỉ dùng một mạng để chọn và đánh giá, dễ gặp tình trạng ước lượng quá cao (overestimation).</li>
 <li><strong>DDQN</strong>: Tách biệt việc chọn và đánh giá hành động, giúp giảm thiên lệch và cải thiện quá trình học tập.</li>
 </ul>
 <h1 id="thực-hành-với-chương-trình-mario">Thực hành với chương trình mario<a class="anchor ms-1" href="#thực-hành-với-chương-trình-mario"><i class="fas fa-link"></i></a></h1>
-<p>Ở bài thực hành này, mình kế thừa code từ blog chính chủ của pytorch <a href="https://pytorch.org/tutorials/intermediate/mario_rl_tutorial.html" target="_blank" rel="noopener noreferrer">https://pytorch.org/tutorials/intermediate/mario_rl_tutorial.html</a></p>
+<p>Ở bài thực hành này, mình kế thừa code từ blog chính chủ của pytorch</p>
 <p>Train trò chơi mario sử dụng Reinforcement Learning</p>
 <p>các nguyên liệu cần thiết</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln">1</span><span class="cl"><span class="n">pip</span> <span class="n">install</span> <span class="n">gym</span><span class="o">==</span><span class="mf">0.22.0</span> <span class="o">--</span><span class="n">update</span>
@@ -1009,13 +1030,105 @@ Q(s, a) \leftarrow Q(s, a) + \alpha \left( r + \gamma Q_{\text{target}}(s&rsquo;
 </span></span><span class="line"><span class="ln">44</span><span class="cl">
 </span></span><span class="line"><span class="ln">45</span><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">e</span> <span class="o">%</span> <span class="mi">20</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">e</span> <span class="o">==</span> <span class="n">episodes</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
 </span></span><span class="line"><span class="ln">46</span><span class="cl">        <span class="n">logger</span><span class="o">.</span><span class="n">record</span><span class="p">(</span><span class="n">episode</span><span class="o">=</span><span class="n">e</span><span class="p">,</span> <span class="n">epsilon</span><span class="o">=</span><span class="n">mario</span><span class="o">.</span><span class="n">exploration_rate</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="n">mario</span><span class="o">.</span><span class="n">curr_step</span><span class="p">)</span>
-</span></span></code></pre></div><h2 id="kết-quả">Kết quả<a class="anchor ms-1" href="#kết-quả"><i class="fas fa-link"></i></a></h2>
-<p>Đợi tầm 48h khi chạy bằng GPU, mình train bằng RTX 4060 TI 16G, kết quả không thực sự tốt lắm, chưa về đích được, mình dự đoán phải chạy train tầm 1-2 tuần, hoặc với phần cứng mạnh hơn, như RTX 4090, hoặc A100, hoặc đổi một model mạnh hơn như Proximal Policy Optimizatio</p>
-<p><img class="img-fluid" alt="Mario 1-1  Phạm Duy Tùng" src="/blog/2024-10-27-mario-reinfomation-learning-double-dqn/videos/mario-1-1.mp4" loading="lazy"  title="Mario 1-1  Phạm Duy Tùng"
-  
-   />
-
-</p>
+</span></span></code></pre></div><h2 id="replay">Replay<a class="anchor ms-1" href="#replay"><i class="fas fa-link"></i></a></h2>
+<p>Ở hàm này, mình load model lên và cho auto chơi, sau vài vòng lặp cũng sẽ về đích được :)</p>
+<p>Ở đây, các bạn chú ý phiên bản gym 0.22.0, ở bài viết gốc họ xài gym 0.17.x nên không có hàm save video, phải tự viết lại, còn các bản cao hơn thì họ tách rõ biến done của env.step  thành 2 biến nên nếu bạn nào xài code thì sẽ bị lỗi.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="kn">import</span> <span class="nn">random</span><span class="o">,</span> <span class="nn">datetime</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl"><span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl"><span class="kn">import</span> <span class="nn">gym</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl"><span class="kn">import</span> <span class="nn">gym_super_mario_bros</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl"><span class="kn">from</span> <span class="nn">gym.wrappers</span> <span class="kn">import</span> <span class="n">FrameStack</span><span class="p">,</span> <span class="n">GrayScaleObservation</span><span class="p">,</span> <span class="n">TransformObservation</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl"><span class="kn">from</span> <span class="nn">nes_py.wrappers</span> <span class="kn">import</span> <span class="n">JoypadSpace</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">
+</span></span><span class="line"><span class="ln">10</span><span class="cl"><span class="kn">from</span> <span class="nn">metrics</span> <span class="kn">import</span> <span class="n">MetricLogger</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl"><span class="kn">from</span> <span class="nn">agent</span> <span class="kn">import</span> <span class="n">Mario</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl"><span class="kn">from</span> <span class="nn">wrappers</span> <span class="kn">import</span> <span class="n">ResizeObservation</span><span class="p">,</span> <span class="n">SkipFrame</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl">
+</span></span><span class="line"><span class="ln">14</span><span class="cl">
+</span></span><span class="line"><span class="ln">15</span><span class="cl"><span class="n">word</span> <span class="o">=</span> <span class="mi">1</span>
+</span></span><span class="line"><span class="ln">16</span><span class="cl"><span class="n">state</span> <span class="o">=</span> <span class="mi">1</span>
+</span></span><span class="line"><span class="ln">17</span><span class="cl"><span class="n">env</span> <span class="o">=</span> <span class="n">gym_super_mario_bros</span><span class="o">.</span><span class="n">make</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;SuperMarioBros-</span><span class="si">{</span><span class="n">word</span><span class="si">}</span><span class="s1">-</span><span class="si">{</span><span class="n">state</span><span class="si">}</span><span class="s1">-v0&#39;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">18</span><span class="cl">
+</span></span><span class="line"><span class="ln">19</span><span class="cl">
+</span></span><span class="line"><span class="ln">20</span><span class="cl">
+</span></span><span class="line"><span class="ln">21</span><span class="cl"><span class="n">env</span> <span class="o">=</span> <span class="n">JoypadSpace</span><span class="p">(</span>
+</span></span><span class="line"><span class="ln">22</span><span class="cl">    <span class="n">env</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">23</span><span class="cl">    <span class="p">[[</span><span class="s1">&#39;right&#39;</span><span class="p">],</span>
+</span></span><span class="line"><span class="ln">24</span><span class="cl">    <span class="p">[</span><span class="s1">&#39;right&#39;</span><span class="p">,</span> <span class="s1">&#39;A&#39;</span><span class="p">]]</span>
+</span></span><span class="line"><span class="ln">25</span><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="ln">26</span><span class="cl">
+</span></span><span class="line"><span class="ln">27</span><span class="cl"><span class="n">env</span> <span class="o">=</span> <span class="n">SkipFrame</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">skip</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">28</span><span class="cl"><span class="n">env</span> <span class="o">=</span> <span class="n">GrayScaleObservation</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">keep_dim</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">29</span><span class="cl"><span class="n">env</span> <span class="o">=</span> <span class="n">ResizeObservation</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="mi">84</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">30</span><span class="cl"><span class="n">env</span> <span class="o">=</span> <span class="n">TransformObservation</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">f</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">/</span> <span class="mf">255.</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">31</span><span class="cl"><span class="n">env</span> <span class="o">=</span> <span class="n">FrameStack</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">num_stack</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">32</span><span class="cl"><span class="n">env</span> <span class="o">=</span> <span class="n">gym</span><span class="o">.</span><span class="n">wrappers</span><span class="o">.</span><span class="n">RecordVideo</span><span class="p">(</span><span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">,</span> <span class="n">video_folder</span><span class="o">=</span><span class="s2">&#34;video&#34;</span><span class="p">,</span> <span class="n">name_prefix</span><span class="o">=</span><span class="sa">f</span><span class="s2">&#34;mario_-</span><span class="si">{</span><span class="n">word</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">state</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">33</span><span class="cl">
+</span></span><span class="line"><span class="ln">34</span><span class="cl"><span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">35</span><span class="cl">
+</span></span><span class="line"><span class="ln">36</span><span class="cl">
+</span></span><span class="line"><span class="ln">37</span><span class="cl">
+</span></span><span class="line"><span class="ln">38</span><span class="cl"><span class="c1"># Start the recorder</span>
+</span></span><span class="line"><span class="ln">39</span><span class="cl"><span class="n">env</span><span class="o">.</span><span class="n">start_video_recorder</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">40</span><span class="cl">
+</span></span><span class="line"><span class="ln">41</span><span class="cl"><span class="n">save_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s1">&#39;checkpoints&#39;</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&#34;test&#34;</span>
+</span></span><span class="line"><span class="ln">42</span><span class="cl"><span class="n">save_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">43</span><span class="cl">
+</span></span><span class="line"><span class="ln">44</span><span class="cl"><span class="n">checkpoint</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s1">&#39;checkpoints/2024-10-12T14-02-01/mario_net_15.chkpt&#39;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">45</span><span class="cl"><span class="n">mario</span> <span class="o">=</span> <span class="n">Mario</span><span class="p">(</span><span class="n">state_dim</span><span class="o">=</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">84</span><span class="p">,</span> <span class="mi">84</span><span class="p">),</span> <span class="n">action_dim</span><span class="o">=</span><span class="n">env</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="n">save_dir</span><span class="o">=</span><span class="n">save_dir</span><span class="p">,</span> <span class="n">checkpoint</span><span class="o">=</span><span class="n">checkpoint</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">46</span><span class="cl"><span class="n">mario</span><span class="o">.</span><span class="n">exploration_rate</span> <span class="o">=</span> <span class="n">mario</span><span class="o">.</span><span class="n">exploration_rate_min</span>
+</span></span><span class="line"><span class="ln">47</span><span class="cl">
+</span></span><span class="line"><span class="ln">48</span><span class="cl"><span class="n">logger</span> <span class="o">=</span> <span class="n">MetricLogger</span><span class="p">(</span><span class="n">save_dir</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">49</span><span class="cl">
+</span></span><span class="line"><span class="ln">50</span><span class="cl"><span class="n">episodes</span> <span class="o">=</span> <span class="mi">50</span>
+</span></span><span class="line"><span class="ln">51</span><span class="cl">
+</span></span><span class="line"><span class="ln">52</span><span class="cl"><span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">episodes</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">53</span><span class="cl">
+</span></span><span class="line"><span class="ln">54</span><span class="cl">    <span class="n">state</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">55</span><span class="cl">
+</span></span><span class="line"><span class="ln">56</span><span class="cl">    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln">57</span><span class="cl">
+</span></span><span class="line"><span class="ln">58</span><span class="cl">        <span class="n">env</span><span class="o">.</span><span class="n">render</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">59</span><span class="cl">
+</span></span><span class="line"><span class="ln">60</span><span class="cl">        <span class="n">action</span> <span class="o">=</span> <span class="n">mario</span><span class="o">.</span><span class="n">act</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">61</span><span class="cl">
+</span></span><span class="line"><span class="ln">62</span><span class="cl">        <span class="n">next_state</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">done</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">63</span><span class="cl">
+</span></span><span class="line"><span class="ln">64</span><span class="cl">        <span class="n">mario</span><span class="o">.</span><span class="n">cache</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">next_state</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">done</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">65</span><span class="cl">        <span class="c1"># print(next_state, reward, done, info)</span>
+</span></span><span class="line"><span class="ln">66</span><span class="cl">
+</span></span><span class="line"><span class="ln">67</span><span class="cl">        <span class="n">logger</span><span class="o">.</span><span class="n">log_step</span><span class="p">(</span><span class="n">reward</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">68</span><span class="cl">
+</span></span><span class="line"><span class="ln">69</span><span class="cl">        <span class="n">state</span> <span class="o">=</span> <span class="n">next_state</span>
+</span></span><span class="line"><span class="ln">70</span><span class="cl">
+</span></span><span class="line"><span class="ln">71</span><span class="cl">        <span class="k">if</span> <span class="n">done</span> <span class="ow">or</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;flag_get&#39;</span><span class="p">]:</span>
+</span></span><span class="line"><span class="ln">72</span><span class="cl">            <span class="k">break</span>
+</span></span><span class="line"><span class="ln">73</span><span class="cl">
+</span></span><span class="line"><span class="ln">74</span><span class="cl">    <span class="n">logger</span><span class="o">.</span><span class="n">log_episode</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">75</span><span class="cl">
+</span></span><span class="line"><span class="ln">76</span><span class="cl">    <span class="k">if</span> <span class="n">e</span> <span class="o">%</span> <span class="mi">20</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln">77</span><span class="cl">        <span class="n">logger</span><span class="o">.</span><span class="n">record</span><span class="p">(</span>
+</span></span><span class="line"><span class="ln">78</span><span class="cl">            <span class="n">episode</span><span class="o">=</span><span class="n">e</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">79</span><span class="cl">            <span class="n">epsilon</span><span class="o">=</span><span class="n">mario</span><span class="o">.</span><span class="n">exploration_rate</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">80</span><span class="cl">            <span class="n">step</span><span class="o">=</span><span class="n">mario</span><span class="o">.</span><span class="n">curr_step</span>
+</span></span><span class="line"><span class="ln">81</span><span class="cl">        <span class="p">)</span>
+</span></span><span class="line"><span class="ln">82</span><span class="cl">
+</span></span><span class="line"><span class="ln">83</span><span class="cl"><span class="n">env</span><span class="o">.</span><span class="n">close_video_recorder</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">84</span><span class="cl">
+</span></span><span class="line"><span class="ln">85</span><span class="cl"><span class="c1"># Close the environment</span>
+</span></span><span class="line"><span class="ln">86</span><span class="cl"><span class="n">env</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</span></span></code></pre></div><p>code chính chủ  <a href="https://pytorch.org/tutorials/intermediate/mario_rl_tutorial.html" target="_blank" rel="noopener noreferrer">https://pytorch.org/tutorials/intermediate/mario_rl_tutorial.html</a></p>
+<h2 id="kết-quả">Kết quả<a class="anchor ms-1" href="#kết-quả"><i class="fas fa-link"></i></a></h2>
+<p>Đợi tầm 48h khi chạy bằng GPU, mình train bằng RTX 4060 TI 16G, khá lâu</p>
+<p>Nếu train với  phần cứng mạnh hơn, như RTX 4090, hoặc A100, hoặc đổi một model mạnh hơn như Proximal Policy Optimizatio, sẽ nhanh hơn</p>
+<p>Model trên mình train với level 1, để chạy auto cho level 2,3&hellip; 32, mình phải chạy 32 lân train tương ứng cho mỗi level.</p>
+<p>Mình thử để model chạy thử cho level 2,3 nhưng không về đích được, phải train lại</p>
+<video width="320" height="240" controls  autoplay>
+  <source src="videos/mario_-1-1-episode-27.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 <h1 id="tham-khảo">Tham khảo<a class="anchor ms-1" href="#tham-khảo"><i class="fas fa-link"></i></a></h1>
 <p><a href="https://arxiv.org/pdf/1509.06461" target="_blank" rel="noopener noreferrer">https://arxiv.org/pdf/1509.06461</a></p>
 <p><a href="https://www.geeksforgeeks.org/what-is-reinforcement-learning/" target="_blank" rel="noopener noreferrer">https://www.geeksforgeeks.org/what-is-reinforcement-learning/</a></p>
@@ -1077,11 +1190,11 @@ Q(s, a) \leftarrow Q(s, a) + \alpha \left( r + \gamma Q_{\text{target}}(s&rsquo;
         </li>
         <li><a href="#double-deep-q-network">Double Deep Q-Network</a>
           <ul>
-            <li><a href="#1-vấn-đề-của-q-learning-overestimation-bias">1. <strong>Vấn đề của Q-learning (Overestimation Bias)</strong>:</a></li>
-            <li><a href="#2-cải-tiến-của-double-deep-q-network-ddqn">2. <strong>Cải tiến của Double Deep Q-Network (DDQN)</strong>:</a></li>
-            <li><a href="#3-lợi-ích-của-ddqn-so-với-dqnq-learning">3. <strong>Lợi ích của DDQN so với DQN/Q-learning</strong>:</a></li>
-            <li><a href="#4-ví-dụ-trực-quan-về-sự-khác-biệt">4. <strong>Ví dụ trực quan về sự khác biệt</strong>:</a></li>
-            <li><a href="#tóm-lại">Tóm lại:</a></li>
+            <li><a href="#1-vấn-đề-của-q-learning-overestimation-bias">1. Vấn đề của Q-learning (Overestimation Bias):</a></li>
+            <li><a href="#2-cải-tiến-của-double-deep-q-network-ddqn">2. Cải tiến của Double Deep Q-Network (DDQN):</a></li>
+            <li><a href="#3-lợi-ích-của-ddqn-so-với-dqnq-learning">3. Lợi ích của DDQN so với DQN/Q-learning:</a></li>
+            <li><a href="#4-ví-dụ-trực-quan-về-sự-khác-biệt">4. Ví dụ trực quan về sự khác biệt:</a></li>
+            <li><a href="#5-tóm-lại">5. Tóm lại:</a></li>
           </ul>
         </li>
       </ul>
@@ -1102,6 +1215,7 @@ Q(s, a) \leftarrow Q(s, a) + \alpha \left( r + \gamma Q_{\text{target}}(s&rsquo;
           </ul>
         </li>
         <li><a href="#play">Play</a></li>
+        <li><a href="#replay">Replay</a></li>
         <li><a href="#kết-quả">Kết quả</a></li>
       </ul>
     </li>
