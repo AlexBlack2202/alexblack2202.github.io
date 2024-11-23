@@ -15,7 +15,7 @@
   <meta itemprop="description" content="Ở bài viết này, chúng ta sẽ thực hiện phân đoạn ảnh sử dụng Mask R-CNN với tập dữ liệu là những quả bóng bay bảy màu rất đẹp.">
   <meta itemprop="datePublished" content="2019-03-25T00:12:00+03:00">
   <meta itemprop="dateModified" content="2019-03-25T00:12:00+03:00">
-  <meta itemprop="wordCount" content="3140">
+  <meta itemprop="wordCount" content="3153">
   <meta itemprop="keywords" content="Machine Learning,Deep Learning,Mask R-CNN,Balloon,Bóng Bay"><meta property="og:url" content="/blog/2019-03-25-mask-rcnn-balloon/">
   <meta property="og:site_name" content="Phạm Duy Tùng Machine Learning Blog">
   <meta property="og:title" content="Tìm hiểu Mask R-CNN và ví dụ phân vùng quả bóng bay sử dụng deep learning">
@@ -250,7 +250,7 @@ HOME
   </div>
 </nav>
 </header>
-<main role="main" class="container">
+<main role="main" class="container" style="line-height:1.7em">
       <div class="row content">
 <div class="col-lg-8">
   <div class="container"><nav class="row card component" aria-label="breadcrumb">
@@ -283,15 +283,13 @@ HOME
 </div>
 <article class="row card component mb-4 post">
   <div class="card-header ">
-    
-    <div class="bgcover" style="background-image:url( /thumbnails/feature-pyramid-network-model1.jpg )">
+    <div class="bgcover" style="background-image:url(https://unsplash.it/1920/1080)" alt="Tìm hiểu Mask R-CNN và ví dụ phân vùng quả bóng bay sử dụng deep learning">
       <div class="bgtrans">
           <h1>Tìm Hiểu Mask R-CNN Và Ví Dụ Phân Vùng Quả Bóng Bay Sử Dụng Deep Learning
 </h1>
       </div>
   </div>
-    
-  </div>
+</div>
   <div class="card-body"><div class="post-meta">
   <span class="post-date" title="created on 2019-03-25 04:12:00 &#43;0700 &#43;07.">
     Mar 25, 2019
@@ -299,7 +297,20 @@ HOME
     15 min read
   </span><span class="post-taxonomies"><a href="/tags/machine-learning/" class="badge post-taxonomy">Machine learning</a><a href="/tags/deep-learning/" class="badge post-taxonomy">Deep learning</a><a href="/tags/mask-r-cnn/" class="badge post-taxonomy">Mask R-CNN</a><a href="/tags/balloon/" class="badge post-taxonomy">balloon</a><a href="/tags/b%C3%B3ng-bay/" class="badge post-taxonomy">bóng bay</a></span>
 </div>
-<div class="post-content mb-3"><h2 id="bắt-đầu">Bắt đầu<a class="anchor ms-1" href="#bắt-đầu"><i class="fas fa-link"></i></a></h2>
+<div class="post-content mb-3"><div class="toc">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#bắt-đầu">Bắt đầu</a></li>
+    <li><a href="#visualize-dữ-liệu">Visualize dữ liệu</a></li>
+    <li><a href="#bounding-boxes">Bounding Boxes</a></li>
+    <li><a href="#resize-images">Resize Images</a></li>
+    <li><a href="#mini-masks">Mini Masks</a></li>
+    <li><a href="#anchors">Anchors</a></li>
+    <li><a href="#prediction">Prediction</a></li>
+  </ul>
+</nav>
+  </div>
+<h1 id="bắt-đầu">Bắt đầu<a class="anchor ms-1" href="#bắt-đầu"><i class="fas fa-link"></i></a></h1>
 <p>Đầu tiên, chúng ta sẽ download tập dataset balloon tại <a href="https://github.com/matterport/Mask_RCNN/releases/download/v2.1/balloon_dataset.zip" target="_blank" rel="noopener noreferrer">https://github.com/matterport/Mask_RCNN/releases/download/v2.1/balloon_dataset.zip</a>, giải nén và bỏ trong thư mục datasets. Tiếp đó, các bạn donwload file balloon.py và visualize.py về. File đầu tiên hỗ trợ chúng ta đọc dữ liệu của dataset balloon và file thứ hai hỗ trợ visualize hình ảnh một cách trực quan. Cả hai file mình đều lấy mã nguồn của Matterport trên <a href="https://github.com/matterport/Mask_RCNN/" target="_blank" rel="noopener noreferrer">https://github.com/matterport/Mask_RCNN/</a> Tiến hành import các thư viện cần thiết về.</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="kn">import</span> <span class="nn">os</span>
 </span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="kn">import</span> <span class="nn">sys</span>
@@ -340,7 +351,7 @@ HOME
 </span></span><span class="line"><span class="ln">3</span><span class="cl">  <span class="mf">0.</span> <span class="n">BG</span>
 </span></span><span class="line"><span class="ln">4</span><span class="cl">  <span class="mf">1.</span> <span class="n">balloon</span>
 </span></span></code></pre></div><p>Vậy là có tổng cộng 61 hình train. Dữ liệu được đánh làm 2 nhãn, một nhãn là background, một nhãn là balloon.</p>
-<h2 id="visualize-dữ-liệu">Visualize dữ liệu<a class="anchor ms-1" href="#visualize-dữ-liệu"><i class="fas fa-link"></i></a></h2>
+<h1 id="visualize-dữ-liệu">Visualize dữ liệu<a class="anchor ms-1" href="#visualize-dữ-liệu"><i class="fas fa-link"></i></a></h1>
 <p>Chúng ta sẽ load một vài hình lên xem người ta đã mask dữ liệu như thế nào. Ở đây, với mỗi hình ảnh, mình sẽ load 1 hình gốc và 4 hình của 4 quả bóng tương ứng trong hình, nếu trong hình có nhiều hơn 4 quả bóng thì chỉ vẽ 4 quả bóng đầu tiên</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl">
 </span></span><span class="line"><span class="ln"> 2</span><span class="cl">
@@ -390,7 +401,7 @@ HOME
    />
 
 </p>
-<h2 id="bounding-boxes">Bounding Boxes<a class="anchor ms-1" href="#bounding-boxes"><i class="fas fa-link"></i></a></h2>
+<h1 id="bounding-boxes">Bounding Boxes<a class="anchor ms-1" href="#bounding-boxes"><i class="fas fa-link"></i></a></h1>
 <p>Chúng ta có 2 cách để lấy Bounding Boxes của các hình. Một là lấy trực tiếp từ tập dataset (đối với những dataset có lưu bounding box), hai là rút trích bounding box từ các toạ độ mask. Chúng ta nên thực hiện cách hai, lý do là chúng ta sẽ dùng các kỹ thuật Data Generator để sinh nhiều ảnh hơn cung cấp cho thuật toán train. Lúc này, việc tính lại bounding box sẽ dễ dàng hơn.</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl">
 </span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="c1"># Load random image and mask.</span>
@@ -411,7 +422,7 @@ HOME
    />
 
 </p>
-<h2 id="resize-images">Resize Images<a class="anchor ms-1" href="#resize-images"><i class="fas fa-link"></i></a></h2>
+<h1 id="resize-images">Resize Images<a class="anchor ms-1" href="#resize-images"><i class="fas fa-link"></i></a></h1>
 <p>Các ảnh trong tập train có các kích thước khác nhau. Các bạn có thể xem các hình ở trên, có ảnh có kích thước này, có ảnh có kích thước kia. Chúng ta sẽ resize chúng về cùng một kích thước (ví dụ 1024x1024) để làm đầu vào cho tập huấn luyện. Và chúng ta sẽ sử dụng zero padding để lấp đầy những khoảng trống của những ảnh không đủ kích thước.</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl">
 </span></span><span class="line"><span class="ln"> 2</span><span class="cl">
@@ -447,7 +458,7 @@ HOME
 
 </p>
 <p>Lưu ý một điều là ở đây, mình sử dụng random image, nên nếu các bạn chạy lại câu lệnh như mình thì kết quả ra phần nhiều sẽ khác mình. Tuy nhiên, Resize shape luôn là (1024, 1024, 3).</p>
-<h2 id="mini-masks">Mini Masks<a class="anchor ms-1" href="#mini-masks"><i class="fas fa-link"></i></a></h2>
+<h1 id="mini-masks">Mini Masks<a class="anchor ms-1" href="#mini-masks"><i class="fas fa-link"></i></a></h1>
 <p>Một vấn đề khá nghiêm trọng ở đây là chúng ta cần khá nhiều bộ nhớ để lưu các masks. Numpy sử dụng 1 byte để lưu 1 giá trị bit. Do đó, với kích thước ảnh là 1024x1024, chúng ta cần 1MB bộ nhớ ram để lưu trữ. Nếu chúng ta có tập dataset tầm 1000 bức ảnh thì cần đến 1GB bộ nhớ, khá là lớn. Ngoài việc tốn bộ nhớ lữu trữ, chúng còn làm chậm tốc độ huấn luyện mô hình nữa.</p>
 <p>Để cải tiến, chúng ta có thể sử dụng một trong hai cách sau:</p>
 <ul>
@@ -456,9 +467,9 @@ HOME
 </ul>
 <p>Mình không thích cách thứ hai cho lắm. Tuy nhiên, theo lý giải của nhóm tác giả Mask R-CNN, thì hầu hết việc gán các đường biên (object annotations) thường không chính xác cho lắm (thừa hoặc thiếu một vài chỗ), cho nên, việc mất mát thông tin với lượng nhỏ này hầu như là không đáng kể.</p>
 <p>Để đánh giá hiệu quả của hàm mask resizing, chúng ta sẽ chạy đoạn code bên dưới và xem ảnh kết quả. Đoạn code trên mình sử dụng 2 hàm compose_image_meta và load_image_gt của tác giả ở đường dẫn <a href="https://github.com/matterport/Mask_RCNN/blob/master/mrcnn/model.py" target="_blank" rel="noopener noreferrer">https://github.com/matterport/Mask_RCNN/blob/master/mrcnn/model.py</a>. Mình có modify lại hàm load_image_gt một chút để hợp với ý mình hơn.</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln">  1</span><span class="cl"><span class="c1">############################################################</span>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln">  1</span><span class="cl"><span class="c1">##############################</span>
 </span></span><span class="line"><span class="ln">  2</span><span class="cl"><span class="c1">#  Data Formatting</span>
-</span></span><span class="line"><span class="ln">  3</span><span class="cl"><span class="c1">############################################################</span>
+</span></span><span class="line"><span class="ln">  3</span><span class="cl"><span class="c1">##############################</span>
 </span></span><span class="line"><span class="ln">  4</span><span class="cl">
 </span></span><span class="line"><span class="ln">  5</span><span class="cl"><span class="k">def</span> <span class="nf">compose_image_meta</span><span class="p">(</span><span class="n">image_id</span><span class="p">,</span> <span class="n">original_image_shape</span><span class="p">,</span> <span class="n">image_shape</span><span class="p">,</span>
 </span></span><span class="line"><span class="ln">  6</span><span class="cl">                       <span class="n">window</span><span class="p">,</span> <span class="n">scale</span><span class="p">,</span> <span class="n">active_class_ids</span><span class="p">):</span>
@@ -617,7 +628,7 @@ HOME
 
 </p>
 <p>Với ảnh ở line 1 là ảnh gốc ban đầu và các full mask của bức ảnh, ảnh ở line 2 là chỉ lấy mask của bounding box, ảnh ở line 3 là lấy mask ở bounding box và scale ảnh (do scale ảnh nên ở line 3 các bạn sẽ thấy mask có hình răng cưa, khác với các mask line 2). Line 4 là ảnh ở line 3 được revert back lại hình gốc ban đầu. Các bạn có để ý thấy rằng nó sẽ bị răng cưa ở biên cạnh chứ không được smooth như ảnh gốc. Nếu chúng ta không làm object annotations kỹ, thì object cũng sẽ bị răng cưa như trên.</p>
-<h2 id="anchors">Anchors<a class="anchor ms-1" href="#anchors"><i class="fas fa-link"></i></a></h2>
+<h1 id="anchors">Anchors<a class="anchor ms-1" href="#anchors"><i class="fas fa-link"></i></a></h1>
 <p>Thứ tự của các anchor thật sự rất quan trọng. Trong quá trình train, thứ tự của các anchor như thế nào thì trong quá trình test, validation, prediction phải dùng y hệt vậy.</p>
 <p>Trong mạng FPN, các anchor phải được xắp xếp theo cách mà chúng ta có thể dễ dàng liên kết với giá trị output</p>
 <ul>
@@ -681,7 +692,7 @@ HOME
 </span></span></code></pre></div><p>Trong kiến trức FPN, feature map tại một số layer đầu tiên là những feature map có độ phân giải lớn. Ví dụ, nếu bức ảnh đầu vào có kích thước là 1024x1024 pixel, và kích thước của mỗi anchor lớp đầu tiên là 32x32 pixel (giá trị đầu tiên của RPN_ANCHOR_SCALES (32, 64, 128, 256, 512)) và bước nhảy (STRIDE) của lớp đầu tiên là 4 (giá trị đầu tiên của BACKBONE_STRIDES ([4, 8, 16, 32, 64])). Từ những dữ kiện này, ta có thể suy ra được là sẽ sinh ra backbone cell có kích thước 256x256 pixel =&gt; 256x256 = 65536 anchor. Với mỗi backbone cell, chúng ta thực hiện phép scale với 3 tỷ lệ khác nhau là [0.5, 1, 2], vậy chúng ta có tổng cộng là 65536x3 = 196608 anchor (xấp xỉ 200k anchor). Để ý một điều là kích thước của một anchor là 32x32 pixel, và bước nhảy là 4, cho nên chúng ta sẽ bị chống lấn (overlap) 28 pixel của anchor 1 và anchor 2 ngay sau nó.</p>
 <p>Một điều thú vị là, nếu ta tăng bước nhảy lên gấp 2 lần, ví dụ từ 4 pixel lấy một anchor lên 8 pixel lấy một anchor, thì số lượng anchor giảm đi đến 4 lần (196608 anchor ở level 0 so với 49152 anchor ở level 1).</p>
 <p>Thử vẽ tất cả các anchor của tất cả các level ở điểm giữa một bức ảnh bức kỳ lên, mỗi một level sẽ dùng một màu khác nhau, chúng ta được một hình như bên dưới.</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="c1">## Visualize anchors of one cell at the center of the feature map of a specific level</span>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="c1"># Visualize anchors of one cell at the center of the feature map of a specific level</span>
 </span></span><span class="line"><span class="ln"> 2</span><span class="cl">
 </span></span><span class="line"><span class="ln"> 3</span><span class="cl"><span class="c1"># Load and draw random image</span>
 </span></span><span class="line"><span class="ln"> 4</span><span class="cl"><span class="n">image_id</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">image_ids</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
@@ -724,7 +735,7 @@ HOME
 
 </p>
 <p>Nhìn ảnh trên,các bạn phần nào đó mường tượng ra các anchor sẽ như thế nào rồi phải không.</p>
-<h2 id="prediction">Prediction<a class="anchor ms-1" href="#prediction"><i class="fas fa-link"></i></a></h2>
+<h1 id="prediction">Prediction<a class="anchor ms-1" href="#prediction"><i class="fas fa-link"></i></a></h1>
 <p>Để tiến hành detect vị trí quả bóng và mask của quả bóng, chúng ta download một ảnh small party nhỏ trên internet về và kiểm chứng.</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl">
 </span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="kn">import</span> <span class="nn">os</span>
@@ -817,7 +828,7 @@ HOME
   async>
 </script></div>
 </div></div>
-</div><aside class="col-lg-4 sidebar d-flex">
+</div><aside class="col-lg-3 col-md-4 sidebar d-flex">
   <div class="container d-flex flex-column">
     
     <section class="card row text-center profile component">
@@ -837,17 +848,13 @@ HOME
   <div class="card-body">
     <nav id="TableOfContents">
   <ul>
-    <li>
-      <ul>
-        <li><a href="#bắt-đầu">Bắt đầu</a></li>
-        <li><a href="#visualize-dữ-liệu">Visualize dữ liệu</a></li>
-        <li><a href="#bounding-boxes">Bounding Boxes</a></li>
-        <li><a href="#resize-images">Resize Images</a></li>
-        <li><a href="#mini-masks">Mini Masks</a></li>
-        <li><a href="#anchors">Anchors</a></li>
-        <li><a href="#prediction">Prediction</a></li>
-      </ul>
-    </li>
+    <li><a href="#bắt-đầu">Bắt đầu</a></li>
+    <li><a href="#visualize-dữ-liệu">Visualize dữ liệu</a></li>
+    <li><a href="#bounding-boxes">Bounding Boxes</a></li>
+    <li><a href="#resize-images">Resize Images</a></li>
+    <li><a href="#mini-masks">Mini Masks</a></li>
+    <li><a href="#anchors">Anchors</a></li>
+    <li><a href="#prediction">Prediction</a></li>
   </ul>
 </nav>
   </div>
@@ -866,10 +873,10 @@ HOME
         <a href="/blog/2024-07-06-llm-applications-in-real/">Các Ứng Dụng Của LLM Trong Thực Tế
 </a>
       </li><li>
-        <a href="/blog/2021-11-06-some-way-make-momey-from-web-scrapping/">Một Số Thư Viện Tính Toán Song Song Thay Thế Cho Cuda
+        <a href="/blog/2024-06-12-cuda-alternate/">Một Số Thư Viện Tính Toán Song Song Thay Thế Cho Cuda
 </a>
       </li><li>
-        <a href="/blog/2024-06-12-big_data_analytics_methology/">Các Phương Pháp Phân Tích Dữ Liệu Lớn
+        <a href="/blog/2024-02-16-cac-phuong-phap-phan-tich-du-lieu-lon/">Các Phương Pháp Phân Tích Dữ Liệu Lớn
 </a>
       </li></ul>
   </div>
@@ -916,13 +923,13 @@ HOME
       </div>
       <div class="card-body">
         <div class="py-2"><a href="/tags/machine-learning/" class="badge rounded post-taxonomy" title="Machine Learning">
-            Machine Learning<span class="badge badge-sm text-white bg-accent ms-1">42</span></a><a href="/tags/deeplearning/" class="badge rounded post-taxonomy" title="Deeplearning">
-            Deeplearning<span class="badge badge-sm text-white bg-accent ms-1">21</span></a><a href="/tags/deep-learning/" class="badge rounded post-taxonomy" title="Deep Learning">
-            Deep Learning<span class="badge badge-sm text-white bg-accent ms-1">19</span></a><a href="/tags/python/" class="badge rounded post-taxonomy" title="Python">
-            Python<span class="badge badge-sm text-white bg-accent ms-1">14</span></a><a href="/tags/opencv/" class="badge rounded post-taxonomy" title="Opencv">
-            Opencv<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="/tags/bigdata/" class="badge rounded post-taxonomy" title="Bigdata">
-            Bigdata<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/c&#43;&#43;/" class="badge rounded post-taxonomy" title="C&#43;&#43;">
-            C&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/object-detector/" class="badge rounded post-taxonomy" title="Object Detector">
+            Machine Learning<span class="badge badge-sm text-white bg-accent ms-1">45</span></a><a href="/tags/deep-learning/" class="badge rounded post-taxonomy" title="Deep Learning">
+            Deep Learning<span class="badge badge-sm text-white bg-accent ms-1">21</span></a><a href="/tags/deeplearning/" class="badge rounded post-taxonomy" title="DeepLearning">
+            DeepLearning<span class="badge badge-sm text-white bg-accent ms-1">21</span></a><a href="/tags/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">11</span></a><a href="/tags/opencv/" class="badge rounded post-taxonomy" title="Opencv">
+            Opencv<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="/tags/c&#43;&#43;/" class="badge rounded post-taxonomy" title="C&#43;&#43;">
+            C&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/normalization/" class="badge rounded post-taxonomy" title="Normalization">
+            Normalization<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/object-detector/" class="badge rounded post-taxonomy" title="Object Detector">
             Object Detector<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/recommendation/" class="badge rounded post-taxonomy" title="Recommendation">
             Recommendation<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/alexnet/" class="badge rounded post-taxonomy" title="AlexNet">
             AlexNet<span class="badge badge-sm text-white bg-accent ms-1">3</span></a></div>

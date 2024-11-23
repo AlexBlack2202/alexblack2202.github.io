@@ -15,7 +15,8 @@
   <meta itemprop="description" content="Chi phí liên quan đến n-gram tokenizer ở ElasticSearch và opensearch thường không đề cập chi tiết trong các tài liệu, do đó, có khi nó sẽ gây ra các hậu quả khá nghiêm trọng về chi phí và hiệu năng. Dẫn đến trường hợp là chúng ta phải  &ldquo;lấy thịt đè người&rdquo; bằng cách tăng chi phí phần cứng một cách lãng phí. Trong bài viết này, chúng ta sẽ đề cập đến vài use-case sử dụng n-gram tokenizer, một số phương pháp cải tiến, hoặc một vài phương pháp thay thế nó bằng cách khách hiệu quả hơn.">
   <meta itemprop="datePublished" content="2023-03-25T00:19:00+03:00">
   <meta itemprop="dateModified" content="2023-03-25T00:19:00+03:00">
-  <meta itemprop="wordCount" content="1170">
+  <meta itemprop="wordCount" content="1184">
+  <meta itemprop="image" content="https://unsplash.it/1920/1080?image=10">
   <meta itemprop="keywords" content="RFM,Recommendation,Marketing"><meta property="og:url" content="/blog/2023-03-25-elasticsearch-opensearch-ngram/">
   <meta property="og:site_name" content="Phạm Duy Tùng Machine Learning Blog">
   <meta property="og:title" content="N-Gram trong elastic search và opensearch - khi nào không nên sử dụng">
@@ -28,10 +29,11 @@
     <meta property="article:tag" content="RFM">
     <meta property="article:tag" content="Recommendation">
     <meta property="article:tag" content="Marketing">
-<meta name="twitter:card" content="summary"><meta name="twitter:title" content="N-Gram trong elastic search và opensearch - khi nào không nên sử dụng">
+    <meta property="og:image" content="https://unsplash.it/1920/1080?image=10">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://unsplash.it/1920/1080?image=10"><meta name="twitter:title" content="N-Gram trong elastic search và opensearch - khi nào không nên sử dụng">
 <meta name="twitter:description" content="Chi phí liên quan đến n-gram tokenizer ở ElasticSearch và opensearch thường không đề cập chi tiết trong các tài liệu, do đó, có khi nó sẽ gây ra các hậu quả khá nghiêm trọng về chi phí và hiệu năng. Dẫn đến trường hợp là chúng ta phải  &ldquo;lấy thịt đè người&rdquo; bằng cách tăng chi phí phần cứng một cách lãng phí. Trong bài viết này, chúng ta sẽ đề cập đến vài use-case sử dụng n-gram tokenizer, một số phương pháp cải tiến, hoặc một vài phương pháp thay thế nó bằng cách khách hiệu quả hơn.">
-<meta property="og:image" content="/images/logo.png"/>
-  <meta name="twitter:image" content="/images/logo.png"/><link rel="stylesheet" href="/css/main.min.c06cf34535ee1f60ba08893b4d57e76b2bbd5e11c17ab12ef976f02983a51b54.css" integrity="sha256-wGzzRTXuH2C6CIk7TVfnayu9XhHBerEu&#43;XbwKYOlG1Q=" crossorigin="anonymous"><link rel="stylesheet" href="/css/katex.min.d080a89e03e1eb850f547d835c186b4273f69879aa497eb8b0e88c1578bf1f0b.css" integrity="sha256-0ICongPh64UPVH2DXBhrQnP2mHmqSX64sOiMFXi/Hws=" crossorigin="anonymous">
+<link rel="stylesheet" href="/css/main.min.c06cf34535ee1f60ba08893b4d57e76b2bbd5e11c17ab12ef976f02983a51b54.css" integrity="sha256-wGzzRTXuH2C6CIk7TVfnayu9XhHBerEu&#43;XbwKYOlG1Q=" crossorigin="anonymous"><link rel="stylesheet" href="/css/katex.min.d080a89e03e1eb850f547d835c186b4273f69879aa497eb8b0e88c1578bf1f0b.css" integrity="sha256-0ICongPh64UPVH2DXBhrQnP2mHmqSX64sOiMFXi/Hws=" crossorigin="anonymous">
 <link rel="stylesheet" href="/css/viewer.min.3d228794bcedbbfa0412beb8fbc1ec6973202945e42af7004f742a4d7bd620ab.css" integrity="sha256-PSKHlLztu/oEEr64&#43;8HsaXMgKUXkKvcAT3QqTXvWIKs=" crossorigin="anonymous"><style>
     .bgcover {
         display: block;
@@ -248,7 +250,7 @@ HOME
   </div>
 </nav>
 </header>
-<main role="main" class="container">
+<main role="main" class="container" style="line-height:1.7em">
       <div class="row content">
 <div class="col-lg-8">
   <div class="container"><nav class="row card component" aria-label="breadcrumb">
@@ -281,15 +283,13 @@ HOME
 </div>
 <article class="row card component mb-4 post">
   <div class="card-header ">
-    
-    <div class="bgcover" style="background-image:url( //images.unsplash.com/photo-1517702087178-fa967a8e8169 )">
+    <div class="bgcover" style="background-image:url(https://unsplash.it/1920/1080)" alt="N-Gram trong elastic search và opensearch - khi nào không nên sử dụng">
       <div class="bgtrans">
           <h1>N-Gram Trong Elastic Search Và Opensearch - Khi Nào Không Nên Sử Dụng
 </h1>
       </div>
   </div>
-    
-  </div>
+</div>
   <div class="card-body"><div class="post-meta">
   <span class="post-date" title="created on 2023-03-25 04:19:00 &#43;0700 &#43;07.">
     Mar 25, 2023
@@ -300,24 +300,24 @@ HOME
 <div class="post-content mb-3"><div class="toc">
     <nav id="TableOfContents">
   <ul>
-    <li><a href="#1-giới-thiệu">1. Giới thiệu</a></li>
-    <li><a href="#n-gram-tokenizer">N-gram Tokenizer</a></li>
-    <li><a href="#sử-dụng-n-gram-trong-trường-hợp-tìm-kiếm">Sử dụng N-gram trong trường hợp tìm kiếm</a></li>
-    <li><a href="#thay-thế-n-gram">Thay thế n-gram</a></li>
-    <li><a href="#kết-luận">Kết luận</a></li>
+    <li><a href="#i-giới-thiệu">I. Giới thiệu</a></li>
+    <li><a href="#ii-n-gram-tokenizer">II. N-gram Tokenizer</a></li>
+    <li><a href="#iii-sử-dụng-n-gram-trong-trường-hợp-tìm-kiếm">III. Sử dụng N-gram trong trường hợp tìm kiếm</a></li>
+    <li><a href="#iv-các-phương-pháp-thay-thế-n-gram">IV. Các phương pháp thay thế n-gram</a></li>
+    <li><a href="#v-kết-luận">V. Kết luận</a></li>
   </ul>
 </nav>
   </div>
-<h1 id="1-giới-thiệu">1. Giới thiệu<a class="anchor ms-1" href="#1-giới-thiệu"><i class="fas fa-link"></i></a></h1>
+<h1 id="i-giới-thiệu">I. Giới thiệu<a class="anchor ms-1" href="#i-giới-thiệu"><i class="fas fa-link"></i></a></h1>
 <p>Chi phí liên quan đến n-gram tokenizer ở ElasticSearch và opensearch thường không đề cập chi tiết trong các tài liệu, do đó, có khi nó sẽ gây ra các hậu quả khá nghiêm trọng về chi phí và hiệu năng. Dẫn đến trường hợp là chúng ta phải  &ldquo;lấy thịt đè người&rdquo; bằng cách tăng chi phí phần cứng một cách lãng phí. Trong bài viết này, chúng ta sẽ đề cập đến vài use-case sử dụng n-gram tokenizer, một số phương pháp cải tiến, hoặc một vài phương pháp thay thế nó bằng cách khách hiệu quả hơn.</p>
 <p>Ngày nay, Elasticsearch và OpenSearch là hai engines được nhiều công ty sử dụng để làm tìm kiếm văn bản nội bộ, làm bộ máy tìm kiếm chính để sử dụng nội bộ hoặc cung cấp dịch vụ cho khách hàng bên ngoài.</p>
 <p>Hầu hết các lập trình viên sẽ sử dụng hàm analyzers và tokenizers mặc định do Elasticsearch và OpenSearch cung cấp sẵn, để chia nhỏ đoạn văn bản thành các token. Ví dụ như câu &ldquo;Đây là năm rất lạ lùng&rdquo; khi sử dụng analyzer mặc định thì sẽ chia thành danh sách các từ [ Đây, là, năm, rất, lạ, lùng], mỗi từ trong danh sách các từ trên đều có thể dễ dàng được search. Đây là cái mà chúng ta thường gọi là &ldquo;full-text-search&rdquo;, là tìm kiếm văn bản bằng dựa trên một hoặc một vài từ có tồn tại trong đoạn văn bản đó.</p>
 <p>Trong một số trường hợp hợp, người ta sẽ sử dụng các analyzer đặc biệt để làm các công việc đặc biệt, không phải là full text search.</p>
 <p>Một trong những thành phần đặc biệt trong elasticsearch và open search là n-gram tokenizer. Hãy điểm qua một vài ứng dụng của nó mà người cấu hình thường hay sử dụng sai</p>
-<h1 id="n-gram-tokenizer">N-gram Tokenizer<a class="anchor ms-1" href="#n-gram-tokenizer"><i class="fas fa-link"></i></a></h1>
+<h1 id="ii-n-gram-tokenizer">II. N-gram Tokenizer<a class="anchor ms-1" href="#ii-n-gram-tokenizer"><i class="fas fa-link"></i></a></h1>
 <p>N-gram Tokenizer tạo ra một nhóm các ký tự, những token nó tạo ra không nhất thiết là những từ giống như analyzer tiêu chuẩn, nó chứa những từ liên tiên tiếp nhau, chiều dài của token phụ thuộc vào N. Ví dụ trong trường hợp N = 2 và từ của cúng ta là &ldquo;lạ lùng&rdquo;, chúng ta có các token là [l, lạ, ạ, &ldquo;ạ &ldquo;, &quot; &ldquo;, &quot; l&rdquo;, l,  lù, ù, ùn, n, ng, g]</p>
 <p>Bạn có thể thấy rằng, thay vì chỉ tạo ra hai token [lạ, lùng], n-gram sẽ chia dữ liệu thành nhóm các ký tự. Phụ thuộc vào N mà ta có số lượng token khác nhau, Trong ví dụ trên, chúng ta có 17 token với N = 2 , nghĩa là số lượng token đã tăng hơn 6 lần. Trong trường hợp N=3, N=4, hoặc trong trường hợp từ cần index dài hơn, số lượng token còn bị nhân lên gấp nhiều lần nữa</p>
-<h1 id="sử-dụng-n-gram-trong-trường-hợp-tìm-kiếm">Sử dụng N-gram trong trường hợp tìm kiếm<a class="anchor ms-1" href="#sử-dụng-n-gram-trong-trường-hợp-tìm-kiếm"><i class="fas fa-link"></i></a></h1>
+<h1 id="iii-sử-dụng-n-gram-trong-trường-hợp-tìm-kiếm">III. Sử dụng N-gram trong trường hợp tìm kiếm<a class="anchor ms-1" href="#iii-sử-dụng-n-gram-trong-trường-hợp-tìm-kiếm"><i class="fas fa-link"></i></a></h1>
 <p>Có rất nhiều tư vấn trên mạng về cách sử dụng n-gram, và các tư vấn trên thường xoay quanh các chủ đề sau</p>
 <ul>
 <li>Phát hiện lỗi chính tả</li>
@@ -341,7 +341,7 @@ HOME
 <p>Tương tự như trên, nhưng tìm ở giữa.</p>
 <p>Trong những trường hợp trên, lập trình viên hay được tư vấn là xài n-gram. N-gram có thể giải quyết các vấn đề trên, nhưng chúng ta có thể sử dụng nhiều các khác hiệu quả hơn.</p>
 <p>Lý do không nên xài n-gram là vì sự bùng nổ token do chính n-gram mang lại, dẫn đến chúng ta cần tiêu tốn nhiều tài nguyên như CPU, RAM để xử lý index, tạo token trong lúc index và search, tốn nhiều ổ cứng để lưu trữ. Cuối cùng, hiệu năng truy vấn sẽ giảm.</p>
-<h1 id="thay-thế-n-gram">Thay thế n-gram<a class="anchor ms-1" href="#thay-thế-n-gram"><i class="fas fa-link"></i></a></h1>
+<h1 id="iv-các-phương-pháp-thay-thế-n-gram">IV. Các phương pháp thay thế n-gram<a class="anchor ms-1" href="#iv-các-phương-pháp-thay-thế-n-gram"><i class="fas fa-link"></i></a></h1>
 <p>Chúng ta sẽ xem xét từng trường hợp cụ thể</p>
 <ul>
 <li>Gõ sai chính tả</li>
@@ -366,7 +366,7 @@ HOME
 <li>Infix searches</li>
 </ul>
 <p>Đây là ông tốn nhiều chi phí nhất, với sql engine, chúng ta xài từ khoá like dẫn đến bị mất index, với n-gram, chúng ta phải index hết toàn bộ token, vào. Trong elastic có hỗ trợ chúng ta  Word delimiter graph token filter, giải quyết cái này dễ dàng <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-word-delimiter-graph-tokenfilter.html" target="_blank" rel="noopener noreferrer">https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-word-delimiter-graph-tokenfilter.html</a></p>
-<h1 id="kết-luận">Kết luận<a class="anchor ms-1" href="#kết-luận"><i class="fas fa-link"></i></a></h1>
+<h1 id="v-kết-luận">V. Kết luận<a class="anchor ms-1" href="#v-kết-luận"><i class="fas fa-link"></i></a></h1>
 <p>Với các công nghệ trên, chúng sẽ giúp chúng ta nhàn hơn khi sử dụng elastic, opensearch. Các bạn nếu có đang bị những vướng mắc trên, hãy thử các cách được đề xuất, biết đâu bất ngờ sẽ xảy ra.</p>
 <p>Nguồn: <a href="https://blog.bigdataboutique.com/2023/01/dont-use-n-gram-in-elasticsearch-and-opensearch-6f0b48" target="_blank" rel="noopener noreferrer">https://blog.bigdataboutique.com/2023/01/dont-use-n-gram-in-elasticsearch-and-opensearch-6f0b48</a></p>
 <p>Cảm ơn các bạn đã theo dõi bài viết, hẹn gặp lại ở các bài viết tiếp theo</p>
@@ -393,7 +393,7 @@ HOME
   async>
 </script></div>
 </div></div>
-</div><aside class="col-lg-4 sidebar d-flex">
+</div><aside class="col-lg-3 col-md-4 sidebar d-flex">
   <div class="container d-flex flex-column">
     
     <section class="card row text-center profile component">
@@ -413,11 +413,11 @@ HOME
   <div class="card-body">
     <nav id="TableOfContents">
   <ul>
-    <li><a href="#1-giới-thiệu">1. Giới thiệu</a></li>
-    <li><a href="#n-gram-tokenizer">N-gram Tokenizer</a></li>
-    <li><a href="#sử-dụng-n-gram-trong-trường-hợp-tìm-kiếm">Sử dụng N-gram trong trường hợp tìm kiếm</a></li>
-    <li><a href="#thay-thế-n-gram">Thay thế n-gram</a></li>
-    <li><a href="#kết-luận">Kết luận</a></li>
+    <li><a href="#i-giới-thiệu">I. Giới thiệu</a></li>
+    <li><a href="#ii-n-gram-tokenizer">II. N-gram Tokenizer</a></li>
+    <li><a href="#iii-sử-dụng-n-gram-trong-trường-hợp-tìm-kiếm">III. Sử dụng N-gram trong trường hợp tìm kiếm</a></li>
+    <li><a href="#iv-các-phương-pháp-thay-thế-n-gram">IV. Các phương pháp thay thế n-gram</a></li>
+    <li><a href="#v-kết-luận">V. Kết luận</a></li>
   </ul>
 </nav>
   </div>
@@ -436,10 +436,10 @@ HOME
         <a href="/blog/2024-07-06-llm-applications-in-real/">Các Ứng Dụng Của LLM Trong Thực Tế
 </a>
       </li><li>
-        <a href="/blog/2021-11-06-some-way-make-momey-from-web-scrapping/">Một Số Thư Viện Tính Toán Song Song Thay Thế Cho Cuda
+        <a href="/blog/2024-06-12-cuda-alternate/">Một Số Thư Viện Tính Toán Song Song Thay Thế Cho Cuda
 </a>
       </li><li>
-        <a href="/blog/2024-06-12-big_data_analytics_methology/">Các Phương Pháp Phân Tích Dữ Liệu Lớn
+        <a href="/blog/2024-02-16-cac-phuong-phap-phan-tich-du-lieu-lon/">Các Phương Pháp Phân Tích Dữ Liệu Lớn
 </a>
       </li></ul>
   </div>
@@ -486,13 +486,13 @@ HOME
       </div>
       <div class="card-body">
         <div class="py-2"><a href="/tags/machine-learning/" class="badge rounded post-taxonomy" title="Machine Learning">
-            Machine Learning<span class="badge badge-sm text-white bg-accent ms-1">42</span></a><a href="/tags/deeplearning/" class="badge rounded post-taxonomy" title="Deeplearning">
-            Deeplearning<span class="badge badge-sm text-white bg-accent ms-1">21</span></a><a href="/tags/deep-learning/" class="badge rounded post-taxonomy" title="Deep Learning">
-            Deep Learning<span class="badge badge-sm text-white bg-accent ms-1">19</span></a><a href="/tags/python/" class="badge rounded post-taxonomy" title="Python">
-            Python<span class="badge badge-sm text-white bg-accent ms-1">14</span></a><a href="/tags/opencv/" class="badge rounded post-taxonomy" title="Opencv">
-            Opencv<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="/tags/bigdata/" class="badge rounded post-taxonomy" title="Bigdata">
-            Bigdata<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/c&#43;&#43;/" class="badge rounded post-taxonomy" title="C&#43;&#43;">
-            C&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/object-detector/" class="badge rounded post-taxonomy" title="Object Detector">
+            Machine Learning<span class="badge badge-sm text-white bg-accent ms-1">45</span></a><a href="/tags/deep-learning/" class="badge rounded post-taxonomy" title="Deep Learning">
+            Deep Learning<span class="badge badge-sm text-white bg-accent ms-1">21</span></a><a href="/tags/deeplearning/" class="badge rounded post-taxonomy" title="DeepLearning">
+            DeepLearning<span class="badge badge-sm text-white bg-accent ms-1">21</span></a><a href="/tags/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">11</span></a><a href="/tags/opencv/" class="badge rounded post-taxonomy" title="Opencv">
+            Opencv<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="/tags/c&#43;&#43;/" class="badge rounded post-taxonomy" title="C&#43;&#43;">
+            C&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/normalization/" class="badge rounded post-taxonomy" title="Normalization">
+            Normalization<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/object-detector/" class="badge rounded post-taxonomy" title="Object Detector">
             Object Detector<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/recommendation/" class="badge rounded post-taxonomy" title="Recommendation">
             Recommendation<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/alexnet/" class="badge rounded post-taxonomy" title="AlexNet">
             AlexNet<span class="badge badge-sm text-white bg-accent ms-1">3</span></a></div>

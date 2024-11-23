@@ -15,7 +15,7 @@
   <meta itemprop="description" content="Hàng thập kỷ qua, rất nhiều người trên thế giới đã và đang cố gắng dự đoán quy luật của thị trường chứng khoán và hầu hết đều thất bại. Liệu rằng mô hình deep learning với mạng neural network có thể giải được bài toán này? Trong bài viết này, mình sẽ thử nghiệm mô hình với tập dữ liệu chứng khoán của amazone và của thế giới di động">
   <meta itemprop="datePublished" content="2019-04-04T00:13:00+03:00">
   <meta itemprop="dateModified" content="2019-04-04T00:13:00+03:00">
-  <meta itemprop="wordCount" content="3228">
+  <meta itemprop="wordCount" content="3297">
   <meta itemprop="keywords" content="Machine Learning,Deep Learning,Neural Network,Amazone,Thế Giới Di Động,Mwg"><meta property="og:url" content="/blog/2019-04-04-predicting-stock-prices-with-echo-state-networks/">
   <meta property="og:site_name" content="Phạm Duy Tùng Machine Learning Blog">
   <meta property="og:title" content="Dự đoán giá cổ phiếu bằng mô hình mạng Echo State Networks">
@@ -251,7 +251,7 @@ HOME
   </div>
 </nav>
 </header>
-<main role="main" class="container">
+<main role="main" class="container" style="line-height:1.7em">
       <div class="row content">
 <div class="col-lg-8">
   <div class="container"><nav class="row card component" aria-label="breadcrumb">
@@ -284,15 +284,13 @@ HOME
 </div>
 <article class="row card component mb-4 post">
   <div class="card-header ">
-    
-    <div class="bgcover" style="background-image:url( /thumbnails/chung_khoan_1.png )">
+    <div class="bgcover" style="background-image:url(https://unsplash.it/1920/1080)" alt="Dự đoán giá cổ phiếu bằng mô hình mạng Echo State Networks">
       <div class="bgtrans">
           <h1>Dự Đoán Giá Cổ Phiếu Bằng Mô Hình Mạng Echo State Networks
 </h1>
       </div>
   </div>
-    
-  </div>
+</div>
   <div class="card-body"><div class="post-meta">
   <span class="post-date" title="created on 2019-04-04 04:13:00 &#43;0700 &#43;07.">
     Apr 4, 2019
@@ -300,10 +298,28 @@ HOME
     16 min read
   </span><span class="post-taxonomies"><a href="/tags/machine-learning/" class="badge post-taxonomy">Machine learning</a><a href="/tags/deep-learning/" class="badge post-taxonomy">Deep learning</a><a href="/tags/neural-network/" class="badge post-taxonomy">neural network</a><a href="/tags/amazone/" class="badge post-taxonomy">amazone</a><a href="/tags/th%E1%BA%BF-gi%E1%BB%9Bi-di-%C4%91%E1%BB%99ng/" class="badge post-taxonomy">thế giới di động</a><a href="/tags/mwg/" class="badge post-taxonomy">mwg</a></span>
 </div>
-<div class="post-content mb-3"><p>Trong cuốn The West Wing Script Book của Aaron Sorkin, ông ấy đã có một câu như thế này &ldquo;There (is) order and even great beauty in what looks like total chaos. If we look closely enough at the randomness around us, patterns will start to emerge.&rdquo;. Mình xin phép không dịch câu nói trên ra, bởi vì mình dịch khá tệ, và câu nói này khá nổi tiếng (đã được trích dẫn khá nhiều trên các bài viết của các bloger khác). Nhưng câu nói đó khá phù hợp với môi trường chứng khoán, nơi mà mọi thứ đều không rõ ràng và khá &ldquo;hỗn loạn&rdquo;.</p>
-<h2 id="dự-đoán-chuỗi-thời-gian">Dự đoán chuỗi thời gian<a class="anchor ms-1" href="#dự-đoán-chuỗi-thời-gian"><i class="fas fa-link"></i></a></h2>
+<div class="post-content mb-3"><div class="toc">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#dự-đoán-chuỗi-thời-gian">Dự đoán chuỗi thời gian</a></li>
+    <li><a href="#các-thuộc-tính-của-time-series">Các thuộc tính của time series</a></li>
+    <li><a href="#vì-sao-chúng-ta-lại-quan-tâm-đến-tính-dừng-của-dữ-liệu">Vì sao chúng ta lại quan tâm đến tính dừng của dữ liệu</a></li>
+    <li><a href="#cách-xác-định-tính-dừng-của-dữ-liệu">Cách xác định tính dừng của dữ liệu</a></li>
+    <li><a href="#phương-pháp-dự-đoán-chuỗi-thời-gian-cơ-bản">Phương pháp dự đoán chuỗi thời gian cơ bản</a></li>
+    <li><a href="#phương-pháp-dự-đoán-dựa-vào-mạng-neural-network">Phương pháp dự đoán dựa vào mạng neural network</a></li>
+    <li><a href="#sử-dụng-mạng-echo-state-networks">Sử dụng mạng Echo State Networks</a>
+      <ul>
+        <li><a href="#dự-doán-chuỗi-time-series">Dự doán chuỗi time series</a></li>
+        <li><a href="#tối-ưu-hoá-các-tham-số-hyper-parameters">Tối ưu hoá các tham số Hyper parameters</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+<p>Trong cuốn The West Wing Script Book của Aaron Sorkin, ông ấy đã có một câu như thế này &ldquo;There (is) order and even great beauty in what looks like total chaos. If we look closely enough at the randomness around us, patterns will start to emerge.&rdquo;. Mình xin phép không dịch câu nói trên ra, bởi vì mình dịch khá tệ, và câu nói này khá nổi tiếng (đã được trích dẫn khá nhiều trên các bài viết của các bloger khác). Nhưng câu nói đó khá phù hợp với môi trường chứng khoán, nơi mà mọi thứ đều không rõ ràng và khá &ldquo;hỗn loạn&rdquo;.</p>
+<h1 id="dự-đoán-chuỗi-thời-gian">Dự đoán chuỗi thời gian<a class="anchor ms-1" href="#dự-đoán-chuỗi-thời-gian"><i class="fas fa-link"></i></a></h1>
 <p>Giá cổ phiếu trên thị trường chứng khoán thường được quy vào bài toán là time series. Các công ty đầu tư hoặc các nhà nghiên cứu, các nhà đầu tư hiện nay thường sử dụng phương pháp stochastic hoặc các cải tiến của phương pháp stochastic (ví dụ mô hình ARIMA, RegARIMA,&hellip;) để đưa ra các dự đoán hợp lý phù hợp với các giá trị quá khứ. Mục tiêu cuối cùng là tìm ra một mô hình khả dĩ nhất để phản ánh quy luật của thị trường và sử dụng nó để sinh ra lợi nhuận (trở nên giàu có hơn :)).</p>
-<h2 id="các-thuộc-tính-của-time-series">Các thuộc tính của time series<a class="anchor ms-1" href="#các-thuộc-tính-của-time-series"><i class="fas fa-link"></i></a></h2>
+<h1 id="các-thuộc-tính-của-time-series">Các thuộc tính của time series<a class="anchor ms-1" href="#các-thuộc-tính-của-time-series"><i class="fas fa-link"></i></a></h1>
 <p>Một trong các thuộc tính của chuỗi thời gian là tính dừng (stationary). Một chuỗi time series được gọi là có tính dừng nếu các thuộc tính có ý nghĩa thống kê của nó (ví dụ như là trung bình, độ lệch chuẩn) không đổi theo thời gian. Ở đây, chúng ta luận bàn nho nhỏ một chút vì sao tính dừng rất quang trọng trong chuỗi thời gian.</p>
 <p>Trước hết, hầu hết các mô hình về time series hiện tại được xây dựng trên một giả định tính dừng của chuỗi thời gian. Có nghĩa là nếu chuỗi thời gian ở trong quá khứ có một hành vi nào đó, thì khả năng cao là nó sẽ lặp lại trong tương lai. Ngoài ra, các lý thuyết liên quan đến tính dừng của chuỗi time series đã được các nhà nghiên cứu khai thác một cách triệt để và dễ ràng implement hơn là các lý thuyết về non-stationary trong time series.</p>
 <p>Tính dừng được định nghĩa bằng các tiêu chí rõ ràng và nghiêm ngặt. Tuy nhiên, trong bài toán thực tế, chúng ta có thể giả định rằng một chuỗi time series được coi là có tính dừng nếu các thuộc tính thống kê không đổi theo thời gian, nghĩa là:</p>
@@ -331,7 +347,7 @@ HOME
    />
 
 </p>
-<h2 id="vì-sao-chúng-ta-lại-quan-tâm-đến-tính-dừng-của-dữ-liệu">Vì sao chúng ta lại quan tâm đến tính dừng của dữ liệu<a class="anchor ms-1" href="#vì-sao-chúng-ta-lại-quan-tâm-đến-tính-dừng-của-dữ-liệu"><i class="fas fa-link"></i></a></h2>
+<h1 id="vì-sao-chúng-ta-lại-quan-tâm-đến-tính-dừng-của-dữ-liệu">Vì sao chúng ta lại quan tâm đến tính dừng của dữ liệu<a class="anchor ms-1" href="#vì-sao-chúng-ta-lại-quan-tâm-đến-tính-dừng-của-dữ-liệu"><i class="fas fa-link"></i></a></h1>
 <p>Chúng ta quan tâm đến tính dừng của dữ liệu, đơn giản là bởi vì nếu dữ liệu không có tính dừng, chúng ta không thể xây dựng mô hình chuỗi thời gian (như đã nói ở trên, các nghiên cứu hiện nay đều dựa trên một cơ sở là dữ liệu có tính dừng). Trong trường hợp bạn có trong tay dữ liệu thuộc dạng time series, và một tiêu chí nào đó trong 3 tiêu chí mình đã liệu kê ở trên bị vi phạm, suy ra là dữ liệu của bạn không có tính dừng. Bạn phải chuyển đổi dữ liệu bạn đang có để cho nó có tính dừng. May mắn rằng cũng có nhiều nghiên cứu thực hiện việc này, ví dụ như &ldquo;khử xu hướng (detrending)&rdquo;, khử sai biệt (differencing)&hellip;</p>
 <p>Nếu bạn mới chỉ bắt đầu phân tích chuỗi thời gian, bạn sẽ thấy việc làm trên khá là stupid. Lý thuyết tốt nhất hiện nay cho chuỗi thời gian là chia nhỏ nó ra thành các thành phần như là xu hướng (linear trend), mùa vụ (seasonal), chu kỳ, và yếu tố ngẫu nhiên. Dự đoán cho từng phần một, sau đó lấy tổng chúng lại.</p>
 <p><img class="img-fluid" alt="Hình ảnh" src="/blog/2019-04-04-predicting-stock-prices-with-echo-state-networks/arima.png" loading="lazy"  title="Hình ảnh"
@@ -340,9 +356,9 @@ HOME
 
 </p>
 <p>Đối với những ai đã quen thuộc với biến đổi Fourier, thì sẽ dễ dàng &ldquo;cảm&rdquo; hơn cái mình vừa nói ở trên.</p>
-<h2 id="cách-xác-định-tính-dừng-của-dữ-liệu">Cách xác định tính dừng của dữ liệu<a class="anchor ms-1" href="#cách-xác-định-tính-dừng-của-dữ-liệu"><i class="fas fa-link"></i></a></h2>
+<h1 id="cách-xác-định-tính-dừng-của-dữ-liệu">Cách xác định tính dừng của dữ liệu<a class="anchor ms-1" href="#cách-xác-định-tính-dừng-của-dữ-liệu"><i class="fas fa-link"></i></a></h1>
 <p>Khá khó để xác định một biểu đồ chuỗi time series có tính dừng hay không (quan sát biểu đồ bằng mắt). Cho nên chúng ta sẽ sử dụng kiểm định Dickey-Fuller. Đây là một kiểm định thống kê để kiểm tra xem chuỗi dữ liệu có tính dừng hay không. Với giả thuyết null là chuỗi time series là một chuỗi không có tính dừng. Nếu giá trị  nhỏ hơn một ngưỡng p-value nào đó (thường là 0.05), chúng ta có quyền bác bỏ giả định null, và nói rằng chuỗi thời gian đang có là có tính dừng. Ở bài viết này, mình không đề cập đến mô hình kiểm định - vốn được học trong môn xác xuất thống kê. Các bạn có nhu cầu tìm hiểu thì có thể search trên google hoặc là xem lại sách xác suất thống kê.</p>
-<h2 id="phương-pháp-dự-đoán-chuỗi-thời-gian-cơ-bản">Phương pháp dự đoán chuỗi thời gian cơ bản<a class="anchor ms-1" href="#phương-pháp-dự-đoán-chuỗi-thời-gian-cơ-bản"><i class="fas fa-link"></i></a></h2>
+<h1 id="phương-pháp-dự-đoán-chuỗi-thời-gian-cơ-bản">Phương pháp dự đoán chuỗi thời gian cơ bản<a class="anchor ms-1" href="#phương-pháp-dự-đoán-chuỗi-thời-gian-cơ-bản"><i class="fas fa-link"></i></a></h1>
 <p>Phương pháp cơ bản nhất, đơn giản nhất, và để áp dụng nhất dược sử dụng để dự đoán chuỗi thời gian là moving average. Mô hình này thực hiện tính trung bình của t giá trị cuối cùng làm giá trị dự đoán của điểm tiếp theo. Ví dụ như để dự đoán giá chứng khoán của ngày thứ 2 của tuần tiếp theo, chúng ta sẽ lấy trung bình giá đóng của của 5 ngày trước đó (giá từ thứ hai đến thứ sáu tuần này).</p>
 <p>Đến đây, các bạn đã có một số hiểu biết về time series. Một mô hình khá nổi tiếng là ARIMA đã được sử dụng nhiều để phân tích và dự báo. Cách thực hiện của mô hình trên được trình bày tóm gọn trong hình mô tả bên dưới.</p>
 <p><img class="img-fluid" alt="Hình ảnh" src="/blog/2019-04-04-predicting-stock-prices-with-echo-state-networks/arima1.png" loading="lazy"  title="Hình ảnh"
@@ -350,7 +366,7 @@ HOME
    />
 
 </p>
-<h2 id="phương-pháp-dự-đoán-dựa-vào-mạng-neural-network">Phương pháp dự đoán dựa vào mạng neural network<a class="anchor ms-1" href="#phương-pháp-dự-đoán-dựa-vào-mạng-neural-network"><i class="fas fa-link"></i></a></h2>
+<h1 id="phương-pháp-dự-đoán-dựa-vào-mạng-neural-network">Phương pháp dự đoán dựa vào mạng neural network<a class="anchor ms-1" href="#phương-pháp-dự-đoán-dựa-vào-mạng-neural-network"><i class="fas fa-link"></i></a></h1>
 <p>Thực tế, có rất nhiều mạng neural network đã được áp dụng để dự đoán mô hình chứng khoán. Các bạn có thể tìm đọc lại các bài viết trước đây của mình về sử dụng LSTM trong dự báo chứng khoán. Mô hình chứng khoán bằng mạng neural network nói chung phải đối mặt với một vấn đề khá &ldquo;xương xẩu&rdquo; là xử lý nhiễu và vanishing gradients. Trong đó, việc xử lý vanishing gradients là quan trọng nhất. Bản chất của mạng neural network là tối ưu hoá hàm lan truyền ngược bằng cách sử dụng đạo hàm giữa các lớp layer để chúng &lsquo;học&rsquo;. Trải qua nhiều layer, giá trị của đạo hàm sẽ càng ngày nhỏ dần vào xấp xỉ bằng 0. Giả sử chúng ta có một mô hình có 100 lớp hidden layer, chúng ta nhân 100 lần số 0.1 với nhau và boom, giá trị cuối cùng chung ta nhận được là 0, nghĩa là chúng ta chẳng học được cái gì cả.</p>
 <p>May mắn thay, tới thời điểm hiện tại, chúng ta có 3 cách để xử lý vấn đề trên:</p>
 <ul>
@@ -378,9 +394,9 @@ HOME
 
 </p>
 <p>Trong mô hình mạng  echo state network, chúng ta chỉ cần huấn luyện lại trọng số của lớp output, việc này giúp chúng ta rút ngắn thời gian huấn luyện mô hình, và tăng tốc qusa trình training.</p>
-<h2 id="sử-dụng-mạng-echo-state-networks">Sử dụng mạng Echo State Networks<a class="anchor ms-1" href="#sử-dụng-mạng-echo-state-networks"><i class="fas fa-link"></i></a></h2>
+<h1 id="sử-dụng-mạng-echo-state-networks">Sử dụng mạng Echo State Networks<a class="anchor ms-1" href="#sử-dụng-mạng-echo-state-networks"><i class="fas fa-link"></i></a></h1>
 <p>Về nguyên lý hoạt động của mô hình này, mình sẽ không đề cập ở đây. Chủ đề về mạng Echo State Networks mình sẽ nghiên cứu kỹ lưỡng và đề cập ở trong bài viết sắp tới. Mục tiêu của bài viết này là sử dụng mô hình Echo State Networks trong bài toán time series.</p>
-<h4 id="dự-doán-chuỗi-time-series">Dự doán chuỗi time series<a class="anchor ms-1" href="#dự-doán-chuỗi-time-series"><i class="fas fa-link"></i></a></h4>
+<h2 id="dự-doán-chuỗi-time-series">Dự doán chuỗi time series<a class="anchor ms-1" href="#dự-doán-chuỗi-time-series"><i class="fas fa-link"></i></a></h2>
 <p>Trước tiên, chúng ta sẽ import một số thư viện cần thiết, thư viện ESN đã có sẵn tại đường dẫn pyESN, các bạn download về rồi dùng</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl">
 </span></span><span class="line"><span class="ln"> 2</span><span class="cl">
@@ -456,7 +472,7 @@ HOME
 
 </p>
 <p>Độ phức tạp của mô hình là khá nhỏ khi so với mô hình RNN. Lý do là về bản chất, chúng ta chỉ huấn luyện trên trọng số của output layer, nó là một hàm tuyến tính. Do vậy, độ phức tạp tính toán chỉ giống như là việc tính một hàm hồi quy tuyến tính. Trong thực tế, độ phức tạp tính toán sẽ là O(N) với N là ố lượng hidden unit trong reservoir.</p>
-<h4 id="tối-ưu-hoá-các-tham-số-hyper-parameters">Tối ưu hoá các tham số Hyper parameters<a class="anchor ms-1" href="#tối-ưu-hoá-các-tham-số-hyper-parameters"><i class="fas fa-link"></i></a></h4>
+<h2 id="tối-ưu-hoá-các-tham-số-hyper-parameters">Tối ưu hoá các tham số Hyper parameters<a class="anchor ms-1" href="#tối-ưu-hoá-các-tham-số-hyper-parameters"><i class="fas fa-link"></i></a></h2>
 <p>Ở phần trước, chúng ta set đại các tham số spectral_radius = 1.2 và noise = .0005. Trong thực tế, chúng ta phải tìm các siêu tham số này bằng cách tìm ra mô hình trả về MSE là nhỏ nhất.</p>
 <p>Sử dụng kỹ thuật Grid Search với ngưỡng spectrum_radius nằm trong đoạn [0.5, 1.5] và noise nằm trong đoạn  noise [0.0001, 0.01], chú ý là các bạn có thể search ở đoạn lớn hơn. Kết quả thu được:</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="k">def</span> <span class="nf">MSE</span><span class="p">(</span><span class="n">yhat</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
@@ -578,7 +594,7 @@ HOME
     <a href="/blog/2019-04-02-37-reason-neural-network-not-working/">Các Lý Do Mạng Neural Network Không Hoạt Động Không Chính Xác
 </a>
   </div><div class="post-nav post-next">
-    <a href="/blog/2019-04-16-colorfull-grayscale-to-color/">Thử Làm Ứng Dụng Tô Màu Ảnh Xám Thành Ảnh Màu Sử Dụng Tensorflow
+    <a href="/blog/2019-04-15-phan-loai-hoa/">Phân Loại Hoa Sử Dụng Pretrain Model
 </a>
     <i class="fas fa-fw fa-chevron-right"></i>
   </div></div></div>
@@ -595,7 +611,7 @@ HOME
   async>
 </script></div>
 </div></div>
-</div><aside class="col-lg-4 sidebar d-flex">
+</div><aside class="col-lg-3 col-md-4 sidebar d-flex">
   <div class="container d-flex flex-column">
     
     <section class="card row text-center profile component">
@@ -615,19 +631,16 @@ HOME
   <div class="card-body">
     <nav id="TableOfContents">
   <ul>
-    <li>
+    <li><a href="#dự-đoán-chuỗi-thời-gian">Dự đoán chuỗi thời gian</a></li>
+    <li><a href="#các-thuộc-tính-của-time-series">Các thuộc tính của time series</a></li>
+    <li><a href="#vì-sao-chúng-ta-lại-quan-tâm-đến-tính-dừng-của-dữ-liệu">Vì sao chúng ta lại quan tâm đến tính dừng của dữ liệu</a></li>
+    <li><a href="#cách-xác-định-tính-dừng-của-dữ-liệu">Cách xác định tính dừng của dữ liệu</a></li>
+    <li><a href="#phương-pháp-dự-đoán-chuỗi-thời-gian-cơ-bản">Phương pháp dự đoán chuỗi thời gian cơ bản</a></li>
+    <li><a href="#phương-pháp-dự-đoán-dựa-vào-mạng-neural-network">Phương pháp dự đoán dựa vào mạng neural network</a></li>
+    <li><a href="#sử-dụng-mạng-echo-state-networks">Sử dụng mạng Echo State Networks</a>
       <ul>
-        <li><a href="#dự-đoán-chuỗi-thời-gian">Dự đoán chuỗi thời gian</a></li>
-        <li><a href="#các-thuộc-tính-của-time-series">Các thuộc tính của time series</a></li>
-        <li><a href="#vì-sao-chúng-ta-lại-quan-tâm-đến-tính-dừng-của-dữ-liệu">Vì sao chúng ta lại quan tâm đến tính dừng của dữ liệu</a></li>
-        <li><a href="#cách-xác-định-tính-dừng-của-dữ-liệu">Cách xác định tính dừng của dữ liệu</a></li>
-        <li><a href="#phương-pháp-dự-đoán-chuỗi-thời-gian-cơ-bản">Phương pháp dự đoán chuỗi thời gian cơ bản</a></li>
-        <li><a href="#phương-pháp-dự-đoán-dựa-vào-mạng-neural-network">Phương pháp dự đoán dựa vào mạng neural network</a></li>
-        <li><a href="#sử-dụng-mạng-echo-state-networks">Sử dụng mạng Echo State Networks</a>
-          <ul>
-            <li></li>
-          </ul>
-        </li>
+        <li><a href="#dự-doán-chuỗi-time-series">Dự doán chuỗi time series</a></li>
+        <li><a href="#tối-ưu-hoá-các-tham-số-hyper-parameters">Tối ưu hoá các tham số Hyper parameters</a></li>
       </ul>
     </li>
   </ul>
@@ -648,10 +661,10 @@ HOME
         <a href="/blog/2024-07-06-llm-applications-in-real/">Các Ứng Dụng Của LLM Trong Thực Tế
 </a>
       </li><li>
-        <a href="/blog/2021-11-06-some-way-make-momey-from-web-scrapping/">Một Số Thư Viện Tính Toán Song Song Thay Thế Cho Cuda
+        <a href="/blog/2024-06-12-cuda-alternate/">Một Số Thư Viện Tính Toán Song Song Thay Thế Cho Cuda
 </a>
       </li><li>
-        <a href="/blog/2024-06-12-big_data_analytics_methology/">Các Phương Pháp Phân Tích Dữ Liệu Lớn
+        <a href="/blog/2024-02-16-cac-phuong-phap-phan-tich-du-lieu-lon/">Các Phương Pháp Phân Tích Dữ Liệu Lớn
 </a>
       </li></ul>
   </div>
@@ -698,13 +711,13 @@ HOME
       </div>
       <div class="card-body">
         <div class="py-2"><a href="/tags/machine-learning/" class="badge rounded post-taxonomy" title="Machine Learning">
-            Machine Learning<span class="badge badge-sm text-white bg-accent ms-1">42</span></a><a href="/tags/deeplearning/" class="badge rounded post-taxonomy" title="Deeplearning">
-            Deeplearning<span class="badge badge-sm text-white bg-accent ms-1">21</span></a><a href="/tags/deep-learning/" class="badge rounded post-taxonomy" title="Deep Learning">
-            Deep Learning<span class="badge badge-sm text-white bg-accent ms-1">19</span></a><a href="/tags/python/" class="badge rounded post-taxonomy" title="Python">
-            Python<span class="badge badge-sm text-white bg-accent ms-1">14</span></a><a href="/tags/opencv/" class="badge rounded post-taxonomy" title="Opencv">
-            Opencv<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="/tags/bigdata/" class="badge rounded post-taxonomy" title="Bigdata">
-            Bigdata<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/c&#43;&#43;/" class="badge rounded post-taxonomy" title="C&#43;&#43;">
-            C&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/object-detector/" class="badge rounded post-taxonomy" title="Object Detector">
+            Machine Learning<span class="badge badge-sm text-white bg-accent ms-1">45</span></a><a href="/tags/deep-learning/" class="badge rounded post-taxonomy" title="Deep Learning">
+            Deep Learning<span class="badge badge-sm text-white bg-accent ms-1">21</span></a><a href="/tags/deeplearning/" class="badge rounded post-taxonomy" title="DeepLearning">
+            DeepLearning<span class="badge badge-sm text-white bg-accent ms-1">21</span></a><a href="/tags/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">11</span></a><a href="/tags/opencv/" class="badge rounded post-taxonomy" title="Opencv">
+            Opencv<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="/tags/c&#43;&#43;/" class="badge rounded post-taxonomy" title="C&#43;&#43;">
+            C&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/normalization/" class="badge rounded post-taxonomy" title="Normalization">
+            Normalization<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/object-detector/" class="badge rounded post-taxonomy" title="Object Detector">
             Object Detector<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/recommendation/" class="badge rounded post-taxonomy" title="Recommendation">
             Recommendation<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/alexnet/" class="badge rounded post-taxonomy" title="AlexNet">
             AlexNet<span class="badge badge-sm text-white bg-accent ms-1">3</span></a></div>

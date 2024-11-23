@@ -1,0 +1,733 @@
+<!doctype html><html lang="en" data-palette="blue"
+   data-mode="dark">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Một số thư viện tính toán song song thay thế cho cuda - Phạm Duy Tùng Machine Learning Blog</title>
+    <meta name="a.validate.02" content="1QZXZ8oi7g57H-GxBrBPkTYBydwii-Ic9iJu" /><link rel="apple-touch-icon" href="/images/icons/icon-180x180.png" sizes="180x180">
+<link rel="icon" href="/images/icons/icon-32x32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="/images/icons/icon-16x16.png" sizes="16x16" type="image/png">
+<link rel="icon" href="/images/icons/favicon.ico">
+<link rel="manifest" href="/manifest.json">
+<meta name="keywords" content="" />
+<meta name="description" content="CUDA là một công nghệ tuyệt vời cho phép bạn tận dụng tối đa hiệu suất của GPU Nvidia. Tuy nhiên, nó chỉ hoạt động trên các GPU của NVIDIA và việc chuyển mã CUDA hiện có sang các nền tảng khác không phải lúc nào cũng dễ dàng. Ở bài viết này, chúng ta cùng nhau tìm hiểu các thư viện lập trình song song khác đang tồn tại, ưu và nhược điểm của chúng." /><meta name="robots" content="index, follow" />
+  <meta itemprop="name" content="Một số thư viện tính toán song song thay thế cho cuda">
+  <meta itemprop="description" content="CUDA là một công nghệ tuyệt vời cho phép bạn tận dụng tối đa hiệu suất của GPU Nvidia. Tuy nhiên, nó chỉ hoạt động trên các GPU của NVIDIA và việc chuyển mã CUDA hiện có sang các nền tảng khác không phải lúc nào cũng dễ dàng. Ở bài viết này, chúng ta cùng nhau tìm hiểu các thư viện lập trình song song khác đang tồn tại, ưu và nhược điểm của chúng.">
+  <meta itemprop="datePublished" content="2024-06-12T00:19:00+03:00">
+  <meta itemprop="dateModified" content="2024-06-12T00:19:00+03:00">
+  <meta itemprop="wordCount" content="1705">
+  <meta itemprop="image" content="https://unsplash.it/1920/1080?image=15">
+  <meta itemprop="keywords" content="Machine Learning,Parallel Computing,Cuda"><meta property="og:url" content="/blog/2024-06-12-cuda-alternate/">
+  <meta property="og:site_name" content="Phạm Duy Tùng Machine Learning Blog">
+  <meta property="og:title" content="Một số thư viện tính toán song song thay thế cho cuda">
+  <meta property="og:description" content="CUDA là một công nghệ tuyệt vời cho phép bạn tận dụng tối đa hiệu suất của GPU Nvidia. Tuy nhiên, nó chỉ hoạt động trên các GPU của NVIDIA và việc chuyển mã CUDA hiện có sang các nền tảng khác không phải lúc nào cũng dễ dàng. Ở bài viết này, chúng ta cùng nhau tìm hiểu các thư viện lập trình song song khác đang tồn tại, ưu và nhược điểm của chúng.">
+  <meta property="og:locale" content="en">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2024-06-12T00:19:00+03:00">
+    <meta property="article:modified_time" content="2024-06-12T00:19:00+03:00">
+    <meta property="article:tag" content="Machine Learning">
+    <meta property="article:tag" content="Parallel Computing">
+    <meta property="article:tag" content="Cuda">
+    <meta property="og:image" content="https://unsplash.it/1920/1080?image=15">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://unsplash.it/1920/1080?image=15"><meta name="twitter:title" content="Một số thư viện tính toán song song thay thế cho cuda">
+<meta name="twitter:description" content="CUDA là một công nghệ tuyệt vời cho phép bạn tận dụng tối đa hiệu suất của GPU Nvidia. Tuy nhiên, nó chỉ hoạt động trên các GPU của NVIDIA và việc chuyển mã CUDA hiện có sang các nền tảng khác không phải lúc nào cũng dễ dàng. Ở bài viết này, chúng ta cùng nhau tìm hiểu các thư viện lập trình song song khác đang tồn tại, ưu và nhược điểm của chúng.">
+<link rel="stylesheet" href="/css/main.min.c06cf34535ee1f60ba08893b4d57e76b2bbd5e11c17ab12ef976f02983a51b54.css" integrity="sha256-wGzzRTXuH2C6CIk7TVfnayu9XhHBerEu&#43;XbwKYOlG1Q=" crossorigin="anonymous"><link rel="stylesheet" href="/css/katex.min.d080a89e03e1eb850f547d835c186b4273f69879aa497eb8b0e88c1578bf1f0b.css" integrity="sha256-0ICongPh64UPVH2DXBhrQnP2mHmqSX64sOiMFXi/Hws=" crossorigin="anonymous">
+<link rel="stylesheet" href="/css/viewer.min.3d228794bcedbbfa0412beb8fbc1ec6973202945e42af7004f742a4d7bd620ab.css" integrity="sha256-PSKHlLztu/oEEr64&#43;8HsaXMgKUXkKvcAT3QqTXvWIKs=" crossorigin="anonymous"><style>
+    .bgcover {
+        display: block;
+        overflow: hidden;
+        height: 450px;
+        background: no-repeat center center;
+        -webkit-background-size: cover;
+        -moz-background-size: cover;
+        -o-background-size: cover;
+        background-size: cover;
+        position: relative;
+        margin-bottom: -65px;
+    }
+    .bgcover {
+        margin-bottom: 0 !important;
+    }
+
+    .bgcover .bgtrans {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        display: block;
+        overflow: hidden;
+        height: inherit;
+        background: rgba(0,0,0,.8);
+        background: -webkit-gradient(linear,0% 0%,0% 100%,from(rgba(0,0,0,.8)),to (rgba(0,0,0,.6)),to(rgba(255,255,255,0)));
+        background: -webkit-linear-gradient(top,rgba(255,255,255,0),rgba(0,0,0,.6),rgba(0,0,0,.8));
+        background: -moz-linear-gradient(top,rgba(255,255,255,0),rgba(0,0,0,.6),rgba(0,0,0,.8));
+        background: -ms-linear-gradient(top,rgba(255,255,255,0),rgba(0,0,0,.6),rgba(0,0,0,.8));
+        background: -o-linear-gradient(top,rgba(255,255,255,0),rgba(0,0,0,.6),rgba(0,0,0,.8));
+    }
+
+    .bgcover .bgtrans h1 {
+        display: block;
+        overflow: hidden;
+        font-size: 45px;
+        line-height: 55px;
+        color: #fff;
+        width: 800px;
+        margin: auto;
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 50px;
+        font-family: 'Roboto Condensed',sans-serif;
+        font-weight: 600;
+    }
+</style></head>
+  <body><script>const items=["mode","palette"];items.forEach(function(e){const t=localStorage.getItem("hbs-"+e);t&&document.body.parentElement.setAttribute("data-"+e,t)})</script><header><nav class="navbar top-app-bar top-app-bar-expand-lg fixed-top">
+  <div class="container">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <i class="fas fa-bars"></i>
+    </button><a class="navbar-brand flex-grow-1 flex-lg-grow-0 text-center text-lg-start mx-auto me-lg-3" href="/"><img class="logo" alt="Logo" src="/images/logo.webp" loading="lazy"  title="Logo"
+   width="400" height="400"
+   />
+HOME
+    </a>
+    <div class="offcanvas offcanvas-bottom surface" tabindex="-1" id="offcanvasSocialShare" aria-labelledby="offcanvasSocialShare">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Share</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body">
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Twitter Share Button"
+      target="_blank" href="https://twitter.com/intent/tweet?title=M%e1%bb%99t%20s%e1%bb%91%20th%c6%b0%20vi%e1%bb%87n%20t%c3%adnh%20to%c3%a1n%20song%20song%20thay%20th%e1%ba%bf%20cho%20cuda&url=%2fblog%2f2024-06-12-cuda-alternate%2f">
+      <i class="fab fa-fw fa-twitter"></i> Twitter
+    </a>
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Facebook Share Button"
+      target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=%2fblog%2f2024-06-12-cuda-alternate%2f">
+      <i class="fab fa-fw fa-facebook-f"></i> Facebook
+    </a>
+  </div>
+</div>
+    <button class="navbar-settings" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSettings"
+  aria-controls="offcanvasSettings" aria-label="Toggle settings">
+  <i class="fas fa-ellipsis-v"></i>
+</button>
+
+<div class="offcanvas offcanvas-end surface h-100" tabindex="-1" id="offcanvasSettings" aria-labelledby="offcanvasSettings">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Settings</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body d-flex flex-column">
+
+
+
+<section class="setting">
+  <form class="font-size-switcher-form row">
+    <div class="col-auto">
+      <label for="fontSize" class="form-label"><i class="fas fa-fw fa-font"></i> Font Size</label>
+    </div>
+    <div class="col-auto ms-auto">
+      <input type="range" class="form-range" min="-2" max="2" id="fontSize">
+    </div>
+  </form>
+</section>
+
+
+<section class="setting palettes">
+  <form class="row">
+    <div class="col-auto">
+      <label><i class="fas fa-fw fa-palette"></i> Palette</label>
+    </div>
+    <div class="col-auto ms-auto">
+      <a id="btnPalette" class="btn btn-sm btn-outline-primary" role="button" aria-label="palettePicker">
+        <i class="fas fa-eye-dropper"></i>
+      </a>
+    </div>
+  </form>
+  <div class="mt-2 d-flex justify-content-between visually-hidden" id="palettePicker"><button type="button" id="palette-blue" aria-label="Blue"
+        class="btn btn-sm w-100 palette" data-palette="blue">
+      </button><button type="button" id="palette-blue-gray" aria-label="Blue Gray"
+        class="btn btn-sm w-100 palette" data-palette="blue-gray">
+      </button><button type="button" id="palette-brown" aria-label="Brown"
+        class="btn btn-sm w-100 palette" data-palette="brown">
+      </button><button type="button" id="palette-cyan" aria-label="Cyan"
+        class="btn btn-sm w-100 palette" data-palette="cyan">
+      </button><button type="button" id="palette-green" aria-label="Green"
+        class="btn btn-sm w-100 palette" data-palette="green">
+      </button><button type="button" id="palette-indigo" aria-label="Indigo"
+        class="btn btn-sm w-100 palette" data-palette="indigo">
+      </button><button type="button" id="palette-orange" aria-label="Orange"
+        class="btn btn-sm w-100 palette" data-palette="orange">
+      </button><button type="button" id="palette-pink" aria-label="Pink"
+        class="btn btn-sm w-100 palette" data-palette="pink">
+      </button><button type="button" id="palette-purple" aria-label="Purple"
+        class="btn btn-sm w-100 palette" data-palette="purple">
+      </button><button type="button" id="palette-red" aria-label="Red"
+        class="btn btn-sm w-100 palette" data-palette="red">
+      </button><button type="button" id="palette-teal" aria-label="Teal"
+        class="btn btn-sm w-100 palette" data-palette="teal">
+      </button><button type="button" id="palette-yellow" aria-label="Yellow"
+        class="btn btn-sm w-100 palette" data-palette="yellow">
+      </button></div>
+</section>
+<section class="setting actions d-flex justify-content-around mt-auto overflow-auto">
+  <a role="button" class="action action-go-back" href="javascript: window.history.back();">
+    <span class="action-icon"><i class="fas fa-2x fa-arrow-left"></i></span> Go back
+  </a>
+  <a role="button" class="action action-reload-page">
+    <span class="action-icon"><i class="fas fa-2x fa-redo-alt"></i></span> Reload
+  </a>
+  <a role="button" class="action action-copy-url">
+    <span class="action-icon"><i class="fas fa-2x fa-link"></i></span> Copy URL
+  </a><a class="action action-social-share" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSocialShare"
+    aria-controls="offcanvasSocialShare" aria-label="Toggle social share">
+    <span class="action-icon"><i class="fas fa-2x fa-share-alt"></i></span> Share
+  </a></section>
+
+</div>
+</div>
+
+    <div class="collapse navbar-collapse" tabindex="-1" id="navbarSupportedContent" aria-labelledby="navbarSupportedContent">
+      <form class="search-bar my-1" action="/search">
+  <div class="input-group input-group-sm">
+    <span class="btn btn-search disabled position-absolute left-0"><i class="fas fa-fw fa-search"></i></span>
+    <input class="form-control rounded-pill" name="q" type="search" aria-label="Search">
+  </div>
+</form>
+      <ul class="navbar-nav ms-auto"><li class="nav-item">
+          <a class="nav-link" href="/series/">
+            <i class="fas fa-fw fa-columns"></i>Courses
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="/tools/">
+            <i class="fas fa-fw fa-folder"></i>Tools
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="/categories/">
+            <i class="fas fa-fw fa-folder"></i>Categories
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="/archives/">
+            <i class="fas fa-fw fa-file-archive"></i>Archives
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="/tags/">
+            <i class="fas fa-fw fa-tags"></i>Tags
+          </a>
+        </li><li class="nav-item dropdown">
+          <a class="nav-link" id="navbarDropdownSupport" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-fw fa-chevron-circle-down"></i>Support
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdownSupport"><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Repository
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Discussions
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Features Request
+              </a>
+            </li><li><hr class="dropdown-divider"></li><li>
+              <a class="dropdown-item"
+                href="/faq/">
+                FAQs
+              </a>
+            </li></ul>
+        </li></ul>
+    </div>
+  </div>
+</nav>
+</header>
+<main role="main" class="container" style="line-height:1.7em">
+      <div class="row content">
+<div class="col-lg-8">
+  <div class="container"><nav class="row card component" aria-label="breadcrumb">
+  <div class="card-body">
+    <ol class="breadcrumb "><li class="breadcrumb-item"><a href="/">Home</a></li><li class="breadcrumb-item"><a href="/blog/">Blogs</a></li><li class="breadcrumb-item active">Một Số Thư Viện Tính Toán Song Song Thay Thế Cho Cuda</li></ol>
+  </div>
+</nav>
+<div class="post-panel-wrapper">
+  <div class="d-flex flex-column component rounded post-panel">
+    
+    <a class="action action-panel-toggler" role="button" title="Panel toggler">
+      <i class="fas fa-fw fa-chevron-circle-down"></i>
+    </a>
+    <a id="sidebarToggler" class="action d-none d-lg-block" role="button" title="Sidebar toggler">
+  <i class="fas fa-fw fa-expand-alt" data-fa-transform="rotate-45"></i>
+</a>
+
+    
+
+    
+    
+    <a class="action" href="#post-comments" role="button" aria-label="Comments" title="Comments">
+  <i class="fas fa-fw fa-comments"></i>
+</a>
+    <a class="action" href="#postTOC" aria-controls="Table of contents" role="button" title="Table of contents">
+  <i class="fas fa-fw fa-list-alt"></i>
+</a>
+    
+  </div>
+</div>
+<article class="row card component mb-4 post">
+  <div class="card-header ">
+    <div class="bgcover" style="background-image:url(https://unsplash.it/1920/1080)" alt="Một số thư viện tính toán song song thay thế cho cuda">
+      <div class="bgtrans">
+          <h1>Một Số Thư Viện Tính Toán Song Song Thay Thế Cho Cuda
+</h1>
+      </div>
+  </div>
+</div>
+  <div class="card-body"><div class="post-meta">
+  <span class="post-date" title="created on 2024-06-12 04:19:00 &#43;0700 &#43;07.">
+    Jun 12, 2024
+  </span><span class="post-reading-time">
+    9 min read
+  </span><span class="post-taxonomies"><a href="/tags/machine-learning/" class="badge post-taxonomy">Machine learning</a><a href="/tags/parallel-computing/" class="badge post-taxonomy">Parallel Computing</a><a href="/tags/cuda/" class="badge post-taxonomy">Cuda</a></span>
+</div>
+<div class="post-content mb-3"><h1 id="giới-thiệu">Giới thiệu<a class="anchor ms-1" href="#giới-thiệu"><i class="fas fa-link"></i></a></h1>
+<p>Hiện nay, NVIDA đang là nhà sản xuất GPU hàng đầu thế giới, và cùng với sự phát triển của của mô hình AI, chip NVIDIA được sử dụng rộng rải vì các tính năng sau</p>
+<h2 id="1-hiệu-suất-cao">1. Hiệu Suất Cao<a class="anchor ms-1" href="#1-hiệu-suất-cao"><i class="fas fa-link"></i></a></h2>
+<p>Tận Dụng GPU</p>
+<ul>
+<li>CUDA được tối ưu hóa để tận dụng sức mạnh xử lý song song của GPU, cho phép thực hiện hàng ngàn tác vụ tính toán đồng thời.</li>
+<li>GPU có nhiều lõi hơn so với CPU, giúp tăng tốc độ tính toán đáng kể khi xử lý các tác vụ liên quan đến AI và học sâu.</li>
+</ul>
+<p>Tối Ưu Hóa Toán Học</p>
+<ul>
+<li>CUDA cung cấp các thư viện toán học hiệu suất cao như cuBLAS, cuDNN, và cuFFT, giúp tối ưu hóa các phép toán ma trận và phép biến đổi Fourier, các phép toán phổ biến trong các mô hình AI.</li>
+</ul>
+<h2 id="2-thư-viện-và-hệ-sinh-thái-phong-phú">2. Thư Viện và Hệ Sinh Thái Phong Phú<a class="anchor ms-1" href="#2-thư-viện-và-hệ-sinh-thái-phong-phú"><i class="fas fa-link"></i></a></h2>
+<p>Thư Viện AI</p>
+<ul>
+<li>Các thư viện học sâu phổ biến như TensorFlow, PyTorch, và MXNet đều có hỗ trợ CUDA, giúp dễ dàng triển khai và tối ưu hóa các mô hình AI trên GPU.</li>
+<li>Các thư viện này tích hợp chặt chẽ với CUDA, cung cấp các công cụ và API mạnh mẽ để xây dựng, huấn luyện, và triển khai các mô hình AI.</li>
+</ul>
+<p>Cộng Đồng và Hỗ Trợ</p>
+<ul>
+<li>NVIDIA có một cộng đồng lớn các nhà phát triển và nhà nghiên cứu, cung cấp hỗ trợ qua các diễn đàn, tài liệu, và khóa học trực tuyến.
+Các công cụ phát triển như NVIDIA CUDA Toolkit, NVIDIA Nsight, và cuDNN Debugger giúp dễ dàng phát triển và gỡ lỗi ứng dụng AI.</li>
+</ul>
+<h2 id="3-tính-tương-thích-và-di-động">3. Tính Tương Thích và Di Động<a class="anchor ms-1" href="#3-tính-tương-thích-và-di-động"><i class="fas fa-link"></i></a></h2>
+<p>Phần Cứng Tương Thích</p>
+<ul>
+<li>CUDA tương thích với hầu hết các GPU của NVIDIA, từ các dòng sản phẩm tiêu dùng đến các dòng sản phẩm chuyên dụng cho trung tâm dữ liệu.
+Điều này cho phép sử dụng các mô hình AI trên nhiều loại phần cứng, từ máy tính cá nhân đến các hệ thống máy chủ lớn.</li>
+</ul>
+<p>Tương Thích Phần Mềm</p>
+<ul>
+<li>CUDA hỗ trợ nhiều ngôn ngữ lập trình và framework, giúp dễ dàng tích hợp vào các dự án hiện có mà không cần thay đổi nhiều về mã nguồn.</li>
+</ul>
+<h2 id="4-khả-năng-mở-rộng-và-tính-linh-hoạt">4. Khả Năng Mở Rộng và Tính Linh Hoạt<a class="anchor ms-1" href="#4-khả-năng-mở-rộng-và-tính-linh-hoạt"><i class="fas fa-link"></i></a></h2>
+<p>Huấn Luyện Phân Tán</p>
+<ul>
+<li>CUDA hỗ trợ các kỹ thuật huấn luyện phân tán, cho phép huấn luyện các mô hình lớn trên nhiều GPU hoặc thậm chí nhiều máy tính.
+Các framework như Horovod (do Uber phát triển) sử dụng CUDA để thực hiện huấn luyện phân tán hiệu quả.</li>
+</ul>
+<p>Khả Năng Tùy Chỉnh</p>
+<ul>
+<li>CUDA cung cấp khả năng tùy chỉnh cao, cho phép các nhà phát triển tối ưu hóa các thuật toán cụ thể cho ứng dụng của họ.
+CUDA cung cấp quyền truy cập trực tiếp vào phần cứng GPU, giúp tối ưu hóa hiệu suất theo yêu cầu cụ thể.</li>
+</ul>
+<h2 id="5-hiệu-quả-kinh-tế">5. Hiệu Quả Kinh Tế<a class="anchor ms-1" href="#5-hiệu-quả-kinh-tế"><i class="fas fa-link"></i></a></h2>
+<p>Tối Ưu Chi Phí:</p>
+<ul>
+<li>Sử dụng GPU và CUDA để huấn luyện các mô hình AI có thể giúp tiết kiệm chi phí bằng cách giảm thời gian huấn luyện so với việc sử dụng CPU.
+Tính hiệu quả cao của GPU giúp giảm tổng chi phí cho phần cứng và năng lượng.</li>
+</ul>
+<h1 id="các-thư-viện-lập-trình-song-song-khác-ngoài-cuda">Các thư viện lập trình song song khác ngoài CUDA<a class="anchor ms-1" href="#các-thư-viện-lập-trình-song-song-khác-ngoài-cuda"><i class="fas fa-link"></i></a></h1>
+<h2 id="1-opencl-open-computing-language">1. OpenCL (Open Computing Language)<a class="anchor ms-1" href="#1-opencl-open-computing-language"><i class="fas fa-link"></i></a></h2>
+<p>Tổng quan:</p>
+<ul>
+<li>OpenCL là một tiêu chuẩn mở cho lập trình song song trên các nền tảng dị thể, bao gồm CPU, GPU, DSP và FPGA. Nó được quản lý bởi Khronos Group.</li>
+</ul>
+<p>Đặc điểm chính:</p>
+<ul>
+<li>Độc lập với nền tảng: Hoạt động trên các phần cứng từ nhiều nhà cung cấp khác nhau, bao gồm AMD, Intel và NVIDIA.</li>
+<li>Tính toán song song: Hỗ trợ tính toán dựa trên tác vụ và dữ liệu.</li>
+<li>Hiệu suất: Thường có một chút chi phí hiệu suất so với CUDA do tính chất tổng quát của nó.</li>
+</ul>
+<p>Trường hợp sử dụng:</p>
+<ul>
+<li>Tính toán khoa học</li>
+<li>Xử lý hình ảnh và video thời gian thực</li>
+<li>Mô hình tài chính</li>
+</ul>
+<p>Ưu điểm:</p>
+<ul>
+<li>Tính di động: Viết một lần, chạy mọi nơi.</li>
+<li>Hỗ trợ phần cứng rộng rãi: Có thể chạy trên CPU, GPU và các bộ tăng tốc khác từ nhiều nhà cung cấp.</li>
+</ul>
+<p>Nhược điểm:</p>
+<ul>
+<li>Hiệu suất: Có thể không tối ưu như CUDA trên GPU của NVIDIA.</li>
+<li>Phức tạp: API mức thấp có thể khó lập trình hơn CUDA.</li>
+</ul>
+<h2 id="2-amd-rocm-radeon-open-compute">2. AMD ROCm (Radeon Open Compute)<a class="anchor ms-1" href="#2-amd-rocm-radeon-open-compute"><i class="fas fa-link"></i></a></h2>
+<p>Tổng quan:</p>
+<ul>
+<li>AMD ROCm là một nền tảng mã nguồn mở cho tính toán GPU. Nó cung cấp các công cụ để chuyển đổi các ứng dụng CUDA sang chạy trên GPU của AMD.</li>
+</ul>
+<p>Đặc điểm chính:</p>
+<ul>
+<li>HIP (Heterogeneous-Compute Interface for Portability): Một runtime và API cho phép mã CUDA được chuyển đổi để chạy trên phần cứng AMD.</li>
+<li>Hỗ trợ TensorFlow và PyTorch: Tích hợp cho các khung máy học phổ biến.</li>
+</ul>
+<p>Trường hợp sử dụng:</p>
+<ul>
+<li>Học máy và AI</li>
+<li>Tính toán hiệu năng cao</li>
+<li>Trung tâm dữ liệu và điện toán đám mây</li>
+</ul>
+<p>Ưu điểm:</p>
+<ul>
+<li>Mã nguồn mở: Được cộng đồng đóng góp với sự tham gia của nhiều tổ chức.</li>
+<li>Tương thích CUDA: Dễ dàng chuyển mã CUDA thông qua HIP.</li>
+</ul>
+<p>Nhược điểm:</p>
+<ul>
+<li>Hạn chế phần cứng: Chủ yếu hỗ trợ GPU của AMD.</li>
+<li>Độ trưởng thành: Ít trưởng thành hơn so với CUDA, ít tài nguyên và công cụ hơn.</li>
+</ul>
+<h2 id="3-sycl-c-for-heterogeneous-computing">3. SYCL (C++ for Heterogeneous Computing)<a class="anchor ms-1" href="#3-sycl-c-for-heterogeneous-computing"><i class="fas fa-link"></i></a></h2>
+<p>Tổng quan:</p>
+<ul>
+<li>SYCL là một mô hình lập trình mức cao dựa trên C++ cho tính toán dị thể, cho phép mã di động trên các phần cứng khác nhau bao gồm CPU, GPU và FPGA.</li>
+</ul>
+<p>Đặc điểm chính:</p>
+<ul>
+<li>Lập trình nguồn đơn: Cho phép mã cho máy chủ và thiết bị được viết trong một tệp nguồn duy nhất.</li>
+<li>Tích hợp C++: Sử dụng các tính năng C++ hiện đại cho mã an toàn và biểu cảm hơn.</li>
+<li>Backend: Có thể biên dịch sang OpenCL, CUDA (thông qua hipSYCL), và nhiều hơn nữa.</li>
+</ul>
+<p>Trường hợp sử dụng:</p>
+<ul>
+<li>Ứng dụng đa nền tảng</li>
+<li>Hệ thống thời gian thực</li>
+<li>Nghiên cứu khoa học</li>
+</ul>
+<p>Ưu điểm:</p>
+<ul>
+<li>Tính di động: Tính di động cao trên các nền tảng phần cứng khác nhau.</li>
+<li>C++ hiện đại: Lợi ích từ sự an toàn và tính mạnh mẽ của C++.</li>
+</ul>
+<p>Nhược điểm:</p>
+<ul>
+<li>Đường cong học tập: Yêu cầu quen thuộc với cả C++ hiện đại và các khái niệm lập trình song song.</li>
+<li>Phụ thuộc vào công cụ: Hiệu suất và tính năng có thể phụ thuộc nhiều vào việc triển khai SYCL (ví dụ: DPC++, hipSYCL).</li>
+</ul>
+<h2 id="4-vulkan-compute">4. Vulkan Compute<a class="anchor ms-1" href="#4-vulkan-compute"><i class="fas fa-link"></i></a></h2>
+<p>Tổng quan:</p>
+<ul>
+<li>Vulkan Compute là một phần của API đồ họa Vulkan hỗ trợ các shader tính toán cho tính toán tổng quát trên GPU.</li>
+</ul>
+<p>Đặc điểm chính:</p>
+<ul>
+<li>Kiểm soát mức thấp: Cung cấp kiểm soát chi tiết về các hoạt động của GPU.</li>
+<li>Đa nền tảng: Hoạt động trên nhiều hệ điều hành và nhà cung cấp phần cứng khác nhau.</li>
+</ul>
+<p>Trường hợp sử dụng:</p>
+<ul>
+<li>Ứng dụng đồ họa và tính toán thời gian thực</li>
+<li>Phát triển trò chơi</li>
+<li>Mô phỏng và hình ảnh hóa</li>
+</ul>
+<p>Ưu điểm:</p>
+<ul>
+<li>Hiệu suất: Hiệu quả cao nhờ truy cập mức thấp vào phần cứng GPU.</li>
+<li>Hỗ trợ đa nhà cung cấp: Tương thích với nhiều loại GPU.</li>
+</ul>
+<p>Nhược điểm:</p>
+<ul>
+<li>Phức tạp: API mức thấp yêu cầu hiểu biết chi tiết về kiến trúc GPU.</li>
+<li>Công sức phát triển: Đòi hỏi nhiều công sức để thiết lập và bảo trì so với các API mức cao hơn.</li>
+</ul>
+<h2 id="5-intel-oneapi">5. Intel oneAPI<a class="anchor ms-1" href="#5-intel-oneapi"><i class="fas fa-link"></i></a></h2>
+<p>Tổng quan:</p>
+<ul>
+<li>Intel oneAPI là một mô hình lập trình hợp nhất thiết kế để đơn giản hóa việc phát triển trên các kiến trúc đa dạng như CPU, GPU, FPGA và bộ tăng tốc AI.</li>
+</ul>
+<p>Đặc điểm chính:</p>
+<ul>
+<li>DPC++ (Data Parallel C++): Một phần mở rộng của SYCL cho oneAPI, hỗ trợ mã chạy trên các phần cứng khác nhau.</li>
+<li>Thư viện tối ưu hóa: Cung cấp các thư viện hiệu năng cho toán học, phân tích dữ liệu, học sâu, v.v.</li>
+</ul>
+<p>Trường hợp sử dụng:</p>
+<ul>
+<li>Tính toán hiệu năng cao</li>
+<li>AI và học máy</li>
+<li>Phân tích dữ liệu</li>
+</ul>
+<p>Ưu điểm:</p>
+<ul>
+<li>Kiến trúc chéo: Cho phép một mã nguồn duy nhất chạy trên nhiều phần cứng Intel và không phải Intel.</li>
+<li>Hệ sinh thái: Hệ sinh thái mạnh với nhiều công cụ và thư viện.</li>
+</ul>
+<p>Nhược điểm:</p>
+<ul>
+<li>Tập trung vào Intel: Chủ yếu tối ưu hóa cho phần cứng Intel, có thể không hiệu quả trên các thiết bị không phải của Intel.</li>
+<li>Mới: Vẫn đang phát triển, có thể ít tài nguyên so với CUDA.</li>
+</ul>
+<h2 id="6-openmp-open-multi-processing">6. OpenMP (Open Multi-Processing)<a class="anchor ms-1" href="#6-openmp-open-multi-processing"><i class="fas fa-link"></i></a></h2>
+<p>Tổng quan:</p>
+<ul>
+<li>OpenMP là một API hỗ trợ lập trình đa nền tảng bộ nhớ chia sẻ đa xử lý trong C, C++ và Fortran. Các phiên bản gần đây bao gồm các chỉ thị để tính toán trên GPU.</li>
+</ul>
+<p>Đặc điểm chính:</p>
+<ul>
+<li>Chỉ thị trình biên dịch: Đơn giản hóa lập trình song song với các chỉ thị trình biên dịch.</li>
+<li>Hỗ trợ CPU và GPU: Các phiên bản gần đây hỗ trợ tính toán trên GPU.</li>
+<li>Song song hóa dần dần: Cho phép song song hóa dần dần các mã nguồn hiện có.</li>
+</ul>
+<p>Trường hợp sử dụng:</p>
+<ul>
+<li>Bộ nhớ chia sẻ đa xử lý</li>
+<li>Song song hóa mã CPU hiện có</li>
+<li>Tính toán khoa học hiệu năng cao</li>
+</ul>
+<p>Ưu điểm:</p>
+<ul>
+<li>Dễ sử dụng: Mô hình song song đơn giản hơn so với lập trình đa luồng rõ ràng.</li>
+<li>Mã nguồn kế thừa: Tốt cho việc song song hóa các mã nguồn CPU hiện có.</li>
+</ul>
+<p>Nhược điểm:</p>
+<ul>
+<li>Khả năng mở rộng: Phù hợp nhất cho các hệ thống bộ nhớ chia sẻ, có thể không mở rộng tốt cho các hệ thống phân tán lớn.</li>
+<li>Hiệu suất: Tính toán trên GPU có thể kém hiệu quả hơn so với CUDA.</li>
+</ul>
+<h1 id="lời-kết">Lời kết<a class="anchor ms-1" href="#lời-kết"><i class="fas fa-link"></i></a></h1>
+<p>Các lựa chọn thay thế này đều có những điểm mạnh và yếu riêng, và lựa chọn tốt nhất thường phụ thuộc vào các yêu cầu cụ thể của ứng dụng và cơ sở hạ tầng hiện có của chính bạn.
+Cảm ơn các bạn đã theo dõi bài viết. Hẹn gặp lại ở các bài viết tiếp theo.</p>
+</div></div>
+  <div class="card-footer"><div class="post-navs d-flex justify-content-evenly"><div class="post-nav post-prev">
+    <i class="fas fa-fw fa-chevron-left"></i>
+    <a href="/blog/2024-02-16-cac-phuong-phap-phan-tich-du-lieu-lon/">Các Phương Pháp Phân Tích Dữ Liệu Lớn
+</a>
+  </div><div class="post-nav post-next">
+    <a href="/blog/2024-07-06-llm-applications-in-real/">Các Ứng Dụng Của LLM Trong Thực Tế
+</a>
+    <i class="fas fa-fw fa-chevron-right"></i>
+  </div></div></div>
+</article><div class="card component row post-comments" id="post-comments">
+  <div class="card-header">
+    <h2 class="card-title">Comments</h2>
+  </div>
+  <div class="card-body"><script src="https://utteranc.es/client.js"
+  repo="AlexBlack2202/utterances"
+  issue-term="pathname"
+  label="comment"
+  theme="github-dark"
+  crossorigin="anonymous"
+  async>
+</script></div>
+</div></div>
+</div><aside class="col-lg-3 col-md-4 sidebar d-flex">
+  <div class="container d-flex flex-column">
+    
+    <section class="card row text-center profile component">
+  <div class="card-body">
+    <div class="col-12 d-flex align-items-center justify-content-center"><img class="profile-avatar rounded-circle" alt="Đặng Thị Hằng | Phạm Duy Tùng" src="/images/profile.webp" loading="lazy"  title="Đặng Thị Hằng | Phạm Duy Tùng"
+   width="736" height="920"
+   />
+</div>
+    <div class="col-12 profile-meta"><div class="profile-name">Đặng Thị Hằng | Phạm Duy Tùng</div><div class="profile-bio">Gopher, CShaper, Pythoner, Full Stack Engineer.</div><div class="profile-company"><i class="fas fa-fw fa-building"></i>MWG</div><div class="profile-location"><i class="fas fa-fw fa-map-marker-alt"></i>Earth</div><div class="profile-about"><i class="fas fa-fw fa-user"></i><a href="/about/">About</a></div><div class="profile-contact"><i class="fas fa-fw fa-question-circle"></i><a href="/contact/">Contact Us</a></div>
+</div>
+  </div>
+</section>
+  <div class="post-toc row mb-4 card component" id="postTOC">
+  <div class="card-header">
+    <h2 class="card-title">Contents</h2>
+  </div>
+  <div class="card-body">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#giới-thiệu">Giới thiệu</a>
+      <ul>
+        <li><a href="#1-hiệu-suất-cao">1. Hiệu Suất Cao</a></li>
+        <li><a href="#2-thư-viện-và-hệ-sinh-thái-phong-phú">2. Thư Viện và Hệ Sinh Thái Phong Phú</a></li>
+        <li><a href="#3-tính-tương-thích-và-di-động">3. Tính Tương Thích và Di Động</a></li>
+        <li><a href="#4-khả-năng-mở-rộng-và-tính-linh-hoạt">4. Khả Năng Mở Rộng và Tính Linh Hoạt</a></li>
+        <li><a href="#5-hiệu-quả-kinh-tế">5. Hiệu Quả Kinh Tế</a></li>
+      </ul>
+    </li>
+    <li><a href="#các-thư-viện-lập-trình-song-song-khác-ngoài-cuda">Các thư viện lập trình song song khác ngoài CUDA</a>
+      <ul>
+        <li><a href="#1-opencl-open-computing-language">1. OpenCL (Open Computing Language)</a></li>
+        <li><a href="#2-amd-rocm-radeon-open-compute">2. AMD ROCm (Radeon Open Compute)</a></li>
+        <li><a href="#3-sycl-c-for-heterogeneous-computing">3. SYCL (C++ for Heterogeneous Computing)</a></li>
+        <li><a href="#4-vulkan-compute">4. Vulkan Compute</a></li>
+        <li><a href="#5-intel-oneapi">5. Intel oneAPI</a></li>
+        <li><a href="#6-openmp-open-multi-processing">6. OpenMP (Open Multi-Processing)</a></li>
+      </ul>
+    </li>
+    <li><a href="#lời-kết">Lời kết</a></li>
+  </ul>
+</nav>
+  </div>
+</div><section class="recent-posts row card component">
+  <div class="card-header">
+    <h2 class="card-title">Recent Posts</h2>
+  </div>
+  <div class="card-body">
+    <ul class="post-list"><li>
+        <a href="/blog/2024-10-27-mario-reinfomation-learning-double-dqn/">Sử Dụng Mô Hình Double DQN  Huấn Luyện Mô Hình Reinforcement Learning Với Game Mario
+</a>
+      </li><li>
+        <a href="/blog/2024-09-05-system-design-top-10-interview/">Top 10 Thuật Toán System Design Các Bạn Nên Biết - Consistent Hashing
+</a>
+      </li><li>
+        <a href="/blog/2024-07-06-llm-applications-in-real/">Các Ứng Dụng Của LLM Trong Thực Tế
+</a>
+      </li><li>
+        <a href="/blog/2024-06-12-cuda-alternate/">Một Số Thư Viện Tính Toán Song Song Thay Thế Cho Cuda
+</a>
+      </li><li>
+        <a href="/blog/2024-02-16-cac-phuong-phap-phan-tich-du-lieu-lon/">Các Phương Pháp Phân Tích Dữ Liệu Lớn
+</a>
+      </li></ul>
+  </div>
+</section><section class="series-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="/series">series</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="/series/kh%C3%B3a-h%E1%BB%8Dc-python-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học Python Căn Bản">
+            Khóa Học Python Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="/series/kh%C3%B3a-h%E1%BB%8Dc-c&#43;&#43;-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học C&#43;&#43; Căn Bản">
+            Khóa Học C&#43;&#43; Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="/series/machine-learning-dataset/" class="badge rounded post-taxonomy" title="Machine Learning Dataset">
+            Machine Learning Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a><a href="/series/ch%E1%BB%A9ng-kho%C3%A1n-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Chứng Khoán Căn Bản">
+            Chứng Khoán Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">1</span></a></div>
+      </div>
+    </section><section class="tools-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="/tools">tools</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="/tools/tool-random/" class="badge rounded post-taxonomy" title="Tool Random">
+            Tool Random<span class="badge badge-sm text-white bg-accent ms-1">2</span></a></div>
+      </div>
+    </section><section class="categories-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="/categories">categories</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="/categories/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="/categories/c&#43;&#43;/" class="badge rounded post-taxonomy" title="C&#43;&#43;">
+            C&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="/categories/dataset/" class="badge rounded post-taxonomy" title="Dataset">
+            Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a></div>
+      </div>
+    </section><section class="tags-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="/tags">tags</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="/tags/machine-learning/" class="badge rounded post-taxonomy" title="Machine Learning">
+            Machine Learning<span class="badge badge-sm text-white bg-accent ms-1">45</span></a><a href="/tags/deep-learning/" class="badge rounded post-taxonomy" title="Deep Learning">
+            Deep Learning<span class="badge badge-sm text-white bg-accent ms-1">21</span></a><a href="/tags/deeplearning/" class="badge rounded post-taxonomy" title="DeepLearning">
+            DeepLearning<span class="badge badge-sm text-white bg-accent ms-1">21</span></a><a href="/tags/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">11</span></a><a href="/tags/opencv/" class="badge rounded post-taxonomy" title="Opencv">
+            Opencv<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="/tags/c&#43;&#43;/" class="badge rounded post-taxonomy" title="C&#43;&#43;">
+            C&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/normalization/" class="badge rounded post-taxonomy" title="Normalization">
+            Normalization<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/object-detector/" class="badge rounded post-taxonomy" title="Object Detector">
+            Object Detector<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/recommendation/" class="badge rounded post-taxonomy" title="Recommendation">
+            Recommendation<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/alexnet/" class="badge rounded post-taxonomy" title="AlexNet">
+            AlexNet<span class="badge badge-sm text-white bg-accent ms-1">3</span></a></div>
+      </div>
+    </section>
+    
+  </div>
+</aside>
+</div>
+    </main><footer class="footer mt-auto py-3 text-center container"><ul class="nav justify-content-between footer-memu mb-3"><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Support
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-github"></i>Repository
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-comments"></i>Discussions
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/contact/"><i class="fas fa-fw fa-info-circle"></i>Contact Us
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/faq/"><i class="fas fa-fw fa-question-circle"></i>FAQs
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Docs
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="/team_of_services" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-users"></i>Điều khoản sử dụng
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/privacy" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-lock"></i>Chính sách bảo mật
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Features
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.phamduytung.com/utils/gen_paswords/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-paw"></i>Tạo password ngẫu nhiên
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Liên kết khác
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">Netlify
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">facebook
+</a>
+        </li></ul></li></ul>
+<div class="copyright mb-2">
+  Copyright © 2016-2024 Phạm Duy Tùng. All Rights Reserved.
+</div>
+<div class="powered-by mb-2">
+  Website chia sẻ kiến thức của Phạm Duy Tùng và Đặng Thị Hằng. Vui lòng liên hệ email alexblack2202@gmail.com nếu bạn có thông tin cần trao đổi.
+</div></footer>
+<script src="/js/main.ed2053ad82a243b263761567b5c1aaf974487aa84adacb89ae3ddf803ecc248a.js" integrity="sha256-7SBTrYKiQ7JjdhVntcGq&#43;XRIeqhK2suJrj3fgD7MJIo=" crossorigin="anonymous" defer></script><script src="/js/icons.min.8ff200851002b8138e6b35314683092e02edc155465d9dbfb7d115460f8f1fbe.js" integrity="sha256-j/IAhRACuBOOazUxRoMJLgLtwVVGXZ2/t9EVRg&#43;PH74=" crossorigin="anonymous" defer></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('\/service-worker.js').then(function(reg) {
+      console.log('Successfully registered service worker', reg);
+    }).catch(function(err) {
+      console.warn('Error whilst registering service worker', err);
+    });
+  });
+}
+</script><script src="/js/viewer.min.ec58d2aa1a8916addf393be975fdf0070e8c872b0caef1673cb9f7eea067ce57.js" integrity="sha256-7FjSqhqJFq3fOTvpdf3wBw6MhysMrvFnPLn37qBnzlc=" crossorigin="anonymous" defer></script><script defer src="/js/katex.min.062d19072aa2321fd592929a93ade0afc09c491db47671a28d54d6637ea131a1.js" integrity="sha256-Bi0ZByqiMh/VkpKak63gr8CcSR20dnGijVTWY36hMaE=" crossorigin="anonymous"></script>
+
+  
+    
+      
+    
+  
+
+
+<script  data-ad-client="ca-pub-4644989745435991"  async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4644989745435991"
+     crossorigin="anonymous"></script><script data-cfasync="false" type="text/javascript" data-adel="atag" src="//acscdn.com/script/atg.js" czid="eul3gyjdmm"></script>
+  </body>
+</html>

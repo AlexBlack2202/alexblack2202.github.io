@@ -15,9 +15,9 @@
   <meta itemprop="description" content="Ở bài viết này, chúng ta sẽ tìm hiểu khái niệm region based object detectors và ứng dụng của nó trên các thuật toán Faster R-CNN, R-FCN, FPN.">
   <meta itemprop="datePublished" content="2018-12-05T00:19:00+03:00">
   <meta itemprop="dateModified" content="2018-12-05T00:19:00+03:00">
-  <meta itemprop="wordCount" content="2278">
+  <meta itemprop="wordCount" content="2304">
   <meta itemprop="image" content="/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/anchorsbox_feature_map.png">
-  <meta itemprop="keywords" content="Machine Learning,Deeplearning,Object Detector,Region Base"><meta property="og:url" content="/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/">
+  <meta itemprop="keywords" content="Machine Learning,DeepLearning,Object Detector,Region Base"><meta property="og:url" content="/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/">
   <meta property="og:site_name" content="Phạm Duy Tùng Machine Learning Blog">
   <meta property="og:title" content="Tìm hiểu region based object detectors">
   <meta property="og:description" content="Ở bài viết này, chúng ta sẽ tìm hiểu khái niệm region based object detectors và ứng dụng của nó trên các thuật toán Faster R-CNN, R-FCN, FPN.">
@@ -27,7 +27,7 @@
     <meta property="article:published_time" content="2018-12-05T00:19:00+03:00">
     <meta property="article:modified_time" content="2018-12-05T00:19:00+03:00">
     <meta property="article:tag" content="Machine Learning">
-    <meta property="article:tag" content="Deeplearning">
+    <meta property="article:tag" content="DeepLearning">
     <meta property="article:tag" content="Object Detector">
     <meta property="article:tag" content="Region Base">
     <meta property="og:image" content="/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/anchorsbox_feature_map.png">
@@ -251,7 +251,7 @@ HOME
   </div>
 </nav>
 </header>
-<main role="main" class="container">
+<main role="main" class="container" style="line-height:1.7em">
       <div class="row content">
 <div class="col-lg-8">
   <div class="container"><nav class="row card component" aria-label="breadcrumb">
@@ -284,15 +284,13 @@ HOME
 </div>
 <article class="row card component mb-4 post">
   <div class="card-header ">
-    
-    <div class="bgcover" style="background-image:url( /thumbnails/sliding-window.jpg )">
+    <div class="bgcover" style="background-image:url(https://unsplash.it/1920/1080)" alt="Tìm hiểu region based object detectors">
       <div class="bgtrans">
           <h1>Tìm Hiểu Region Based Object Detectors
 </h1>
       </div>
   </div>
-    
-  </div>
+</div>
   <div class="card-body"><div class="post-meta">
   <span class="post-date" title="created on 2018-12-05 04:19:00 &#43;0700 &#43;07.">
     Dec 5, 2018
@@ -300,7 +298,22 @@ HOME
     11 min read
   </span><span class="post-taxonomies"><a href="/tags/machine-learning/" class="badge post-taxonomy">Machine learning</a><a href="/tags/deeplearning/" class="badge post-taxonomy">Deeplearning</a><a href="/tags/object-detector/" class="badge post-taxonomy">object detector</a><a href="/tags/region-base/" class="badge post-taxonomy">region base</a></span>
 </div>
-<div class="post-content mb-3"><h2 id="sliding-window-detectors">Sliding-window detectors<a class="anchor ms-1" href="#sliding-window-detectors"><i class="fas fa-link"></i></a></h2>
+<div class="post-content mb-3"><div class="toc">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#sliding-window-detectors">Sliding-window detectors</a></li>
+    <li><a href="#selective-search">Selective Search</a></li>
+    <li><a href="#mạng-r-cnn">Mạng R-CNN</a></li>
+    <li><a href="#mạng-fast-r-cnn">Mạng Fast R-CNN</a></li>
+    <li><a href="#roi-pooling">ROI Pooling</a></li>
+    <li><a href="#faster-r-cnn">Faster R-CNN</a></li>
+    <li><a href="#region-proposal-network">Region proposal network</a></li>
+    <li><a href="#hiệu-năng-của-mô-hình-r-cnn">Hiệu năng của mô hình R-CNN</a></li>
+    <li><a href="#region-based-fully-convolutional-networks">Region-based Fully Convolutional Networks</a></li>
+  </ul>
+</nav>
+  </div>
+<h1 id="sliding-window-detectors">Sliding-window detectors<a class="anchor ms-1" href="#sliding-window-detectors"><i class="fas fa-link"></i></a></h1>
 <p>Bắt đầu từ năm 2012, sau khi mạng AlexNet giành giải nhất cuộc thi 2012 ILSVRC, mọi nghiên cứu về phân lớp dữ liệu đều sử dụng mạng CNN. Kể từ đó đến đây, CNN được coi như là thuật toán thống trị trên mọi publish paper về các bài toán phân lớp đối tượng. Trong khi đó, để nhận dạng 1 đối tượng trong ảnh, các đơn giản nhất là thiết lập một cửa sổ trượt có kích thước là window size trượt từ trái qua phải, từ trên xuống dưới, quét qua toàn bộ bức ảnh. Để phát hiện các đối tượng khác nhau ở các góc nhìn khác nhau, chúng ta sẽ sử dụng cửa sổ trượt có kích thước thay đổi  và ảnh đầu vào có kích thước thay đổi.</p>
 <p><img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/sliding-window.gif" loading="lazy"  title="Hình ảnh"
   
@@ -334,7 +347,7 @@ HOME
 </span></span><span class="line"><span class="ln">2</span><span class="cl">    <span class="n">patch</span> <span class="o">=</span> <span class="n">get_patch</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">window</span><span class="p">)</span>
 </span></span><span class="line"><span class="ln">3</span><span class="cl">    <span class="n">results</span> <span class="o">=</span> <span class="n">detector</span><span class="p">(</span><span class="n">patch</span><span class="p">)</span>
 </span></span></code></pre></div><p>Cách dễ dàng nhất để cải tiến hiệu năng của phương pháp này là giảm số lượng tấm hình nhỏ xuống (ví dụ tăng kích thước window size). Cách này còn được giang hồ gọi là  brute force.</p>
-<h2 id="selective-search">Selective Search<a class="anchor ms-1" href="#selective-search"><i class="fas fa-link"></i></a></h2>
+<h1 id="selective-search">Selective Search<a class="anchor ms-1" href="#selective-search"><i class="fas fa-link"></i></a></h1>
 <p>Thay vì hướng tiếp cận brute force ở trên, chúng ta sử dụng phương pháp region proposal để tạo các region of interest (ROIs) để phát hiện đối tượng. Selective search là một phương pháp nằm trong nhóm region proposal. Trong phương pháp selective search(SS), chúng ta bắt đầu bằng cách xem các pixel là mỗi nhóm, các lần lặp tiếp theo, chúng ta sẽ tính khoảng cách ngữ nghĩa (ví dụ như là màu sắc, cường độ ánh sáng) giữa các nhóm và gom các nhóm có khoảng cách gần nhau về chung 1 nhóm để tìm ra phân vùng có khả năng cao nhất chứa đối tượng (ưu tiên gom những nhóm nhỏ trước).</p>
 <p>Như hình bên dưới, dòng đầu tiên, bức ảnh đâu tiên là ta có một vài nhóm nhỏ ở thời điểm X nào đó, ở hình thứ 2 là thực hiện gom nhớm theo cường độ màu sắc của hình số 1, và ở bước cuối cùng, ta thu được hình số 3. Những hình chữ nhật màu xanh ở dòng thứ 2 là những ROIS mô phỏng quá trình gom nhóm để tìm phân vùng có khả năng chứa đối tượng.</p>
 <p><img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/selectivesearch.jpg" loading="lazy"  title="Hình ảnh"
@@ -343,7 +356,7 @@ HOME
 
 
 <em>selective search</em></p>
-<h2 id="mạng-r-cnn">Mạng R-CNN<a class="anchor ms-1" href="#mạng-r-cnn"><i class="fas fa-link"></i></a></h2>
+<h1 id="mạng-r-cnn">Mạng R-CNN<a class="anchor ms-1" href="#mạng-r-cnn"><i class="fas fa-link"></i></a></h1>
 <p>Mạng R-CNN sử dụng phương pháp region proposal để tạo ra khoảng 2000 ROIs. Các vùng sau đó sẽ được rescale theo một kích thước cố định nào đó và được đưa vào mô hình CNN có lớp cuối cùng kà một full conected layer để phân lớp đối tượng và để lọc ra boundary box (bao đóng) của đối tượng.</p>
 <p><img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/region-proposals-cnn.jpg" loading="lazy"  title="Hình ảnh"
   
@@ -363,7 +376,7 @@ HOME
 </span></span><span class="line"><span class="ln">3</span><span class="cl">   <span class="n">patch</span> <span class="o">=</span> <span class="n">get_patch</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">ROI</span><span class="p">)</span>
 </span></span><span class="line"><span class="ln">4</span><span class="cl">   <span class="n">results</span> <span class="o">=</span> <span class="n">detector</span><span class="p">(</span><span class="n">patch</span><span class="p">)</span>
 </span></span></code></pre></div><p>Với việc sử dụng ít tấm ảnh nhỏ hơn, và chất lượng của mỗi tấm ảnh nhỏ tốt hơn, Mạng R-CNN chạy nhanh hơn và có độ chính xác cao hơn so với mô hình sử dụng cửa sổ trượt.</p>
-<h2 id="mạng-fast-r-cnn">Mạng Fast R-CNN<a class="anchor ms-1" href="#mạng-fast-r-cnn"><i class="fas fa-link"></i></a></h2>
+<h1 id="mạng-fast-r-cnn">Mạng Fast R-CNN<a class="anchor ms-1" href="#mạng-fast-r-cnn"><i class="fas fa-link"></i></a></h1>
 <p>Trong thực tế, các phân vùng của mạng R-CNN bị chồng lấp một phần / toàn bộ với các phân vùng khác. Do đó, việc huấn luyện và thực thi ( inference ) mạng R-CNN diễn ra khá chậm. Nếu chúng ta có 2000 proposal của mạng R-CNN, chúng ta phải thực hiện 2000 lần việc rút trích đặc trưng, một con số khác lớn.</p>
 <p>Thay vì phải rút trích đặc trưng của mỗi proposal, chúng ta có thể dùng CNN rút trích đặc trưng của toàn bộ bức ảnh trước (được feature map), đồng thời rút trích các proposal, lấy các proposal tương ứng trên feature map, rescale và cuối cùng là phân lớp và tìm vị trí của object. Với việc không phải lặp lại 2000 lần việc rút trích đặc trưng, Fast R-CNN giảm thời gian xử lý một cách đáng kể.</p>
 <p><img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/region-proposals-fast-r-cnn.jpg" loading="lazy"  title="Hình ảnh"
@@ -386,7 +399,7 @@ HOME
 </span></span><span class="line"><span class="ln">5</span><span class="cl">   <span class="n">results</span> <span class="o">=</span> <span class="n">detector2</span><span class="p">(</span><span class="n">patch</span><span class="p">)</span>
 </span></span></code></pre></div><p>Với việc không phải lặp đi lặp lại quá trình tìm ra các proposal, tốc độ của thuật toán tăng lên kha khá. Trong thực nghiệm, mô hình Fast R-CNN chạy nhanh hơn gấp 10 lần so với R-CNN trong quá trình huấn luyện. Và nhanh hơn 150 lần trong inferencing.</p>
 <p>Một khác biệt lớn nhất của Fast R-CNN là toàn bộ network (feature extractior, classifier, boundary box regressor) có thể huấn luyện end-to end (nghĩa là từ đầu đến cuối) với 2 hàm độ lỗi (loss funtion) khác nhau cùng lúc (classification loss và localization loss). Điều này làm tăng độ chính xác của mô hình.</p>
-<h2 id="roi-pooling">ROI Pooling<a class="anchor ms-1" href="#roi-pooling"><i class="fas fa-link"></i></a></h2>
+<h1 id="roi-pooling">ROI Pooling<a class="anchor ms-1" href="#roi-pooling"><i class="fas fa-link"></i></a></h1>
 <p>Vì Fast R-CNN sử dụng full connected layter ở lớp cuối, nên đòi hỏi input của chúng phải có kích thước cố định, nên ta phải resize lại feature về 1 kích thước cố định (do 2000 proposal có kích thước không cố định). Ở đây, các tác giả sử dụng ROI pooling để resize. Thuật toán ở đây được sử dụng như sau:</p>
 <p>Giả sử đơn giản là chúng ta có một proposal có kích thước 5x7, và chúng ta cần resize về hình dạng 2x2. Chúng ta xem kỹ hình bên dưới.</p>
 <p><img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/roi-pooling-example.png" loading="lazy"  title="Hình ảnh"
@@ -400,7 +413,7 @@ HOME
 <p>Vì chúng ta cần resize về vùng có kích thước 2x2 (4 phần), nên ta chia vùng proposal 5x7 thành 4 phần (5/2 =2 dư 3, vậy có 1 phần là 2, 1 phần là 3. Tương tự 7/2 = 3 dư 4, vậy có 1 phần 3, một phần 4. Cuối cùng ta có 4 hình chữ nhật có kích thước tương ứng là 2x3, 2x4, 3x3, 3x4) (Hình số 3).</p>
 <p>Hình số 4, từ 4 phần của vùng số 3, ta sẽ lấy giá trị lớn nhất của mỗi vùng.</p>
 <p>Vậy là ta thu được feature proposal có kích thước 2x2 rồi.</p>
-<h2 id="faster-r-cnn">Faster R-CNN<a class="anchor ms-1" href="#faster-r-cnn"><i class="fas fa-link"></i></a></h2>
+<h1 id="faster-r-cnn">Faster R-CNN<a class="anchor ms-1" href="#faster-r-cnn"><i class="fas fa-link"></i></a></h1>
 <p>Nhìn kỹ lại vào thuật toán F-CNN, chúng ta cần phải rút rích 2000 ROIs, và nó là nguyên nhân lớn gây nên sự chậm trể của mô hình</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln">1</span><span class="cl"><span class="n">feature_maps</span> <span class="o">=</span> <span class="n">process</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
 </span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="n">ROIs</span> <span class="o">=</span> <span class="n">region_proposal</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>         <span class="c1"># Expensive, slow</span>
@@ -420,7 +433,7 @@ HOME
 
 
 <em>Đồ hình của Faster R-CNN</em></p>
-<h2 id="region-proposal-network">Region proposal network<a class="anchor ms-1" href="#region-proposal-network"><i class="fas fa-link"></i></a></h2>
+<h1 id="region-proposal-network">Region proposal network<a class="anchor ms-1" href="#region-proposal-network"><i class="fas fa-link"></i></a></h1>
 <p>Mạng region proposal sử dụng feature map làm input đầu vào (như hình trên đã mô phỏng). Mạng sử dụng 1 bộ lọc 3x3, sau đó là một mô hình CNN như ZF hoặc VGG hoặc ResNet ( mô hình càng phức tạp thì độ chính xác cao, nhưng bù lại thời gian tìm kiếm sẽ lâu hơn) để dự đoán boundary box và object score (để xét xem trong bodary box trên có chứa đối tượng hay không. Trong thực tế, mạng Faster R-CNN trả về 2 lớp, lớp thứ nhất là có chứa object, lớp thứ 2 là không chứa object ( ví dụ lớp màu nền - background, lớp abc gì gì đó)) .</p>
 <p><img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/region-proposals-r-cnn-example.jpg" loading="lazy"  title="Hình ảnh"
   
@@ -452,14 +465,14 @@ Hình 2: Giả sử xét điểm có chấm xanh. Tại điểm đó, ta có k=3
 
 </p>
 <p>Anchor box có thể được goijlaf priors hoặc default boundary boxes trong mỗi bài báo khác nhau.</p>
-<h2 id="hiệu-năng-của-mô-hình-r-cnn">Hiệu năng của mô hình R-CNN<a class="anchor ms-1" href="#hiệu-năng-của-mô-hình-r-cnn"><i class="fas fa-link"></i></a></h2>
+<h1 id="hiệu-năng-của-mô-hình-r-cnn">Hiệu năng của mô hình R-CNN<a class="anchor ms-1" href="#hiệu-năng-của-mô-hình-r-cnn"><i class="fas fa-link"></i></a></h1>
 <p>Hình bên dưới mô tả benchmark của các mô hình dẫn xuất từ R-CNN, ta thấy Faster R-CNN có tốc độ tốt nhất.</p>
 <p><img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/f-rcnn-performance.jpg" loading="lazy"  title="Hình ảnh"
   
    />
 
 </p>
-<h2 id="region-based-fully-convolutional-networks">Region-based Fully Convolutional Networks<a class="anchor ms-1" href="#region-based-fully-convolutional-networks"><i class="fas fa-link"></i></a></h2>
+<h1 id="region-based-fully-convolutional-networks">Region-based Fully Convolutional Networks<a class="anchor ms-1" href="#region-based-fully-convolutional-networks"><i class="fas fa-link"></i></a></h1>
 <p>Giả sử chúng ta chỉ có toạ độ của mắt phải trong khuôn mặt, chúng ta có thể nội suy ra được vị trí của khuôn mặt. Vì ta biết rằng mắt phải nằm ở vị trí trái trái trong bức hình, và ta từ đó suy ra vị trí của các phần còn lại (xem hình).</p>
 <p><img class="img-fluid" alt="Hình ảnh" src="/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/f-rcnn-image1.jpg" loading="lazy"  title="Hình ảnh"
   
@@ -545,7 +558,7 @@ Hình 2: Giả sử xét điểm có chấm xanh. Tại điểm đó, ta có k=3
   async>
 </script></div>
 </div></div>
-</div><aside class="col-lg-4 sidebar d-flex">
+</div><aside class="col-lg-3 col-md-4 sidebar d-flex">
   <div class="container d-flex flex-column">
     
     <section class="card row text-center profile component">
@@ -565,19 +578,15 @@ Hình 2: Giả sử xét điểm có chấm xanh. Tại điểm đó, ta có k=3
   <div class="card-body">
     <nav id="TableOfContents">
   <ul>
-    <li>
-      <ul>
-        <li><a href="#sliding-window-detectors">Sliding-window detectors</a></li>
-        <li><a href="#selective-search">Selective Search</a></li>
-        <li><a href="#mạng-r-cnn">Mạng R-CNN</a></li>
-        <li><a href="#mạng-fast-r-cnn">Mạng Fast R-CNN</a></li>
-        <li><a href="#roi-pooling">ROI Pooling</a></li>
-        <li><a href="#faster-r-cnn">Faster R-CNN</a></li>
-        <li><a href="#region-proposal-network">Region proposal network</a></li>
-        <li><a href="#hiệu-năng-của-mô-hình-r-cnn">Hiệu năng của mô hình R-CNN</a></li>
-        <li><a href="#region-based-fully-convolutional-networks">Region-based Fully Convolutional Networks</a></li>
-      </ul>
-    </li>
+    <li><a href="#sliding-window-detectors">Sliding-window detectors</a></li>
+    <li><a href="#selective-search">Selective Search</a></li>
+    <li><a href="#mạng-r-cnn">Mạng R-CNN</a></li>
+    <li><a href="#mạng-fast-r-cnn">Mạng Fast R-CNN</a></li>
+    <li><a href="#roi-pooling">ROI Pooling</a></li>
+    <li><a href="#faster-r-cnn">Faster R-CNN</a></li>
+    <li><a href="#region-proposal-network">Region proposal network</a></li>
+    <li><a href="#hiệu-năng-của-mô-hình-r-cnn">Hiệu năng của mô hình R-CNN</a></li>
+    <li><a href="#region-based-fully-convolutional-networks">Region-based Fully Convolutional Networks</a></li>
   </ul>
 </nav>
   </div>
@@ -596,10 +605,10 @@ Hình 2: Giả sử xét điểm có chấm xanh. Tại điểm đó, ta có k=3
         <a href="/blog/2024-07-06-llm-applications-in-real/">Các Ứng Dụng Của LLM Trong Thực Tế
 </a>
       </li><li>
-        <a href="/blog/2021-11-06-some-way-make-momey-from-web-scrapping/">Một Số Thư Viện Tính Toán Song Song Thay Thế Cho Cuda
+        <a href="/blog/2024-06-12-cuda-alternate/">Một Số Thư Viện Tính Toán Song Song Thay Thế Cho Cuda
 </a>
       </li><li>
-        <a href="/blog/2024-06-12-big_data_analytics_methology/">Các Phương Pháp Phân Tích Dữ Liệu Lớn
+        <a href="/blog/2024-02-16-cac-phuong-phap-phan-tich-du-lieu-lon/">Các Phương Pháp Phân Tích Dữ Liệu Lớn
 </a>
       </li></ul>
   </div>
@@ -646,13 +655,13 @@ Hình 2: Giả sử xét điểm có chấm xanh. Tại điểm đó, ta có k=3
       </div>
       <div class="card-body">
         <div class="py-2"><a href="/tags/machine-learning/" class="badge rounded post-taxonomy" title="Machine Learning">
-            Machine Learning<span class="badge badge-sm text-white bg-accent ms-1">42</span></a><a href="/tags/deeplearning/" class="badge rounded post-taxonomy" title="Deeplearning">
-            Deeplearning<span class="badge badge-sm text-white bg-accent ms-1">21</span></a><a href="/tags/deep-learning/" class="badge rounded post-taxonomy" title="Deep Learning">
-            Deep Learning<span class="badge badge-sm text-white bg-accent ms-1">19</span></a><a href="/tags/python/" class="badge rounded post-taxonomy" title="Python">
-            Python<span class="badge badge-sm text-white bg-accent ms-1">14</span></a><a href="/tags/opencv/" class="badge rounded post-taxonomy" title="Opencv">
-            Opencv<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="/tags/bigdata/" class="badge rounded post-taxonomy" title="Bigdata">
-            Bigdata<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/c&#43;&#43;/" class="badge rounded post-taxonomy" title="C&#43;&#43;">
-            C&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/object-detector/" class="badge rounded post-taxonomy" title="Object Detector">
+            Machine Learning<span class="badge badge-sm text-white bg-accent ms-1">45</span></a><a href="/tags/deep-learning/" class="badge rounded post-taxonomy" title="Deep Learning">
+            Deep Learning<span class="badge badge-sm text-white bg-accent ms-1">21</span></a><a href="/tags/deeplearning/" class="badge rounded post-taxonomy" title="DeepLearning">
+            DeepLearning<span class="badge badge-sm text-white bg-accent ms-1">21</span></a><a href="/tags/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">11</span></a><a href="/tags/opencv/" class="badge rounded post-taxonomy" title="Opencv">
+            Opencv<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="/tags/c&#43;&#43;/" class="badge rounded post-taxonomy" title="C&#43;&#43;">
+            C&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/normalization/" class="badge rounded post-taxonomy" title="Normalization">
+            Normalization<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/object-detector/" class="badge rounded post-taxonomy" title="Object Detector">
             Object Detector<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/recommendation/" class="badge rounded post-taxonomy" title="Recommendation">
             Recommendation<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/alexnet/" class="badge rounded post-taxonomy" title="AlexNet">
             AlexNet<span class="badge badge-sm text-white bg-accent ms-1">3</span></a></div>

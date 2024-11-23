@@ -15,7 +15,7 @@
   <meta itemprop="description" content="Ở bài viết này, chúng ta sẽ đề cập đến bài toán tối ưu hoá ngẫu nhiên, và cách sử dụng thư viện mlrose để giải bài toán người giao hàng.">
   <meta itemprop="datePublished" content="2019-02-08T00:12:00+03:00">
   <meta itemprop="dateModified" content="2019-02-08T00:12:00+03:00">
-  <meta itemprop="wordCount" content="660">
+  <meta itemprop="wordCount" content="694">
   <meta itemprop="keywords" content="Chấm Điểm Công Dân,China,China Social Credit System,Credit System"><meta property="og:url" content="/blog/2019-02-08-randomized-optimization-in-python-v1/">
   <meta property="og:site_name" content="Phạm Duy Tùng Machine Learning Blog">
   <meta property="og:title" content="Tối ưu hoá ngẫu nhiên - Bài toán người giao hàng">
@@ -249,7 +249,7 @@ HOME
   </div>
 </nav>
 </header>
-<main role="main" class="container">
+<main role="main" class="container" style="line-height:1.7em">
       <div class="row content">
 <div class="col-lg-8">
   <div class="container"><nav class="row card component" aria-label="breadcrumb">
@@ -282,15 +282,13 @@ HOME
 </div>
 <article class="row card component mb-4 post">
   <div class="card-header ">
-    
-    <div class="bgcover" style="background-image:url( /thumbnails/global_maximin.jpg )">
+    <div class="bgcover" style="background-image:url(https://unsplash.it/1920/1080)" alt="Tối ưu hoá ngẫu nhiên - Bài toán người giao hàng">
       <div class="bgtrans">
           <h1>Tối Ưu Hoá Ngẫu Nhiên - Bài Toán Người Giao Hàng
 </h1>
       </div>
   </div>
-    
-  </div>
+</div>
   <div class="card-body"><div class="post-meta">
   <span class="post-date" title="created on 2019-02-08 04:12:00 &#43;0700 &#43;07.">
     Feb 8, 2019
@@ -298,10 +296,25 @@ HOME
     4 min read
   </span><span class="post-taxonomies"><a href="/tags/ch%E1%BA%A5m-%C4%91i%E1%BB%83m-c%C3%B4ng-d%C3%A2n/" class="badge post-taxonomy">chấm điểm công dân</a><a href="/tags/china/" class="badge post-taxonomy">china</a><a href="/tags/china-social-credit-system/" class="badge post-taxonomy">China social credit system</a><a href="/tags/credit-system/" class="badge post-taxonomy">credit system</a></span>
 </div>
-<div class="post-content mb-3"><h2 id="bài-toán-người-giao-hàng-là-gì">Bài toán người giao hàng là gì<a class="anchor ms-1" href="#bài-toán-người-giao-hàng-là-gì"><i class="fas fa-link"></i></a></h2>
+<div class="post-content mb-3"><div class="toc">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#bài-toán-người-giao-hàng-là-gì">Bài toán người giao hàng là gì</a></li>
+    <li><a href="#cài-đặt-chương-trình-và-thực-thi">Cài đặt chương trình và thực thi</a>
+      <ul>
+        <li><a href="#xây-dựng-vector-state">Xây dựng vector state</a></li>
+        <li><a href="#xây-dựng-hàm-fitness-function">Xây dựng hàm fitness function</a></li>
+        <li><a href="#xác-định-loại-bài-toán">Xác định loại bài toán</a></li>
+        <li><a href="#xác-định-thuật-toán-tối-ưu">Xác định thuật toán tối ưu</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+<h1 id="bài-toán-người-giao-hàng-là-gì">Bài toán người giao hàng là gì<a class="anchor ms-1" href="#bài-toán-người-giao-hàng-là-gì"><i class="fas fa-link"></i></a></h1>
 <p>Người giao hàng là bài toán cơ bản trong nhóm bài toán tối ưu. Bài toán được phát biểu như sau: Có một người giao hàng cần đi giao hàng tại n thành phố. Xuất phát từ một thành phố nào đó, đi qua các thành phố khác để giao hàng và trở về thành phố ban đầu. Mỗi thành phố chỉ đến một lần, khoảng cách từ một thành phố đến các thành phố khác là xác định được. Hãy tìm một chu trình (một đường đi khép kín thỏa mãn điều kiện trên) sao cho tổng độ dài các cạnh là nhỏ nhất.</p>
 <p>Có rất nhiều cách để giải bài toán này, các bạn đọc có thể search google để tìm thêm cách giải khác, ở đây, mình sẽ trình bày cách sử dụng thư viện mlrose của python để giải quyết bài toán trên.</p>
-<h2 id="cài-đặt-chương-trình-và-thực-thi">Cài đặt chương trình và thực thi<a class="anchor ms-1" href="#cài-đặt-chương-trình-và-thực-thi"><i class="fas fa-link"></i></a></h2>
+<h1 id="cài-đặt-chương-trình-và-thực-thi">Cài đặt chương trình và thực thi<a class="anchor ms-1" href="#cài-đặt-chương-trình-và-thực-thi"><i class="fas fa-link"></i></a></h1>
 <p>Chúng ta giả định rằng người giao hàng sẽ đi qua 5 thành phố, và mỗi thành phố sẽ có 2 giá trị x và y tương ứng với toạ độ của các thành phố đó trên bản đồ.</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln">1</span><span class="cl"><span class="nb">input</span> <span class="o">=</span> <span class="p">[</span>
 </span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="p">[</span><span class="mi">9</span><span class="p">,</span> <span class="mi">12</span><span class="p">],</span>
@@ -311,10 +324,10 @@ HOME
 </span></span><span class="line"><span class="ln">6</span><span class="cl"><span class="p">[</span><span class="mi">13</span><span class="p">,</span> <span class="mi">27</span><span class="p">],</span>
 </span></span><span class="line"><span class="ln">7</span><span class="cl"><span class="p">]</span>
 </span></span></code></pre></div><p>Theo phần trước, chúng ta sẽ xây dựng 4 phần</p>
-<h3 id="xây-dựng-vector-state">Xây dựng vector state<a class="anchor ms-1" href="#xây-dựng-vector-state"><i class="fas fa-link"></i></a></h3>
+<h2 id="xây-dựng-vector-state">Xây dựng vector state<a class="anchor ms-1" href="#xây-dựng-vector-state"><i class="fas fa-link"></i></a></h2>
 <p>Đơn giản là một vector x có số lượng phần tử bằng số lượng thành phố  mà người giao hàng sẽ viết thăm</p>
 <p>x = [x0,x1,2,x3,x4], trong đó, giá trị x1 là chỉ số của thành phố người giao hàng sẽ ghé đầu tiên, x0 là toạ độ thành phố bắt đầu</p>
-<h3 id="xây-dựng-hàm-fitness-function">Xây dựng hàm fitness function<a class="anchor ms-1" href="#xây-dựng-hàm-fitness-function"><i class="fas fa-link"></i></a></h3>
+<h2 id="xây-dựng-hàm-fitness-function">Xây dựng hàm fitness function<a class="anchor ms-1" href="#xây-dựng-hàm-fitness-function"><i class="fas fa-link"></i></a></h2>
 <p>Mục tiêu của bài toán là tìm đường đi ngăn nhất, nên chúng ta có thể dễ dàng xây dựng hàn fitness bằng cách tính khoảng cách euclide giữa các thành phố.</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl">
 </span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="k">def</span> <span class="nf">fitness_fun</span><span class="p">(</span><span class="n">state</span><span class="p">):</span>
@@ -331,11 +344,11 @@ HOME
 </span></span><span class="line"><span class="ln">13</span><span class="cl">    <span class="k">return</span> <span class="n">distance</span>
 </span></span><span class="line"><span class="ln">14</span><span class="cl">
 </span></span><span class="line"><span class="ln">15</span><span class="cl"><span class="n">fitness_cust</span> <span class="o">=</span> <span class="n">mlrose</span><span class="o">.</span><span class="n">CustomFitness</span><span class="p">(</span><span class="n">fitness_fun</span><span class="p">,</span><span class="s1">&#39;tsp&#39;</span><span class="p">)</span>
-</span></span></code></pre></div><h3 id="xác-định-loại-bài-toán">Xác định loại bài toán<a class="anchor ms-1" href="#xác-định-loại-bài-toán"><i class="fas fa-link"></i></a></h3>
+</span></span></code></pre></div><h2 id="xác-định-loại-bài-toán">Xác định loại bài toán<a class="anchor ms-1" href="#xác-định-loại-bài-toán"><i class="fas fa-link"></i></a></h2>
 <p>Đây là bài toán rời rạc không lặp, nên ta sẽ sử dụng hàm TSPOpt, length = 5 do số lượng phần tử của state là 5, maximize=False do bài toán tìm đường đi ngắn nhất .</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln">1</span><span class="cl"><span class="n">problem_fit</span> <span class="o">=</span> <span class="n">mlrose</span><span class="o">.</span><span class="n">TSPOpt</span><span class="p">(</span><span class="n">length</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="n">fitness_fn</span> <span class="o">=</span> <span class="n">fitness_cust</span><span class="p">,</span>
 </span></span><span class="line"><span class="ln">2</span><span class="cl">                            <span class="n">maximize</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-</span></span></code></pre></div><h3 id="xác-định-thuật-toán-tối-ưu">Xác định thuật toán tối ưu<a class="anchor ms-1" href="#xác-định-thuật-toán-tối-ưu"><i class="fas fa-link"></i></a></h3>
+</span></span></code></pre></div><h2 id="xác-định-thuật-toán-tối-ưu">Xác định thuật toán tối ưu<a class="anchor ms-1" href="#xác-định-thuật-toán-tối-ưu"><i class="fas fa-link"></i></a></h2>
 <p>Chúng ta vẫn tiếp tục sử dụng thuật toán simulated_annealing như trước xem kết quả như thế nào</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="c1">#Define decay schedule</span>
 </span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="n">schedule</span> <span class="o">=</span> <span class="n">mlrose</span><span class="o">.</span><span class="n">ExpDecay</span><span class="p">()</span>
@@ -395,7 +408,7 @@ HOME
   async>
 </script></div>
 </div></div>
-</div><aside class="col-lg-4 sidebar d-flex">
+</div><aside class="col-lg-3 col-md-4 sidebar d-flex">
   <div class="container d-flex flex-column">
     
     <section class="card row text-center profile component">
@@ -415,17 +428,13 @@ HOME
   <div class="card-body">
     <nav id="TableOfContents">
   <ul>
-    <li>
+    <li><a href="#bài-toán-người-giao-hàng-là-gì">Bài toán người giao hàng là gì</a></li>
+    <li><a href="#cài-đặt-chương-trình-và-thực-thi">Cài đặt chương trình và thực thi</a>
       <ul>
-        <li><a href="#bài-toán-người-giao-hàng-là-gì">Bài toán người giao hàng là gì</a></li>
-        <li><a href="#cài-đặt-chương-trình-và-thực-thi">Cài đặt chương trình và thực thi</a>
-          <ul>
-            <li><a href="#xây-dựng-vector-state">Xây dựng vector state</a></li>
-            <li><a href="#xây-dựng-hàm-fitness-function">Xây dựng hàm fitness function</a></li>
-            <li><a href="#xác-định-loại-bài-toán">Xác định loại bài toán</a></li>
-            <li><a href="#xác-định-thuật-toán-tối-ưu">Xác định thuật toán tối ưu</a></li>
-          </ul>
-        </li>
+        <li><a href="#xây-dựng-vector-state">Xây dựng vector state</a></li>
+        <li><a href="#xây-dựng-hàm-fitness-function">Xây dựng hàm fitness function</a></li>
+        <li><a href="#xác-định-loại-bài-toán">Xác định loại bài toán</a></li>
+        <li><a href="#xác-định-thuật-toán-tối-ưu">Xác định thuật toán tối ưu</a></li>
       </ul>
     </li>
   </ul>
@@ -446,10 +455,10 @@ HOME
         <a href="/blog/2024-07-06-llm-applications-in-real/">Các Ứng Dụng Của LLM Trong Thực Tế
 </a>
       </li><li>
-        <a href="/blog/2021-11-06-some-way-make-momey-from-web-scrapping/">Một Số Thư Viện Tính Toán Song Song Thay Thế Cho Cuda
+        <a href="/blog/2024-06-12-cuda-alternate/">Một Số Thư Viện Tính Toán Song Song Thay Thế Cho Cuda
 </a>
       </li><li>
-        <a href="/blog/2024-06-12-big_data_analytics_methology/">Các Phương Pháp Phân Tích Dữ Liệu Lớn
+        <a href="/blog/2024-02-16-cac-phuong-phap-phan-tich-du-lieu-lon/">Các Phương Pháp Phân Tích Dữ Liệu Lớn
 </a>
       </li></ul>
   </div>
@@ -496,13 +505,13 @@ HOME
       </div>
       <div class="card-body">
         <div class="py-2"><a href="/tags/machine-learning/" class="badge rounded post-taxonomy" title="Machine Learning">
-            Machine Learning<span class="badge badge-sm text-white bg-accent ms-1">42</span></a><a href="/tags/deeplearning/" class="badge rounded post-taxonomy" title="Deeplearning">
-            Deeplearning<span class="badge badge-sm text-white bg-accent ms-1">21</span></a><a href="/tags/deep-learning/" class="badge rounded post-taxonomy" title="Deep Learning">
-            Deep Learning<span class="badge badge-sm text-white bg-accent ms-1">19</span></a><a href="/tags/python/" class="badge rounded post-taxonomy" title="Python">
-            Python<span class="badge badge-sm text-white bg-accent ms-1">14</span></a><a href="/tags/opencv/" class="badge rounded post-taxonomy" title="Opencv">
-            Opencv<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="/tags/bigdata/" class="badge rounded post-taxonomy" title="Bigdata">
-            Bigdata<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/c&#43;&#43;/" class="badge rounded post-taxonomy" title="C&#43;&#43;">
-            C&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/object-detector/" class="badge rounded post-taxonomy" title="Object Detector">
+            Machine Learning<span class="badge badge-sm text-white bg-accent ms-1">45</span></a><a href="/tags/deep-learning/" class="badge rounded post-taxonomy" title="Deep Learning">
+            Deep Learning<span class="badge badge-sm text-white bg-accent ms-1">21</span></a><a href="/tags/deeplearning/" class="badge rounded post-taxonomy" title="DeepLearning">
+            DeepLearning<span class="badge badge-sm text-white bg-accent ms-1">21</span></a><a href="/tags/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">11</span></a><a href="/tags/opencv/" class="badge rounded post-taxonomy" title="Opencv">
+            Opencv<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="/tags/c&#43;&#43;/" class="badge rounded post-taxonomy" title="C&#43;&#43;">
+            C&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/normalization/" class="badge rounded post-taxonomy" title="Normalization">
+            Normalization<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/object-detector/" class="badge rounded post-taxonomy" title="Object Detector">
             Object Detector<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/recommendation/" class="badge rounded post-taxonomy" title="Recommendation">
             Recommendation<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/alexnet/" class="badge rounded post-taxonomy" title="AlexNet">
             AlexNet<span class="badge badge-sm text-white bg-accent ms-1">3</span></a></div>
