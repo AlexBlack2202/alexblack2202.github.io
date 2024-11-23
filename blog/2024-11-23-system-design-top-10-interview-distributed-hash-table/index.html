@@ -1,0 +1,664 @@
+<!doctype html><html lang="en" data-palette="blue"
+   data-mode="dark">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Top 10 thuật toán System Design các bạn nên biết và thường được hỏi trong phỏng vấn - Top 2 Distributed Hash Tables - Phạm Duy Tùng Machine Learning Blog</title>
+    <meta name="a.validate.02" content="1QZXZ8oi7g57H-GxBrBPkTYBydwii-Ic9iJu" /><link rel="apple-touch-icon" href="/images/icons/icon-180x180.png" sizes="180x180">
+<link rel="icon" href="/images/icons/icon-32x32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="/images/icons/icon-16x16.png" sizes="16x16" type="image/png">
+<link rel="icon" href="/images/icons/favicon.ico">
+<link rel="manifest" href="/manifest.json">
+<meta name="keywords" content="" />
+<meta name="description" content="Ở bài viết này, chúng ta sẽ tìm hiểu Distributed Hash Tables, một thuật toán được ứng dụng trong nhiều phần mềm hệ thống lớn. Đây là phần tiếp theo nằm trong chuỗi serie Top 10 thuật toán System Design các bạn nên biết và chuẩn bị để tham gia các bài phỏng vấn" /><meta name="robots" content="index, follow" />
+  <meta itemprop="name" content="Top 10 thuật toán System Design các bạn nên biết và thường được hỏi trong phỏng vấn - Top 2 Distributed Hash Tables">
+  <meta itemprop="description" content="Ở bài viết này, chúng ta sẽ tìm hiểu Distributed Hash Tables, một thuật toán được ứng dụng trong nhiều phần mềm hệ thống lớn. Đây là phần tiếp theo nằm trong chuỗi serie Top 10 thuật toán System Design các bạn nên biết và chuẩn bị để tham gia các bài phỏng vấn">
+  <meta itemprop="datePublished" content="2024-11-23T00:19:00+03:00">
+  <meta itemprop="dateModified" content="2024-11-23T00:19:00+03:00">
+  <meta itemprop="wordCount" content="1419">
+  <meta itemprop="image" content="https://unsplash.it/1920/1080?image=200">
+  <meta itemprop="keywords" content="System Design"><meta property="og:url" content="/blog/2024-11-23-system-design-top-10-interview-distributed-hash-table/">
+  <meta property="og:site_name" content="Phạm Duy Tùng Machine Learning Blog">
+  <meta property="og:title" content="Top 10 thuật toán System Design các bạn nên biết và thường được hỏi trong phỏng vấn - Top 2 Distributed Hash Tables">
+  <meta property="og:description" content="Ở bài viết này, chúng ta sẽ tìm hiểu Distributed Hash Tables, một thuật toán được ứng dụng trong nhiều phần mềm hệ thống lớn. Đây là phần tiếp theo nằm trong chuỗi serie Top 10 thuật toán System Design các bạn nên biết và chuẩn bị để tham gia các bài phỏng vấn">
+  <meta property="og:locale" content="en">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2024-11-23T00:19:00+03:00">
+    <meta property="article:modified_time" content="2024-11-23T00:19:00+03:00">
+    <meta property="article:tag" content="System Design">
+    <meta property="og:image" content="https://unsplash.it/1920/1080?image=200">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://unsplash.it/1920/1080?image=200"><meta name="twitter:title" content="Top 10 thuật toán System Design các bạn nên biết và thường được hỏi trong phỏng vấn - Top 2 Distributed Hash Tables">
+<meta name="twitter:description" content="Ở bài viết này, chúng ta sẽ tìm hiểu Distributed Hash Tables, một thuật toán được ứng dụng trong nhiều phần mềm hệ thống lớn. Đây là phần tiếp theo nằm trong chuỗi serie Top 10 thuật toán System Design các bạn nên biết và chuẩn bị để tham gia các bài phỏng vấn">
+<link rel="stylesheet" href="/css/main.min.c06cf34535ee1f60ba08893b4d57e76b2bbd5e11c17ab12ef976f02983a51b54.css" integrity="sha256-wGzzRTXuH2C6CIk7TVfnayu9XhHBerEu&#43;XbwKYOlG1Q=" crossorigin="anonymous"><link rel="stylesheet" href="/css/katex.min.d080a89e03e1eb850f547d835c186b4273f69879aa497eb8b0e88c1578bf1f0b.css" integrity="sha256-0ICongPh64UPVH2DXBhrQnP2mHmqSX64sOiMFXi/Hws=" crossorigin="anonymous">
+<link rel="stylesheet" href="/css/viewer.min.3d228794bcedbbfa0412beb8fbc1ec6973202945e42af7004f742a4d7bd620ab.css" integrity="sha256-PSKHlLztu/oEEr64&#43;8HsaXMgKUXkKvcAT3QqTXvWIKs=" crossorigin="anonymous"><style>
+    .bgcover {
+        display: block;
+        overflow: hidden;
+        height: 450px;
+        background: no-repeat center center;
+        -webkit-background-size: cover;
+        -moz-background-size: cover;
+        -o-background-size: cover;
+        background-size: cover;
+        position: relative;
+        margin-bottom: -65px;
+    }
+    .bgcover {
+        margin-bottom: 0 !important;
+    }
+
+    .bgcover .bgtrans {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        display: block;
+        overflow: hidden;
+        height: inherit;
+        background: rgba(0,0,0,.8);
+        background: -webkit-gradient(linear,0% 0%,0% 100%,from(rgba(0,0,0,.8)),to (rgba(0,0,0,.6)),to(rgba(255,255,255,0)));
+        background: -webkit-linear-gradient(top,rgba(255,255,255,0),rgba(0,0,0,.6),rgba(0,0,0,.8));
+        background: -moz-linear-gradient(top,rgba(255,255,255,0),rgba(0,0,0,.6),rgba(0,0,0,.8));
+        background: -ms-linear-gradient(top,rgba(255,255,255,0),rgba(0,0,0,.6),rgba(0,0,0,.8));
+        background: -o-linear-gradient(top,rgba(255,255,255,0),rgba(0,0,0,.6),rgba(0,0,0,.8));
+    }
+
+    .bgcover .bgtrans h1 {
+        display: block;
+        overflow: hidden;
+        font-size: 45px;
+        line-height: 55px;
+        color: #fff;
+        width: 800px;
+        margin: auto;
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 50px;
+        font-family: 'Roboto Condensed',sans-serif;
+        font-weight: 600;
+    }
+</style></head>
+  <body><script>const items=["mode","palette"];items.forEach(function(e){const t=localStorage.getItem("hbs-"+e);t&&document.body.parentElement.setAttribute("data-"+e,t)})</script><header><nav class="navbar top-app-bar top-app-bar-expand-lg fixed-top">
+  <div class="container">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <i class="fas fa-bars"></i>
+    </button><a class="navbar-brand flex-grow-1 flex-lg-grow-0 text-center text-lg-start mx-auto me-lg-3" href="/"><img class="logo" alt="Logo" src="/images/logo.webp" loading="lazy"  title="Logo"
+   width="400" height="400"
+   />
+HOME
+    </a>
+    <div class="offcanvas offcanvas-bottom surface" tabindex="-1" id="offcanvasSocialShare" aria-labelledby="offcanvasSocialShare">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Share</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body">
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Twitter Share Button"
+      target="_blank" href="https://twitter.com/intent/tweet?title=Top%2010%20thu%e1%ba%adt%20to%c3%a1n%20System%20Design%20c%c3%a1c%20b%e1%ba%a1n%20n%c3%aan%20bi%e1%ba%bft%20v%c3%a0%20th%c6%b0%e1%bb%9dng%20%c4%91%c6%b0%e1%bb%a3c%20h%e1%bb%8fi%20trong%20ph%e1%bb%8fng%20v%e1%ba%a5n%20-%20Top%202%20Distributed%20Hash%20Tables&url=%2fblog%2f2024-11-23-system-design-top-10-interview-distributed-hash-table%2f">
+      <i class="fab fa-fw fa-twitter"></i> Twitter
+    </a>
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Facebook Share Button"
+      target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=%2fblog%2f2024-11-23-system-design-top-10-interview-distributed-hash-table%2f">
+      <i class="fab fa-fw fa-facebook-f"></i> Facebook
+    </a>
+  </div>
+</div>
+    <button class="navbar-settings" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSettings"
+  aria-controls="offcanvasSettings" aria-label="Toggle settings">
+  <i class="fas fa-ellipsis-v"></i>
+</button>
+
+<div class="offcanvas offcanvas-end surface h-100" tabindex="-1" id="offcanvasSettings" aria-labelledby="offcanvasSettings">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Settings</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body d-flex flex-column">
+
+
+
+<section class="setting">
+  <form class="font-size-switcher-form row">
+    <div class="col-auto">
+      <label for="fontSize" class="form-label"><i class="fas fa-fw fa-font"></i> Font Size</label>
+    </div>
+    <div class="col-auto ms-auto">
+      <input type="range" class="form-range" min="-2" max="2" id="fontSize">
+    </div>
+  </form>
+</section>
+
+
+<section class="setting palettes">
+  <form class="row">
+    <div class="col-auto">
+      <label><i class="fas fa-fw fa-palette"></i> Palette</label>
+    </div>
+    <div class="col-auto ms-auto">
+      <a id="btnPalette" class="btn btn-sm btn-outline-primary" role="button" aria-label="palettePicker">
+        <i class="fas fa-eye-dropper"></i>
+      </a>
+    </div>
+  </form>
+  <div class="mt-2 d-flex justify-content-between visually-hidden" id="palettePicker"><button type="button" id="palette-blue" aria-label="Blue"
+        class="btn btn-sm w-100 palette" data-palette="blue">
+      </button><button type="button" id="palette-blue-gray" aria-label="Blue Gray"
+        class="btn btn-sm w-100 palette" data-palette="blue-gray">
+      </button><button type="button" id="palette-brown" aria-label="Brown"
+        class="btn btn-sm w-100 palette" data-palette="brown">
+      </button><button type="button" id="palette-cyan" aria-label="Cyan"
+        class="btn btn-sm w-100 palette" data-palette="cyan">
+      </button><button type="button" id="palette-green" aria-label="Green"
+        class="btn btn-sm w-100 palette" data-palette="green">
+      </button><button type="button" id="palette-indigo" aria-label="Indigo"
+        class="btn btn-sm w-100 palette" data-palette="indigo">
+      </button><button type="button" id="palette-orange" aria-label="Orange"
+        class="btn btn-sm w-100 palette" data-palette="orange">
+      </button><button type="button" id="palette-pink" aria-label="Pink"
+        class="btn btn-sm w-100 palette" data-palette="pink">
+      </button><button type="button" id="palette-purple" aria-label="Purple"
+        class="btn btn-sm w-100 palette" data-palette="purple">
+      </button><button type="button" id="palette-red" aria-label="Red"
+        class="btn btn-sm w-100 palette" data-palette="red">
+      </button><button type="button" id="palette-teal" aria-label="Teal"
+        class="btn btn-sm w-100 palette" data-palette="teal">
+      </button><button type="button" id="palette-yellow" aria-label="Yellow"
+        class="btn btn-sm w-100 palette" data-palette="yellow">
+      </button></div>
+</section>
+<section class="setting actions d-flex justify-content-around mt-auto overflow-auto">
+  <a role="button" class="action action-go-back" href="javascript: window.history.back();">
+    <span class="action-icon"><i class="fas fa-2x fa-arrow-left"></i></span> Go back
+  </a>
+  <a role="button" class="action action-reload-page">
+    <span class="action-icon"><i class="fas fa-2x fa-redo-alt"></i></span> Reload
+  </a>
+  <a role="button" class="action action-copy-url">
+    <span class="action-icon"><i class="fas fa-2x fa-link"></i></span> Copy URL
+  </a><a class="action action-social-share" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSocialShare"
+    aria-controls="offcanvasSocialShare" aria-label="Toggle social share">
+    <span class="action-icon"><i class="fas fa-2x fa-share-alt"></i></span> Share
+  </a></section>
+
+</div>
+</div>
+
+    <div class="collapse navbar-collapse" tabindex="-1" id="navbarSupportedContent" aria-labelledby="navbarSupportedContent">
+      <form class="search-bar my-1" action="/search">
+  <div class="input-group input-group-sm">
+    <span class="btn btn-search disabled position-absolute left-0"><i class="fas fa-fw fa-search"></i></span>
+    <input class="form-control rounded-pill" name="q" type="search" aria-label="Search">
+  </div>
+</form>
+      <ul class="navbar-nav ms-auto"><li class="nav-item">
+          <a class="nav-link" href="/series/">
+            <i class="fas fa-fw fa-columns"></i>Courses
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="/tools/">
+            <i class="fas fa-fw fa-folder"></i>Tools
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="/categories/">
+            <i class="fas fa-fw fa-folder"></i>Categories
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="/archives/">
+            <i class="fas fa-fw fa-file-archive"></i>Archives
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="/tags/">
+            <i class="fas fa-fw fa-tags"></i>Tags
+          </a>
+        </li><li class="nav-item dropdown">
+          <a class="nav-link" id="navbarDropdownSupport" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-fw fa-chevron-circle-down"></i>Support
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdownSupport"><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Repository
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Discussions
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Features Request
+              </a>
+            </li><li><hr class="dropdown-divider"></li><li>
+              <a class="dropdown-item"
+                href="/faq/">
+                FAQs
+              </a>
+            </li></ul>
+        </li></ul>
+    </div>
+  </div>
+</nav>
+</header>
+<main role="main" class="container" style="line-height:1.7em">
+      <div class="row content">
+<div class="col-lg-9 col-md-8">
+  <div class="container"><nav class="row card component" aria-label="breadcrumb">
+  <div class="card-body">
+    <ol class="breadcrumb "><li class="breadcrumb-item"><a href="/">Home</a></li><li class="breadcrumb-item"><a href="/blog/">Blogs</a></li><li class="breadcrumb-item active">Top 10 Thuật Toán System Design Các Bạn Nên Biết Và Thường Được Hỏi Trong Phỏng Vấn - Top 2 Distributed Hash Tables</li></ol>
+  </div>
+</nav>
+<div class="post-panel-wrapper">
+  <div class="d-flex flex-column component rounded post-panel">
+    
+    <a class="action action-panel-toggler" role="button" title="Panel toggler">
+      <i class="fas fa-fw fa-chevron-circle-down"></i>
+    </a>
+    <a id="sidebarToggler" class="action d-none d-lg-block" role="button" title="Sidebar toggler">
+  <i class="fas fa-fw fa-expand-alt" data-fa-transform="rotate-45"></i>
+</a>
+
+    
+
+    
+    
+    <a class="action" href="#post-comments" role="button" aria-label="Comments" title="Comments">
+  <i class="fas fa-fw fa-comments"></i>
+</a>
+    <a class="action" href="#postTOC" aria-controls="Table of contents" role="button" title="Table of contents">
+  <i class="fas fa-fw fa-list-alt"></i>
+</a>
+    
+  </div>
+</div>
+<article class="row card component mb-4 post">
+  <div class="card-header ">
+    <div class="bgcover" style="background-image:url(https://unsplash.it/1920/1080)" alt="Top 10 thuật toán System Design các bạn nên biết và thường được hỏi trong phỏng vấn - Top 2 Distributed Hash Tables">
+      <div class="bgtrans">
+          <h1>Top 10 Thuật Toán System Design Các Bạn Nên Biết Và Thường Được Hỏi Trong Phỏng Vấn - Top 2 Distributed Hash Tables
+</h1>
+      </div>
+  </div>
+</div>
+  <div class="card-body"><div class="post-meta">
+  <span class="post-date" title="created on 2024-11-23 04:19:00 &#43;0700 &#43;07.">
+    Nov 23, 2024
+  </span><span class="post-reading-time">
+    7 min read
+  </span><span class="post-taxonomies"><a href="/tags/system-design/" class="badge post-taxonomy">System Design</a></span>
+</div>
+<div class="post-content mb-3"><div class="toc">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#i-khái-niệm">I. Khái niệm</a></li>
+    <li><a href="#ii-distributed-hash-table-được-sử-dụng-ở-đâu">II. Distributed Hash Table được sử dụng ở đâu</a>
+      <ul>
+        <li><a href="#1-peer-to-peer-p2p-networks">1. Peer-to-peer (P2P) networks</a></li>
+        <li><a href="#2-distributed-databases">2. Distributed databases</a></li>
+        <li><a href="#3-content-delivery-networks">3. Content delivery networks</a></li>
+        <li><a href="#4-event-notification">4. Event Notification</a></li>
+        <li><a href="#5-distributed-file-systems">5. Distributed File Systems</a></li>
+      </ul>
+    </li>
+    <li><a href="#các-yêu-cầu-của-một-lookup-algorithm-tốt">Các yêu cầu của một lookup algorithm tốt</a>
+      <ul>
+        <li><a href="#autonomy-và-decentralization">Autonomy và decentralization</a></li>
+        <li><a href="#fault-tolerance">Fault tolerance</a></li>
+        <li><a href="#scalability">Scalability</a></li>
+        <li><a href="#load-balance">Load balance</a></li>
+        <li><a href="#low-maintenance-overhead">Low maintenance overhead</a></li>
+      </ul>
+    </li>
+    <li><a href="#điểm-mạnh-của-distributed-hash-table">Điểm mạnh của Distributed Hash Table</a>
+      <ul>
+        <li><a href="#scalability-1">Scalability</a></li>
+        <li><a href="#efficiency">Efficiency</a></li>
+        <li><a href="#fault-tolerance-1">Fault tolerance</a></li>
+        <li><a href="#decentralization">Decentralization</a></li>
+        <li><a href="#security">Security</a></li>
+      </ul>
+    </li>
+    <li><a href="#điểm-không-mạnh-của-distributed-hash-table">Điểm không mạnh của Distributed Hash Table</a>
+      <ul>
+        <li><a href="#complexity">Complexity</a></li>
+        <li><a href="#performance">Performance</a></li>
+        <li><a href="#security-1">Security</a></li>
+        <li><a href="#compatibility">Compatibility</a></li>
+        <li><a href="#limited-functionality">Limited functionality</a></li>
+      </ul>
+    </li>
+    <li><a href="#iii-tham-khảo">III. Tham khảo</a></li>
+  </ul>
+</nav>
+  </div>
+<p>Đến thời điểm hiện tại, cuối năm 2024, từ khoá Decentralization vẫn đang là một từ khoá hot, quang trọng. Từ việc bùng nổ , nở rộ của block chain, đến việc các data center của các tập đoàn lớn nước ngoài được đặt ở nhiều nơi, trong nước thì việc số hoá dữ liệu phát triển mạnh mẽ.</p>
+<p>Trong bài viết này, chúng ta sẽ cùng nhau hiểu khái niệm cơ bản của Distributed Hash Tables, ưu điểm và nhược điểm của nó</p>
+<h1 id="i-khái-niệm">I. Khái niệm<a class="anchor ms-1" href="#i-khái-niệm"><i class="fas fa-link"></i></a></h1>
+<p>Distributed Hash Tables - DHT là một hệ thống phân tán phi tập trung cung cấp dịch vụ tra cứu, tựa tựa như hash table.</p>
+<p>Hash table: là một bảng dữ liệu key - value. Value được lưu trữ và truy vấn thông qua key. Key được sử dụng để xác định nơi lưu trữ value.</p>
+<p>Ví dụ</p>
+<p>key :a, value:/data/2024/02/01/12/01/01/a.txt
+key :b, value:/data/2024/02/01/12/01/01/b.txt</p>
+<p>Distributed Hash Tables: dữ liệu cũng dạng key - value, nhưng dữ liệu được lưu trữ phân tán trên nhiều node trong một network, khác với Hash table là chỉ lưu trữ trong 1 node.</p>
+<p>trong Distributed Hash Tables, mỗi node chịu trách nhiệm lưu trữ một phần dữ liệu. Khi người dùng truy vấn hoặc lưu dữ liệu lên Distributed Hash Tables, người dùng sẽ đẩy dữ liệu lên network. Yêu cầu của người dùng sẽ được dẩy lên node tương ứng với khoá của dữ liệu. Node đó sẽ chịu trách nhiệm lưu trữ và truy vấn dữ liệu của người dùng.</p>
+<p>Vậy nên, một Distributed Hash Tables cần có ít nhất 3 thành phần chính</p>
+<ul>
+<li>
+<p>Distributed application: Chịu trách nhiệm giao tiếp với người dùng qua 2 phương thức là push ( key, value) để người dùng đẩy dữ liệu lên network và get(key) để người dùng lấy dữ liệu thông qua key. App có thể được lưu trữ phân tán ở trên nhiều node.</p>
+</li>
+<li>
+<p>Distributed hash table: hay còn gọi là DHash, chịu trách nhiệm lấy ra node đang lưu dữ liệu của key. Data có thể được lưu trữ trên nhiều node.</p>
+</li>
+<li>
+<p>Lookup service: thành phần này Ở trên node, trả dữ liệu của key.</p>
+</li>
+</ul>
+<h1 id="ii-distributed-hash-table-được-sử-dụng-ở-đâu">II. Distributed Hash Table được sử dụng ở đâu<a class="anchor ms-1" href="#ii-distributed-hash-table-được-sử-dụng-ở-đâu"><i class="fas fa-link"></i></a></h1>
+<p>là một hệ thống phân tán phi tập trung, Distributed Hash Table được sử dụng dưới nhiều mục đích khác nhau, gom nhóm lại thì đến thời điểm hiện tại, chúng ta có 4 nhóm chính</p>
+<h2 id="1-peer-to-peer-p2p-networks">1. Peer-to-peer (P2P) networks<a class="anchor ms-1" href="#1-peer-to-peer-p2p-networks"><i class="fas fa-link"></i></a></h2>
+<p>Ở đây, mình đề cập tới  BitTorrent cho đơn giản hen</p>
+<p>Ví dụ , mình muốn download file tên là abc.txt</p>
+<p>chúng ta sẽ dùng Distributed application như BitTorrent</p>
+<p>Distributed hash table:</p>
+<ul>
+<li>
+<p>key sẽ là hash (&lsquo;abc.txt&rsquo;)</p>
+</li>
+<li>
+<p>value là ip máy có chứa file &lsquo;abc.txt&rsquo;</p>
+</li>
+</ul>
+<p>Lookup service:</p>
+<p>gọi đến máy có ip do Distributed hash table trả về và kèm theo một số lệnh xác thực để lấy file abc.txt</p>
+<h2 id="2-distributed-databases">2. Distributed databases<a class="anchor ms-1" href="#2-distributed-databases"><i class="fas fa-link"></i></a></h2>
+<p>Ngày nay, với dự phát triển mạnh mẽ của big data, iot, một máy khủng long cũng có thể chưa đủ đáp ứng tải và tài nguyên để lưu trữ dữ liệu.</p>
+<h2 id="3-content-delivery-networks">3. Content delivery networks<a class="anchor ms-1" href="#3-content-delivery-networks"><i class="fas fa-link"></i></a></h2>
+<p>Chúng ta tưởng tượng hệ s3 của amazone á, chắc chắn nó phải được lưu trên nhiều node rồi.</p>
+<h2 id="4-event-notification">4. Event Notification<a class="anchor ms-1" href="#4-event-notification"><i class="fas fa-link"></i></a></h2>
+<p>Giống firebase.</p>
+<h2 id="5-distributed-file-systems">5. Distributed File Systems<a class="anchor ms-1" href="#5-distributed-file-systems"><i class="fas fa-link"></i></a></h2>
+<p>Quản lý file trong hệ thống lưu trữ dữ liệu phân tán</p>
+<h1 id="các-yêu-cầu-của-một-lookup-algorithm-tốt">Các yêu cầu của một lookup algorithm tốt<a class="anchor ms-1" href="#các-yêu-cầu-của-một-lookup-algorithm-tốt"><i class="fas fa-link"></i></a></h1>
+<h2 id="autonomy-và-decentralization">Autonomy và decentralization<a class="anchor ms-1" href="#autonomy-và-decentralization"><i class="fas fa-link"></i></a></h2>
+<p>Các node tự động phối hợp với nhau tạo lên hệ thống, không cần  node trung tâm</p>
+<h2 id="fault-tolerance">Fault tolerance<a class="anchor ms-1" href="#fault-tolerance"><i class="fas fa-link"></i></a></h2>
+<p>Hệ thống đáng tin cậy, khi có một node trong hệ thống bị lỗi,  thì hệ thống vẫn hoạt động bình thường</p>
+<h2 id="scalability">Scalability<a class="anchor ms-1" href="#scalability"><i class="fas fa-link"></i></a></h2>
+<p>Hệ thống phải hoạt động hiệu quả ngay cả khi có hàng ngàn, hàng triệu node.</p>
+<h2 id="load-balance">Load balance<a class="anchor ms-1" href="#load-balance"><i class="fas fa-link"></i></a></h2>
+<p>Các key cần phải phân bố đều giữa các node, tránh cho quá tải 1 node nào đó</p>
+<h2 id="low-maintenance-overhead">Low maintenance overhead<a class="anchor ms-1" href="#low-maintenance-overhead"><i class="fas fa-link"></i></a></h2>
+<p>Khi có 1 node mới tham gia vào hệ thống hoặc một node rời khỏi hệ thống, một vấn đề gặp phải là chúng ta sẽ tốn kha khá bandwidth để gửi thông báo tới các node còn lại rằng có node mới hoặc có node rời khỏi hệ thống. Nên, thay vì gửi thông báo tới toán bộ node trong network, chúng ta có thể chỉ gửi thông báo tới các neighbors thôi.</p>
+<h1 id="điểm-mạnh-của-distributed-hash-table">Điểm mạnh của Distributed Hash Table<a class="anchor ms-1" href="#điểm-mạnh-của-distributed-hash-table"><i class="fas fa-link"></i></a></h1>
+<h2 id="scalability-1">Scalability<a class="anchor ms-1" href="#scalability-1"><i class="fas fa-link"></i></a></h2>
+<p>Distributed Hash Table có khả năng mở rộng cao vì chúng có thể lưu trữ và truy xuất lượng lớn dữ liệu mà không cần điều phối tập trung  hoặc máy chủ để quản lý hệ thống. Distributed Hash Table phù hợp với các hệ thống phân tán quy mô lớn.</p>
+<h2 id="efficiency">Efficiency<a class="anchor ms-1" href="#efficiency"><i class="fas fa-link"></i></a></h2>
+<p>Distributed Hash Table cung cấp cách thức lưu trữ và truy vấn dữ liệu một cách hiệu quả, sử dụng khoá dữ liệu để xác định ví trị của dữ liệu trong hệ thống. Chính điều đó giúp cho Distributed Hash Table có thể xác định và truy vấn dữ liệu nhanh chóng mà không cần phải tìm kiếm trên toàn bộ node của hệ thống.</p>
+<h2 id="fault-tolerance-1">Fault tolerance<a class="anchor ms-1" href="#fault-tolerance-1"><i class="fas fa-link"></i></a></h2>
+<p>Distributed Hash Table đảm bảo toàn vẹn dữ liệu, có thể quản lý và cô lập node lỗi mà không cần server trung tâm quản lý. Dữ liệu được lưu trữ phân tán trên các node nên khi có node bị lỗi, node sẽ bị cô lập và dữ liệu sẽ được trả về cho người dùng từ các node còn lại trong hệ thống</p>
+<h2 id="decentralization">Decentralization<a class="anchor ms-1" href="#decentralization"><i class="fas fa-link"></i></a></h2>
+<p>Distributed Hash Table là hệ quản lý phi tập trung, không cần central authority (CA) hoặc server quản lý trung tâm, do đó hệ thống ít bị khai thác lỗ hổng bảo mật hơn khi bị tấn công. Ít chứ không phải là không có</p>
+<h2 id="security">Security<a class="anchor ms-1" href="#security"><i class="fas fa-link"></i></a></h2>
+<p>Distributed Hash Table cung cấp các cơ chế bảo mật để lưu trữ và truy vấn dữ liệu, khi dữ liệu được lưu phân tán trên nhiều node của hệ thống thay vì chỉ lưu trên một node, điều này giúp giảm thiểu rủi ro khi kẻ gian muốn thay đổi dữ liệu vì mục đích không tốt.</p>
+<h1 id="điểm-không-mạnh-của-distributed-hash-table">Điểm không mạnh của Distributed Hash Table<a class="anchor ms-1" href="#điểm-không-mạnh-của-distributed-hash-table"><i class="fas fa-link"></i></a></h1>
+<h2 id="complexity">Complexity<a class="anchor ms-1" href="#complexity"><i class="fas fa-link"></i></a></h2>
+<p>Distributed Hash Table khá khoai khi triển khai và bảo trì, hệ thống cần một lượng lớn nodes để các chức năng hoạt động một cách trơn tru, hiệu quả. Do phải quản lý quá nhiều node, người quản lý sẽ gặp thách thức khi có sự cố xui xẻo xảy ra, ngoài ra người quản lý còn phải hiểu kỹ hệ thống của mình</p>
+<h2 id="performance">Performance<a class="anchor ms-1" href="#performance"><i class="fas fa-link"></i></a></h2>
+<p>Trong một số trường hợp xấu, Distributed Hash Table có hiệu năng lởm hơn so với các hệ distributed systems khác, đặc biệt lởm khi hệ thống đang gần quá tải (heavy load) hoặc khi hệ thống quá lớn, người quản trị config số lượng neighbors hoặc số hop nhiều.</p>
+<h2 id="security-1">Security<a class="anchor ms-1" href="#security-1"><i class="fas fa-link"></i></a></h2>
+<p>Bản thân Distributed Hash Table có trang bị một vài cách thức bảo mật dữ liệu để đảm bảo toàn vẹn dữ liệu của người dùng khi lưu trữ và truy vấn dữ liệu, nhưng về mặt thiết kế thì hệ thống có thể tồn tại các lỗi hổng về bảo mật hoặc bị tấn công kiến trúc hệ thống, ví dụ như tấn công từ chối dịch vụ (DDoS) hoặc tấn công mạo nhận - Sybil attack, là hình thức tấn công vào các mạng lưới ngang hàng được thực hiện bằng cách tạo nhiều thực thể ảo (tài khoản, node hoặc máy tính) để chiếm quyền kiểm soát mạng lưới.</p>
+<h2 id="compatibility">Compatibility<a class="anchor ms-1" href="#compatibility"><i class="fas fa-link"></i></a></h2>
+<p>Distributed Hash Table có thể không tương thích với toàn bộ kiểu dữ liệu của ngừoi dùng. Một số kiến trúc yêu cầu một cấu trúc hoặc định dạng đặc biệt để hoạt động</p>
+<h2 id="limited-functionality">Limited functionality<a class="anchor ms-1" href="#limited-functionality"><i class="fas fa-link"></i></a></h2>
+<p>Distributed Hash Table được thiết để để lưu trữ và lấy dữ liệu, và không hỗ trợ các hàm bổ trợ</p>
+<h1 id="iii-tham-khảo">III. Tham khảo<a class="anchor ms-1" href="#iii-tham-khảo"><i class="fas fa-link"></i></a></h1>
+<p><a href="https://www.cs.princeton.edu/courses/archive/fall18/cos418/docs/L6-dhts.pdf" target="_blank" rel="noopener noreferrer">https://www.cs.princeton.edu/courses/archive/fall18/cos418/docs/L6-dhts.pdf</a></p>
+<p><a href="https://www.cs.cmu.edu/%7Edga/15-744/S07/lectures/16-dht.pdf" target="_blank" rel="noopener noreferrer">https://www.cs.cmu.edu/%7Edga/15-744/S07/lectures/16-dht.pdf</a></p>
+<p><a href="https://web.mit.edu/6.829/www/currentsemester/materials/chord.pdf" target="_blank" rel="noopener noreferrer">https://web.mit.edu/6.829/www/currentsemester/materials/chord.pdf</a></p>
+<p><a href="https://www.tutorialspoint.com/distributed-hash-tables-dhts" target="_blank" rel="noopener noreferrer">https://www.tutorialspoint.com/distributed-hash-tables-dhts</a></p>
+<p><a href="https://www.geeksforgeeks.org/distributed-hash-tables-with-kademlia/" target="_blank" rel="noopener noreferrer">https://www.geeksforgeeks.org/distributed-hash-tables-with-kademlia/</a></p>
+<p><a href="https://medium.com/the-code-vault/data-structures-distributed-hash-table-febfd01fc0af" target="_blank" rel="noopener noreferrer">https://medium.com/the-code-vault/data-structures-distributed-hash-table-febfd01fc0af</a></p>
+<p>Cảm ơn các bạn đã theo dõi bài viết. Xin cảm ơn và hẹn gặp lại.</p>
+</div></div>
+  <div class="card-footer"><div class="post-navs d-flex justify-content-evenly"><div class="post-nav post-prev">
+    <i class="fas fa-fw fa-chevron-left"></i>
+    <a href="/blog/2024-10-27-mario-reinfomation-learning-double-dqn/">Sử Dụng Mô Hình Double DQN  Huấn Luyện Mô Hình Reinforcement Learning Với Game Mario
+</a>
+  </div></div></div>
+</article><div class="card component row post-comments" id="post-comments">
+  <div class="card-header">
+    <h2 class="card-title">Comments</h2>
+  </div>
+  <div class="card-body"><script src="https://utteranc.es/client.js"
+  repo="AlexBlack2202/utterances"
+  issue-term="pathname"
+  label="comment"
+  theme="github-dark"
+  crossorigin="anonymous"
+  async>
+</script></div>
+</div></div>
+</div><aside class="col-lg-3 col-md-4 sidebar d-flex">
+  <div class="container d-flex flex-column">
+    
+    <section class="card row text-center profile component">
+  <div class="card-body">
+    <div class="col-12 d-flex align-items-center justify-content-center"><img class="profile-avatar rounded-circle" alt="Đặng Thị Hằng | Phạm Duy Tùng" src="/images/profile.webp" loading="lazy"  title="Đặng Thị Hằng | Phạm Duy Tùng"
+   width="736" height="920"
+   />
+</div>
+    <div class="col-12 profile-meta"><div class="profile-name">Đặng Thị Hằng | Phạm Duy Tùng</div><div class="profile-bio">Gopher, CShaper, Pythoner, Full Stack Engineer.</div><div class="profile-company"><i class="fas fa-fw fa-building"></i>MWG</div><div class="profile-location"><i class="fas fa-fw fa-map-marker-alt"></i>Earth</div><div class="profile-about"><i class="fas fa-fw fa-user"></i><a href="/about/">About</a></div><div class="profile-contact"><i class="fas fa-fw fa-question-circle"></i><a href="/contact/">Contact Us</a></div>
+</div>
+  </div>
+</section>
+  <div class="post-toc row mb-4 card component" id="postTOC">
+  <div class="card-header">
+    <h2 class="card-title">Contents</h2>
+  </div>
+  <div class="card-body">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#i-khái-niệm">I. Khái niệm</a></li>
+    <li><a href="#ii-distributed-hash-table-được-sử-dụng-ở-đâu">II. Distributed Hash Table được sử dụng ở đâu</a>
+      <ul>
+        <li><a href="#1-peer-to-peer-p2p-networks">1. Peer-to-peer (P2P) networks</a></li>
+        <li><a href="#2-distributed-databases">2. Distributed databases</a></li>
+        <li><a href="#3-content-delivery-networks">3. Content delivery networks</a></li>
+        <li><a href="#4-event-notification">4. Event Notification</a></li>
+        <li><a href="#5-distributed-file-systems">5. Distributed File Systems</a></li>
+      </ul>
+    </li>
+    <li><a href="#các-yêu-cầu-của-một-lookup-algorithm-tốt">Các yêu cầu của một lookup algorithm tốt</a>
+      <ul>
+        <li><a href="#autonomy-và-decentralization">Autonomy và decentralization</a></li>
+        <li><a href="#fault-tolerance">Fault tolerance</a></li>
+        <li><a href="#scalability">Scalability</a></li>
+        <li><a href="#load-balance">Load balance</a></li>
+        <li><a href="#low-maintenance-overhead">Low maintenance overhead</a></li>
+      </ul>
+    </li>
+    <li><a href="#điểm-mạnh-của-distributed-hash-table">Điểm mạnh của Distributed Hash Table</a>
+      <ul>
+        <li><a href="#scalability-1">Scalability</a></li>
+        <li><a href="#efficiency">Efficiency</a></li>
+        <li><a href="#fault-tolerance-1">Fault tolerance</a></li>
+        <li><a href="#decentralization">Decentralization</a></li>
+        <li><a href="#security">Security</a></li>
+      </ul>
+    </li>
+    <li><a href="#điểm-không-mạnh-của-distributed-hash-table">Điểm không mạnh của Distributed Hash Table</a>
+      <ul>
+        <li><a href="#complexity">Complexity</a></li>
+        <li><a href="#performance">Performance</a></li>
+        <li><a href="#security-1">Security</a></li>
+        <li><a href="#compatibility">Compatibility</a></li>
+        <li><a href="#limited-functionality">Limited functionality</a></li>
+      </ul>
+    </li>
+    <li><a href="#iii-tham-khảo">III. Tham khảo</a></li>
+  </ul>
+</nav>
+  </div>
+</div><section class="recent-posts row card component">
+  <div class="card-header">
+    <h2 class="card-title">Recent Posts</h2>
+  </div>
+  <div class="card-body">
+    <ul class="post-list"><li>
+        <a href="/blog/2024-11-23-system-design-top-10-interview-distributed-hash-table/">Top 10 Thuật Toán System Design Các Bạn Nên Biết Và Thường Được Hỏi Trong Phỏng Vấn - Top 2 Distributed Hash Tables
+</a>
+      </li><li>
+        <a href="/blog/2024-10-27-mario-reinfomation-learning-double-dqn/">Sử Dụng Mô Hình Double DQN  Huấn Luyện Mô Hình Reinforcement Learning Với Game Mario
+</a>
+      </li><li>
+        <a href="/blog/2024-09-05-system-design-top-10-interview-consistent-hashing/">Top 10 Thuật Toán System Design Các Bạn Nên Biết Và Thường Được Hỏi Trong Phỏng Vấn - Top 1 Consistent Hashing
+</a>
+      </li><li>
+        <a href="/blog/2024-07-06-llm-applications-in-real/">Các Ứng Dụng Của LLM Trong Thực Tế
+</a>
+      </li><li>
+        <a href="/blog/2024-06-12-cuda-alternate/">Một Số Thư Viện Tính Toán Song Song Thay Thế Cho Cuda
+</a>
+      </li></ul>
+  </div>
+</section><section class="series-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="/series">series</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="/series/kh%C3%B3a-h%E1%BB%8Dc-python-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học Python Căn Bản">
+            Khóa Học Python Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="/series/kh%C3%B3a-h%E1%BB%8Dc-c&#43;&#43;-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học C&#43;&#43; Căn Bản">
+            Khóa Học C&#43;&#43; Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="/series/machine-learning-dataset/" class="badge rounded post-taxonomy" title="Machine Learning Dataset">
+            Machine Learning Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a><a href="/series/ch%E1%BB%A9ng-kho%C3%A1n-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Chứng Khoán Căn Bản">
+            Chứng Khoán Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">1</span></a></div>
+      </div>
+    </section><section class="tools-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="/tools">tools</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="/tools/tool-random/" class="badge rounded post-taxonomy" title="Tool Random">
+            Tool Random<span class="badge badge-sm text-white bg-accent ms-1">2</span></a></div>
+      </div>
+    </section><section class="categories-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="/categories">categories</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="/categories/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="/categories/c&#43;&#43;/" class="badge rounded post-taxonomy" title="C&#43;&#43;">
+            C&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="/categories/dataset/" class="badge rounded post-taxonomy" title="Dataset">
+            Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a></div>
+      </div>
+    </section><section class="tags-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="/tags">tags</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="/tags/machine-learning/" class="badge rounded post-taxonomy" title="Machine Learning">
+            Machine Learning<span class="badge badge-sm text-white bg-accent ms-1">45</span></a><a href="/tags/deep-learning/" class="badge rounded post-taxonomy" title="Deep Learning">
+            Deep Learning<span class="badge badge-sm text-white bg-accent ms-1">21</span></a><a href="/tags/deeplearning/" class="badge rounded post-taxonomy" title="DeepLearning">
+            DeepLearning<span class="badge badge-sm text-white bg-accent ms-1">21</span></a><a href="/tags/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">11</span></a><a href="/tags/opencv/" class="badge rounded post-taxonomy" title="Opencv">
+            Opencv<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="/tags/c&#43;&#43;/" class="badge rounded post-taxonomy" title="C&#43;&#43;">
+            C&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/normalization/" class="badge rounded post-taxonomy" title="Normalization">
+            Normalization<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/object-detector/" class="badge rounded post-taxonomy" title="Object Detector">
+            Object Detector<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/recommendation/" class="badge rounded post-taxonomy" title="Recommendation">
+            Recommendation<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/alexnet/" class="badge rounded post-taxonomy" title="AlexNet">
+            AlexNet<span class="badge badge-sm text-white bg-accent ms-1">3</span></a></div>
+      </div>
+    </section>
+    
+  </div>
+</aside>
+</div>
+    </main><footer class="footer mt-auto py-3 text-center container"><ul class="nav justify-content-between footer-memu mb-3"><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Support
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-github"></i>Repository
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-comments"></i>Discussions
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/contact/"><i class="fas fa-fw fa-info-circle"></i>Contact Us
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/faq/"><i class="fas fa-fw fa-question-circle"></i>FAQs
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Docs
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="/team_of_services" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-users"></i>Điều khoản sử dụng
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/privacy" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-lock"></i>Chính sách bảo mật
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Features
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.phamduytung.com/utils/gen_paswords/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-paw"></i>Tạo password ngẫu nhiên
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Liên kết khác
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">Netlify
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">facebook
+</a>
+        </li></ul></li></ul>
+<div class="copyright mb-2">
+  Copyright © 2016-2024 Phạm Duy Tùng. All Rights Reserved.
+</div>
+<div class="powered-by mb-2">
+  Website chia sẻ kiến thức của Phạm Duy Tùng và Đặng Thị Hằng. Vui lòng liên hệ email alexblack2202@gmail.com nếu bạn có thông tin cần trao đổi.
+</div></footer>
+<script src="/js/main.ed2053ad82a243b263761567b5c1aaf974487aa84adacb89ae3ddf803ecc248a.js" integrity="sha256-7SBTrYKiQ7JjdhVntcGq&#43;XRIeqhK2suJrj3fgD7MJIo=" crossorigin="anonymous" defer></script><script src="/js/icons.min.8ff200851002b8138e6b35314683092e02edc155465d9dbfb7d115460f8f1fbe.js" integrity="sha256-j/IAhRACuBOOazUxRoMJLgLtwVVGXZ2/t9EVRg&#43;PH74=" crossorigin="anonymous" defer></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('\/service-worker.js').then(function(reg) {
+      console.log('Successfully registered service worker', reg);
+    }).catch(function(err) {
+      console.warn('Error whilst registering service worker', err);
+    });
+  });
+}
+</script><script src="/js/viewer.min.ec58d2aa1a8916addf393be975fdf0070e8c872b0caef1673cb9f7eea067ce57.js" integrity="sha256-7FjSqhqJFq3fOTvpdf3wBw6MhysMrvFnPLn37qBnzlc=" crossorigin="anonymous" defer></script><script defer src="/js/katex.min.062d19072aa2321fd592929a93ade0afc09c491db47671a28d54d6637ea131a1.js" integrity="sha256-Bi0ZByqiMh/VkpKak63gr8CcSR20dnGijVTWY36hMaE=" crossorigin="anonymous"></script>
+
+  
+    
+      
+    
+  
+
+
+<script  data-ad-client="ca-pub-4644989745435991"  async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4644989745435991"
+     crossorigin="anonymous"></script><script data-cfasync="false" type="text/javascript" data-adel="atag" src="//acscdn.com/script/atg.js" czid="eul3gyjdmm"></script>
+  </body>
+</html>

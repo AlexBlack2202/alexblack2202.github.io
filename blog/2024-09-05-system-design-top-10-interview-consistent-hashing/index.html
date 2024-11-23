@@ -1,0 +1,880 @@
+<!doctype html><html lang="en" data-palette="blue"
+   data-mode="dark">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Top 10 thuật toán System Design các bạn nên biết và thường được hỏi trong phỏng vấn - Top 1 Consistent Hashing - Phạm Duy Tùng Machine Learning Blog</title>
+    <meta name="a.validate.02" content="1QZXZ8oi7g57H-GxBrBPkTYBydwii-Ic9iJu" /><link rel="apple-touch-icon" href="/images/icons/icon-180x180.png" sizes="180x180">
+<link rel="icon" href="/images/icons/icon-32x32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="/images/icons/icon-16x16.png" sizes="16x16" type="image/png">
+<link rel="icon" href="/images/icons/favicon.ico">
+<link rel="manifest" href="/manifest.json">
+<meta name="keywords" content="" />
+<meta name="description" content="Để trở thành một Software Architect tốt, chúng ta cần có kiến thức và kỹ năng về cả Low level và High Level System Design. Mình sẽ tổng hợp lại 10 thuật toán về system design mà mình nghĩ là rất hữu ích trong công việc, và cũng hữu ích cho các bạn bổ túc kiến thức để tham gia phỏng vấn ở vị trí SA. Bài đầu tiên mình sẽ bắt đầu với Consistent Hashing" /><meta name="robots" content="index, follow" />
+  <meta itemprop="name" content="Top 10 thuật toán System Design các bạn nên biết và thường được hỏi trong phỏng vấn - Top 1 Consistent Hashing">
+  <meta itemprop="description" content="Để trở thành một Software Architect tốt, chúng ta cần có kiến thức và kỹ năng về cả Low level và High Level System Design. Mình sẽ tổng hợp lại 10 thuật toán về system design mà mình nghĩ là rất hữu ích trong công việc, và cũng hữu ích cho các bạn bổ túc kiến thức để tham gia phỏng vấn ở vị trí SA. Bài đầu tiên mình sẽ bắt đầu với Consistent Hashing">
+  <meta itemprop="datePublished" content="2024-09-08T00:19:00+03:00">
+  <meta itemprop="dateModified" content="2024-09-08T00:19:00+03:00">
+  <meta itemprop="wordCount" content="2637">
+  <meta itemprop="image" content="https://unsplash.it/1920/1080?image=2">
+  <meta itemprop="keywords" content="System Design"><meta property="og:url" content="/blog/2024-09-05-system-design-top-10-interview-consistent-hashing/">
+  <meta property="og:site_name" content="Phạm Duy Tùng Machine Learning Blog">
+  <meta property="og:title" content="Top 10 thuật toán System Design các bạn nên biết và thường được hỏi trong phỏng vấn - Top 1 Consistent Hashing">
+  <meta property="og:description" content="Để trở thành một Software Architect tốt, chúng ta cần có kiến thức và kỹ năng về cả Low level và High Level System Design. Mình sẽ tổng hợp lại 10 thuật toán về system design mà mình nghĩ là rất hữu ích trong công việc, và cũng hữu ích cho các bạn bổ túc kiến thức để tham gia phỏng vấn ở vị trí SA. Bài đầu tiên mình sẽ bắt đầu với Consistent Hashing">
+  <meta property="og:locale" content="en">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2024-09-08T00:19:00+03:00">
+    <meta property="article:modified_time" content="2024-09-08T00:19:00+03:00">
+    <meta property="article:tag" content="System Design">
+    <meta property="og:image" content="https://unsplash.it/1920/1080?image=2">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://unsplash.it/1920/1080?image=2"><meta name="twitter:title" content="Top 10 thuật toán System Design các bạn nên biết và thường được hỏi trong phỏng vấn - Top 1 Consistent Hashing">
+<meta name="twitter:description" content="Để trở thành một Software Architect tốt, chúng ta cần có kiến thức và kỹ năng về cả Low level và High Level System Design. Mình sẽ tổng hợp lại 10 thuật toán về system design mà mình nghĩ là rất hữu ích trong công việc, và cũng hữu ích cho các bạn bổ túc kiến thức để tham gia phỏng vấn ở vị trí SA. Bài đầu tiên mình sẽ bắt đầu với Consistent Hashing">
+<link rel="stylesheet" href="/css/main.min.c06cf34535ee1f60ba08893b4d57e76b2bbd5e11c17ab12ef976f02983a51b54.css" integrity="sha256-wGzzRTXuH2C6CIk7TVfnayu9XhHBerEu&#43;XbwKYOlG1Q=" crossorigin="anonymous"><link rel="stylesheet" href="/css/katex.min.d080a89e03e1eb850f547d835c186b4273f69879aa497eb8b0e88c1578bf1f0b.css" integrity="sha256-0ICongPh64UPVH2DXBhrQnP2mHmqSX64sOiMFXi/Hws=" crossorigin="anonymous">
+<link rel="stylesheet" href="/css/viewer.min.3d228794bcedbbfa0412beb8fbc1ec6973202945e42af7004f742a4d7bd620ab.css" integrity="sha256-PSKHlLztu/oEEr64&#43;8HsaXMgKUXkKvcAT3QqTXvWIKs=" crossorigin="anonymous"><style>
+    .bgcover {
+        display: block;
+        overflow: hidden;
+        height: 450px;
+        background: no-repeat center center;
+        -webkit-background-size: cover;
+        -moz-background-size: cover;
+        -o-background-size: cover;
+        background-size: cover;
+        position: relative;
+        margin-bottom: -65px;
+    }
+    .bgcover {
+        margin-bottom: 0 !important;
+    }
+
+    .bgcover .bgtrans {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        display: block;
+        overflow: hidden;
+        height: inherit;
+        background: rgba(0,0,0,.8);
+        background: -webkit-gradient(linear,0% 0%,0% 100%,from(rgba(0,0,0,.8)),to (rgba(0,0,0,.6)),to(rgba(255,255,255,0)));
+        background: -webkit-linear-gradient(top,rgba(255,255,255,0),rgba(0,0,0,.6),rgba(0,0,0,.8));
+        background: -moz-linear-gradient(top,rgba(255,255,255,0),rgba(0,0,0,.6),rgba(0,0,0,.8));
+        background: -ms-linear-gradient(top,rgba(255,255,255,0),rgba(0,0,0,.6),rgba(0,0,0,.8));
+        background: -o-linear-gradient(top,rgba(255,255,255,0),rgba(0,0,0,.6),rgba(0,0,0,.8));
+    }
+
+    .bgcover .bgtrans h1 {
+        display: block;
+        overflow: hidden;
+        font-size: 45px;
+        line-height: 55px;
+        color: #fff;
+        width: 800px;
+        margin: auto;
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 50px;
+        font-family: 'Roboto Condensed',sans-serif;
+        font-weight: 600;
+    }
+</style></head>
+  <body><script>const items=["mode","palette"];items.forEach(function(e){const t=localStorage.getItem("hbs-"+e);t&&document.body.parentElement.setAttribute("data-"+e,t)})</script><header><nav class="navbar top-app-bar top-app-bar-expand-lg fixed-top">
+  <div class="container">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <i class="fas fa-bars"></i>
+    </button><a class="navbar-brand flex-grow-1 flex-lg-grow-0 text-center text-lg-start mx-auto me-lg-3" href="/"><img class="logo" alt="Logo" src="/images/logo.webp" loading="lazy"  title="Logo"
+   width="400" height="400"
+   />
+HOME
+    </a>
+    <div class="offcanvas offcanvas-bottom surface" tabindex="-1" id="offcanvasSocialShare" aria-labelledby="offcanvasSocialShare">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Share</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body">
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Twitter Share Button"
+      target="_blank" href="https://twitter.com/intent/tweet?title=Top%2010%20thu%e1%ba%adt%20to%c3%a1n%20System%20Design%20c%c3%a1c%20b%e1%ba%a1n%20n%c3%aan%20bi%e1%ba%bft%20v%c3%a0%20th%c6%b0%e1%bb%9dng%20%c4%91%c6%b0%e1%bb%a3c%20h%e1%bb%8fi%20trong%20ph%e1%bb%8fng%20v%e1%ba%a5n%20-%20Top%201%20Consistent%20Hashing&url=%2fblog%2f2024-09-05-system-design-top-10-interview-consistent-hashing%2f">
+      <i class="fab fa-fw fa-twitter"></i> Twitter
+    </a>
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Facebook Share Button"
+      target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=%2fblog%2f2024-09-05-system-design-top-10-interview-consistent-hashing%2f">
+      <i class="fab fa-fw fa-facebook-f"></i> Facebook
+    </a>
+  </div>
+</div>
+    <button class="navbar-settings" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSettings"
+  aria-controls="offcanvasSettings" aria-label="Toggle settings">
+  <i class="fas fa-ellipsis-v"></i>
+</button>
+
+<div class="offcanvas offcanvas-end surface h-100" tabindex="-1" id="offcanvasSettings" aria-labelledby="offcanvasSettings">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Settings</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body d-flex flex-column">
+
+
+
+<section class="setting">
+  <form class="font-size-switcher-form row">
+    <div class="col-auto">
+      <label for="fontSize" class="form-label"><i class="fas fa-fw fa-font"></i> Font Size</label>
+    </div>
+    <div class="col-auto ms-auto">
+      <input type="range" class="form-range" min="-2" max="2" id="fontSize">
+    </div>
+  </form>
+</section>
+
+
+<section class="setting palettes">
+  <form class="row">
+    <div class="col-auto">
+      <label><i class="fas fa-fw fa-palette"></i> Palette</label>
+    </div>
+    <div class="col-auto ms-auto">
+      <a id="btnPalette" class="btn btn-sm btn-outline-primary" role="button" aria-label="palettePicker">
+        <i class="fas fa-eye-dropper"></i>
+      </a>
+    </div>
+  </form>
+  <div class="mt-2 d-flex justify-content-between visually-hidden" id="palettePicker"><button type="button" id="palette-blue" aria-label="Blue"
+        class="btn btn-sm w-100 palette" data-palette="blue">
+      </button><button type="button" id="palette-blue-gray" aria-label="Blue Gray"
+        class="btn btn-sm w-100 palette" data-palette="blue-gray">
+      </button><button type="button" id="palette-brown" aria-label="Brown"
+        class="btn btn-sm w-100 palette" data-palette="brown">
+      </button><button type="button" id="palette-cyan" aria-label="Cyan"
+        class="btn btn-sm w-100 palette" data-palette="cyan">
+      </button><button type="button" id="palette-green" aria-label="Green"
+        class="btn btn-sm w-100 palette" data-palette="green">
+      </button><button type="button" id="palette-indigo" aria-label="Indigo"
+        class="btn btn-sm w-100 palette" data-palette="indigo">
+      </button><button type="button" id="palette-orange" aria-label="Orange"
+        class="btn btn-sm w-100 palette" data-palette="orange">
+      </button><button type="button" id="palette-pink" aria-label="Pink"
+        class="btn btn-sm w-100 palette" data-palette="pink">
+      </button><button type="button" id="palette-purple" aria-label="Purple"
+        class="btn btn-sm w-100 palette" data-palette="purple">
+      </button><button type="button" id="palette-red" aria-label="Red"
+        class="btn btn-sm w-100 palette" data-palette="red">
+      </button><button type="button" id="palette-teal" aria-label="Teal"
+        class="btn btn-sm w-100 palette" data-palette="teal">
+      </button><button type="button" id="palette-yellow" aria-label="Yellow"
+        class="btn btn-sm w-100 palette" data-palette="yellow">
+      </button></div>
+</section>
+<section class="setting actions d-flex justify-content-around mt-auto overflow-auto">
+  <a role="button" class="action action-go-back" href="javascript: window.history.back();">
+    <span class="action-icon"><i class="fas fa-2x fa-arrow-left"></i></span> Go back
+  </a>
+  <a role="button" class="action action-reload-page">
+    <span class="action-icon"><i class="fas fa-2x fa-redo-alt"></i></span> Reload
+  </a>
+  <a role="button" class="action action-copy-url">
+    <span class="action-icon"><i class="fas fa-2x fa-link"></i></span> Copy URL
+  </a><a class="action action-social-share" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSocialShare"
+    aria-controls="offcanvasSocialShare" aria-label="Toggle social share">
+    <span class="action-icon"><i class="fas fa-2x fa-share-alt"></i></span> Share
+  </a></section>
+
+</div>
+</div>
+
+    <div class="collapse navbar-collapse" tabindex="-1" id="navbarSupportedContent" aria-labelledby="navbarSupportedContent">
+      <form class="search-bar my-1" action="/search">
+  <div class="input-group input-group-sm">
+    <span class="btn btn-search disabled position-absolute left-0"><i class="fas fa-fw fa-search"></i></span>
+    <input class="form-control rounded-pill" name="q" type="search" aria-label="Search">
+  </div>
+</form>
+      <ul class="navbar-nav ms-auto"><li class="nav-item">
+          <a class="nav-link" href="/series/">
+            <i class="fas fa-fw fa-columns"></i>Courses
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="/tools/">
+            <i class="fas fa-fw fa-folder"></i>Tools
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="/categories/">
+            <i class="fas fa-fw fa-folder"></i>Categories
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="/archives/">
+            <i class="fas fa-fw fa-file-archive"></i>Archives
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="/tags/">
+            <i class="fas fa-fw fa-tags"></i>Tags
+          </a>
+        </li><li class="nav-item dropdown">
+          <a class="nav-link" id="navbarDropdownSupport" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-fw fa-chevron-circle-down"></i>Support
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdownSupport"><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Repository
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Discussions
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Features Request
+              </a>
+            </li><li><hr class="dropdown-divider"></li><li>
+              <a class="dropdown-item"
+                href="/faq/">
+                FAQs
+              </a>
+            </li></ul>
+        </li></ul>
+    </div>
+  </div>
+</nav>
+</header>
+<main role="main" class="container" style="line-height:1.7em">
+      <div class="row content">
+<div class="col-lg-9 col-md-8">
+  <div class="container"><nav class="row card component" aria-label="breadcrumb">
+  <div class="card-body">
+    <ol class="breadcrumb "><li class="breadcrumb-item"><a href="/">Home</a></li><li class="breadcrumb-item"><a href="/blog/">Blogs</a></li><li class="breadcrumb-item active">Top 10 Thuật Toán System Design Các Bạn Nên Biết Và Thường Được Hỏi Trong Phỏng Vấn - Top 1 Consistent Hashing</li></ol>
+  </div>
+</nav>
+<div class="post-panel-wrapper">
+  <div class="d-flex flex-column component rounded post-panel">
+    
+    <a class="action action-panel-toggler" role="button" title="Panel toggler">
+      <i class="fas fa-fw fa-chevron-circle-down"></i>
+    </a>
+    <a id="sidebarToggler" class="action d-none d-lg-block" role="button" title="Sidebar toggler">
+  <i class="fas fa-fw fa-expand-alt" data-fa-transform="rotate-45"></i>
+</a>
+
+    
+
+    
+    
+    <a class="action" href="#post-comments" role="button" aria-label="Comments" title="Comments">
+  <i class="fas fa-fw fa-comments"></i>
+</a>
+    <a class="action" href="#postTOC" aria-controls="Table of contents" role="button" title="Table of contents">
+  <i class="fas fa-fw fa-list-alt"></i>
+</a>
+    
+  </div>
+</div>
+<article class="row card component mb-4 post">
+  <div class="card-header ">
+    <div class="bgcover" style="background-image:url(https://unsplash.it/1920/1080)" alt="Top 10 thuật toán System Design các bạn nên biết và thường được hỏi trong phỏng vấn - Top 1 Consistent Hashing">
+      <div class="bgtrans">
+          <h1>Top 10 Thuật Toán System Design Các Bạn Nên Biết Và Thường Được Hỏi Trong Phỏng Vấn - Top 1 Consistent Hashing
+</h1>
+      </div>
+  </div>
+</div>
+  <div class="card-body"><div class="post-meta">
+  <span class="post-date" title="created on 2024-09-08 04:19:00 &#43;0700 &#43;07.">
+    Sep 8, 2024
+  </span><span class="post-reading-time">
+    13 min read
+  </span><span class="post-taxonomies"><a href="/tags/system-design/" class="badge post-taxonomy">System Design</a></span>
+</div>
+<div class="post-content mb-3"><div class="toc">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#hashing-là-gì">Hashing là gì?</a></li>
+    <li><a href="#consistent-hashing-là-gì">Consistent Hashing là gì?</a></li>
+    <li><a href="#ứng-dụng-của-consistent-hashing">Ứng dụng của Consistent Hashing</a></li>
+    <li><a href="#implement-consistent-hashing">Implement Consistent Hashing</a></li>
+    <li><a href="#ưu-và-nhược-điểm-của-consistent-hashing">Ưu và nhược điểm của Consistent Hashing</a></li>
+  </ul>
+</nav>
+  </div>
+<h1 id="hashing-là-gì">Hashing là gì?<a class="anchor ms-1" href="#hashing-là-gì"><i class="fas fa-link"></i></a></h1>
+<p>Hasing, tiếng việt có thể dịch là &ldquo;băm&rdquo; là quá trình chúng ta đưa một chuỗi vào một hàm băm và băm nó ra, rồi nén nó lại trong một vùng không gian, thu được vị trí của chuỗi đầu vào trong vùng không gian nén đó.</p>
+<p>Công thức biểu diễn</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln">1</span><span class="cl">
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="n">vi_tri</span> <span class="o">=</span> <span class="n">ham_bam</span><span class="p">(</span><span class="n">dau_vao</span><span class="p">)</span><span class="o">%</span><span class="n">kich_thuoc_khong_gian</span>
+</span></span></code></pre></div><p>Ví dụ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln"> 1</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">Giả sử chúng ta có kích thước không gian kich_thuoc_khong_gian = 10
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">Chúng ta muốn lưu trữ chuỗi đầu vào là dau_vao =  &#34;Hello&#34;
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">Sử dụng hàm băm ham_bam(&#34;Hello&#34;) ra kết quả là 16
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">ta có vi_tri = ham_bam(&#34;Hello&#34;) % 10 = 16 % 10 = 6
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">
+</span></span><span class="line"><span class="ln">10</span><span class="cl">Vậy chuỗi  dữ liệu &#34;Hello&#34; sẽ được lưu trữ tại vị trí 6 trong không gian nhớ size 10.
+</span></span></code></pre></div><p>Quá trình này cho phép chúng ta biến một chuỗi dữ liệu thành một vị trí trong không gian nhớ, giúp cho việc lưu trữ và truy xuất dữ liệu trở nên hiệu quả hơn.</p>
+<h1 id="consistent-hashing-là-gì">Consistent Hashing là gì?<a class="anchor ms-1" href="#consistent-hashing-là-gì"><i class="fas fa-link"></i></a></h1>
+<p>Consistent Hashing (băm nhất quán) là  kỹ thuật được sử dụng để phân phối các khoá (key) đều trên các cụm máy tính (clusters), mục tiêu là giảm thiểu số lượng các khoá cần di chuyển khi thêm nodes hoặc xoá nodes ( xoá trong trường hợp lỗi , thêm trong trường hợp muốn scale hệ thống), giảm số lượng các khoá cần di chuyển góp phần làm ổn định hệ thống, và giảm tác động tiêu cực của sự thay đổi này lên hệ thống</p>
+<p><strong>Mục tiêu</strong>:</p>
+<ul>
+<li>
+<p>Phân phối các khóa (keys) đều trên một cụm các nút (nodes) trong hệ thống.</p>
+</li>
+<li>
+<p>Giảm thiểu số lượng khóa cần di chuyển khi thêm hoặc xóa nút khỏi cụm.</p>
+</li>
+</ul>
+<p><strong>Cấu trúc</strong>:</p>
+<ul>
+<li>
+<p>Sử dụng một vòng ảo (hashring) để biểu diễn các yêu cầu của server/clients và các server nodes.</p>
+</li>
+<li>
+<p>Số lượng vị trí trên vòng không cố định, nhưng được coi là có vô số điểm.</p>
+</li>
+<li>
+<p>Các nút máy chủ có thể được đặt tại các vị trí ngẫu nhiên trên vòng bằng cách sử dụng hàm băm (hashing).</p>
+</li>
+<li>
+<p>Các yêu cầu (requests) từ người dùng, máy tính hoặc chương trình không có máy chủ cũng được đặt trên cùng một vòng bằng cách sử dụng cùng một hàm băm.</p>
+</li>
+</ul>
+<p><strong>Lợi ích</strong>:</p>
+<ul>
+<li>
+<p>Khi thêm hoặc xóa nút khỏi cụm, chỉ cần di chuyển một số nhỏ khóa đến các nút khác.</p>
+</li>
+<li>
+<p>Giảm thiểu tác động của việc thêm hoặc xóa nút đến toàn bộ hệ thống.</p>
+</li>
+<li>
+<p>Cải thiện hiệu suất và độ tin cậy của hệ thống.</p>
+</li>
+</ul>
+<p><strong>Cách thức hoạt động</strong>:</p>
+<ol>
+<li>
+<p>Khi một yêu cầu được gửi đến hệ thống, nó sẽ được băm (hash) để tạo ra một giá trị băm.</p>
+</li>
+<li>
+<p>Giá trị băm này sẽ được sử dụng để xác định vị trí của yêu cầu trên vòng ảo.</p>
+</li>
+<li>
+<p>Hệ thống sẽ tìm nút máy chủ gần nhất với vị trí của yêu cầu trên vòng và gửi yêu cầu đến nút đó.</p>
+</li>
+<li>
+<p>Nếu nút máy chủ đó không khả dụng, hệ thống sẽ tìm nút máy chủ tiếp theo trên vòng và gửi yêu cầu đến nút đó.</p>
+</li>
+</ol>
+<p>Kỹ thuật Consistent Hashing giúp phân phối tải trọng đều trên các nút máy chủ và giảm thiểu tác động của việc thêm hoặc xóa nút đến toàn bộ hệ thống.</p>
+<h1 id="ứng-dụng-của-consistent-hashing">Ứng dụng của Consistent Hashing<a class="anchor ms-1" href="#ứng-dụng-của-consistent-hashing"><i class="fas fa-link"></i></a></h1>
+<p>Ngày nay <strong>Consistent Hashing</strong> là một kỹ thuật phổ biến được sử dụng trong các hệ thống phân tán để giải quyết thách thức phân phối hiệu quả các khóa hoặc phần tử dữ liệu trên nhiều nút/máy chủ trong một mạng lưới.</p>
+<p>Bằng cách sử dụng Consistent Hashing, các hệ thống phân tán có thể đạt được nhiều lợi ích, bao gồm:</p>
+<ol>
+<li>
+<p><strong>Cải thiện khả năng mở rộng</strong>: Consistent Hashing cho phép các hệ thống phân tán mở rộng dễ dàng hơn, vì các nút mới có thể được thêm hoặc xóa mà không làm gián đoạn toàn bộ hệ thống.</p>
+</li>
+<li>
+<p><strong>Giảm thiểu chi phí ánh xạ lại</strong>: Bằng cách giảm thiểu số lượng các phép ánh xạ lại cần thiết, Consistent Hashing giúp giảm thiểu chi phí liên quan đến việc thêm hoặc xóa nút, giúp duy trì hiệu suất của hệ thống.</p>
+</li>
+<li>
+<p><strong>Tăng cường khả năng chịu lỗi</strong>: Consistent Hashing giúp phân phối các phần tử dữ liệu trên nhiều nút, giúp tăng cường khả năng chịu lỗi của hệ thống và giảm thiểu rủi ro mất dữ liệu trong trường hợp nút bị lỗi.</p>
+</li>
+<li>
+<p><strong>Cân bằng tải tốt hơn</strong>: Consistent Hashing có thể giúp phân phối tải trên các nút một cách đồng đều hơn, giúp cải thiện hiệu suất của hệ thống và giảm thiểu rủi ro các điểm nóng.</p>
+</li>
+</ol>
+<p>Consistent Hashing được sử dụng rộng rãi trong các hệ thống phân tán khác nhau, bao gồm:</p>
+<ol>
+<li>
+<p><strong>Cơ sở dữ liệu phân tán</strong>: Consistent Hashing được sử dụng trong các cơ sở dữ liệu phân tán để phân phối các phần tử dữ liệu trên nhiều nút và cải thiện hiệu suất của hệ thống.</p>
+</li>
+<li>
+<p><strong>Hệ thống lưu trữ đệm</strong>: Consistent Hashing được sử dụng trong các hệ thống lưu trữ đệm để phân phối các phần tử đệm trên nhiều nút và cải thiện hiệu suất của hệ thống.</p>
+</li>
+<li>
+<p><strong>Mạng lưới phân phối nội dung (CDN)</strong>: Consistent Hashing được sử dụng trong các mạng lưới phân phối nội dung để phân phối nội dung trên nhiều nút và cải thiện hiệu suất của hệ thống.</p>
+</li>
+<li>
+<p><strong>Hệ thống lưu trữ đám mây</strong>: Consistent Hashing được sử dụng trong các hệ thống lưu trữ đám mây để phân phối các phần tử dữ liệu trên nhiều nút và cải thiện hiệu suất của hệ thống.</p>
+</li>
+</ol>
+<p>Tóm lại, Consistent Hashing là một kỹ thuật mạnh mẽ giúp các hệ thống phân tán phân phối các khóa hoặc phần tử dữ liệu trên nhiều nút một cách hiệu quả, giảm thiểu số lượng các phép ánh xạ lại cần thiết khi thêm hoặc xóa nút, và cải thiện khả năng mở rộng, khả năng chịu lỗi và cân bằng tải của hệ thống.</p>
+<h1 id="implement-consistent-hashing">Implement Consistent Hashing<a class="anchor ms-1" href="#implement-consistent-hashing"><i class="fas fa-link"></i></a></h1>
+<p>Để triển khai một hệ thống sử dụng consistent hasing, chúng ta cần xác định 7 bước sau</p>
+<p><strong>Bước 1: Chọn hàm băm</strong></p>
+<ul>
+<li>Chọn một hàm băm tạo ra một dải giá trị băm phân bố đều. Các lựa chọn phổ biến bao gồm MD5, SHA-1 hoặc SHA-256.</li>
+</ul>
+<p><strong>Bước 2: Định nghĩa vòng băm</strong></p>
+<ul>
+<li>
+<p>Biểu diễn dải giá trị băm như một vòng.</p>
+</li>
+<li>
+<p>Vòng này nên bao phủ toàn bộ dải giá trị băm có thể và được phân bố đều.</p>
+</li>
+</ul>
+<p><strong>Bước 3: Gán nút vào vòng</strong></p>
+<ul>
+<li>
+<p>Gán mỗi nút trong hệ thống một vị trí trên vòng băm.</p>
+</li>
+<li>
+<p>Điều này thường được thực hiện bằng cách băm định danh của nút bằng hàm băm đã chọn.</p>
+</li>
+</ul>
+<p><strong>Bước 4: Ánh xạ khóa</strong></p>
+<ul>
+<li>
+<p>Khi cần lưu trữ hoặc truy xuất một khóa, băm khóa bằng hàm băm đã chọn để thu được giá trị băm.</p>
+</li>
+<li>
+<p>Tìm vị trí trên vòng băm nơi giá trị băm rơi vào.</p>
+</li>
+<li>
+<p>Đi theo chiều kim đồng hồ trên vòng để tìm nút đầu tiên gặp phải. Nút này trở thành nút sở hữu  khóa.</p>
+</li>
+</ul>
+<p><strong>Bước 5: Thêm nút</strong></p>
+<ul>
+<li>
+<p>Khi một nút mới được thêm vào, tính toán vị trí của nó trên vòng băm bằng hàm băm.</p>
+</li>
+<li>
+<p>Xác định dải khóa sẽ được sở hữu bởi nút mới. Điều này thường liên quan đến việc tìm nút tiền nhiệm trên vòng.</p>
+</li>
+<li>
+<p>Cập nhật vòng để bao gồm nút mới và ánh xạ lại các khóa bị ảnh hưởng đến nút mới.</p>
+</li>
+</ul>
+<p><strong>Bước 6: Xóa nút</strong></p>
+<ul>
+<li>
+<p>Khi một nút bị xóa, xác định vị trí của nó trên vòng băm.</p>
+</li>
+<li>
+<p>Xác định dải khóa sẽ bị ảnh hưởng bởi việc xóa nút. Điều này thường liên quan đến việc tìm nút kế tiếp trên vòng.</p>
+</li>
+<li>
+<p>Cập nhật vòng để loại trừ nút đã xóa và ánh xạ lại các khóa bị ảnh hưởng đến nút kế tiếp.</p>
+</li>
+</ul>
+<p><strong>Bước 7: Cân bằng tải</strong></p>
+<ul>
+<li>
+<p>Định kỳ kiểm tra tải trên mỗi nút bằng cách theo dõi số lượng khóa nó sở hữu.</p>
+</li>
+<li>
+<p>Nếu có sự mất cân bằng, hãy xem xét việc phân phối lại một số khóa để đạt được sự phân bố đều hơn.</p>
+</li>
+</ul>
+<p>Dưới dây là code golang , coi như là demo example 7 bước trên</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-golang" data-lang="golang"><span class="line"><span class="ln">  1</span><span class="cl">
+</span></span><span class="line"><span class="ln">  2</span><span class="cl"><span class="kn">package</span> <span class="nx">main</span>
+</span></span><span class="line"><span class="ln">  3</span><span class="cl">
+</span></span><span class="line"><span class="ln">  4</span><span class="cl"><span class="kn">import</span> <span class="p">(</span>
+</span></span><span class="line"><span class="ln">  5</span><span class="cl">	<span class="s">&#34;crypto/md5&#34;</span>
+</span></span><span class="line"><span class="ln">  6</span><span class="cl">	<span class="s">&#34;fmt&#34;</span>
+</span></span><span class="line"><span class="ln">  7</span><span class="cl">	<span class="s">&#34;sort&#34;</span>
+</span></span><span class="line"><span class="ln">  8</span><span class="cl">	<span class="s">&#34;strconv&#34;</span>
+</span></span><span class="line"><span class="ln">  9</span><span class="cl">	<span class="s">&#34;sync&#34;</span>
+</span></span><span class="line"><span class="ln"> 10</span><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 11</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 12</span><span class="cl"><span class="kd">type</span> <span class="nx">ConsistentHashRing</span> <span class="kd">struct</span> <span class="p">{</span>
+</span></span><span class="line"><span class="ln"> 13</span><span class="cl">	<span class="nx">ring</span>       <span class="kd">map</span><span class="p">[</span><span class="kt">uint64</span><span class="p">]</span><span class="kt">string</span>
+</span></span><span class="line"><span class="ln"> 14</span><span class="cl">	<span class="nx">sortedKeys</span> <span class="p">[]</span><span class="kt">uint64</span>
+</span></span><span class="line"><span class="ln"> 15</span><span class="cl">	<span class="nx">replicas</span>   <span class="kt">int</span>
+</span></span><span class="line"><span class="ln"> 16</span><span class="cl">	<span class="nx">mu</span>         <span class="nx">sync</span><span class="p">.</span><span class="nx">RWMutex</span>
+</span></span><span class="line"><span class="ln"> 17</span><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="ln"> 18</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 19</span><span class="cl"><span class="kd">func</span> <span class="nf">NewConsistentHashRing</span><span class="p">(</span><span class="nx">replicas</span> <span class="kt">int</span><span class="p">)</span> <span class="o">*</span><span class="nx">ConsistentHashRing</span> <span class="p">{</span>
+</span></span><span class="line"><span class="ln"> 20</span><span class="cl">	<span class="k">return</span> <span class="o">&amp;</span><span class="nx">ConsistentHashRing</span><span class="p">{</span>
+</span></span><span class="line"><span class="ln"> 21</span><span class="cl">		<span class="nx">ring</span><span class="p">:</span>       <span class="nb">make</span><span class="p">(</span><span class="kd">map</span><span class="p">[</span><span class="kt">uint64</span><span class="p">]</span><span class="kt">string</span><span class="p">),</span>
+</span></span><span class="line"><span class="ln"> 22</span><span class="cl">		<span class="nx">sortedKeys</span><span class="p">:</span> <span class="nb">make</span><span class="p">([]</span><span class="kt">uint64</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+</span></span><span class="line"><span class="ln"> 23</span><span class="cl">		<span class="nx">replicas</span><span class="p">:</span>   <span class="nx">replicas</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln"> 24</span><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="ln"> 25</span><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="ln"> 26</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 27</span><span class="cl"><span class="c1">// Bước 1: Chọn hàm băm, ở đây dùng md5.
+</span></span></span><span class="line"><span class="ln"> 28</span><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="ln"> 29</span><span class="cl"><span class="kd">func</span> <span class="p">(</span><span class="nx">chr</span> <span class="o">*</span><span class="nx">ConsistentHashRing</span><span class="p">)</span> <span class="nf">getHash</span><span class="p">(</span><span class="nx">value</span> <span class="kt">string</span><span class="p">)</span> <span class="kt">uint64</span> <span class="p">{</span>
+</span></span><span class="line"><span class="ln"> 30</span><span class="cl">	<span class="nx">hash</span> <span class="o">:=</span> <span class="nx">md5</span><span class="p">.</span><span class="nf">Sum</span><span class="p">([]</span><span class="nb">byte</span><span class="p">(</span><span class="nx">value</span><span class="p">))</span>
+</span></span><span class="line"><span class="ln"> 31</span><span class="cl">	<span class="kd">var</span> <span class="nx">hashValue</span> <span class="kt">uint64</span>
+</span></span><span class="line"><span class="ln"> 32</span><span class="cl">	<span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="mi">8</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">{</span>
+</span></span><span class="line"><span class="ln"> 33</span><span class="cl">		<span class="nx">hashValue</span> <span class="p">=</span> <span class="p">(</span><span class="nx">hashValue</span> <span class="o">&lt;&lt;</span> <span class="mi">8</span><span class="p">)</span> <span class="p">|</span> <span class="nb">uint64</span><span class="p">(</span><span class="nx">hash</span><span class="p">[</span><span class="nx">i</span><span class="p">])</span>
+</span></span><span class="line"><span class="ln"> 34</span><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="ln"> 35</span><span class="cl">	<span class="k">return</span> <span class="nx">hashValue</span>
+</span></span><span class="line"><span class="ln"> 36</span><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="ln"> 37</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 38</span><span class="cl"><span class="c1">// Bước 3: Gán nút vào vòng.
+</span></span></span><span class="line"><span class="ln"> 39</span><span class="cl"><span class="c1"></span><span class="kd">func</span> <span class="p">(</span><span class="nx">chr</span> <span class="o">*</span><span class="nx">ConsistentHashRing</span><span class="p">)</span> <span class="nf">assignNodesToRing</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="ln"> 40</span><span class="cl">	<span class="nx">sort</span><span class="p">.</span><span class="nf">Slice</span><span class="p">(</span><span class="nx">chr</span><span class="p">.</span><span class="nx">sortedKeys</span><span class="p">,</span> <span class="kd">func</span><span class="p">(</span><span class="nx">i</span><span class="p">,</span> <span class="nx">j</span> <span class="kt">int</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
+</span></span><span class="line"><span class="ln"> 41</span><span class="cl">		<span class="k">return</span> <span class="nx">chr</span><span class="p">.</span><span class="nx">sortedKeys</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="p">&lt;</span> <span class="nx">chr</span><span class="p">.</span><span class="nx">sortedKeys</span><span class="p">[</span><span class="nx">j</span><span class="p">]</span>
+</span></span><span class="line"><span class="ln"> 42</span><span class="cl">	<span class="p">})</span>
+</span></span><span class="line"><span class="ln"> 43</span><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="ln"> 44</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 45</span><span class="cl"><span class="c1">// Bước 5: Thêm nút
+</span></span></span><span class="line"><span class="ln"> 46</span><span class="cl"><span class="c1"></span><span class="kd">func</span> <span class="p">(</span><span class="nx">chr</span> <span class="o">*</span><span class="nx">ConsistentHashRing</span><span class="p">)</span> <span class="nf">AddNode</span><span class="p">(</span><span class="nx">node</span> <span class="kt">string</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="ln"> 47</span><span class="cl">	<span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="nx">chr</span><span class="p">.</span><span class="nx">replicas</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">{</span>
+</span></span><span class="line"><span class="ln"> 48</span><span class="cl">		<span class="nx">replicaKey</span> <span class="o">:=</span> <span class="nx">chr</span><span class="p">.</span><span class="nf">getHash</span><span class="p">(</span><span class="nx">node</span> <span class="o">+</span> <span class="s">&#34;_&#34;</span> <span class="o">+</span> <span class="nx">strconv</span><span class="p">.</span><span class="nf">Itoa</span><span class="p">(</span><span class="nx">i</span><span class="p">))</span>
+</span></span><span class="line"><span class="ln"> 49</span><span class="cl">		<span class="nx">chr</span><span class="p">.</span><span class="nx">ring</span><span class="p">[</span><span class="nx">replicaKey</span><span class="p">]</span> <span class="p">=</span> <span class="nx">node</span>
+</span></span><span class="line"><span class="ln"> 50</span><span class="cl">		<span class="nx">chr</span><span class="p">.</span><span class="nx">sortedKeys</span> <span class="p">=</span> <span class="nb">append</span><span class="p">(</span><span class="nx">chr</span><span class="p">.</span><span class="nx">sortedKeys</span><span class="p">,</span> <span class="nx">replicaKey</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 51</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 52</span><span class="cl">		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;Added node: %s with hash: %d on replica %d\n&#34;</span><span class="p">,</span> <span class="nx">node</span><span class="p">,</span> <span class="nx">replicaKey</span><span class="p">,</span> <span class="nx">i</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 53</span><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="ln"> 54</span><span class="cl">	<span class="nx">chr</span><span class="p">.</span><span class="nf">assignNodesToRing</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln"> 55</span><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="ln"> 56</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 57</span><span class="cl"><span class="c1">// Bước 6: Xóa nút
+</span></span></span><span class="line"><span class="ln"> 58</span><span class="cl"><span class="c1"></span><span class="kd">func</span> <span class="p">(</span><span class="nx">chr</span> <span class="o">*</span><span class="nx">ConsistentHashRing</span><span class="p">)</span> <span class="nf">RemoveNode</span><span class="p">(</span><span class="nx">node</span> <span class="kt">string</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="ln"> 59</span><span class="cl">	<span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="nx">chr</span><span class="p">.</span><span class="nx">replicas</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">{</span>
+</span></span><span class="line"><span class="ln"> 60</span><span class="cl">		<span class="nx">replicaKey</span> <span class="o">:=</span> <span class="nx">chr</span><span class="p">.</span><span class="nf">getHash</span><span class="p">(</span><span class="nx">node</span> <span class="o">+</span> <span class="s">&#34;_&#34;</span> <span class="o">+</span> <span class="nx">strconv</span><span class="p">.</span><span class="nf">Itoa</span><span class="p">(</span><span class="nx">i</span><span class="p">))</span>
+</span></span><span class="line"><span class="ln"> 61</span><span class="cl">		<span class="nb">delete</span><span class="p">(</span><span class="nx">chr</span><span class="p">.</span><span class="nx">ring</span><span class="p">,</span> <span class="nx">replicaKey</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 62</span><span class="cl">		<span class="nx">chr</span><span class="p">.</span><span class="nx">sortedKeys</span> <span class="p">=</span> <span class="nf">removeUint64Slice</span><span class="p">(</span><span class="nx">chr</span><span class="p">.</span><span class="nx">sortedKeys</span><span class="p">,</span> <span class="nx">replicaKey</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 63</span><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="ln"> 64</span><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="ln"> 65</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 66</span><span class="cl"><span class="c1">// Bước 4: Ánh xạ khóa
+</span></span></span><span class="line"><span class="ln"> 67</span><span class="cl"><span class="c1"></span><span class="kd">func</span> <span class="p">(</span><span class="nx">chr</span> <span class="o">*</span><span class="nx">ConsistentHashRing</span><span class="p">)</span> <span class="nf">KeyMap</span><span class="p">(</span><span class="nx">key</span> <span class="kt">string</span><span class="p">)</span> <span class="kt">string</span> <span class="p">{</span>
+</span></span><span class="line"><span class="ln"> 68</span><span class="cl">	<span class="nx">chr</span><span class="p">.</span><span class="nx">mu</span><span class="p">.</span><span class="nf">RLock</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln"> 69</span><span class="cl">	<span class="k">defer</span> <span class="nx">chr</span><span class="p">.</span><span class="nx">mu</span><span class="p">.</span><span class="nf">RUnlock</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln"> 70</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 71</span><span class="cl">	<span class="nx">hashValue</span> <span class="o">:=</span> <span class="nx">chr</span><span class="p">.</span><span class="nf">getHash</span><span class="p">(</span><span class="nx">key</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 72</span><span class="cl">	<span class="nx">index</span> <span class="o">:=</span> <span class="nx">sort</span><span class="p">.</span><span class="nf">Search</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="nx">chr</span><span class="p">.</span><span class="nx">sortedKeys</span><span class="p">),</span> <span class="kd">func</span><span class="p">(</span><span class="nx">i</span> <span class="kt">int</span><span class="p">)</span> <span class="kt">bool</span> <span class="p">{</span>
+</span></span><span class="line"><span class="ln"> 73</span><span class="cl">		<span class="k">return</span> <span class="nx">chr</span><span class="p">.</span><span class="nx">sortedKeys</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="nx">hashValue</span>
+</span></span><span class="line"><span class="ln"> 74</span><span class="cl">	<span class="p">})</span>
+</span></span><span class="line"><span class="ln"> 75</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 76</span><span class="cl">	<span class="k">if</span> <span class="nx">index</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="nx">chr</span><span class="p">.</span><span class="nx">sortedKeys</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="ln"> 77</span><span class="cl">		<span class="c1">// Wrap around to the beginning of the ring
+</span></span></span><span class="line"><span class="ln"> 78</span><span class="cl"><span class="c1"></span>		<span class="k">return</span> <span class="nx">chr</span><span class="p">.</span><span class="nx">ring</span><span class="p">[</span><span class="nx">chr</span><span class="p">.</span><span class="nx">sortedKeys</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+</span></span><span class="line"><span class="ln"> 79</span><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="ln"> 80</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 81</span><span class="cl">	<span class="k">return</span> <span class="nx">chr</span><span class="p">.</span><span class="nx">ring</span><span class="p">[</span><span class="nx">chr</span><span class="p">.</span><span class="nx">sortedKeys</span><span class="p">[</span><span class="nx">index</span><span class="p">]]</span>
+</span></span><span class="line"><span class="ln"> 82</span><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="ln"> 83</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 84</span><span class="cl"><span class="kd">func</span> <span class="nf">removeUint64Slice</span><span class="p">(</span><span class="nx">s</span> <span class="p">[]</span><span class="kt">uint64</span><span class="p">,</span> <span class="nx">e</span> <span class="kt">uint64</span><span class="p">)</span> <span class="p">[]</span><span class="kt">uint64</span> <span class="p">{</span>
+</span></span><span class="line"><span class="ln"> 85</span><span class="cl">	<span class="k">for</span> <span class="nx">i</span><span class="p">,</span> <span class="nx">a</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">s</span> <span class="p">{</span>
+</span></span><span class="line"><span class="ln"> 86</span><span class="cl">		<span class="k">if</span> <span class="nx">a</span> <span class="o">==</span> <span class="nx">e</span> <span class="p">{</span>
+</span></span><span class="line"><span class="ln"> 87</span><span class="cl">			<span class="k">return</span> <span class="nb">append</span><span class="p">(</span><span class="nx">s</span><span class="p">[:</span><span class="nx">i</span><span class="p">],</span> <span class="nx">s</span><span class="p">[</span><span class="nx">i</span><span class="o">+</span><span class="mi">1</span><span class="p">:]</span><span class="o">...</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 88</span><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="ln"> 89</span><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="ln"> 90</span><span class="cl">	<span class="k">return</span> <span class="nx">s</span>
+</span></span><span class="line"><span class="ln"> 91</span><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="ln"> 92</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 93</span><span class="cl"><span class="c1">// Bước 7: Cân bằng tải
+</span></span></span><span class="line"><span class="ln"> 94</span><span class="cl"><span class="c1">// LoadBalancing kiểm tra tải trên mỗi nút và phân phối lại khóa nếu cần
+</span></span></span><span class="line"><span class="ln"> 95</span><span class="cl"><span class="c1"></span><span class="kd">func</span> <span class="p">(</span><span class="nx">chr</span> <span class="o">*</span><span class="nx">ConsistentHashRing</span><span class="p">)</span> <span class="nf">LoadBalancing</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="ln"> 96</span><span class="cl">	<span class="nx">chr</span><span class="p">.</span><span class="nx">mu</span><span class="p">.</span><span class="nf">Lock</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln"> 97</span><span class="cl">	<span class="k">defer</span> <span class="nx">chr</span><span class="p">.</span><span class="nx">mu</span><span class="p">.</span><span class="nf">Unlock</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln"> 98</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 99</span><span class="cl">	<span class="nx">nodeCount</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">(</span><span class="kd">map</span><span class="p">[</span><span class="kt">string</span><span class="p">]</span><span class="kt">int</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">100</span><span class="cl">	<span class="k">for</span> <span class="nx">_</span><span class="p">,</span> <span class="nx">node</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">chr</span><span class="p">.</span><span class="nx">ring</span> <span class="p">{</span>
+</span></span><span class="line"><span class="ln">101</span><span class="cl">		<span class="nx">nodeCount</span><span class="p">[</span><span class="nx">node</span><span class="p">]</span><span class="o">++</span>
+</span></span><span class="line"><span class="ln">102</span><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="ln">103</span><span class="cl">
+</span></span><span class="line"><span class="ln">104</span><span class="cl">	<span class="nx">avgCount</span> <span class="o">:=</span> <span class="nb">len</span><span class="p">(</span><span class="nx">chr</span><span class="p">.</span><span class="nx">ring</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="nx">nodeCount</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">105</span><span class="cl">	<span class="k">for</span> <span class="nx">node</span><span class="p">,</span> <span class="nx">count</span> <span class="o">:=</span> <span class="k">range</span> <span class="nx">nodeCount</span> <span class="p">{</span>
+</span></span><span class="line"><span class="ln">106</span><span class="cl">		<span class="k">if</span> <span class="nx">count</span> <span class="p">&gt;</span> <span class="nx">avgCount</span> <span class="p">{</span>
+</span></span><span class="line"><span class="ln">107</span><span class="cl">			<span class="c1">// Node này có tải quá cao, phân phối lại khóa
+</span></span></span><span class="line"><span class="ln">108</span><span class="cl"><span class="c1"></span>			<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;Node %s có tải quá cao, phân phối lại khóa\n&#34;</span><span class="p">,</span> <span class="nx">node</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">109</span><span class="cl">			<span class="c1">// ...
+</span></span></span><span class="line"><span class="ln">110</span><span class="cl"><span class="c1"></span>		<span class="p">}</span>
+</span></span><span class="line"><span class="ln">111</span><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="ln">112</span><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="ln">113</span><span class="cl">
+</span></span><span class="line"><span class="ln">114</span><span class="cl"><span class="kd">func</span> <span class="p">(</span><span class="nx">chr</span> <span class="o">*</span><span class="nx">ConsistentHashRing</span><span class="p">)</span> <span class="nf">PrintMap</span><span class="p">(</span><span class="nx">key</span> <span class="kt">string</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="ln">115</span><span class="cl">	<span class="nx">node</span> <span class="o">:=</span> <span class="nx">chr</span><span class="p">.</span><span class="nf">KeyMap</span><span class="p">(</span><span class="nx">key</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">116</span><span class="cl">
+</span></span><span class="line"><span class="ln">117</span><span class="cl">	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Printf</span><span class="p">(</span><span class="s">&#34;The key &#39;%s&#39; is mapped to node: %s\n&#34;</span><span class="p">,</span> <span class="nx">key</span><span class="p">,</span> <span class="nx">node</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">118</span><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="ln">119</span><span class="cl"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="ln">120</span><span class="cl">	<span class="nx">hashRing</span> <span class="o">:=</span> <span class="nf">NewConsistentHashRing</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">121</span><span class="cl">
+</span></span><span class="line"><span class="ln">122</span><span class="cl">	<span class="c1">// Add nodes to the ring
+</span></span></span><span class="line"><span class="ln">123</span><span class="cl"><span class="c1"></span>	<span class="nx">hashRing</span><span class="p">.</span><span class="nf">AddNode</span><span class="p">(</span><span class="s">&#34;sw_hn&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">124</span><span class="cl">	<span class="nx">hashRing</span><span class="p">.</span><span class="nf">AddNode</span><span class="p">(</span><span class="s">&#34;sw_dn&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">125</span><span class="cl">	<span class="nx">hashRing</span><span class="p">.</span><span class="nf">AddNode</span><span class="p">(</span><span class="s">&#34;sw_hcm&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">126</span><span class="cl">
+</span></span><span class="line"><span class="ln">127</span><span class="cl">	<span class="c1">// // Get the node for a key
+</span></span></span><span class="line"><span class="ln">128</span><span class="cl"><span class="c1"></span>	<span class="c1">// key := &#34;Tác giả Phạm Duy Tùng&#34;
+</span></span></span><span class="line"><span class="ln">129</span><span class="cl"><span class="c1"></span>	<span class="nx">hashRing</span><span class="p">.</span><span class="nf">PrintMap</span><span class="p">(</span><span class="s">&#34;Tác giả Phạm Duy Tùng&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">130</span><span class="cl">	<span class="nx">hashRing</span><span class="p">.</span><span class="nf">PrintMap</span><span class="p">(</span><span class="s">&#34;Ngày cập nhật 08/09/2024&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">131</span><span class="cl">	<span class="nx">hashRing</span><span class="p">.</span><span class="nf">PrintMap</span><span class="p">(</span><span class="s">&#34;Ngày mưa bão&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">132</span><span class="cl">	<span class="nx">hashRing</span><span class="p">.</span><span class="nf">PrintMap</span><span class="p">(</span><span class="s">&#34;Viết vào ngày bão, Tên cơn bão là Yagi&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">133</span><span class="cl">	<span class="nx">hashRing</span><span class="p">.</span><span class="nf">PrintMap</span><span class="p">(</span><span class="s">&#34;Tác giả Phạm Duy Tùng, Cảm ơn các bạn đã theo dõi bài viết&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">134</span><span class="cl">	<span class="nx">hashRing</span><span class="p">.</span><span class="nf">LoadBalancing</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">135</span><span class="cl">
+</span></span><span class="line"><span class="ln">136</span><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>Lưu ý: code demo thôi, xài hàm hash đơn giản, và sử dụng tìm kiếm nhị phân để tìm vị trí của phần tử trong vòng. Thực tế thì chắc không ai chơi mấy hàm này :)</p>
+<p>Kết quả:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln"> 1</span><span class="cl">&gt;&gt;&gt;&gt; go run consistent_hashing.go
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">Added node: sw_hn with hash: 17429720091564777933 on replica 0
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">Added node: sw_hn with hash: 6206559145603051050 on replica 1
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">Added node: sw_hn with hash: 501148381563080863 on replica 2
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">Added node: sw_dn with hash: 10372921504992544131 on replica 0
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">Added node: sw_dn with hash: 10352104123016491672 on replica 1
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">Added node: sw_dn with hash: 4947674849506040391 on replica 2
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">Added node: sw_hcm with hash: 13712729030455601798 on replica 0
+</span></span><span class="line"><span class="ln">10</span><span class="cl">Added node: sw_hcm with hash: 13299855957139837304 on replica 1
+</span></span><span class="line"><span class="ln">11</span><span class="cl">Added node: sw_hcm with hash: 15146544336749671394 on replica 2
+</span></span><span class="line"><span class="ln">12</span><span class="cl">The key &#39;Tác giả Phạm Duy Tùng&#39; is mapped to node: sw_dn
+</span></span><span class="line"><span class="ln">13</span><span class="cl">The key &#39;Ngày cập nhật 08/09/2024&#39; is mapped to node: sw_dn
+</span></span><span class="line"><span class="ln">14</span><span class="cl">The key &#39;Ngày mưa bão&#39; is mapped to node: sw_dn
+</span></span><span class="line"><span class="ln">15</span><span class="cl">The key &#39;Viết vào ngày bão, Tên cơn bão là Yagi&#39; is mapped to node: sw_hn
+</span></span><span class="line"><span class="ln">16</span><span class="cl">The key &#39;Tác giả Phạm Duy Tùng, Cảm ơn các bạn đã theo dõi bài viết&#39; is mapped to node: sw_dn
+</span></span></code></pre></div><h1 id="ưu-và-nhược-điểm-của-consistent-hashing">Ưu và nhược điểm của Consistent Hashing<a class="anchor ms-1" href="#ưu-và-nhược-điểm-của-consistent-hashing"><i class="fas fa-link"></i></a></h1>
+<p><strong>Ưu điểm của việc sử dụng Consistent Hashing</strong></p>
+<ul>
+<li>
+<p><strong>Cân bằng tải</strong>: Consistent Hashing giúp phân phối tải trọng của mạng đều giữa các nút, bảo vệ hiệu suất và khả năng đáp ứng của hệ thống ngay cả khi lượng dữ liệu tăng lên và thay đổi theo thời gian.</p>
+</li>
+<li>
+<p><strong>Khả năng mở rộng</strong>: Consistent Hashing rất linh hoạt và có thể thích nghi với sự thay đổi của số lượng nút hoặc lượng dữ liệu được xử lý mà không ảnh hưởng đến hiệu suất của toàn bộ hệ thống.</p>
+</li>
+<li>
+<p><strong>Tối thiểu hoá số lượng ánh xạ lại</strong>: Consistent Hashing giảm thiểu số lượng khóa cần ánh xạ lại khi thêm hoặc xóa nút, đảm bảo rằng hệ thống luôn ổn định và nhất quán ngay cả khi mạng thay đổi theo thời gian.</p>
+</li>
+<li>
+<p><strong>Tăng khả năng chịu lỗi</strong>: Consistent Hashing giúp dữ liệu luôn khả dụng và cập nhật, ngay cả trong trường hợp nút bị lỗi. Khả năng sao chép khóa trên nhiều nút và ánh xạ lại khóa đến nút khác trong trường hợp lỗi giúp tăng cường độ ổn định và tin cậy của toàn bộ hệ thống.</p>
+</li>
+<li>
+<p><strong>Đơn giản hóa hoạt động</strong>: Consistent Hashing giúp đơn giản hóa quá trình thêm hoặc xóa nút khỏi mạng, giúp dễ dàng quản lý và duy trì hệ thống phân tán lớn.</p>
+</li>
+</ul>
+<p><strong>Nhược điểm của việc sử dụng Consistent Hashing</strong></p>
+<ul>
+<li>
+<p><strong>Hàm băm</strong>: Hiệu suất của Consistent Hashing phụ thuộc vào việc sử dụng hàm băm phù hợp. Hàm băm phải tạo ra giá trị duy nhất cho mỗi khóa và phải là xác định để có hiệu quả. Sự phức tạp của hàm băm có thể ảnh hưởng đến hiệu suất và hiệu quả của toàn bộ hệ thống.</p>
+</li>
+<li>
+<p><strong>Tốn kém hiệu suất</strong>: Việc sử dụng Consistent Hashing có thể dẫn đến một số tốn kém hiệu suất do cần phải sử dụng tài nguyên tính toán để ánh xạ khóa đến nút, sao chép khóa và ánh xạ lại khóa trong trường hợp thêm hoặc xóa nút.</p>
+</li>
+<li>
+<p><strong>Thiếu linh hoạt</strong>: Trong một số trường hợp, giới hạn cố định của Consistent Hashing có thể hạn chế khả năng của hệ thống để thích nghi với sự thay đổi của nhu cầu hoặc điều kiện mạng.</p>
+</li>
+<li>
+<p><strong>Sử dụng tài nguyên cao</strong>: Trong một số trường hợp, việc sử dụng Consistent Hashing có thể dẫn đến sử dụng tài nguyên cao khi thêm hoặc xóa nút khỏi mạng, điều này có thể ảnh hưởng đến hiệu suất và hiệu quả của toàn bộ hệ thống.</p>
+</li>
+<li>
+<p><strong>Phức tạp của quản lý</strong>: Việc quản lý và duy trì hệ thống sử dụng Consistent Hashing có thể phức tạp và đòi hỏi chuyên môn và kỹ năng đặc biệt.</p>
+</li>
+</ul>
+<p>Cảm ơn các bạn đã theo dõi bài viết. Xin cảm ơn và hẹn gặp lại. Bài sau sẽ nói về Distributed Hash Tables</p>
+</div></div>
+  <div class="card-footer"><div class="post-navs d-flex justify-content-evenly"><div class="post-nav post-prev">
+    <i class="fas fa-fw fa-chevron-left"></i>
+    <a href="/blog/2024-07-06-llm-applications-in-real/">Các Ứng Dụng Của LLM Trong Thực Tế
+</a>
+  </div><div class="post-nav post-next">
+    <a href="/blog/2024-10-27-mario-reinfomation-learning-double-dqn/">Sử Dụng Mô Hình Double DQN  Huấn Luyện Mô Hình Reinforcement Learning Với Game Mario
+</a>
+    <i class="fas fa-fw fa-chevron-right"></i>
+  </div></div></div>
+</article><div class="card component row post-comments" id="post-comments">
+  <div class="card-header">
+    <h2 class="card-title">Comments</h2>
+  </div>
+  <div class="card-body"><script src="https://utteranc.es/client.js"
+  repo="AlexBlack2202/utterances"
+  issue-term="pathname"
+  label="comment"
+  theme="github-dark"
+  crossorigin="anonymous"
+  async>
+</script></div>
+</div></div>
+</div><aside class="col-lg-3 col-md-4 sidebar d-flex">
+  <div class="container d-flex flex-column">
+    
+    <section class="card row text-center profile component">
+  <div class="card-body">
+    <div class="col-12 d-flex align-items-center justify-content-center"><img class="profile-avatar rounded-circle" alt="Đặng Thị Hằng | Phạm Duy Tùng" src="/images/profile.webp" loading="lazy"  title="Đặng Thị Hằng | Phạm Duy Tùng"
+   width="736" height="920"
+   />
+</div>
+    <div class="col-12 profile-meta"><div class="profile-name">Đặng Thị Hằng | Phạm Duy Tùng</div><div class="profile-bio">Gopher, CShaper, Pythoner, Full Stack Engineer.</div><div class="profile-company"><i class="fas fa-fw fa-building"></i>MWG</div><div class="profile-location"><i class="fas fa-fw fa-map-marker-alt"></i>Earth</div><div class="profile-about"><i class="fas fa-fw fa-user"></i><a href="/about/">About</a></div><div class="profile-contact"><i class="fas fa-fw fa-question-circle"></i><a href="/contact/">Contact Us</a></div>
+</div>
+  </div>
+</section>
+  <div class="post-toc row mb-4 card component" id="postTOC">
+  <div class="card-header">
+    <h2 class="card-title">Contents</h2>
+  </div>
+  <div class="card-body">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#hashing-là-gì">Hashing là gì?</a></li>
+    <li><a href="#consistent-hashing-là-gì">Consistent Hashing là gì?</a></li>
+    <li><a href="#ứng-dụng-của-consistent-hashing">Ứng dụng của Consistent Hashing</a></li>
+    <li><a href="#implement-consistent-hashing">Implement Consistent Hashing</a></li>
+    <li><a href="#ưu-và-nhược-điểm-của-consistent-hashing">Ưu và nhược điểm của Consistent Hashing</a></li>
+  </ul>
+</nav>
+  </div>
+</div><section class="recent-posts row card component">
+  <div class="card-header">
+    <h2 class="card-title">Recent Posts</h2>
+  </div>
+  <div class="card-body">
+    <ul class="post-list"><li>
+        <a href="/blog/2024-11-23-system-design-top-10-interview-distributed-hash-table/">Top 10 Thuật Toán System Design Các Bạn Nên Biết Và Thường Được Hỏi Trong Phỏng Vấn - Top 2 Distributed Hash Tables
+</a>
+      </li><li>
+        <a href="/blog/2024-10-27-mario-reinfomation-learning-double-dqn/">Sử Dụng Mô Hình Double DQN  Huấn Luyện Mô Hình Reinforcement Learning Với Game Mario
+</a>
+      </li><li>
+        <a href="/blog/2024-09-05-system-design-top-10-interview-consistent-hashing/">Top 10 Thuật Toán System Design Các Bạn Nên Biết Và Thường Được Hỏi Trong Phỏng Vấn - Top 1 Consistent Hashing
+</a>
+      </li><li>
+        <a href="/blog/2024-07-06-llm-applications-in-real/">Các Ứng Dụng Của LLM Trong Thực Tế
+</a>
+      </li><li>
+        <a href="/blog/2024-06-12-cuda-alternate/">Một Số Thư Viện Tính Toán Song Song Thay Thế Cho Cuda
+</a>
+      </li></ul>
+  </div>
+</section><section class="series-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="/series">series</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="/series/kh%C3%B3a-h%E1%BB%8Dc-python-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học Python Căn Bản">
+            Khóa Học Python Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="/series/kh%C3%B3a-h%E1%BB%8Dc-c&#43;&#43;-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học C&#43;&#43; Căn Bản">
+            Khóa Học C&#43;&#43; Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="/series/machine-learning-dataset/" class="badge rounded post-taxonomy" title="Machine Learning Dataset">
+            Machine Learning Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a><a href="/series/ch%E1%BB%A9ng-kho%C3%A1n-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Chứng Khoán Căn Bản">
+            Chứng Khoán Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">1</span></a></div>
+      </div>
+    </section><section class="tools-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="/tools">tools</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="/tools/tool-random/" class="badge rounded post-taxonomy" title="Tool Random">
+            Tool Random<span class="badge badge-sm text-white bg-accent ms-1">2</span></a></div>
+      </div>
+    </section><section class="categories-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="/categories">categories</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="/categories/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="/categories/c&#43;&#43;/" class="badge rounded post-taxonomy" title="C&#43;&#43;">
+            C&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="/categories/dataset/" class="badge rounded post-taxonomy" title="Dataset">
+            Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a></div>
+      </div>
+    </section><section class="tags-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="/tags">tags</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="/tags/machine-learning/" class="badge rounded post-taxonomy" title="Machine Learning">
+            Machine Learning<span class="badge badge-sm text-white bg-accent ms-1">45</span></a><a href="/tags/deep-learning/" class="badge rounded post-taxonomy" title="Deep Learning">
+            Deep Learning<span class="badge badge-sm text-white bg-accent ms-1">21</span></a><a href="/tags/deeplearning/" class="badge rounded post-taxonomy" title="DeepLearning">
+            DeepLearning<span class="badge badge-sm text-white bg-accent ms-1">21</span></a><a href="/tags/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">11</span></a><a href="/tags/opencv/" class="badge rounded post-taxonomy" title="Opencv">
+            Opencv<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="/tags/c&#43;&#43;/" class="badge rounded post-taxonomy" title="C&#43;&#43;">
+            C&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/normalization/" class="badge rounded post-taxonomy" title="Normalization">
+            Normalization<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/object-detector/" class="badge rounded post-taxonomy" title="Object Detector">
+            Object Detector<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/recommendation/" class="badge rounded post-taxonomy" title="Recommendation">
+            Recommendation<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/alexnet/" class="badge rounded post-taxonomy" title="AlexNet">
+            AlexNet<span class="badge badge-sm text-white bg-accent ms-1">3</span></a></div>
+      </div>
+    </section>
+    
+  </div>
+</aside>
+</div>
+    </main><footer class="footer mt-auto py-3 text-center container"><ul class="nav justify-content-between footer-memu mb-3"><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Support
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-github"></i>Repository
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-comments"></i>Discussions
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/contact/"><i class="fas fa-fw fa-info-circle"></i>Contact Us
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/faq/"><i class="fas fa-fw fa-question-circle"></i>FAQs
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Docs
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="/team_of_services" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-users"></i>Điều khoản sử dụng
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/privacy" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-lock"></i>Chính sách bảo mật
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Features
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.phamduytung.com/utils/gen_paswords/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-paw"></i>Tạo password ngẫu nhiên
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Liên kết khác
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">Netlify
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">facebook
+</a>
+        </li></ul></li></ul>
+<div class="copyright mb-2">
+  Copyright © 2016-2024 Phạm Duy Tùng. All Rights Reserved.
+</div>
+<div class="powered-by mb-2">
+  Website chia sẻ kiến thức của Phạm Duy Tùng và Đặng Thị Hằng. Vui lòng liên hệ email alexblack2202@gmail.com nếu bạn có thông tin cần trao đổi.
+</div></footer>
+<script src="/js/main.ed2053ad82a243b263761567b5c1aaf974487aa84adacb89ae3ddf803ecc248a.js" integrity="sha256-7SBTrYKiQ7JjdhVntcGq&#43;XRIeqhK2suJrj3fgD7MJIo=" crossorigin="anonymous" defer></script><script src="/js/icons.min.8ff200851002b8138e6b35314683092e02edc155465d9dbfb7d115460f8f1fbe.js" integrity="sha256-j/IAhRACuBOOazUxRoMJLgLtwVVGXZ2/t9EVRg&#43;PH74=" crossorigin="anonymous" defer></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('\/service-worker.js').then(function(reg) {
+      console.log('Successfully registered service worker', reg);
+    }).catch(function(err) {
+      console.warn('Error whilst registering service worker', err);
+    });
+  });
+}
+</script><script src="/js/viewer.min.ec58d2aa1a8916addf393be975fdf0070e8c872b0caef1673cb9f7eea067ce57.js" integrity="sha256-7FjSqhqJFq3fOTvpdf3wBw6MhysMrvFnPLn37qBnzlc=" crossorigin="anonymous" defer></script><script defer src="/js/katex.min.062d19072aa2321fd592929a93ade0afc09c491db47671a28d54d6637ea131a1.js" integrity="sha256-Bi0ZByqiMh/VkpKak63gr8CcSR20dnGijVTWY36hMaE=" crossorigin="anonymous"></script>
+
+  
+    
+      
+    
+  
+
+
+<script  data-ad-client="ca-pub-4644989745435991"  async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4644989745435991"
+     crossorigin="anonymous"></script><script data-cfasync="false" type="text/javascript" data-adel="atag" src="//acscdn.com/script/atg.js" czid="eul3gyjdmm"></script>
+  </body>
+</html>
