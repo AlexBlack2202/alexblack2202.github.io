@@ -10,17 +10,17 @@
 <link rel="icon" href="/images/icons/favicon.ico">
 <link rel="manifest" href="/manifest.json">
 <meta name="keywords" content="" />
-<meta name="description" content="Trong bài viết này, chúng ta sẽ tìm hiểu kỹ hơn 3 khái niệm Epoch, Batch Size và Iteration." /><meta name="robots" content="index, follow" />
+<meta name="description" content="Trong bài viết này, chúng ta sẽ tìm hiểu kỹ hơn 3 khái niệm Epoch, Batch Size và Iteration, bổ sung thêm repeat." /><meta name="robots" content="index, follow" />
   <meta itemprop="name" content="Phân biệt Epoch - Batch size và Iterations">
-  <meta itemprop="description" content="Trong bài viết này, chúng ta sẽ tìm hiểu kỹ hơn 3 khái niệm Epoch, Batch Size và Iteration.">
+  <meta itemprop="description" content="Trong bài viết này, chúng ta sẽ tìm hiểu kỹ hơn 3 khái niệm Epoch, Batch Size và Iteration, bổ sung thêm repeat.">
   <meta itemprop="datePublished" content="2018-10-02T00:19:00+03:00">
   <meta itemprop="dateModified" content="2018-10-02T00:19:00+03:00">
-  <meta itemprop="wordCount" content="965">
+  <meta itemprop="wordCount" content="1601">
   <meta itemprop="image" content="https://unsplash.it/1920/1080?image=99">
   <meta itemprop="keywords" content="Machine Learning,DeepLearning,Epoch,Batch Size,Iteration"><meta property="og:url" content="/blog/2018-10-02-understanding-epoch-batchsize-iterations/">
   <meta property="og:site_name" content="Phạm Duy Tùng Machine Learning Blog">
   <meta property="og:title" content="Phân biệt Epoch - Batch size và Iterations">
-  <meta property="og:description" content="Trong bài viết này, chúng ta sẽ tìm hiểu kỹ hơn 3 khái niệm Epoch, Batch Size và Iteration.">
+  <meta property="og:description" content="Trong bài viết này, chúng ta sẽ tìm hiểu kỹ hơn 3 khái niệm Epoch, Batch Size và Iteration, bổ sung thêm repeat.">
   <meta property="og:locale" content="en">
   <meta property="og:type" content="article">
     <meta property="article:section" content="blog">
@@ -34,7 +34,7 @@
     <meta property="og:image" content="https://unsplash.it/1920/1080?image=99">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://unsplash.it/1920/1080?image=99"><meta name="twitter:title" content="Phân biệt Epoch - Batch size và Iterations">
-<meta name="twitter:description" content="Trong bài viết này, chúng ta sẽ tìm hiểu kỹ hơn 3 khái niệm Epoch, Batch Size và Iteration.">
+<meta name="twitter:description" content="Trong bài viết này, chúng ta sẽ tìm hiểu kỹ hơn 3 khái niệm Epoch, Batch Size và Iteration, bổ sung thêm repeat.">
 <link rel="stylesheet" href="/css/main.min.c06cf34535ee1f60ba08893b4d57e76b2bbd5e11c17ab12ef976f02983a51b54.css" integrity="sha256-wGzzRTXuH2C6CIk7TVfnayu9XhHBerEu&#43;XbwKYOlG1Q=" crossorigin="anonymous"><link rel="stylesheet" href="/css/katex.min.d080a89e03e1eb850f547d835c186b4273f69879aa497eb8b0e88c1578bf1f0b.css" integrity="sha256-0ICongPh64UPVH2DXBhrQnP2mHmqSX64sOiMFXi/Hws=" crossorigin="anonymous">
 <link rel="stylesheet" href="/css/viewer.min.3d228794bcedbbfa0412beb8fbc1ec6973202945e42af7004f742a4d7bd620ab.css" integrity="sha256-PSKHlLztu/oEEr64&#43;8HsaXMgKUXkKvcAT3QqTXvWIKs=" crossorigin="anonymous"><style>
     .bgcover {
@@ -296,7 +296,7 @@ HOME
   <span class="post-date" title="created on 2018-10-02 04:19:00 &#43;0700 &#43;07.">
     Oct 2, 2018
   </span><span class="post-reading-time">
-    5 min read
+    8 min read
   </span><span class="post-taxonomies"><a href="/tags/machine-learning/" class="badge post-taxonomy">Machine learning</a><a href="/tags/deeplearning/" class="badge post-taxonomy">Deeplearning</a><a href="/tags/epoch/" class="badge post-taxonomy">Epoch</a><a href="/tags/batch-size/" class="badge post-taxonomy">Batch Size</a><a href="/tags/iteration/" class="badge post-taxonomy">Iteration</a></span>
 </div>
 <div class="post-content mb-3"><div class="toc">
@@ -309,6 +309,11 @@ HOME
         <li><a href="#iterations">Iterations</a></li>
         <li><a href="#tại-sao-phải-dùng-hơn-1-epoch">Tại sao phải dùng hơn 1 Epoch.</a></li>
         <li><a href="#số-lần-lặp-tối-ưu-là-bao-nhiêu">Số lần lặp tối ưu là bao nhiêu?</a></li>
+      </ul>
+    </li>
+    <li><a href="#repeat">Repeat</a>
+      <ul>
+        <li><a href="#regularization-images">Regularization Images</a></li>
       </ul>
     </li>
   </ul>
@@ -337,7 +342,7 @@ HOME
 <p>..* Gradient có nghĩa là tỷ lệ của độ nghiêng của đường dốc.</p>
 <p>..* Descent là từ viết tắt của decending - nghĩa là giảm.</p>
 <p>Thuật toán sẽ lặp đi lặp lại nhiều lần để tìm ra được cực tiểu.</p>
-<p><img class="img-fluid" alt="Hình ảnh" src="/blog/2018-10-02-understanding-epoch-batchsize-iterations/gradient.gif" loading="lazy"  title="Hình ảnh"
+<p><img class="img-fluid" alt="Hình ảnh" src="/blog/2018-10-02-understanding-epoch-batchsize-iterations/images/gradient.gif" loading="lazy"  title="Hình ảnh"
   
    />
 
@@ -346,17 +351,18 @@ HOME
 <p>Các bạn quan sát hình phía trên bên trái, ban đầu, bước nhảy khá lớn, nghĩa là giá trị cost lớn, và sau một vài lần lặp, điểm chấm đen đi xuống dần, và giá trị cost nhỏ dần theo. Mô hình hội tụ dần dần đến khi cost &lt;= epselon</p>
 <p>Chúng ta sử dụng thuật ngữ epochs, batch size, iterations khi chúng ta cần phải trainning mô hình machine learning, mà tập trainset của chúng ta quá (rất) lớn (vd 10 triệu mẫu, ví dụ train mô hình nhận dạng khuôn mặt với tập ms-celeb-1m). Lúc này các khái niệm trên mới trở nên rõ ràng, còn với trường hợp dữ liệu nhỏ thì chúng khá tương tự nhau.</p>
 <h1 id="khái-niện-epoch">Khái niện Epoch<a class="anchor ms-1" href="#khái-niện-epoch"><i class="fas fa-link"></i></a></h1>
-<p>Một Epoch được tính là khi chúng ta đưa tất cả dữ liệu trong tập train vào mạng neural network 1 lần. Ví dụ, bạn có 10 triệu bức hình trong tập train, bạn cho toàn bộ số hình đó là input của mô hình 3 lần, suy ra bạn đã train được 3 epoch.</p>
-<p>Khi dữ liệu quá lớn, chúng ta không thể đưa hết mỗi lần tất cả tập dữ liệu vào để huấn luyện được, vì bạn cần một siêu máy tính có lượng RAM và GPU RAM cực lớn để lưu trữ toàn bộ hình ảnh trên, điều này là bất khả thi đối với người dùng bình thường, phòng lab nhỏ. Buộc lòng chúng ta phải chia nhỏ tập dữ liệu ra, và khái niệm batch hình thành.</p>
+<p>Một Epoch được tính là khi chúng ta đưa tất cả dữ liệu trong tập train vào mạng neural network 1 lần. Ví dụ, bạn có 10 bức hình trong tập train, bạn đem hết toàn bộ 10 bức hình đó cho mô hình học ở lần thứ nhất, bạn đã train được một epoch. Sau đó, bạn lại quay lại vị trí  hình ban đầu rồi cho toàn bộ 10 bức hình đó học, bạn có thêm 1 epoch nữa, vậy là bạn đã train 2 epoch, bạn lặp lại việc này 100 lần , suy ra bạn đã train 100 epoch.</p>
+<p>Khi dữ liệu quá lớn, chúng ta không thể đưa hết tất cả tập dữ liệu vào để huấn luyện trong 1 lần train được, vì bạn cần một siêu máy tính có lượng RAM và GPU RAM cực lớn để lưu trữ toàn bộ hình ảnh trên, điều này là bất khả thi đối với người dùng bình thường, phòng lab nhỏ, hoặc các hệ thống máy tính hiện tại. Buộc lòng chúng ta phải chia nhỏ tập dữ liệu ra, và khái niệm batch hình thành.</p>
 <h1 id="batch-size">Batch Size<a class="anchor ms-1" href="#batch-size"><i class="fas fa-link"></i></a></h1>
-<p>Batch size là số lượng mẫu dữ liệu trong một lần huấn luyện. Ví dụ, trong bài toán phân loại chó mèo, chọn batch size =32, nghĩa là 1 lần lặp ta sẽ cho ngẫu nhiên 32 bức nhìn chó hoặc mèo chạy lan truyền tiến trong mạng neural network. tiếp theo bạn quăng tiếp 32 hình ngẫu nhiên, không lặp với các hình trước đó, vào mạng, quăng đến khi nào không còn hình nào có thể quăng vào nữa -&gt; bạn hoàn thành 1 epoch.</p>
+<p>Batch size là số lượng mẫu dữ liệu trong một lần train. Ví dụ, trong bài toán phân loại chó mèo, chọn batch size =32, nghĩa là 1 lần train ta sẽ cho ngẫu nhiên 32 bức nhìn chó hoặc mèo chạy lan truyền tiến trong mạng neural network. Tiếp theo bạn quăng tiếp 32 hình ngẫu nhiên, không lặp với các hình trước đó, vào mạng, quăng đến khi nào không còn hình nào có thể quăng vào nữa -&gt; bạn hoàn thành 1 epoch.</p>
 <h2 id="iterations">Iterations<a class="anchor ms-1" href="#iterations"><i class="fas fa-link"></i></a></h2>
 <p>Iterations là số lượng batchs cần để hoàn thành 1 epoch.</p>
+<p>$$Iterations = data size / batch size$$</p>
 <p>Ví dụ chúng ta có tập dữ liệu có 20,000 mẫu, batch size là 500, vậy chúng ta cần 40 lần lặp (iteration) để hoàn thành 1 epoch.</p>
 <h2 id="tại-sao-phải-dùng-hơn-1-epoch">Tại sao phải dùng hơn 1 Epoch.<a class="anchor ms-1" href="#tại-sao-phải-dùng-hơn-1-epoch"><i class="fas fa-link"></i></a></h2>
 <p>Câu trả lời ở đây là tại vì chúng ta đang dùng thuật toán tối ưu là Gradient Descent. Thuật toán này đòi hỏi chúng ta phải đem toàn bộ dữ liệu qua mạng một vài lần để tìm được kết quả tối ưu. Vì vậy, dùng 1 epoch thật sự không đủ để tìm được kết quả tốt nhất.</p>
 <p>Với việc chỉ sử dụng 1 lần lặp, xác suất rất cao là dữ liệu sẽ bị underfitting(như hình mô tả bên dưới).</p>
-<p><img class="img-fluid" alt="Hình ảnh" src="/blog/2018-10-02-understanding-epoch-batchsize-iterations/overfit_underfit.png" loading="lazy"  title="Hình ảnh"
+<p><img class="img-fluid" alt="Hình ảnh" src="/blog/2018-10-02-understanding-epoch-batchsize-iterations/images/overfit_underfit.png" loading="lazy"  title="Hình ảnh"
   
    />
 
@@ -366,6 +372,50 @@ HOME
 <h2 id="số-lần-lặp-tối-ưu-là-bao-nhiêu">Số lần lặp tối ưu là bao nhiêu?<a class="anchor ms-1" href="#số-lần-lặp-tối-ưu-là-bao-nhiêu"><i class="fas fa-link"></i></a></h2>
 <p>Tiếc rằng không có câu trả lời cho câu hỏi này. Phụ thuộc hoàn toàn vào nhiều yếu tố. Mục tiêu chung là ta sẽ lặp đến khi nào hội tụ. Có một số phương pháp giúp chúng ta xác định mô hình đã đứng ở ngưỡng cực tiểu cục bộ rồi, không thể xuống hơn được nữa.</p>
 <p>Các bạn có thể tìm hiểu với từ khóa early stopping.</p>
+<h1 id="repeat">Repeat<a class="anchor ms-1" href="#repeat"><i class="fas fa-link"></i></a></h1>
+<p>update  13/01/2025</p>
+<p>Gần đây, với sự phát triển của stable diffusion và flux, chúng ta có thêm tham số Repeat, được hiểu là số lần 1 hình sẽ được lặp lại trong quá trình train.</p>
+<p>Hiểu đơn giản là khi train lora,  trong 1 batch, 1 hình trong batch đó sẽ Repeat x lần</p>
+<p>Mục tiêu của Repeat trong stable diffusion</p>
+<ol>
+<li>
+<p>Balance the number of training images to the regularization images. The number of regularization images is larger than the training, so it is required to repeat training images for using all regularization images in the epoch.</p>
+</li>
+<li>
+<p>Control &lsquo;weight&rsquo; over folders. If you have high quality images and low quality images, you can set higher number of repeats for high quality images, and lower for low quality.</p>
+</li>
+</ol>
+<h2 id="regularization-images">Regularization Images<a class="anchor ms-1" href="#regularization-images"><i class="fas fa-link"></i></a></h2>
+<p>Hình ảnh điều chỉnh (Regularization images) là các hình ảnh được sử dụng như một phần của quá trình điều chỉnh nhằm cải thiện sự ổn định và hiệu suất của các mô hình học sâu (deep learning).</p>
+<p>Quá trình này giúp ngăn mô hình học quá mức từ dữ liệu huấn luyện, duy trì sự cân bằng giữa các lớp, và bảo toàn tính linh hoạt trong việc tạo ra hình ảnh mới.</p>
+<p><strong>Regularization</strong> giúp giải quyết hai vấn đề chính: <strong>quá khớp (overfitting)</strong> và <strong>bảo toàn lớp (class preservation)</strong>.</p>
+<ol>
+<li>
+<p><strong>Bảo Toàn Lớp (Class Preservation):</strong></p>
+<ul>
+<li>Khi tạo ra các hình ảnh điều chỉnh, bạn đang định nghĩa một &ldquo;lớp&rdquo; của những gì bạn muốn nghịch đảo. Ví dụ, nếu bạn đang cố nghịch đảo một chiếc máy bay mới, bạn có thể tạo một loạt hình ảnh về máy bay để làm hình ảnh điều chỉnh.</li>
+<li>Điều này giúp đảm bảo rằng quá trình huấn luyện không bị lệch sang một lớp khác, chẳng hạn như &ldquo;ô tô&rdquo; hoặc &ldquo;xe đạp&rdquo;.</li>
+<li>Thậm chí, nó còn giúp ngăn việc mô hình bị nghiêng về hướng &ldquo;máy bay đồ chơi&rdquo; nếu bạn sử dụng các tham chiếu thực tế thay vì các diễn giải trừu tượng.</li>
+</ul>
+</li>
+<li>
+<p><strong>Chống Quá Khớp (Overfitting):</strong></p>
+<ul>
+<li>Những hình ảnh điều chỉnh này cũng được sử dụng trong quá trình huấn luyện để đảm bảo rằng các hình ảnh bạn đang cố nghịch đảo không bị quá khớp.</li>
+<li>Nếu quá khớp xảy ra, các hình ảnh được tạo ra có thể giống hệt với tập huấn luyện, làm mất khả năng chỉnh sửa của chúng.</li>
+<li>Một trong những vấn đề của nghịch đảo văn bản (textual inversion) là bạn có thể mất khả năng chỉnh sửa hình ảnh trong quá trình nghịch đảo, đặc biệt khi huấn luyện quá lâu. Việc thêm hình ảnh điều chỉnh vào quá trình huấn luyện giúp ngăn chặn vấn đề này.</li>
+</ul>
+</li>
+<li>
+<p><strong>Hiện Trạng Của Dreambooth:</strong></p>
+<ul>
+<li>Với cách triển khai hiện tại của <strong>Dreambooth</strong>, một số hiện tượng lệch hướng (drifting) vẫn có thể xảy ra. Ví dụ: nếu bạn nghịch đảo hình ảnh một con ếch, các thế hệ mới có thể có đặc điểm giống ếch.</li>
+<li>Tuy nhiên, mô hình vẫn hoạt động khá tốt miễn là bạn giữ mọi thứ hợp lý với dữ liệu đã huấn luyện.</li>
+</ul>
+</li>
+</ol>
+<p>Tóm lại, hình ảnh điều chỉnh không chỉ giúp duy trì tính nguyên bản của lớp mà bạn đang làm việc, mà còn giảm nguy cơ quá khớp, cải thiện khả năng chỉnh sửa và tính linh hoạt của các hình ảnh được tạo ra.</p>
+<p>Nguồn của phần Regularization Images <a href="https://www.reddit.com/r/StableDiffusion/comments/xu1ill/comment/iqu81m7/" target="_blank" rel="noopener noreferrer">https://www.reddit.com/r/StableDiffusion/comments/xu1ill/comment/iqu81m7/</a></p>
 <p>Cảm ơn các bạn đã theo dõi bài viết.</p>
 <p>Nguồn: <a href="https://towardsdatascience.com/epoch-vs-iterations-vs-batch-size-4dfb9c7ce9c9" target="_blank" rel="noopener noreferrer">https://towardsdatascience.com/epoch-vs-iterations-vs-batch-size-4dfb9c7ce9c9</a></p>
 </div></div>
@@ -420,6 +470,11 @@ HOME
         <li><a href="#số-lần-lặp-tối-ưu-là-bao-nhiêu">Số lần lặp tối ưu là bao nhiêu?</a></li>
       </ul>
     </li>
+    <li><a href="#repeat">Repeat</a>
+      <ul>
+        <li><a href="#regularization-images">Regularization Images</a></li>
+      </ul>
+    </li>
   </ul>
 </nav>
   </div>
@@ -429,6 +484,12 @@ HOME
   </div>
   <div class="card-body">
     <ul class="post-list"><li>
+        <a href="/blog/2025-01-12-data-missing-time-serial-decision-tree-regression/">Xử Lý Dữ Liệu Khiếm Khuyết Trong Dữ Liệu Chuỗi Thời Gian Sử Dụng Phương Pháp Decision Tree Regression - Machine Learning Techniques for Mising Data in Time-Serials Using Decision Tree Regression
+</a>
+      </li><li>
+        <a href="/blog/2025-01-10-data-missing-time-serial-linear-regression/">Xử Lý Dữ Liệu Khiếm Khuyết Trong Dữ Liệu Chuỗi Thời Gian Sử Dụng Phương Pháp Linear Regression - Machine Learning Techniques for Mising Data in Time-Serials Using Liner Regression
+</a>
+      </li><li>
         <a href="/blog/2024-11-24-system-design-top-10-interview-bloom-filters/">Top 10 Thuật Toán System Design Các Bạn Nên Biết Và Thường Được Hỏi Trong Phỏng Vấn - Top 3 Bloom Filters
 </a>
       </li><li>
@@ -436,12 +497,6 @@ HOME
 </a>
       </li><li>
         <a href="/blog/2024-10-27-mario-reinfomation-learning-double-dqn/">Sử Dụng Mô Hình Double DQN  Huấn Luyện Mô Hình Reinforcement Learning Với Game Mario
-</a>
-      </li><li>
-        <a href="/blog/2024-09-05-system-design-top-10-interview-consistent-hashing/">Top 10 Thuật Toán System Design Các Bạn Nên Biết Và Thường Được Hỏi Trong Phỏng Vấn - Top 1 Consistent Hashing
-</a>
-      </li><li>
-        <a href="/blog/2024-07-06-llm-applications-in-real/">Các Ứng Dụng Của LLM Trong Thực Tế
 </a>
       </li></ul>
   </div>
@@ -549,7 +604,7 @@ HOME
 </a>
         </li></ul></li></ul>
 <div class="copyright mb-2">
-  Copyright © 2016-2024 Phạm Duy Tùng. All Rights Reserved.
+  Copyright © 2016-2025 Phạm Duy Tùng. All Rights Reserved.
 </div>
 <div class="powered-by mb-2">
   Website chia sẻ kiến thức của Phạm Duy Tùng và Đặng Thị Hằng. Vui lòng liên hệ email alexblack2202@gmail.com nếu bạn có thông tin cần trao đổi.

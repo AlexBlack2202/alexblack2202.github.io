@@ -1,0 +1,908 @@
+<!doctype html><html lang="en" data-palette="blue"
+   data-mode="dark">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Xử lý dữ liệu khiếm khuyết trong dữ liệu chuỗi thời gian sử dụng phương pháp linear regression - Machine learning Techniques for mising data in time-serials using liner regression - Phạm Duy Tùng Machine Learning Blog</title>
+    <meta name="a.validate.02" content="1QZXZ8oi7g57H-GxBrBPkTYBydwii-Ic9iJu" /><link rel="apple-touch-icon" href="/images/icons/icon-180x180.png" sizes="180x180">
+<link rel="icon" href="/images/icons/icon-32x32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="/images/icons/icon-16x16.png" sizes="16x16" type="image/png">
+<link rel="icon" href="/images/icons/favicon.ico">
+<link rel="manifest" href="/manifest.json">
+<meta name="keywords" content="" />
+<meta name="description" content="Dữ liệu bị thiếu trong phân tích chuỗi thời gian là một thách thức phổ biến, thường xảy ra do cảm biến hỏng, lỗi truyền dữ liệu hoặc các vấn đề bảo trì. Những khoảng trống trong dữ liệu này có thể làm gián đoạn dự báo và làm lệch kết quả phân tích, khiến cho thông tin trở nên không đáng tin cậy. Các kỹ thuật đơn giản như forward fill hoặc interpolation thường là giải pháp mặc định để xử lý dữ liệu thiếu. Tuy nhiên, khi đối mặt với các mẫu dữ liệu phức tạp, xu hướng phi tuyến tính hoặc độ biến thiên cao, các phương pháp này thường thất bại và tạo ra kết quả không ổn định." /><meta name="robots" content="index, follow" />
+  <meta itemprop="name" content="Xử lý dữ liệu khiếm khuyết trong dữ liệu chuỗi thời gian sử dụng phương pháp linear regression - Machine learning Techniques for mising data in time-serials using liner regression">
+  <meta itemprop="description" content="Dữ liệu bị thiếu trong phân tích chuỗi thời gian là một thách thức phổ biến, thường xảy ra do cảm biến hỏng, lỗi truyền dữ liệu hoặc các vấn đề bảo trì. Những khoảng trống trong dữ liệu này có thể làm gián đoạn dự báo và làm lệch kết quả phân tích, khiến cho thông tin trở nên không đáng tin cậy. Các kỹ thuật đơn giản như forward fill hoặc interpolation thường là giải pháp mặc định để xử lý dữ liệu thiếu. Tuy nhiên, khi đối mặt với các mẫu dữ liệu phức tạp, xu hướng phi tuyến tính hoặc độ biến thiên cao, các phương pháp này thường thất bại và tạo ra kết quả không ổn định.">
+  <meta itemprop="datePublished" content="2025-01-10T00:19:00+03:00">
+  <meta itemprop="dateModified" content="2025-01-10T00:19:00+03:00">
+  <meta itemprop="wordCount" content="3100">
+  <meta itemprop="image" content="https://unsplash.it/1920/1080?image=203">
+  <meta itemprop="keywords" content="Missing Data,Time-Serials"><meta property="og:url" content="/blog/2025-01-10-data-missing-time-serial-linear-regression/">
+  <meta property="og:site_name" content="Phạm Duy Tùng Machine Learning Blog">
+  <meta property="og:title" content="Xử lý dữ liệu khiếm khuyết trong dữ liệu chuỗi thời gian sử dụng phương pháp linear regression - Machine learning Techniques for mising data in time-serials using liner regression">
+  <meta property="og:description" content="Dữ liệu bị thiếu trong phân tích chuỗi thời gian là một thách thức phổ biến, thường xảy ra do cảm biến hỏng, lỗi truyền dữ liệu hoặc các vấn đề bảo trì. Những khoảng trống trong dữ liệu này có thể làm gián đoạn dự báo và làm lệch kết quả phân tích, khiến cho thông tin trở nên không đáng tin cậy. Các kỹ thuật đơn giản như forward fill hoặc interpolation thường là giải pháp mặc định để xử lý dữ liệu thiếu. Tuy nhiên, khi đối mặt với các mẫu dữ liệu phức tạp, xu hướng phi tuyến tính hoặc độ biến thiên cao, các phương pháp này thường thất bại và tạo ra kết quả không ổn định.">
+  <meta property="og:locale" content="en">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2025-01-10T00:19:00+03:00">
+    <meta property="article:modified_time" content="2025-01-10T00:19:00+03:00">
+    <meta property="article:tag" content="Missing Data">
+    <meta property="article:tag" content="Time-Serials">
+    <meta property="og:image" content="https://unsplash.it/1920/1080?image=203">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://unsplash.it/1920/1080?image=203"><meta name="twitter:title" content="Xử lý dữ liệu khiếm khuyết trong dữ liệu chuỗi thời gian sử dụng phương pháp linear regression - Machine learning Techniques for mising data in time-serials using liner regression">
+<meta name="twitter:description" content="Dữ liệu bị thiếu trong phân tích chuỗi thời gian là một thách thức phổ biến, thường xảy ra do cảm biến hỏng, lỗi truyền dữ liệu hoặc các vấn đề bảo trì. Những khoảng trống trong dữ liệu này có thể làm gián đoạn dự báo và làm lệch kết quả phân tích, khiến cho thông tin trở nên không đáng tin cậy. Các kỹ thuật đơn giản như forward fill hoặc interpolation thường là giải pháp mặc định để xử lý dữ liệu thiếu. Tuy nhiên, khi đối mặt với các mẫu dữ liệu phức tạp, xu hướng phi tuyến tính hoặc độ biến thiên cao, các phương pháp này thường thất bại và tạo ra kết quả không ổn định.">
+<link rel="stylesheet" href="/css/main.min.c06cf34535ee1f60ba08893b4d57e76b2bbd5e11c17ab12ef976f02983a51b54.css" integrity="sha256-wGzzRTXuH2C6CIk7TVfnayu9XhHBerEu&#43;XbwKYOlG1Q=" crossorigin="anonymous"><link rel="stylesheet" href="/css/katex.min.d080a89e03e1eb850f547d835c186b4273f69879aa497eb8b0e88c1578bf1f0b.css" integrity="sha256-0ICongPh64UPVH2DXBhrQnP2mHmqSX64sOiMFXi/Hws=" crossorigin="anonymous">
+<link rel="stylesheet" href="/css/viewer.min.3d228794bcedbbfa0412beb8fbc1ec6973202945e42af7004f742a4d7bd620ab.css" integrity="sha256-PSKHlLztu/oEEr64&#43;8HsaXMgKUXkKvcAT3QqTXvWIKs=" crossorigin="anonymous"><style>
+    .bgcover {
+        display: block;
+        overflow: hidden;
+        height: 450px;
+        background: no-repeat center center;
+        -webkit-background-size: cover;
+        -moz-background-size: cover;
+        -o-background-size: cover;
+        background-size: cover;
+        position: relative;
+        margin-bottom: -65px;
+    }
+    .bgcover {
+        margin-bottom: 0 !important;
+    }
+
+    .bgcover .bgtrans {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        display: block;
+        overflow: hidden;
+        height: inherit;
+        background: rgba(0,0,0,.8);
+        background: -webkit-gradient(linear,0% 0%,0% 100%,from(rgba(0,0,0,.8)),to (rgba(0,0,0,.6)),to(rgba(255,255,255,0)));
+        background: -webkit-linear-gradient(top,rgba(255,255,255,0),rgba(0,0,0,.6),rgba(0,0,0,.8));
+        background: -moz-linear-gradient(top,rgba(255,255,255,0),rgba(0,0,0,.6),rgba(0,0,0,.8));
+        background: -ms-linear-gradient(top,rgba(255,255,255,0),rgba(0,0,0,.6),rgba(0,0,0,.8));
+        background: -o-linear-gradient(top,rgba(255,255,255,0),rgba(0,0,0,.6),rgba(0,0,0,.8));
+    }
+
+    .bgcover .bgtrans h1 {
+        display: block;
+        overflow: hidden;
+        font-size: 45px;
+        line-height: 55px;
+        color: #fff;
+        width: 800px;
+        margin: auto;
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 50px;
+        font-family: 'Roboto Condensed',sans-serif;
+        font-weight: 600;
+    }
+</style></head>
+  <body><script>const items=["mode","palette"];items.forEach(function(e){const t=localStorage.getItem("hbs-"+e);t&&document.body.parentElement.setAttribute("data-"+e,t)})</script><header><nav class="navbar top-app-bar top-app-bar-expand-lg fixed-top">
+  <div class="container">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <i class="fas fa-bars"></i>
+    </button><a class="navbar-brand flex-grow-1 flex-lg-grow-0 text-center text-lg-start mx-auto me-lg-3" href="/"><img class="logo" alt="Logo" src="/images/logo.webp" loading="lazy"  title="Logo"
+   width="400" height="400"
+   />
+HOME
+    </a>
+    <div class="offcanvas offcanvas-bottom surface" tabindex="-1" id="offcanvasSocialShare" aria-labelledby="offcanvasSocialShare">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Share</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body">
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Twitter Share Button"
+      target="_blank" href="https://twitter.com/intent/tweet?title=X%e1%bb%ad%20l%c3%bd%20d%e1%bb%af%20li%e1%bb%87u%20khi%e1%ba%bfm%20khuy%e1%ba%bft%20trong%20d%e1%bb%af%20li%e1%bb%87u%20chu%e1%bb%97i%20th%e1%bb%9di%20gian%20s%e1%bb%ad%20d%e1%bb%a5ng%20ph%c6%b0%c6%a1ng%20ph%c3%a1p%20linear%20regression%20-%20Machine%20learning%20Techniques%20for%20mising%20data%20in%20time-serials%20using%20liner%20regression&url=%2fblog%2f2025-01-10-data-missing-time-serial-linear-regression%2f">
+      <i class="fab fa-fw fa-twitter"></i> Twitter
+    </a>
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Facebook Share Button"
+      target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=%2fblog%2f2025-01-10-data-missing-time-serial-linear-regression%2f">
+      <i class="fab fa-fw fa-facebook-f"></i> Facebook
+    </a>
+  </div>
+</div>
+    <button class="navbar-settings" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSettings"
+  aria-controls="offcanvasSettings" aria-label="Toggle settings">
+  <i class="fas fa-ellipsis-v"></i>
+</button>
+
+<div class="offcanvas offcanvas-end surface h-100" tabindex="-1" id="offcanvasSettings" aria-labelledby="offcanvasSettings">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Settings</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body d-flex flex-column">
+
+
+
+<section class="setting">
+  <form class="font-size-switcher-form row">
+    <div class="col-auto">
+      <label for="fontSize" class="form-label"><i class="fas fa-fw fa-font"></i> Font Size</label>
+    </div>
+    <div class="col-auto ms-auto">
+      <input type="range" class="form-range" min="-2" max="2" id="fontSize">
+    </div>
+  </form>
+</section>
+
+
+<section class="setting palettes">
+  <form class="row">
+    <div class="col-auto">
+      <label><i class="fas fa-fw fa-palette"></i> Palette</label>
+    </div>
+    <div class="col-auto ms-auto">
+      <a id="btnPalette" class="btn btn-sm btn-outline-primary" role="button" aria-label="palettePicker">
+        <i class="fas fa-eye-dropper"></i>
+      </a>
+    </div>
+  </form>
+  <div class="mt-2 d-flex justify-content-between visually-hidden" id="palettePicker"><button type="button" id="palette-blue" aria-label="Blue"
+        class="btn btn-sm w-100 palette" data-palette="blue">
+      </button><button type="button" id="palette-blue-gray" aria-label="Blue Gray"
+        class="btn btn-sm w-100 palette" data-palette="blue-gray">
+      </button><button type="button" id="palette-brown" aria-label="Brown"
+        class="btn btn-sm w-100 palette" data-palette="brown">
+      </button><button type="button" id="palette-cyan" aria-label="Cyan"
+        class="btn btn-sm w-100 palette" data-palette="cyan">
+      </button><button type="button" id="palette-green" aria-label="Green"
+        class="btn btn-sm w-100 palette" data-palette="green">
+      </button><button type="button" id="palette-indigo" aria-label="Indigo"
+        class="btn btn-sm w-100 palette" data-palette="indigo">
+      </button><button type="button" id="palette-orange" aria-label="Orange"
+        class="btn btn-sm w-100 palette" data-palette="orange">
+      </button><button type="button" id="palette-pink" aria-label="Pink"
+        class="btn btn-sm w-100 palette" data-palette="pink">
+      </button><button type="button" id="palette-purple" aria-label="Purple"
+        class="btn btn-sm w-100 palette" data-palette="purple">
+      </button><button type="button" id="palette-red" aria-label="Red"
+        class="btn btn-sm w-100 palette" data-palette="red">
+      </button><button type="button" id="palette-teal" aria-label="Teal"
+        class="btn btn-sm w-100 palette" data-palette="teal">
+      </button><button type="button" id="palette-yellow" aria-label="Yellow"
+        class="btn btn-sm w-100 palette" data-palette="yellow">
+      </button></div>
+</section>
+<section class="setting actions d-flex justify-content-around mt-auto overflow-auto">
+  <a role="button" class="action action-go-back" href="javascript: window.history.back();">
+    <span class="action-icon"><i class="fas fa-2x fa-arrow-left"></i></span> Go back
+  </a>
+  <a role="button" class="action action-reload-page">
+    <span class="action-icon"><i class="fas fa-2x fa-redo-alt"></i></span> Reload
+  </a>
+  <a role="button" class="action action-copy-url">
+    <span class="action-icon"><i class="fas fa-2x fa-link"></i></span> Copy URL
+  </a><a class="action action-social-share" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSocialShare"
+    aria-controls="offcanvasSocialShare" aria-label="Toggle social share">
+    <span class="action-icon"><i class="fas fa-2x fa-share-alt"></i></span> Share
+  </a></section>
+
+</div>
+</div>
+
+    <div class="collapse navbar-collapse" tabindex="-1" id="navbarSupportedContent" aria-labelledby="navbarSupportedContent">
+      <form class="search-bar my-1" action="/search">
+  <div class="input-group input-group-sm">
+    <span class="btn btn-search disabled position-absolute left-0"><i class="fas fa-fw fa-search"></i></span>
+    <input class="form-control rounded-pill" name="q" type="search" aria-label="Search">
+  </div>
+</form>
+      <ul class="navbar-nav ms-auto"><li class="nav-item">
+          <a class="nav-link" href="/series/">
+            <i class="fas fa-fw fa-columns"></i>Courses
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="/tools/">
+            <i class="fas fa-fw fa-folder"></i>Tools
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="/categories/">
+            <i class="fas fa-fw fa-folder"></i>Categories
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="/archives/">
+            <i class="fas fa-fw fa-file-archive"></i>Archives
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="/tags/">
+            <i class="fas fa-fw fa-tags"></i>Tags
+          </a>
+        </li><li class="nav-item dropdown">
+          <a class="nav-link" id="navbarDropdownSupport" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-fw fa-chevron-circle-down"></i>Support
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdownSupport"><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Repository
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Discussions
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Features Request
+              </a>
+            </li><li><hr class="dropdown-divider"></li><li>
+              <a class="dropdown-item"
+                href="/faq/">
+                FAQs
+              </a>
+            </li></ul>
+        </li></ul>
+    </div>
+  </div>
+</nav>
+</header>
+<main role="main" class="container" style="line-height:1.7em">
+      <div class="row content">
+<div class="col-lg-9 col-md-8">
+  <div class="container"><nav class="row card component" aria-label="breadcrumb">
+  <div class="card-body">
+    <ol class="breadcrumb "><li class="breadcrumb-item"><a href="/">Home</a></li><li class="breadcrumb-item"><a href="/blog/">Blogs</a></li><li class="breadcrumb-item active">Xử Lý Dữ Liệu Khiếm Khuyết Trong Dữ Liệu Chuỗi Thời Gian Sử Dụng Phương Pháp Linear Regression - Machine Learning Techniques for Mising Data in Time-Serials Using Liner Regression</li></ol>
+  </div>
+</nav>
+<div class="post-panel-wrapper">
+  <div class="d-flex flex-column component rounded post-panel">
+    
+    <a class="action action-panel-toggler" role="button" title="Panel toggler">
+      <i class="fas fa-fw fa-chevron-circle-down"></i>
+    </a>
+    <a id="sidebarToggler" class="action d-none d-lg-block" role="button" title="Sidebar toggler">
+  <i class="fas fa-fw fa-expand-alt" data-fa-transform="rotate-45"></i>
+</a>
+
+    
+
+    
+    
+    <a class="action" href="#post-comments" role="button" aria-label="Comments" title="Comments">
+  <i class="fas fa-fw fa-comments"></i>
+</a>
+    <a class="action" href="#postTOC" aria-controls="Table of contents" role="button" title="Table of contents">
+  <i class="fas fa-fw fa-list-alt"></i>
+</a>
+    
+  </div>
+</div>
+<article class="row card component mb-4 post">
+  <div class="card-header ">
+    <div class="bgcover" style="background-image:url(https://unsplash.it/1920/1080)" alt="Xử lý dữ liệu khiếm khuyết trong dữ liệu chuỗi thời gian sử dụng phương pháp linear regression - Machine learning Techniques for mising data in time-serials using liner regression">
+      <div class="bgtrans">
+          <h1>Xử Lý Dữ Liệu Khiếm Khuyết Trong Dữ Liệu Chuỗi Thời Gian Sử Dụng Phương Pháp Linear Regression - Machine Learning Techniques for Mising Data in Time-Serials Using Liner Regression
+</h1>
+      </div>
+  </div>
+</div>
+  <div class="card-body"><div class="post-meta">
+  <span class="post-date" title="created on 2025-01-10 04:19:00 &#43;0700 &#43;07.">
+    Jan 10, 2025
+  </span><span class="post-reading-time">
+    15 min read
+  </span><span class="post-taxonomies"><a href="/tags/missing-data/" class="badge post-taxonomy">Missing data</a><a href="/tags/time-serials/" class="badge post-taxonomy">time-serials</a></span>
+</div>
+<div class="post-content mb-3"><div class="toc">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#sử-dụng-học-máy-cho-việc-tái-tạo--dữ-liệu-thiếu-trong-chuỗi-thời-gian">Sử Dụng Học Máy Cho Việc tái tạo  Dữ Liệu Thiếu Trong Chuỗi Thời Gian</a>
+      <ul>
+        <li><a href="#khi-nào-sử-dụng-học-máy">Khi Nào sử dụng học máy</a>
+          <ul>
+            <li><a href="#1-mẫu-dữ-liệu-phi-tuyến-tính">1. <strong>Mẫu dữ liệu Phi Tuyến Tính</strong>:</a></li>
+            <li><a href="#2-bộ-dữ-liệu-có-nhiều-chiều">2. <strong>Bộ Dữ Liệu Có Nhiều Chiều</strong>:</a></li>
+            <li><a href="#3-khoảng-trống-lớn-trong-dữ-liệu">3. <strong>Khoảng Trống Lớn Trong Dữ Liệu</strong>:</a></li>
+            <li><a href="#4-dữ-liệu-bị-thiếu-không-ngẫu-nhiên">4. <strong>Dữ Liệu bị Thiếu Không Ngẫu Nhiên</strong>:</a></li>
+            <li><a href="#5-tính-chắc-chắn">5. <strong>Tính Chắc Chắn</strong>:</a></li>
+          </ul>
+        </li>
+        <li><a href="#những-đánh-đổi-khi-sử-dụng-học-máy-thay-cho-các-phương-pháp-truyền-thống">Những Đánh Đổi khi sử dụng học máy thay cho các phương pháp truyền thống:</a></li>
+      </ul>
+    </li>
+    <li><a href="#ngữ-cảnh-chẩn-bị-dữ-liệu-giả-lập">Ngữ cảnh, chẩn bị dữ liệu giả lập</a>
+      <ul>
+        <li><a href="#mô-tả-dữ-liệu"><strong>Mô tả dữ liệu</strong>:</a></li>
+        <li><a href="#mô-tả--dữ-liệu-thiếu"><strong>Mô tả  Dữ Liệu Thiếu</strong>:</a></li>
+        <li><a href="#code-mẫu-bằng-python">Code mẫu bằng python</a></li>
+      </ul>
+    </li>
+    <li><a href="#phương-pháp-tái-tạo--dữ-liệu-dựa-trên-hồi-quy">Phương Pháp tái tạo  Dữ Liệu Dựa Trên Hồi Quy</a></li>
+    <li><a href="#đánh-giá-hiệu-quả-của-việc-tái-tạo--dữ-liệu">Đánh giá hiệu quả của việc tái tạo  dữ liệu</a>
+      <ul>
+        <li><a href="#1statistical-comparison---so-sánh-thống-kê">1.Statistical Comparison - So sánh thống kê</a></li>
+        <li><a href="#2autocorrelation">2.Autocorrelation</a></li>
+        <li><a href="#3-phân-tích-xu-hướng-và-mùa-vụ---stl-decomposition-trend-and-seasonality">3. Phân tích xu hướng và mùa vụ - STL Decomposition (Trend and Seasonality)</a>
+          <ul>
+            <li><a href="#so-sánh-xu-hướng-trend-comparison">So Sánh Xu Hướng (Trend Comparison)</a></li>
+            <li><a href="#so-sánh-tính-mùa-vụ-seasonality-comparison">So Sánh Tính Mùa Vụ (Seasonality Comparison)</a></li>
+          </ul>
+        </li>
+        <li><a href="#hạn-chế-của-tái-tạo--dữ-liệu-bằng-linear-regression"><strong>Hạn Chế Của tái tạo  Dữ Liệu Bằng linear regression</strong></a></li>
+      </ul>
+    </li>
+    <li><a href="#kết-luận">Kết luận</a></li>
+    <li><a href="#tài-liệu-tham-khảo">Tài liệu tham khảo</a></li>
+  </ul>
+</nav>
+  </div>
+<p>Dữ liệu bị thiếu trong phân tích chuỗi thời gian là một thách thức phổ biến, thường xảy ra do cảm biến hỏng, lỗi truyền dữ liệu hoặc các vấn đề bảo trì. Những khoảng trống trong dữ liệu này có thể làm gián đoạn dự báo và làm lệch kết quả phân tích, khiến cho thông tin trở nên không đáng tin cậy.</p>
+<p>Các kỹ thuật đơn giản như forward fill hoặc interpolation thường là giải pháp mặc định để xử lý dữ liệu thiếu. Tuy nhiên, khi đối mặt với các mẫu dữ liệu phức tạp, xu hướng phi tuyến tính hoặc độ biến thiên cao, các phương pháp này thường thất bại và tạo ra kết quả không ổn định.</p>
+<h1 id="sử-dụng-học-máy-cho-việc-tái-tạo--dữ-liệu-thiếu-trong-chuỗi-thời-gian">Sử Dụng Học Máy Cho Việc tái tạo  Dữ Liệu Thiếu Trong Chuỗi Thời Gian<a class="anchor ms-1" href="#sử-dụng-học-máy-cho-việc-tái-tạo--dữ-liệu-thiếu-trong-chuỗi-thời-gian"><i class="fas fa-link"></i></a></h1>
+<p>Học máy (ML) cung cấp một phương pháp mạnh mẽ để tái tạo  dữ liệu thiếu bằng cách nhận diện các mẫu và mối quan hệ trong dữ liệu. Khác với các phương pháp truyền thống thường dựa vào các giả định về xu hướng tuyến tính, học máy có thể phát hiện các mối quan hệ phi tuyến tính và đa biến phức tạp, dẫn đến việc tái tạo  dữ liệu thiếu chính xác hơn.</p>
+<h2 id="khi-nào-sử-dụng-học-máy">Khi Nào sử dụng học máy<a class="anchor ms-1" href="#khi-nào-sử-dụng-học-máy"><i class="fas fa-link"></i></a></h2>
+<h3 id="1-mẫu-dữ-liệu-phi-tuyến-tính">1. Mẫu dữ liệu Phi Tuyến Tính:<a class="anchor ms-1" href="#1-mẫu-dữ-liệu-phi-tuyến-tính"><i class="fas fa-link"></i></a></h3>
+<p>Các phương pháp truyền thống thường giả định rằng dữ liệu có  xu hướng tuyến tính, nhưng nhiều bộ dữ liệu chuỗi thời gian thực tế có các mẫu phi tuyến mà các phương pháp này không thể nắm bắt. Các thuật toán học máy có thể học và mô hình hóa những mẫu phức tạp này, cải thiện độ chính xác của việc tái tạo  dữ liệu thiếu.</p>
+<h3 id="2-bộ-dữ-liệu-có-nhiều-chiều">2. Bộ Dữ Liệu Có Nhiều Chiều:<a class="anchor ms-1" href="#2-bộ-dữ-liệu-có-nhiều-chiều"><i class="fas fa-link"></i></a></h3>
+<p>Khi làm việc với các bộ dữ liệu có nhiều đặc trưng hoặc biến số, các phương pháp tái tạo  dữ liệu truyền thống có thể gặp khó khăn. Các kỹ thuật học máy có thể tận dụng các đặc trưng bổ sung trong bộ dữ liệu có nhiều chiều, giúp tái tạo  dữ liệu thiếu hiệu quả hơn bằng cách xem xét đồng thời nhiều biến.</p>
+<h3 id="3-khoảng-trống-lớn-trong-dữ-liệu">3. Khoảng Trống Lớn Trong Dữ Liệu:<a class="anchor ms-1" href="#3-khoảng-trống-lớn-trong-dữ-liệu"><i class="fas fa-link"></i></a></h3>
+<p>Đối với các bộ dữ liệu có khoảng trống lớn, các phương pháp đơn giản như tái tạo  giá trị trước có thể không đủ hiệu quả. Học máy có thể học được xu hướng tổng thể và các mẫu trong dữ liệu, giúp tái tạo  các khoảng trống lớn một cách có ý nghĩa và chính xác hơn.</p>
+<h3 id="4-dữ-liệu-bị-thiếu-không-ngẫu-nhiên">4. Dữ Liệu bị Thiếu Không Ngẫu Nhiên:<a class="anchor ms-1" href="#4-dữ-liệu-bị-thiếu-không-ngẫu-nhiên"><i class="fas fa-link"></i></a></h3>
+<p>Trong các trường hợp dữ liệu thiếu không ngẫu nhiên (MNAR), các phương pháp tái tạo  dữ liệu truyền thống, vốn giả định rằng dữ liệu thiếu là ngẫu nhiên, có thể dẫn đến kết quả sai lệch. Các phương pháp học máy có thể học cách xử lý những sai lệch này bằng cách hiểu các mối quan hệ tiềm ẩn trong dữ liệu, làm cho chúng trở nên mạnh mẽ và chính xác hơn.</p>
+<h3 id="5-tính-chắc-chắn">5. Tính Chắc Chắn:<a class="anchor ms-1" href="#5-tính-chắc-chắn"><i class="fas fa-link"></i></a></h3>
+<ul>
+<li>Các phương pháp học máy thường mạnh mẽ hơn, đặc biệt khi dữ liệu có các mẫu phức tạp hoặc dữ liệu thiếu tuân theo các cơ chế không xác định. Chúng có thể thích nghi với các loại dữ liệu thiếu khác nhau, giúp xử lý các nhiệm vụ tái tạo  dữ liệu thiếu trong chuỗi thời gian đầy thử thách.</li>
+</ul>
+<h2 id="những-đánh-đổi-khi-sử-dụng-học-máy-thay-cho-các-phương-pháp-truyền-thống">Những Đánh Đổi khi sử dụng học máy thay cho các phương pháp truyền thống:<a class="anchor ms-1" href="#những-đánh-đổi-khi-sử-dụng-học-máy-thay-cho-các-phương-pháp-truyền-thống"><i class="fas fa-link"></i></a></h2>
+<p>Mặc dù các phương pháp học máy thường mang lại kết quả chính xác hơn, nhưng chúng yêu cầu nhiều tài nguyên tính toán hơn so với các phương pháp truyền thống. Tuy nhiên, tính linh hoạt và sức mạnh của chúng khiến chúng trở thành lựa chọn lý tưởng để xử lý các nhiệm vụ tái tạo  dữ liệu thiếu trong chuỗi thời gian, nơi độ chính xác là yếu tố quan trọng.</p>
+<h1 id="ngữ-cảnh-chẩn-bị-dữ-liệu-giả-lập">Ngữ cảnh, chẩn bị dữ liệu giả lập<a class="anchor ms-1" href="#ngữ-cảnh-chẩn-bị-dữ-liệu-giả-lập"><i class="fas fa-link"></i></a></h1>
+<h2 id="mô-tả-dữ-liệu">Mô tả dữ liệu:<a class="anchor ms-1" href="#mô-tả-dữ-liệu"><i class="fas fa-link"></i></a></h2>
+<ul>
+<li>Một chuỗi thời gian từ ngày 1 tháng 1 năm 2025 đến ngày 30 tháng 4 năm 2025 được tạo ra với các khoảng thời gian 10 phút.</li>
+<li>chuỗi thời gian có  chu kỳ ngày-đêm: cao vào ban ngày (từ 6 AM đến 6 PM) và thấp vào ban đêm.</li>
+</ul>
+<h2 id="mô-tả--dữ-liệu-thiếu">Mô tả  Dữ Liệu Thiếu:<a class="anchor ms-1" href="#mô-tả--dữ-liệu-thiếu"><i class="fas fa-link"></i></a></h2>
+<ul>
+<li>10% giá trị năng lượng được chọn ngẫu nhiên và thay thế bằng <code>NaN</code> để mô phỏng dữ liệu bị thiếu.</li>
+</ul>
+<h2 id="code-mẫu-bằng-python">Code mẫu bằng python<a class="anchor ms-1" href="#code-mẫu-bằng-python"><i class="fas fa-link"></i></a></h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl"><span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl"><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl"><span class="c1"># Simulate mock energy production dataset</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl"><span class="k">def</span> <span class="nf">simulate_energy_data</span><span class="p">(</span><span class="n">start_date</span><span class="p">,</span> <span class="n">end_date</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="s1">&#39;10min&#39;</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">    <span class="c1"># Create a datetime index with 10-minute intervals</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">    <span class="n">datetime_index</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">date_range</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="n">start_date</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="n">end_date</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="n">freq</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">
+</span></span><span class="line"><span class="ln">11</span><span class="cl">    <span class="c1"># Simulate energy production with day-night cycles</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl">    <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>  <span class="c1"># For reproducibility</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl">    <span class="n">hours</span> <span class="o">=</span> <span class="n">datetime_index</span><span class="o">.</span><span class="n">hour</span>
+</span></span><span class="line"><span class="ln">14</span><span class="cl">    <span class="n">day_energy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">hours</span><span class="p">))</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl">    <span class="n">night_energy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">hours</span><span class="p">))</span>
+</span></span><span class="line"><span class="ln">16</span><span class="cl">    <span class="n">energy_values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">((</span><span class="n">hours</span> <span class="o">&gt;=</span> <span class="mi">6</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">hours</span> <span class="o">&lt;=</span> <span class="mi">18</span><span class="p">),</span> <span class="n">day_energy</span><span class="p">,</span> <span class="n">night_energy</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">17</span><span class="cl">
+</span></span><span class="line"><span class="ln">18</span><span class="cl">    <span class="c1"># Introduce missing values (10% of the dataset)</span>
+</span></span><span class="line"><span class="ln">19</span><span class="cl">    <span class="n">num_missing</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mf">0.1</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">energy_values</span><span class="p">))</span>  <span class="c1"># 10% of data will be missing</span>
+</span></span><span class="line"><span class="ln">20</span><span class="cl">    <span class="n">missing_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">energy_values</span><span class="p">),</span> <span class="n">num_missing</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">21</span><span class="cl">    <span class="n">energy_values</span><span class="p">[</span><span class="n">missing_indices</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>  <span class="c1"># Set randomly selected indices to NaN</span>
+</span></span><span class="line"><span class="ln">22</span><span class="cl">
+</span></span><span class="line"><span class="ln">23</span><span class="cl">    <span class="c1"># Create DataFrame with the simulated energy data</span>
+</span></span><span class="line"><span class="ln">24</span><span class="cl">    <span class="n">energy_data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
+</span></span><span class="line"><span class="ln">25</span><span class="cl">        <span class="s1">&#39;Datetime&#39;</span><span class="p">:</span> <span class="n">datetime_index</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">26</span><span class="cl">        <span class="s1">&#39;Energy_Production&#39;</span><span class="p">:</span> <span class="n">energy_values</span>
+</span></span><span class="line"><span class="ln">27</span><span class="cl">    <span class="p">})</span>
+</span></span><span class="line"><span class="ln">28</span><span class="cl">
+</span></span><span class="line"><span class="ln">29</span><span class="cl">    <span class="k">return</span> <span class="n">energy_data</span>
+</span></span><span class="line"><span class="ln">30</span><span class="cl">
+</span></span><span class="line"><span class="ln">31</span><span class="cl">
+</span></span><span class="line"><span class="ln">32</span><span class="cl"><span class="k">def</span> <span class="nf">plot_origin_data</span><span class="p">(</span><span class="n">energy_data_with_missing</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">33</span><span class="cl">    <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">24</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+</span></span><span class="line"><span class="ln">34</span><span class="cl">    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">energy_data_with_missing</span><span class="p">[</span><span class="s1">&#39;Datetime&#39;</span><span class="p">],</span> <span class="n">energy_data_with_missing</span><span class="p">[</span><span class="s1">&#39;Energy_Production&#39;</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Energy Production&#39;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">35</span><span class="cl">    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Datetime&#39;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">36</span><span class="cl">    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Energy Production&#39;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">37</span><span class="cl">    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Simulated Energy Production Over Time&#39;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">38</span><span class="cl">    <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">39</span><span class="cl">
+</span></span><span class="line"><span class="ln">40</span><span class="cl">    <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">41</span><span class="cl">    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">42</span><span class="cl"><span class="c1"># Main script</span>
+</span></span><span class="line"><span class="ln">43</span><span class="cl"><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&#34;__main__&#34;</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln">44</span><span class="cl">    <span class="n">start_date</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span><span class="mi">2025</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">45</span><span class="cl">    <span class="n">end_date</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span><span class="mi">2025</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">40</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">46</span><span class="cl">
+</span></span><span class="line"><span class="ln">47</span><span class="cl">    <span class="c1"># Generate the simulated dataset</span>
+</span></span><span class="line"><span class="ln">48</span><span class="cl">    <span class="n">energy_data_with_missing</span> <span class="o">=</span> <span class="n">simulate_energy_data</span><span class="p">(</span><span class="n">start_date</span><span class="p">,</span> <span class="n">end_date</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">49</span><span class="cl">
+</span></span><span class="line"><span class="ln">50</span><span class="cl">    <span class="c1"># Display the first few rows of the dataset</span>
+</span></span><span class="line"><span class="ln">51</span><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="n">energy_data_with_missing</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
+</span></span><span class="line"><span class="ln">52</span><span class="cl">
+</span></span><span class="line"><span class="ln">53</span><span class="cl">
+</span></span><span class="line"><span class="ln">54</span><span class="cl">    <span class="n">plot_origin_data</span><span class="p">(</span><span class="n">energy_data_with_missing</span><span class="p">)</span>
+</span></span></code></pre></div><p><img class="img-fluid" alt="Hình ảnh mô tả dữ liệu mẫu của chuỗi thời gian chu kỳ 10 phút lấy mẫu một lần, với 10% dữ liệu được thay thế thành NA, trong khoảng thời gian từ 1/1/2025 đến 30/4/2025  " src="/blog/2025-01-10-data-missing-time-serial-linear-regression/images/image1.png" loading="lazy"  title="Hình ảnh mô tả dữ liệu mẫu của chuỗi thời gian chu kỳ 10 phút lấy mẫu một lần, với 10% dữ liệu được thay thế thành NA, trong khoảng thời gian từ 1/1/2025 đến 30/4/2025  "
+  
+   />
+
+</p>
+<h1 id="phương-pháp-tái-tạo--dữ-liệu-dựa-trên-hồi-quy">Phương Pháp tái tạo  Dữ Liệu Dựa Trên Hồi Quy<a class="anchor ms-1" href="#phương-pháp-tái-tạo--dữ-liệu-dựa-trên-hồi-quy"><i class="fas fa-link"></i></a></h1>
+<p>Phương pháp tái tạo  dữ liệu dựa trên hồi quy sử dụng các mô hình dự đoán — một lớp thuật toán học máy, chẳng hạn như hồi quy tuyến tính hoặc các bộ hồi quy cây quyết định — để ước tính giá trị từ các mối quan hệ đã biết giữa các đặc trưng khác hoặc các mẫu thời gian, như giá trị trễ trong chuỗi thời gian.</p>
+<p>Mô hình tái tạo  vào các khoảng trống bằng cách sử dụng các xu hướng và mối quan hệ tiềm ẩn đã học từ dữ liệu.</p>
+<p>Ở bài viết này, chúng ta sẽ tìm hiểu cách tái tạo  dữ liệu bị thiếu sử dụng mô hình hồi quy tuyến tính với thư viện LinearRegression của  sklearn</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="kn">import</span> <span class="n">LinearRegression</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl"><span class="c1"># Impute missing values using linear regression</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl"><span class="k">def</span> <span class="nf">impute_missing_values</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">    <span class="c1"># Extract the non-missing data</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">    <span class="n">non_missing_data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">dropna</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">    <span class="c1"># Prepare the features (X) and target (y)</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">    <span class="n">X</span> <span class="o">=</span> <span class="n">non_missing_data</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl">    <span class="n">y</span> <span class="o">=</span> <span class="n">non_missing_data</span><span class="p">[</span><span class="s1">&#39;Energy_Production&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl">
+</span></span><span class="line"><span class="ln">13</span><span class="cl">    <span class="c1"># Fit the linear regression model</span>
+</span></span><span class="line"><span class="ln">14</span><span class="cl">    <span class="n">model</span> <span class="o">=</span> <span class="n">LinearRegression</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl">    <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">16</span><span class="cl">
+</span></span><span class="line"><span class="ln">17</span><span class="cl">    <span class="c1"># Predict the missing values</span>
+</span></span><span class="line"><span class="ln">18</span><span class="cl">    <span class="n">missing_data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;Energy_Production&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isna</span><span class="p">()]</span>
+</span></span><span class="line"><span class="ln">19</span><span class="cl">    <span class="n">X_missing</span> <span class="o">=</span> <span class="n">missing_data</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">20</span><span class="cl">    <span class="n">predicted_values</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_missing</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">21</span><span class="cl">
+</span></span><span class="line"><span class="ln">22</span><span class="cl">    <span class="c1"># Create a DataFrame for the imputed data</span>
+</span></span><span class="line"><span class="ln">23</span><span class="cl">    <span class="n">imputed_data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">24</span><span class="cl">    <span class="n">imputed_data</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;Energy_Production&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isna</span><span class="p">(),</span> <span class="s1">&#39;Energy_Production&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">predicted_values</span>
+</span></span><span class="line"><span class="ln">25</span><span class="cl">
+</span></span><span class="line"><span class="ln">26</span><span class="cl">    <span class="k">return</span> <span class="n">imputed_data</span>
+</span></span><span class="line"><span class="ln">27</span><span class="cl">
+</span></span><span class="line"><span class="ln">28</span><span class="cl">
+</span></span><span class="line"><span class="ln">29</span><span class="cl"><span class="k">def</span> <span class="nf">plot_full_data</span><span class="p">(</span><span class="n">energy_data_imputed</span><span class="p">,</span><span class="n">energy_data_with_missing</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">30</span><span class="cl">    <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">24</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+</span></span><span class="line"><span class="ln">31</span><span class="cl">
+</span></span><span class="line"><span class="ln">32</span><span class="cl">    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">energy_data_imputed</span><span class="p">[</span><span class="s1">&#39;Datetime&#39;</span><span class="p">],</span> <span class="n">energy_data_imputed</span><span class="p">[</span><span class="s1">&#39;Energy_Production&#39;</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Imputed Data&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;blue&#39;</span> <span class="p">)</span>
+</span></span><span class="line"><span class="ln">33</span><span class="cl">    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">energy_data_with_missing</span><span class="p">[</span><span class="s1">&#39;Datetime&#39;</span><span class="p">],</span> <span class="n">energy_data_with_missing</span><span class="p">[</span><span class="s1">&#39;Energy_Production&#39;</span><span class="p">],</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Original Data&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">34</span><span class="cl">    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Datetime&#39;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">35</span><span class="cl">    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Energy Production&#39;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">36</span><span class="cl">    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Simulated Energy Production Over Time (Original vs Imputed)&#39;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">37</span><span class="cl">    <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">38</span><span class="cl">    <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">39</span><span class="cl">    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">40</span><span class="cl">
+</span></span><span class="line"><span class="ln">41</span><span class="cl"><span class="c1"># Main script</span>
+</span></span><span class="line"><span class="ln">42</span><span class="cl"><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&#34;__main__&#34;</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln">43</span><span class="cl">
+</span></span><span class="line"><span class="ln">44</span><span class="cl">    <span class="n">start_date</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span><span class="mi">2024</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">45</span><span class="cl">    <span class="n">end_date</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span><span class="mi">2024</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">30</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">46</span><span class="cl">
+</span></span><span class="line"><span class="ln">47</span><span class="cl">    <span class="c1"># Generate the simulated dataset</span>
+</span></span><span class="line"><span class="ln">48</span><span class="cl">    <span class="n">energy_data_with_missing</span> <span class="o">=</span> <span class="n">simulate_energy_data</span><span class="p">(</span><span class="n">start_date</span><span class="p">,</span> <span class="n">end_date</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">49</span><span class="cl">
+</span></span><span class="line"><span class="ln">50</span><span class="cl">
+</span></span><span class="line"><span class="ln">51</span><span class="cl">    <span class="n">plot_origin_data</span><span class="p">(</span><span class="n">energy_data_with_missing</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">52</span><span class="cl">
+</span></span><span class="line"><span class="ln">53</span><span class="cl">
+</span></span><span class="line"><span class="ln">54</span><span class="cl">    <span class="c1"># Impute the missing values</span>
+</span></span><span class="line"><span class="ln">55</span><span class="cl">    <span class="n">energy_data_imputed</span> <span class="o">=</span> <span class="n">impute_missing_values</span><span class="p">(</span><span class="n">energy_data_with_missing</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+</span></span><span class="line"><span class="ln">56</span><span class="cl">
+</span></span><span class="line"><span class="ln">57</span><span class="cl">    <span class="c1"># Display the first few rows of the dataset</span>
+</span></span><span class="line"><span class="ln">58</span><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="n">energy_data_imputed</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
+</span></span><span class="line"><span class="ln">59</span><span class="cl">
+</span></span><span class="line"><span class="ln">60</span><span class="cl">    <span class="n">plot_full_data</span><span class="p">(</span><span class="n">energy_data_imputed</span><span class="p">,</span><span class="n">energy_data_with_missing</span><span class="p">)</span>
+</span></span></code></pre></div><p><img class="img-fluid" alt="Đồ thị trực quan hoá missing data sử dụng regression " src="/blog/2025-01-10-data-missing-time-serial-linear-regression/images/images2.png" loading="lazy"  title="Đồ thị trực quan hoá missing data sử dụng regression "
+  
+   />
+
+</p>
+<p>Code đơn giản phải không các bạn, nhìn vào đồ thị thì chúng ta tháy rằng xu hướng của missing data đã giống gần như i sì với xu hướng của dữ liệu gốc rồi đó.</p>
+<p>Mặc dù chúng ta có thể quan sát rằng các giá trị tái tạo  theo xu hướng chung của dữ liệu gốc, nhưng điều này không đủ để đánh giá mức độ hiệu quả của phương pháp tái tạo  dữ liệu. Chúng ta cần đưa ra các phương pháp định lượng để chứng minh mô hình này ổn, ở mức chấp nhận được</p>
+<h1 id="đánh-giá-hiệu-quả-của-việc-tái-tạo--dữ-liệu">Đánh giá hiệu quả của việc tái tạo  dữ liệu<a class="anchor ms-1" href="#đánh-giá-hiệu-quả-của-việc-tái-tạo--dữ-liệu"><i class="fas fa-link"></i></a></h1>
+<h2 id="1statistical-comparison---so-sánh-thống-kê">1.Statistical Comparison - So sánh thống kê<a class="anchor ms-1" href="#1statistical-comparison---so-sánh-thống-kê"><i class="fas fa-link"></i></a></h2>
+<p>So sánh các chỉ số thống kê (trung bình, độ lệch chuẩn, giá trị nhỏ nhất, giá trị lớn nhất) để đảm bảo dữ liệu tái tạo  phù hợp với phân phối dữ liệu gốc.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="c1"># Statistical comparison function using describe</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl"><span class="k">def</span> <span class="nf">statistical_comparison</span><span class="p">(</span><span class="n">original_data</span><span class="p">,</span> <span class="n">imputed_data</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">    <span class="n">original_stats</span> <span class="o">=</span> <span class="n">original_data</span><span class="p">[</span><span class="s1">&#39;Energy_Production&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">    <span class="n">imputed_stats</span> <span class="o">=</span> <span class="n">imputed_data</span><span class="p">[</span><span class="s1">&#39;Energy_Production&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">describe</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">    <span class="n">comparison</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">        <span class="s1">&#39;Metric&#39;</span><span class="p">:</span> <span class="n">original_stats</span><span class="o">.</span><span class="n">index</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">        <span class="s1">&#39;Original Data&#39;</span><span class="p">:</span> <span class="n">original_stats</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">        <span class="s1">&#39;Imputed Data&#39;</span><span class="p">:</span> <span class="n">imputed_stats</span><span class="o">.</span><span class="n">values</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">    <span class="p">})</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl">    <span class="k">return</span> <span class="n">comparison</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl">
+</span></span><span class="line"><span class="ln">13</span><span class="cl"><span class="n">comparison</span> <span class="o">=</span> <span class="n">statistical_comparison</span><span class="p">(</span><span class="n">energy_data_with_missing</span><span class="o">.</span><span class="n">dropna</span><span class="p">(),</span> <span class="n">energy_data_imputed</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">14</span><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="n">comparison</span><span class="p">)</span>
+</span></span></code></pre></div><p>Kết quả</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln">1</span><span class="cl">  <span class="n">Metric</span>  <span class="n">Original</span> <span class="n">Data</span>  <span class="n">Imputed</span> <span class="n">Data</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="mi">0</span>  <span class="n">count</span>   <span class="mf">15553.000000</span>  <span class="mf">17281.000000</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="mi">1</span>   <span class="n">mean</span>     <span class="mf">185.155737</span>    <span class="mf">185.155865</span>
+</span></span><span class="line"><span class="ln">4</span><span class="cl"><span class="mi">2</span>    <span class="n">std</span>     <span class="mf">127.062030</span>    <span class="mf">120.541640</span>
+</span></span><span class="line"><span class="ln">5</span><span class="cl"><span class="mi">3</span>    <span class="nb">min</span>     <span class="o">-</span><span class="mf">16.984058</span>    <span class="o">-</span><span class="mf">16.984058</span>
+</span></span><span class="line"><span class="ln">6</span><span class="cl"><span class="mi">4</span>    <span class="mi">25</span><span class="o">%</span>      <span class="mf">51.260972</span>     <span class="mf">53.436820</span>
+</span></span><span class="line"><span class="ln">7</span><span class="cl"><span class="mi">5</span>    <span class="mi">50</span><span class="o">%</span>     <span class="mf">257.313693</span>    <span class="mf">185.404682</span>
+</span></span><span class="line"><span class="ln">8</span><span class="cl"><span class="mi">6</span>    <span class="mi">75</span><span class="o">%</span>     <span class="mf">302.393653</span>    <span class="mf">298.653209</span>
+</span></span><span class="line"><span class="ln">9</span><span class="cl"><span class="mi">7</span>    <span class="nb">max</span>     <span class="mf">415.581945</span>    <span class="mf">415.581945</span>
+</span></span></code></pre></div><p>Từ bảng so sánh thống kê ở trên , chúng ta có thể rút ra những kết luận sau:</p>
+<p><strong>Số Lượng (Count)</strong>: Bộ dữ liệu tái tạo  chứa nhiều điểm dữ liệu hơn, 17281, so với bộ dữ liệu gốc, 15553, do việc tái tạo  các giá trị thiếu để đảm bảo dữ liệu đầy đủ.</p>
+<p><strong>Trung Bình (Mean)</strong>: Trung bình của dữ liệu tái tạo  là 185.1558, gần giống với giá trị trung bình của dữ liệu gốc 185.1557, điều này có nghĩa là xu hướng trung tâm của dữ liệu đã được duy trì trong quá trình tái tạo  dữ liệu.</p>
+<p><strong>Độ Lệch Chuẩn (Standard Deviation)</strong>: Dữ liệu tái tạo  có sự phân tán thấp hơn (độ lệch chuẩn = 120.54 so với 127.06 của dữ liệu gốc). Điều này có thể cho thấy rằng trong quá trình tái tạo  dữ liệu, các giá trị đã trở nên mượt mà hơn, giảm bớt sự phân tán. Hồi quy tuyến tính đã làm &ldquo;phép màu dự đoán&rdquo; của mình bằng cách luôn trả về các giá trị gần với trung bình.</p>
+<p><strong>Giá Trị Tối Thiểu và Tối Đa</strong>: Giá trị tối thiểu (-16.984058) và tối đa (415.581945) là giống nhau, điều này gợi ý rằng quá trình tái tạo  dữ liệu không tạo ra các giá trị ngoại lai cực đoan hoặc không đi ra ngoài phạm vi của dữ liệu gốc.</p>
+<p><strong>Các Phân Vị (Quartiles 25%, 50%, 75%)</strong>:</p>
+<ul>
+<li>Phân vị thứ 25 (quartile thấp) cao hơn một chút trong dữ liệu tái tạo , 53.43 so với 51.26 của dữ liệu gốc, cho thấy các giá trị tái tạo  đã lấp đầy nhiều khoảng trống ở phạm vi thấp.</li>
+<li>Trung vị (50%) đã thay đổi đáng kể từ 257.31 trong dữ liệu gốc thành 185.40 trong dữ liệu tái tạo , cho thấy các giá trị tái tạo  đã giảm độ lệch  dữ liệu của các phần tử dữ liệu cao.</li>
+<li>Phân vị thứ 75 (quartile cao) 302.39 và 298.65 , gần như tương đương nhau, phản ánh rằng các giá trị cao đã được bảo tồn tốt.</li>
+</ul>
+<p><strong>Kết luận</strong>: Phương pháp hồi quy tuyến tính đã bảo tồn phân phối tổng thể và phạm vi của dữ liệu, trong khi làm giảm sự biến thiên và làm mượt dữ liệu một chút.</p>
+<h2 id="2autocorrelation">2.Autocorrelation<a class="anchor ms-1" href="#2autocorrelation"><i class="fas fa-link"></i></a></h2>
+<p>Kiểm tra xem tự tương quan của chuỗi có được duy trì sau khi tái tạo  dữ liệu hay không.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln">1</span><span class="cl">
+</span></span><span class="line"><span class="ln">2</span><span class="cl">
+</span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="c1"># Autocorrelation analysis function</span>
+</span></span><span class="line"><span class="ln">4</span><span class="cl"><span class="k">def</span> <span class="nf">autocorrelation_analysis</span><span class="p">(</span><span class="n">original_data</span><span class="p">,</span> <span class="n">imputed_data</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">5</span><span class="cl">    <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+</span></span><span class="line"><span class="ln">6</span><span class="cl">    <span class="n">plot_acf</span><span class="p">(</span><span class="n">original_data</span><span class="p">[</span><span class="s1">&#39;Energy_Production&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">dropna</span><span class="p">(),</span> <span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;ACF of Original Data&#39;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">7</span><span class="cl">    <span class="n">plot_acf</span><span class="p">(</span><span class="n">imputed_data</span><span class="p">[</span><span class="s1">&#39;Energy_Production&#39;</span><span class="p">],</span> <span class="n">ax</span><span class="o">=</span><span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">title</span><span class="o">=</span><span class="s1">&#39;ACF of Imputed Data&#39;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">8</span><span class="cl">    <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">9</span><span class="cl">    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</span></span></code></pre></div><p><img class="img-fluid" alt="đồ thị Autocorrelation so sánh giữa data gốc và data tái tạo " src="/blog/2025-01-10-data-missing-time-serial-linear-regression/images/image3.png" loading="lazy"  title="đồ thị Autocorrelation so sánh giữa data gốc và data tái tạo "
+  
+   />
+
+</p>
+<p>Quan sát đồ thị ACF trên, chúng ta có thể rút ra các ý chính sau</p>
+<p><strong>Bảo Tồn Các Phụ Thuộc - Preservation of Temporal Dependencies</strong>:</p>
+<p>Hình dạng và sự suy giảm của ACF trong dữ liệu tái tạo có sự tương đồng đáng kể với dữ liệu gốc. Điều này cho thấy rằng các phụ thuộc thời gian đã được bảo tồn khá tốt sau quá trình tái tạo dữ liệu.</p>
+<p><strong>Hiệu Ứng Làm Mịn - Slight Smoothing Effect</strong>:</p>
+<p>ACF trên dữ liệu tái tạo  cho thấy giá trị ở một số độ trễ (lags) thấp hơn so với dữ liệu gốc. Điều này có thể là do mô hình hồi quy tuyến tính làm mịn các cực trị, dẫn đến giảm nhẹ mức độ biến động.</p>
+<p><strong>Các Mẫu Chu Kỳ Trong ACF - Cyclic Patterns</strong>:</p>
+<p>Các đỉnh chu kỳ trong ACF, chẳng hạn như tính mùa vụ hàng ngày, dường như được duy trì giữa dữ liệu gốc và dữ liệu tái tạo . Điều này cho thấy rằng quá trình tái tạo dữ liệu đã bảo tồn các hành vi tuần hoàn trong tập dữ liệu.</p>
+<p><strong>Tính Ổn Định Chung</strong>:</p>
+<p>Sự tương đồng giữa hai biểu đồ ACF là một dấu hiệu tích cực, cho thấy phương pháp tái tạo  dữ liệu bằng hồi quy tuyến tính đã giữ lại tốt cấu trúc  cốt lõi trong dữ liệu.</p>
+<p><strong>Kết Luận</strong>:</p>
+<p>Phương pháp hồi quy tuyến tính không chỉ bảo tồn mối liên hệ thời gian trong dữ liệu mà còn duy trì các mẫu chu kỳ, mặc dù có một chút hiệu ứng làm mịn.</p>
+<h2 id="3-phân-tích-xu-hướng-và-mùa-vụ---stl-decomposition-trend-and-seasonality">3. Phân tích xu hướng và mùa vụ - STL Decomposition (Trend and Seasonality)<a class="anchor ms-1" href="#3-phân-tích-xu-hướng-và-mùa-vụ---stl-decomposition-trend-and-seasonality"><i class="fas fa-link"></i></a></h2>
+<h3 id="so-sánh-xu-hướng-trend-comparison">So Sánh Xu Hướng (Trend Comparison)<a class="anchor ms-1" href="#so-sánh-xu-hướng-trend-comparison"><i class="fas fa-link"></i></a></h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="c1"># STL decomposition function to extract and plot trend component</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl"><span class="k">def</span> <span class="nf">stl_decomposition_trend</span><span class="p">(</span><span class="n">original_data</span><span class="p">,</span> <span class="n">imputed_data</span><span class="p">,</span> <span class="n">period</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">    <span class="n">stl_original</span> <span class="o">=</span> <span class="n">STL</span><span class="p">(</span><span class="n">original_data</span><span class="p">[</span><span class="s1">&#39;Energy_Production&#39;</span><span class="p">]</span> <span class="p">,</span> <span class="n">period</span><span class="o">=</span><span class="n">period</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">    <span class="n">result_original</span> <span class="o">=</span> <span class="n">stl_original</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">    <span class="n">trend_original</span> <span class="o">=</span> <span class="n">result_original</span><span class="o">.</span><span class="n">trend</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">    <span class="n">stl_imputed</span> <span class="o">=</span> <span class="n">STL</span><span class="p">(</span><span class="n">imputed_data</span><span class="p">[</span><span class="s1">&#39;Energy_Production&#39;</span><span class="p">],</span> <span class="n">period</span><span class="o">=</span><span class="n">period</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">    <span class="n">result_imputed</span> <span class="o">=</span> <span class="n">stl_imputed</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">    <span class="n">trend_imputed</span> <span class="o">=</span> <span class="n">result_imputed</span><span class="o">.</span><span class="n">trend</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl">
+</span></span><span class="line"><span class="ln">12</span><span class="cl">    <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">24</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl">    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">original_data</span><span class="p">[</span><span class="s1">&#39;Datetime&#39;</span><span class="p">],</span> <span class="n">trend_original</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Trend of Original Data&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">14</span><span class="cl">    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">imputed_data</span><span class="p">[</span><span class="s1">&#39;Datetime&#39;</span><span class="p">],</span> <span class="n">trend_imputed</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Trend of Imputed Data&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;blue&#39;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl">    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Datetime&#39;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">16</span><span class="cl">    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Trend&#39;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">17</span><span class="cl">    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;STL Decomposition Trend of Original and Imputed Data&#39;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">18</span><span class="cl">    <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">19</span><span class="cl">    <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">20</span><span class="cl">    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">21</span><span class="cl">
+</span></span><span class="line"><span class="ln">22</span><span class="cl"><span class="n">stl_decomposition_trend</span><span class="p">(</span><span class="n">energy_data_with_missing</span><span class="o">.</span><span class="n">dropna</span><span class="p">(),</span> <span class="n">energy_data_imputed</span><span class="p">,</span> <span class="n">period</span><span class="o">=</span><span class="mi">144</span><span class="p">)</span>  <span class="c1"># Daily seasonality (144 10-min intervals in a day)</span>
+</span></span></code></pre></div><p><img class="img-fluid" alt="đồ thị trực quan hoá Trend data sử dụng linear regression " src="/blog/2025-01-10-data-missing-time-serial-linear-regression/images/image4.png" loading="lazy"  title="đồ thị trực quan hoá Trend data sử dụng linear regression "
+  
+   />
+
+</p>
+<ul>
+<li>
+<p><strong>Bảo Tồn Xu Hướng Dài Hạn</strong>:</p>
+<p>Đường Xu hướng tái tạo  (màu xanh dương) nhìn chung phù hợp với xu hướng gốc (màu đỏ), cho thấy phương pháp tái tạo  hồi quy tuyến tính đã bảo tồn được chuyển động dài hạn trong dữ liệu.</p>
+</li>
+<li>
+<p><strong>Hiệu Ứng Làm Mịn</strong>:</p>
+<p>Đường Xu hướng tái tạo  mượt mà hơn so với xu hướng gốc, đặc biệt ở những nơi xu hướng gốc có nhiều biến động. Điều này là đặc điểm của hồi quy tuyến tính, vốn có xu hướng không phản ánh tốt các biến động mạnh và làm mịn các cực trị.</p>
+</li>
+</ul>
+<h3 id="so-sánh-tính-mùa-vụ-seasonality-comparison">So Sánh Tính Mùa Vụ (Seasonality Comparison)<a class="anchor ms-1" href="#so-sánh-tính-mùa-vụ-seasonality-comparison"><i class="fas fa-link"></i></a></h3>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl"><span class="k">def</span> <span class="nf">stl_decomposition_seasonality</span><span class="p">(</span><span class="n">original_data</span><span class="p">,</span> <span class="n">imputed_data</span><span class="p">,</span> <span class="n">period</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">    <span class="n">stl_original</span> <span class="o">=</span> <span class="n">STL</span><span class="p">(</span><span class="n">original_data</span><span class="p">[</span><span class="s1">&#39;Energy_Production&#39;</span><span class="p">],</span> <span class="n">period</span><span class="o">=</span><span class="n">period</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">    <span class="n">result_original</span> <span class="o">=</span> <span class="n">stl_original</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">    <span class="n">seasonality_original</span> <span class="o">=</span> <span class="n">result_original</span><span class="o">.</span><span class="n">seasonal</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">    <span class="n">stl_imputed</span> <span class="o">=</span> <span class="n">STL</span><span class="p">(</span><span class="n">imputed_data</span><span class="p">[</span><span class="s1">&#39;Energy_Production&#39;</span><span class="p">],</span> <span class="n">period</span><span class="o">=</span><span class="n">period</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">    <span class="n">result_imputed</span> <span class="o">=</span> <span class="n">stl_imputed</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">    <span class="n">seasonality_imputed</span> <span class="o">=</span> <span class="n">result_imputed</span><span class="o">.</span><span class="n">seasonal</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl">
+</span></span><span class="line"><span class="ln">12</span><span class="cl">    <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">24</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl">    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">original_data</span><span class="p">[</span><span class="s1">&#39;Datetime&#39;</span><span class="p">],</span> <span class="n">seasonality_original</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Seasonality of Original Data&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">14</span><span class="cl">    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">imputed_data</span><span class="p">[</span><span class="s1">&#39;Datetime&#39;</span><span class="p">],</span> <span class="n">seasonality_imputed</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Seasonality of Imputed Data&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;blue&#39;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl">    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Datetime&#39;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">16</span><span class="cl">    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Seasonality&#39;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">17</span><span class="cl">    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;STL Decomposition Seasonality of Original and Imputed Data&#39;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">18</span><span class="cl">    <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">19</span><span class="cl">    <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">20</span><span class="cl">    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">21</span><span class="cl"><span class="n">stl_decomposition_seasonality</span><span class="p">(</span><span class="n">energy_data_with_missing</span><span class="o">.</span><span class="n">dropna</span><span class="p">(),</span> <span class="n">energy_data_imputed</span><span class="p">,</span> <span class="n">period</span><span class="o">=</span><span class="mi">144</span><span class="p">)</span>  <span class="c1"># Daily seasonality (144 10-min intervals in a day)</span>
+</span></span></code></pre></div><p><img class="img-fluid" alt="đồ thị trực quan hoá Seasonality data sử dụng linear regression " src="/blog/2025-01-10-data-missing-time-serial-linear-regression/images/image5.png" loading="lazy"  title="đồ thị trực quan hoá Seasonality data sử dụng linear regression "
+  
+   />
+
+</p>
+<ul>
+<li>
+<p><strong>Bảo Tồn tính Chu Kỳ</strong>:</p>
+<p>Đường mùa vụ tái tạo  thể hiện ra các mẫu chu kỳ tương đối gần giống với  chu kỳ của đường mùa vụ gốc, phản ánh rằng dữ liệu các chu kỳ sản xuất ngày-đêm đã được duy trì khá tốt.</p>
+</li>
+<li>
+<p><strong>Giảm Biên Độ Chu Kỳ</strong>:</p>
+<p>Biên độ của đường mùa vụ tái tạo  bị giảm nhẹ so với gốc, đặc biệt tại các đỉnh và đáy. Điều này cho thấy quá trình tái tạo dữ liệu đã làm cho các biến động chu kỳ ở cực trị trở nên ít mạnh mẽ hơn.</p>
+</li>
+</ul>
+<h2 id="hạn-chế-của-tái-tạo--dữ-liệu-bằng-linear-regression">Hạn Chế Của tái tạo  Dữ Liệu Bằng linear regression<a class="anchor ms-1" href="#hạn-chế-của-tái-tạo--dữ-liệu-bằng-linear-regression"><i class="fas fa-link"></i></a></h2>
+<p><strong>Làm Mịn Các cực trị</strong>:</p>
+<ul>
+<li>
+<p>Từ so sánh thống kê, độ lệch chuẩn thấp hơn ở dữ liệu tái tạo  cho thấy tính biến động đã bị giảm.</p>
+</li>
+<li>
+<p>Từ so sánh xu hướng, xu hướng tái tạo  mượt hơn và thiếu một số biến động gốc trong các mẫu dài hạn.</p>
+</li>
+</ul>
+<p><strong>Giả Định Tuyến Tính</strong>:</p>
+<ul>
+<li>Hiệu ứng làm mịn trong so sánh xu hướng cho thấy phương pháp này khó bắt kịp các thay đổi phi tuyến tính trong dữ liệu, đặc biệt tại các giai đoạn có sự thay đổi đột ngột.</li>
+</ul>
+<p><strong>Giảm Biên Độ Mùa Vụ</strong>:</p>
+<ul>
+<li>So sánh tính mùa vụ cho thấy biên độ chu kỳ tái tạo  thấp hơn so với gốc, với các đỉnh và đáy bị làm mịn. Điều này phù hợp với xu hướng của hồi quy trong việc kéo các giá trị cực đoan về trung bình.</li>
+</ul>
+<h1 id="kết-luận">Kết luận<a class="anchor ms-1" href="#kết-luận"><i class="fas fa-link"></i></a></h1>
+<p>Phương pháp tái tạo  hồi quy tuyến tính bảo tồn được các xu hướng tổng thể và các mẫu chu kỳ, nhưng làm giảm tính biến động và làm mịn các giá trị cực đoan. Ngoài ra, nó thể hiện sự giảm nhẹ cường độ của các chu kỳ mùa vụ, điều này được phản ánh trong cả phân tích thống kê và phân rã dữ liệu.</p>
+<p>Cảm ơn các bạn đã theo dõi bài viết. Xin cảm ơn và hẹn gặp lại.</p>
+<h1 id="tài-liệu-tham-khảo">Tài liệu tham khảo<a class="anchor ms-1" href="#tài-liệu-tham-khảo"><i class="fas fa-link"></i></a></h1>
+<p><a href="https://www.geeksforgeeks.org/managing-missing-data-in-linear-regression/" target="_blank" rel="noopener noreferrer">https://www.geeksforgeeks.org/managing-missing-data-in-linear-regression/</a></p>
+<p><a href="https://towardsdatascience.com/missing-data-in-time-series-machine-learning-techniques-6b2273ff8b45" target="_blank" rel="noopener noreferrer">https://towardsdatascience.com/missing-data-in-time-series-machine-learning-techniques-6b2273ff8b45</a></p>
+<p><a href="https://www.geeksforgeeks.org/dataset-for-linear-regression/" target="_blank" rel="noopener noreferrer">https://www.geeksforgeeks.org/dataset-for-linear-regression/</a></p>
+<p><a href="https://www.geeksforgeeks.org/ml-handling-missing-values/" target="_blank" rel="noopener noreferrer">https://www.geeksforgeeks.org/ml-handling-missing-values/</a></p>
+<p><a href="https://codezup.com/mastering-linear-regression-time-series-forecasting/" target="_blank" rel="noopener noreferrer">https://codezup.com/mastering-linear-regression-time-series-forecasting/</a></p>
+</div></div>
+  <div class="card-footer"><div class="post-navs d-flex justify-content-evenly"><div class="post-nav post-prev">
+    <i class="fas fa-fw fa-chevron-left"></i>
+    <a href="/blog/2024-11-24-system-design-top-10-interview-bloom-filters/">Top 10 Thuật Toán System Design Các Bạn Nên Biết Và Thường Được Hỏi Trong Phỏng Vấn - Top 3 Bloom Filters
+</a>
+  </div><div class="post-nav post-next">
+    <a href="/blog/2025-01-12-data-missing-time-serial-decision-tree-regression/">Xử Lý Dữ Liệu Khiếm Khuyết Trong Dữ Liệu Chuỗi Thời Gian Sử Dụng Phương Pháp Decision Tree Regression - Machine Learning Techniques for Mising Data in Time-Serials Using Decision Tree Regression
+</a>
+    <i class="fas fa-fw fa-chevron-right"></i>
+  </div></div></div>
+</article><div class="card component row post-comments" id="post-comments">
+  <div class="card-header">
+    <h2 class="card-title">Comments</h2>
+  </div>
+  <div class="card-body"><script src="https://utteranc.es/client.js"
+  repo="AlexBlack2202/utterances"
+  issue-term="pathname"
+  label="comment"
+  theme="github-dark"
+  crossorigin="anonymous"
+  async>
+</script></div>
+</div></div>
+</div><aside class="col-lg-3 col-md-4 sidebar d-flex">
+  <div class="container d-flex flex-column">
+    
+    <section class="card row text-center profile component">
+  <div class="card-body">
+    <div class="col-12 d-flex align-items-center justify-content-center"><img class="profile-avatar rounded-circle" alt="Đặng Thị Hằng | Phạm Duy Tùng" src="/images/profile.webp" loading="lazy"  title="Đặng Thị Hằng | Phạm Duy Tùng"
+   width="736" height="920"
+   />
+</div>
+    <div class="col-12 profile-meta"><div class="profile-name">Đặng Thị Hằng | Phạm Duy Tùng</div><div class="profile-bio">Gopher, CShaper, Pythoner, Full Stack Engineer.</div><div class="profile-company"><i class="fas fa-fw fa-building"></i>MWG</div><div class="profile-location"><i class="fas fa-fw fa-map-marker-alt"></i>Earth</div><div class="profile-about"><i class="fas fa-fw fa-user"></i><a href="/about/">About</a></div><div class="profile-contact"><i class="fas fa-fw fa-question-circle"></i><a href="/contact/">Contact Us</a></div>
+</div>
+  </div>
+</section>
+  <div class="post-toc row mb-4 card component" id="postTOC">
+  <div class="card-header">
+    <h2 class="card-title">Contents</h2>
+  </div>
+  <div class="card-body">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#sử-dụng-học-máy-cho-việc-tái-tạo--dữ-liệu-thiếu-trong-chuỗi-thời-gian">Sử Dụng Học Máy Cho Việc tái tạo  Dữ Liệu Thiếu Trong Chuỗi Thời Gian</a>
+      <ul>
+        <li><a href="#khi-nào-sử-dụng-học-máy">Khi Nào sử dụng học máy</a>
+          <ul>
+            <li><a href="#1-mẫu-dữ-liệu-phi-tuyến-tính">1. <strong>Mẫu dữ liệu Phi Tuyến Tính</strong>:</a></li>
+            <li><a href="#2-bộ-dữ-liệu-có-nhiều-chiều">2. <strong>Bộ Dữ Liệu Có Nhiều Chiều</strong>:</a></li>
+            <li><a href="#3-khoảng-trống-lớn-trong-dữ-liệu">3. <strong>Khoảng Trống Lớn Trong Dữ Liệu</strong>:</a></li>
+            <li><a href="#4-dữ-liệu-bị-thiếu-không-ngẫu-nhiên">4. <strong>Dữ Liệu bị Thiếu Không Ngẫu Nhiên</strong>:</a></li>
+            <li><a href="#5-tính-chắc-chắn">5. <strong>Tính Chắc Chắn</strong>:</a></li>
+          </ul>
+        </li>
+        <li><a href="#những-đánh-đổi-khi-sử-dụng-học-máy-thay-cho-các-phương-pháp-truyền-thống">Những Đánh Đổi khi sử dụng học máy thay cho các phương pháp truyền thống:</a></li>
+      </ul>
+    </li>
+    <li><a href="#ngữ-cảnh-chẩn-bị-dữ-liệu-giả-lập">Ngữ cảnh, chẩn bị dữ liệu giả lập</a>
+      <ul>
+        <li><a href="#mô-tả-dữ-liệu"><strong>Mô tả dữ liệu</strong>:</a></li>
+        <li><a href="#mô-tả--dữ-liệu-thiếu"><strong>Mô tả  Dữ Liệu Thiếu</strong>:</a></li>
+        <li><a href="#code-mẫu-bằng-python">Code mẫu bằng python</a></li>
+      </ul>
+    </li>
+    <li><a href="#phương-pháp-tái-tạo--dữ-liệu-dựa-trên-hồi-quy">Phương Pháp tái tạo  Dữ Liệu Dựa Trên Hồi Quy</a></li>
+    <li><a href="#đánh-giá-hiệu-quả-của-việc-tái-tạo--dữ-liệu">Đánh giá hiệu quả của việc tái tạo  dữ liệu</a>
+      <ul>
+        <li><a href="#1statistical-comparison---so-sánh-thống-kê">1.Statistical Comparison - So sánh thống kê</a></li>
+        <li><a href="#2autocorrelation">2.Autocorrelation</a></li>
+        <li><a href="#3-phân-tích-xu-hướng-và-mùa-vụ---stl-decomposition-trend-and-seasonality">3. Phân tích xu hướng và mùa vụ - STL Decomposition (Trend and Seasonality)</a>
+          <ul>
+            <li><a href="#so-sánh-xu-hướng-trend-comparison">So Sánh Xu Hướng (Trend Comparison)</a></li>
+            <li><a href="#so-sánh-tính-mùa-vụ-seasonality-comparison">So Sánh Tính Mùa Vụ (Seasonality Comparison)</a></li>
+          </ul>
+        </li>
+        <li><a href="#hạn-chế-của-tái-tạo--dữ-liệu-bằng-linear-regression"><strong>Hạn Chế Của tái tạo  Dữ Liệu Bằng linear regression</strong></a></li>
+      </ul>
+    </li>
+    <li><a href="#kết-luận">Kết luận</a></li>
+    <li><a href="#tài-liệu-tham-khảo">Tài liệu tham khảo</a></li>
+  </ul>
+</nav>
+  </div>
+</div><section class="recent-posts row card component">
+  <div class="card-header">
+    <h2 class="card-title">Recent Posts</h2>
+  </div>
+  <div class="card-body">
+    <ul class="post-list"><li>
+        <a href="/blog/2025-01-12-data-missing-time-serial-decision-tree-regression/">Xử Lý Dữ Liệu Khiếm Khuyết Trong Dữ Liệu Chuỗi Thời Gian Sử Dụng Phương Pháp Decision Tree Regression - Machine Learning Techniques for Mising Data in Time-Serials Using Decision Tree Regression
+</a>
+      </li><li>
+        <a href="/blog/2025-01-10-data-missing-time-serial-linear-regression/">Xử Lý Dữ Liệu Khiếm Khuyết Trong Dữ Liệu Chuỗi Thời Gian Sử Dụng Phương Pháp Linear Regression - Machine Learning Techniques for Mising Data in Time-Serials Using Liner Regression
+</a>
+      </li><li>
+        <a href="/blog/2024-11-24-system-design-top-10-interview-bloom-filters/">Top 10 Thuật Toán System Design Các Bạn Nên Biết Và Thường Được Hỏi Trong Phỏng Vấn - Top 3 Bloom Filters
+</a>
+      </li><li>
+        <a href="/blog/2024-11-23-system-design-top-10-interview-distributed-hash-table/">Top 10 Thuật Toán System Design Các Bạn Nên Biết Và Thường Được Hỏi Trong Phỏng Vấn - Top 2 Distributed Hash Tables
+</a>
+      </li><li>
+        <a href="/blog/2024-10-27-mario-reinfomation-learning-double-dqn/">Sử Dụng Mô Hình Double DQN  Huấn Luyện Mô Hình Reinforcement Learning Với Game Mario
+</a>
+      </li></ul>
+  </div>
+</section><section class="series-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="/series">series</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="/series/kh%C3%B3a-h%E1%BB%8Dc-python-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học Python Căn Bản">
+            Khóa Học Python Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="/series/kh%C3%B3a-h%E1%BB%8Dc-c&#43;&#43;-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học C&#43;&#43; Căn Bản">
+            Khóa Học C&#43;&#43; Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="/series/machine-learning-dataset/" class="badge rounded post-taxonomy" title="Machine Learning Dataset">
+            Machine Learning Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a><a href="/series/ch%E1%BB%A9ng-kho%C3%A1n-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Chứng Khoán Căn Bản">
+            Chứng Khoán Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">1</span></a></div>
+      </div>
+    </section><section class="tools-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="/tools">tools</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="/tools/tool-random/" class="badge rounded post-taxonomy" title="Tool Random">
+            Tool Random<span class="badge badge-sm text-white bg-accent ms-1">2</span></a></div>
+      </div>
+    </section><section class="categories-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="/categories">categories</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="/categories/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="/categories/c&#43;&#43;/" class="badge rounded post-taxonomy" title="C&#43;&#43;">
+            C&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="/categories/dataset/" class="badge rounded post-taxonomy" title="Dataset">
+            Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a></div>
+      </div>
+    </section><section class="tags-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="/tags">tags</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="/tags/machine-learning/" class="badge rounded post-taxonomy" title="Machine Learning">
+            Machine Learning<span class="badge badge-sm text-white bg-accent ms-1">45</span></a><a href="/tags/deep-learning/" class="badge rounded post-taxonomy" title="Deep Learning">
+            Deep Learning<span class="badge badge-sm text-white bg-accent ms-1">21</span></a><a href="/tags/deeplearning/" class="badge rounded post-taxonomy" title="DeepLearning">
+            DeepLearning<span class="badge badge-sm text-white bg-accent ms-1">21</span></a><a href="/tags/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">11</span></a><a href="/tags/opencv/" class="badge rounded post-taxonomy" title="Opencv">
+            Opencv<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="/tags/c&#43;&#43;/" class="badge rounded post-taxonomy" title="C&#43;&#43;">
+            C&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/normalization/" class="badge rounded post-taxonomy" title="Normalization">
+            Normalization<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/object-detector/" class="badge rounded post-taxonomy" title="Object Detector">
+            Object Detector<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/recommendation/" class="badge rounded post-taxonomy" title="Recommendation">
+            Recommendation<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/alexnet/" class="badge rounded post-taxonomy" title="AlexNet">
+            AlexNet<span class="badge badge-sm text-white bg-accent ms-1">3</span></a></div>
+      </div>
+    </section>
+    
+  </div>
+</aside>
+</div>
+    </main><footer class="footer mt-auto py-3 text-center container"><ul class="nav justify-content-between footer-memu mb-3"><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Support
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-github"></i>Repository
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-comments"></i>Discussions
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/contact/"><i class="fas fa-fw fa-info-circle"></i>Contact Us
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/faq/"><i class="fas fa-fw fa-question-circle"></i>FAQs
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Docs
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="/team_of_services" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-users"></i>Điều khoản sử dụng
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/privacy" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-lock"></i>Chính sách bảo mật
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Features
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.phamduytung.com/utils/gen_paswords/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-paw"></i>Tạo password ngẫu nhiên
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Liên kết khác
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">Netlify
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">facebook
+</a>
+        </li></ul></li></ul>
+<div class="copyright mb-2">
+  Copyright © 2016-2025 Phạm Duy Tùng. All Rights Reserved.
+</div>
+<div class="powered-by mb-2">
+  Website chia sẻ kiến thức của Phạm Duy Tùng và Đặng Thị Hằng. Vui lòng liên hệ email alexblack2202@gmail.com nếu bạn có thông tin cần trao đổi.
+</div></footer>
+<script src="/js/main.ed2053ad82a243b263761567b5c1aaf974487aa84adacb89ae3ddf803ecc248a.js" integrity="sha256-7SBTrYKiQ7JjdhVntcGq&#43;XRIeqhK2suJrj3fgD7MJIo=" crossorigin="anonymous" defer></script><script src="/js/icons.min.8ff200851002b8138e6b35314683092e02edc155465d9dbfb7d115460f8f1fbe.js" integrity="sha256-j/IAhRACuBOOazUxRoMJLgLtwVVGXZ2/t9EVRg&#43;PH74=" crossorigin="anonymous" defer></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('\/service-worker.js').then(function(reg) {
+      console.log('Successfully registered service worker', reg);
+    }).catch(function(err) {
+      console.warn('Error whilst registering service worker', err);
+    });
+  });
+}
+</script><script src="/js/viewer.min.ec58d2aa1a8916addf393be975fdf0070e8c872b0caef1673cb9f7eea067ce57.js" integrity="sha256-7FjSqhqJFq3fOTvpdf3wBw6MhysMrvFnPLn37qBnzlc=" crossorigin="anonymous" defer></script><script defer src="/js/katex.min.062d19072aa2321fd592929a93ade0afc09c491db47671a28d54d6637ea131a1.js" integrity="sha256-Bi0ZByqiMh/VkpKak63gr8CcSR20dnGijVTWY36hMaE=" crossorigin="anonymous"></script>
+
+  
+    
+      
+    
+  
+
+
+<script  data-ad-client="ca-pub-4644989745435991"  async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4644989745435991"
+     crossorigin="anonymous"></script><script data-cfasync="false" type="text/javascript" data-adel="atag" src="//acscdn.com/script/atg.js" czid="eul3gyjdmm"></script>
+  </body>
+</html>
