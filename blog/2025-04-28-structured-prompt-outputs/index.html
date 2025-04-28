@@ -1,0 +1,1042 @@
+<!doctype html><html lang="en" data-palette="blue"
+   data-mode="dark">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Machine learning - Sử dụng Structured Prompt Outputs để tối ưu hóa kết quả từ LLMs - Phạm Duy Tùng Machine Learning Blog</title>
+    <meta name="a.validate.02" content="1QZXZ8oi7g57H-GxBrBPkTYBydwii-Ic9iJu" /><link rel="apple-touch-icon" href="/images/icons/icon-180x180.png" sizes="180x180">
+<link rel="icon" href="/images/icons/icon-32x32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="/images/icons/icon-16x16.png" sizes="16x16" type="image/png">
+<link rel="icon" href="/images/icons/favicon.ico">
+<link rel="manifest" href="/manifest.json">
+<meta name="keywords" content="" />
+<meta name="description" content="Xin chào các bạn, lâu rồi, mình chưa làm bài tập về machine learning . Hôm nay, chúng ta cùng ôn luyện lại việc train mô hình, sử dụng thư viện scikit-learn để xây dựng một api nhận dạng email lừa đảo nhé." /><meta name="robots" content="index, follow" />
+  <meta itemprop="name" content="Machine learning - Sử dụng Structured Prompt Outputs để tối ưu hóa kết quả từ LLMs">
+  <meta itemprop="description" content="Xin chào các bạn, lâu rồi, mình chưa làm bài tập về machine learning . Hôm nay, chúng ta cùng ôn luyện lại việc train mô hình, sử dụng thư viện scikit-learn để xây dựng một api nhận dạng email lừa đảo nhé.">
+  <meta itemprop="datePublished" content="2025-04-28T00:20:00+04:00">
+  <meta itemprop="dateModified" content="2025-04-28T00:20:00+04:00">
+  <meta itemprop="wordCount" content="4668">
+  <meta itemprop="image" content="https://unsplash.it/1920/1080?image=232">
+  <meta itemprop="keywords" content="Email_phishing"><meta property="og:url" content="/blog/2025-04-28-structured-prompt-outputs/">
+  <meta property="og:site_name" content="Phạm Duy Tùng Machine Learning Blog">
+  <meta property="og:title" content="Machine learning - Sử dụng Structured Prompt Outputs để tối ưu hóa kết quả từ LLMs">
+  <meta property="og:description" content="Xin chào các bạn, lâu rồi, mình chưa làm bài tập về machine learning . Hôm nay, chúng ta cùng ôn luyện lại việc train mô hình, sử dụng thư viện scikit-learn để xây dựng một api nhận dạng email lừa đảo nhé.">
+  <meta property="og:locale" content="en">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="blog">
+    <meta property="article:published_time" content="2025-04-28T00:20:00+04:00">
+    <meta property="article:modified_time" content="2025-04-28T00:20:00+04:00">
+    <meta property="article:tag" content="Email_phishing">
+    <meta property="og:image" content="https://unsplash.it/1920/1080?image=232">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://unsplash.it/1920/1080?image=232">
+  <meta name="twitter:title" content="Machine learning - Sử dụng Structured Prompt Outputs để tối ưu hóa kết quả từ LLMs">
+  <meta name="twitter:description" content="Xin chào các bạn, lâu rồi, mình chưa làm bài tập về machine learning . Hôm nay, chúng ta cùng ôn luyện lại việc train mô hình, sử dụng thư viện scikit-learn để xây dựng một api nhận dạng email lừa đảo nhé.">
+<link rel="stylesheet" href="/css/main.min.c06cf34535ee1f60ba08893b4d57e76b2bbd5e11c17ab12ef976f02983a51b54.css" integrity="sha256-wGzzRTXuH2C6CIk7TVfnayu9XhHBerEu&#43;XbwKYOlG1Q=" crossorigin="anonymous"><link rel="stylesheet" href="/css/katex.min.d080a89e03e1eb850f547d835c186b4273f69879aa497eb8b0e88c1578bf1f0b.css" integrity="sha256-0ICongPh64UPVH2DXBhrQnP2mHmqSX64sOiMFXi/Hws=" crossorigin="anonymous">
+<link rel="stylesheet" href="/css/viewer.min.3d228794bcedbbfa0412beb8fbc1ec6973202945e42af7004f742a4d7bd620ab.css" integrity="sha256-PSKHlLztu/oEEr64&#43;8HsaXMgKUXkKvcAT3QqTXvWIKs=" crossorigin="anonymous"><style>
+    .bgcover {
+        display: block;
+        overflow: hidden;
+        height: 450px;
+        background: no-repeat center center;
+        -webkit-background-size: cover;
+        -moz-background-size: cover;
+        -o-background-size: cover;
+        background-size: cover;
+        position: relative;
+        margin-bottom: -65px;
+    }
+    .bgcover {
+        margin-bottom: 0 !important;
+    }
+
+    .bgcover .bgtrans {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        display: block;
+        overflow: hidden;
+        height: inherit;
+        background: rgba(0,0,0,.8);
+        background: -webkit-gradient(linear,0% 0%,0% 100%,from(rgba(0,0,0,.8)),to (rgba(0,0,0,.6)),to(rgba(255,255,255,0)));
+        background: -webkit-linear-gradient(top,rgba(255,255,255,0),rgba(0,0,0,.6),rgba(0,0,0,.8));
+        background: -moz-linear-gradient(top,rgba(255,255,255,0),rgba(0,0,0,.6),rgba(0,0,0,.8));
+        background: -ms-linear-gradient(top,rgba(255,255,255,0),rgba(0,0,0,.6),rgba(0,0,0,.8));
+        background: -o-linear-gradient(top,rgba(255,255,255,0),rgba(0,0,0,.6),rgba(0,0,0,.8));
+    }
+
+    .bgcover .bgtrans h1 {
+        display: block;
+        overflow: hidden;
+        font-size: 45px;
+        line-height: 55px;
+        color: #fff;
+        width: 800px;
+        margin: auto;
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 50px;
+        font-family: 'Roboto Condensed',sans-serif;
+        font-weight: 600;
+    }
+</style></head>
+  <body><script>const items=["mode","palette"];items.forEach(function(e){const t=localStorage.getItem("hbs-"+e);t&&document.body.parentElement.setAttribute("data-"+e,t)})</script><header><nav class="navbar top-app-bar top-app-bar-expand-lg fixed-top">
+  <div class="container">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <i class="fas fa-bars"></i>
+    </button><a class="navbar-brand flex-grow-1 flex-lg-grow-0 text-center text-lg-start mx-auto me-lg-3" href="/"><img class="logo" alt="Logo" src="/images/logo.webp" loading="lazy"  title="Logo"
+   width="400" height="400"
+   />
+HOME
+    </a>
+    <div class="offcanvas offcanvas-bottom surface" tabindex="-1" id="offcanvasSocialShare" aria-labelledby="offcanvasSocialShare">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Share</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body">
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Twitter Share Button"
+      target="_blank" href="https://twitter.com/intent/tweet?title=Machine%20learning%20-%20S%e1%bb%ad%20d%e1%bb%a5ng%20Structured%20Prompt%20Outputs%20%c4%91%e1%bb%83%20t%e1%bb%91i%20%c6%b0u%20h%c3%b3a%20k%e1%ba%bft%20qu%e1%ba%a3%20t%e1%bb%ab%20LLMs&url=%2fblog%2f2025-04-28-structured-prompt-outputs%2f">
+      <i class="fab fa-fw fa-twitter"></i> Twitter
+    </a>
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Facebook Share Button"
+      target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=%2fblog%2f2025-04-28-structured-prompt-outputs%2f">
+      <i class="fab fa-fw fa-facebook-f"></i> Facebook
+    </a>
+  </div>
+</div>
+    <button class="navbar-settings" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSettings"
+  aria-controls="offcanvasSettings" aria-label="Toggle settings">
+  <i class="fas fa-ellipsis-v"></i>
+</button>
+
+<div class="offcanvas offcanvas-end surface h-100" tabindex="-1" id="offcanvasSettings" aria-labelledby="offcanvasSettings">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Settings</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body d-flex flex-column">
+
+
+
+<section class="setting">
+  <form class="font-size-switcher-form row">
+    <div class="col-auto">
+      <label for="fontSize" class="form-label"><i class="fas fa-fw fa-font"></i> Font Size</label>
+    </div>
+    <div class="col-auto ms-auto">
+      <input type="range" class="form-range" min="-2" max="2" id="fontSize">
+    </div>
+  </form>
+</section>
+
+
+<section class="setting palettes">
+  <form class="row">
+    <div class="col-auto">
+      <label><i class="fas fa-fw fa-palette"></i> Palette</label>
+    </div>
+    <div class="col-auto ms-auto">
+      <a id="btnPalette" class="btn btn-sm btn-outline-primary" role="button" aria-label="palettePicker">
+        <i class="fas fa-eye-dropper"></i>
+      </a>
+    </div>
+  </form>
+  <div class="mt-2 d-flex justify-content-between visually-hidden" id="palettePicker"><button type="button" id="palette-blue" aria-label="Blue"
+        class="btn btn-sm w-100 palette" data-palette="blue">
+      </button><button type="button" id="palette-blue-gray" aria-label="Blue Gray"
+        class="btn btn-sm w-100 palette" data-palette="blue-gray">
+      </button><button type="button" id="palette-brown" aria-label="Brown"
+        class="btn btn-sm w-100 palette" data-palette="brown">
+      </button><button type="button" id="palette-cyan" aria-label="Cyan"
+        class="btn btn-sm w-100 palette" data-palette="cyan">
+      </button><button type="button" id="palette-green" aria-label="Green"
+        class="btn btn-sm w-100 palette" data-palette="green">
+      </button><button type="button" id="palette-indigo" aria-label="Indigo"
+        class="btn btn-sm w-100 palette" data-palette="indigo">
+      </button><button type="button" id="palette-orange" aria-label="Orange"
+        class="btn btn-sm w-100 palette" data-palette="orange">
+      </button><button type="button" id="palette-pink" aria-label="Pink"
+        class="btn btn-sm w-100 palette" data-palette="pink">
+      </button><button type="button" id="palette-purple" aria-label="Purple"
+        class="btn btn-sm w-100 palette" data-palette="purple">
+      </button><button type="button" id="palette-red" aria-label="Red"
+        class="btn btn-sm w-100 palette" data-palette="red">
+      </button><button type="button" id="palette-teal" aria-label="Teal"
+        class="btn btn-sm w-100 palette" data-palette="teal">
+      </button><button type="button" id="palette-yellow" aria-label="Yellow"
+        class="btn btn-sm w-100 palette" data-palette="yellow">
+      </button></div>
+</section>
+<section class="setting actions d-flex justify-content-around mt-auto overflow-auto">
+  <a role="button" class="action action-go-back" href="javascript: window.history.back();">
+    <span class="action-icon"><i class="fas fa-2x fa-arrow-left"></i></span> Go back
+  </a>
+  <a role="button" class="action action-reload-page">
+    <span class="action-icon"><i class="fas fa-2x fa-redo-alt"></i></span> Reload
+  </a>
+  <a role="button" class="action action-copy-url">
+    <span class="action-icon"><i class="fas fa-2x fa-link"></i></span> Copy URL
+  </a><a class="action action-social-share" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSocialShare"
+    aria-controls="offcanvasSocialShare" aria-label="Toggle social share">
+    <span class="action-icon"><i class="fas fa-2x fa-share-alt"></i></span> Share
+  </a></section>
+
+</div>
+</div>
+
+    <div class="collapse navbar-collapse" tabindex="-1" id="navbarSupportedContent" aria-labelledby="navbarSupportedContent">
+      <form class="search-bar my-1" action="/search">
+  <div class="input-group input-group-sm">
+    <span class="btn btn-search disabled position-absolute left-0"><i class="fas fa-fw fa-search"></i></span>
+    <input class="form-control rounded-pill" name="q" type="search" aria-label="Search">
+  </div>
+</form>
+      <ul class="navbar-nav ms-auto"><li class="nav-item">
+          <a class="nav-link" href="/series/">
+            <i class="fas fa-fw fa-columns"></i>Courses
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="/tools/">
+            <i class="fas fa-fw fa-folder"></i>Tools
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="/categories/">
+            <i class="fas fa-fw fa-folder"></i>Categories
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="/archives/">
+            <i class="fas fa-fw fa-file-archive"></i>Archives
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="/tags/">
+            <i class="fas fa-fw fa-tags"></i>Tags
+          </a>
+        </li><li class="nav-item dropdown">
+          <a class="nav-link" id="navbarDropdownSupport" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-fw fa-chevron-circle-down"></i>Support
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdownSupport"><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Repository
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Discussions
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Features Request
+              </a>
+            </li><li><hr class="dropdown-divider"></li><li>
+              <a class="dropdown-item"
+                href="/faq/">
+                FAQs
+              </a>
+            </li></ul>
+        </li></ul>
+    </div>
+  </div>
+</nav>
+</header>
+<main role="main" class="container" style="line-height:1.7em">
+      <div class="row content">
+<div class="col-lg-9 col-md-8">
+  <div class="container"><nav class="row card component" aria-label="breadcrumb">
+  <div class="card-body">
+    <ol class="breadcrumb "><li class="breadcrumb-item"><a href="/">Home</a></li><li class="breadcrumb-item"><a href="/blog/">Blogs</a></li><li class="breadcrumb-item active">Machine Learning - Sử Dụng Structured Prompt Outputs Để Tối Ưu Hóa Kết Quả Từ LLMs</li></ol>
+  </div>
+</nav>
+<div class="post-panel-wrapper">
+  <div class="d-flex flex-column component rounded post-panel">
+    
+    <a class="action action-panel-toggler" role="button" title="Panel toggler">
+      <i class="fas fa-fw fa-chevron-circle-down"></i>
+    </a>
+    <a id="sidebarToggler" class="action d-none d-lg-block" role="button" title="Sidebar toggler">
+  <i class="fas fa-fw fa-expand-alt" data-fa-transform="rotate-45"></i>
+</a>
+
+    
+
+    
+    
+    <a class="action" href="#post-comments" role="button" aria-label="Comments" title="Comments">
+  <i class="fas fa-fw fa-comments"></i>
+</a>
+    <a class="action" href="#postTOC" aria-controls="Table of contents" role="button" title="Table of contents">
+  <i class="fas fa-fw fa-list-alt"></i>
+</a>
+    
+  </div>
+</div>
+<article class="row card component mb-4 post">
+  <div class="card-header ">
+    <div class="bgcover" style="background-image:url(https://unsplash.it/1920/1080)" alt="Machine learning - Sử dụng Structured Prompt Outputs để tối ưu hóa kết quả từ LLMs">
+      <div class="bgtrans">
+          <h1>Machine Learning - Sử Dụng Structured Prompt Outputs Để Tối Ưu Hóa Kết Quả Từ LLMs
+</h1>
+      </div>
+  </div>
+</div>
+  <div class="card-body"><div class="post-meta">
+  <span class="post-date" title="created on 2025-04-28 03:20:00 &#43;0700 &#43;07.">
+    Apr 28, 2025
+  </span><span class="post-reading-time">
+    22 min read
+  </span><span class="post-taxonomies"><a href="/tags/email_phishing/" class="badge post-taxonomy">email_phishing</a></span>
+</div>
+<div class="post-content mb-3"><div class="toc">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#structured-prompt-outputs-là-gì-">Structured Prompt Outputs là gì ?</a>
+      <ul>
+        <li><a href="#cách-tạo-structured-prompt-outputs">Cách tạo Structured Prompt Outputs</a>
+          <ul>
+            <li><a href="#ví-dụ-tạo-một-danh-sách-công-việc-hàng-ngày">Ví dụ: Tạo một danh sách công việc hàng ngày</a></li>
+          </ul>
+        </li>
+        <li><a href="#các-lợi-ích-của-structured-prompt-outputs">Các lợi ích của Structured Prompt Outputs</a></li>
+        <li><a href="#các-chiến-lược-tạo-structured-prompts-hiệu-quả">Các chiến lược tạo Structured Prompts hiệu quả</a></li>
+      </ul>
+    </li>
+    <li><a href="#ứng-dụng-structured-prompt-outputs-trong-các-dự-án-ai">Ứng dụng <strong>Structured Prompt Outputs</strong> trong các dự án AI.</a>
+      <ul>
+        <li><a href="#1-xây-dựng-hệ-thống-quản-lý-công-việc-task-management-system">1. <strong>Xây dựng hệ thống quản lý công việc (Task Management System)</strong></a></li>
+        <li><a href="#2-tạo-api-giả-lập-cho-dữ-liệu-sản-phẩm">2. <strong>Tạo API giả lập cho dữ liệu sản phẩm</strong></a></li>
+        <li><a href="#3-phân-tích-dữ-liệu-bán-hàng">3. <strong>Phân tích dữ liệu bán hàng</strong></a></li>
+        <li><a href="#4-tạo-nội-dung-bài-viết-có-cấu-trúc">4. <strong>Tạo nội dung bài viết có cấu trúc</strong></a></li>
+        <li><a href="#5-tạo-công-thức-nấu-ăn-có-cấu-trúc">5. <strong>Tạo công thức nấu ăn có cấu trúc</strong></a></li>
+        <li><a href="#6-tạo-câu-hỏi-khảo-sát-có-cấu-trúc">6. <strong>Tạo câu hỏi khảo sát có cấu trúc</strong></a></li>
+      </ul>
+    </li>
+    <li><a href="#sử-dụng-structured-prompt-outputs-trong-chatbot">Sử dụng Structured Prompt Outputs trong chatbot</a>
+      <ul>
+        <li><a href="#cấu-hình-bot">Cấu hình bot</a>
+          <ul>
+            <li><a href="#bước-1-định-nghĩa-cấu-trúc-đầu-ra">Bước 1: Định nghĩa cấu trúc đầu ra</a></li>
+            <li><a href="#bước-2-tạo-prompt-có-cấu-trúc">Bước 2: Tạo prompt có cấu trúc</a></li>
+            <li><a href="#bước-3-xử-lý-đầu-ra">Bước 3: Xử lý đầu ra</a></li>
+            <li><a href="#bước-4-tích-hợp-vào-chatbot">Bước 4: Tích hợp vào chatbot</a></li>
+          </ul>
+        </li>
+        <li><a href="#2-ví-dụ-thực-tế">2. <strong>Ví dụ thực tế</strong></a>
+          <ul>
+            <li></li>
+            <li><a href="#ví-dụ-2-chatbot-phân-loại-ý-kiến-khách-hàng">Ví dụ 2: Chatbot phân loại ý kiến khách hàng</a></li>
+          </ul>
+        </li>
+        <li><a href="#một-số-khó-khăn-khi-triển-khai-chatbot-và-cách-giải-quyết">Một số khó khăn khi triển khai chatbot và cách giải quyết</a>
+          <ul>
+            <li><a href="#1-thiếu-hiểu-biết-về-ngôn-ngữ-tự-nhiên-nlp">1. <strong>Thiếu hiểu biết về ngôn ngữ tự nhiên (NLP)</strong></a></li>
+            <li><a href="#2-khó-khăn-trong-việc-thiết-kế-prompt">2. <strong>Khó khăn trong việc thiết kế prompt</strong></a></li>
+            <li><a href="#3-chi-phí-đầu-tư-ban-đầu-cao">3. <strong>Chi phí đầu tư ban đầu cao</strong></a></li>
+            <li><a href="#4-thiếu-dữ-liệu-chất-lượng">4. <strong>Thiếu dữ liệu chất lượng</strong></a></li>
+            <li><a href="#5-lo-ngại-về-quyền-riêng-tư-và-bảo-mật">5. <strong>Lo ngại về quyền riêng tư và bảo mật</strong></a></li>
+            <li><a href="#6-khách-hàng-không-có-niềm-tin-vào-ai">6. <strong>Khách hàng không có niềm tin vào AI</strong></a></li>
+            <li><a href="#7-xác-định-trường-hợp-sử-dụng-chưa-phù-hợp">7. <strong>Xác định trường hợp sử dụng chưa phù hợp</strong></a></li>
+            <li><a href="#8-không-xây-dựng-kịch-bản-riêng-cho-doanh-nghiệp">8. <strong>Không xây dựng kịch bản riêng cho doanh nghiệp</strong></a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+    <li><a href="#đo-lường-hiệu-suất-của-structured-prompt-outputs">Đo lường hiệu suất của <strong>Structured Prompt Outputs</strong></a>
+      <ul>
+        <li><a href="#1-xác-định-các-chỉ-số-đo-lường-hiệu-suất-kpi">1. <strong>Xác định các chỉ số đo lường hiệu suất (KPI)</strong></a></li>
+        <li><a href="#2-phân-tích-nguồn-tương-tác">2. <strong>Phân tích nguồn tương tác</strong></a></li>
+        <li><a href="#3-sử-dụng-phân-tích-nâng-cao-advanced-analytics">3. <strong>Sử dụng phân tích nâng cao (Advanced Analytics)</strong></a></li>
+        <li><a href="#4-kiểm-tra-tính-nhất-quán-của-đầu-ra">4. <strong>Kiểm tra tính nhất quán của đầu ra</strong></a></li>
+        <li><a href="#5-thu-thập-phản-hồi-từ-người-dùng">5. <strong>Thu thập phản hồi từ người dùng</strong></a></li>
+        <li><a href="#6-thực-hiện-ab-testing">6. <strong>Thực hiện A/B Testing</strong></a></li>
+        <li><a href="#7-theo-dõi-và-cải-tiến-liên-tục">7. <strong>Theo dõi và cải tiến liên tục</strong></a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+<hr>
+<h1 id="structured-prompt-outputs-là-gì-">Structured Prompt Outputs là gì ?<a class="anchor ms-1" href="#structured-prompt-outputs-là-gì-"><i class="fas fa-link"></i></a></h1>
+<p>Trước khi bắt đầu, hãy cùng làm rõ khái niệm <strong>Structured Prompt Outputs</strong>. Đây là cách mà chúng ta hướng dẫn các mô hình ngôn ngữ như GPT-4 hoặc PaLM tạo ra kết quả theo một định dạng cụ thể, chẳng hạn như JSON, XML, hoặc thậm chí là danh sách có cấu trúc. Điều này đặc biệt hữu ích trong các ứng dụng thực tế, vì nó giúp dữ liệu đầu ra trở nên <strong>dễ đọc</strong>, <strong>dễ xử lý</strong>, và <strong>có tổ chức hơn</strong> .</p>
+<p>Ví dụ, nếu bạn muốn yêu cầu một LLM tạo ra một danh sách các sản phẩm kèm theo giá cả, thay vì nhận được một đoạn văn dài dòng không rõ ràng, bạn có thể chỉ định rằng kết quả phải ở dạng JSON:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">  <span class="nt">&#34;products&#34;</span><span class="p">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">      <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;Laptop Dell XPS 13&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">      <span class="nt">&#34;price&#34;</span><span class="p">:</span> <span class="s2">&#34;$999&#34;</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">    <span class="p">},</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">      <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;Smartphone Samsung Galaxy S23&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">      <span class="nt">&#34;price&#34;</span><span class="p">:</span> <span class="s2">&#34;$799&#34;</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl">  <span class="p">]</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>Kết quả này không chỉ dễ đọc mà còn rất thuận tiện để tích hợp vào các hệ thống phần mềm khác.</p>
+<hr>
+<h2 id="cách-tạo-structured-prompt-outputs">Cách tạo Structured Prompt Outputs<a class="anchor ms-1" href="#cách-tạo-structured-prompt-outputs"><i class="fas fa-link"></i></a></h2>
+<p>Để tạo ra các đầu ra có cấu trúc, điều quan trọng nhất là bạn cần <strong>hướng dẫn rõ ràng</strong> cho LLM. Điều này bao gồm việc sử dụng các <strong>prompts</strong> được thiết kế cẩn thận, đảm bảo rằng mô hình hiểu được định dạng mong muốn của bạn. Dưới đây là một số bước cơ bản để bắt đầu:</p>
+<ol>
+<li><strong>Xác định mục tiêu</strong>: Bạn muốn gì từ LLM? Một danh sách, một đối tượng JSON, hay một câu trả lời có cấu trúc?</li>
+<li><strong>Sử dụng ví dụ</strong>: Cung cấp một vài ví dụ về định dạng đầu ra mà bạn mong đợi.</li>
+<li><strong>Đặt yêu cầu cụ thể</strong>: Sử dụng các từ khóa như &ldquo;Hãy trả lời dưới dạng JSON&rdquo; hoặc &ldquo;Danh sách phải có ít nhất 5 mục&rdquo;.</li>
+</ol>
+<h3 id="ví-dụ-tạo-một-danh-sách-công-việc-hàng-ngày">Ví dụ: Tạo một danh sách công việc hàng ngày<a class="anchor ms-1" href="#ví-dụ-tạo-một-danh-sách-công-việc-hàng-ngày"><i class="fas fa-link"></i></a></h3>
+<p>Giả sử bạn muốn LLM tạo ra một danh sách các công việc hàng ngày. Bạn có thể viết prompt như sau:</p>
+<p><strong>Prompt</strong>:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl">Hãy tạo một danh sách các công việc cần làm hàng ngày cho một lập trình viên. Trả lời dưới dạng JSON với các trường &#34;task&#34; (tên công việc) và &#34;priority&#34; (mức độ ưu tiên từ 1 đến 5).
+</span></span></code></pre></div><p><strong>Kết quả dự kiến</strong>:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">  <span class="nt">&#34;tasks&#34;</span><span class="p">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">      <span class="nt">&#34;task&#34;</span><span class="p">:</span> <span class="s2">&#34;Kiểm tra email&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">      <span class="nt">&#34;priority&#34;</span><span class="p">:</span> <span class="mi">3</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">    <span class="p">},</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">      <span class="nt">&#34;task&#34;</span><span class="p">:</span> <span class="s2">&#34;Code review&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">      <span class="nt">&#34;priority&#34;</span><span class="p">:</span> <span class="mi">4</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">    <span class="p">},</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl">      <span class="nt">&#34;task&#34;</span><span class="p">:</span> <span class="s2">&#34;Viết tài liệu&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl">      <span class="nt">&#34;priority&#34;</span><span class="p">:</span> <span class="mi">2</span>
+</span></span><span class="line"><span class="ln">14</span><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl">  <span class="p">]</span>
+</span></span><span class="line"><span class="ln">16</span><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>Như bạn thấy, bằng cách yêu cầu cụ thể định dạng JSON, LLM đã tạo ra một kết quả có tổ chức và dễ sử dụng.</p>
+<hr>
+<h2 id="các-lợi-ích-của-structured-prompt-outputs">Các lợi ích của Structured Prompt Outputs<a class="anchor ms-1" href="#các-lợi-ích-của-structured-prompt-outputs"><i class="fas fa-link"></i></a></h2>
+<p>Structured Prompt Outputs không chỉ giúp cải thiện tính <strong>đọc hiểu</strong> mà còn mang lại nhiều lợi ích khác:</p>
+<ol>
+<li>
+<p><strong>Tăng tính nhất quán</strong>: Khi sử dụng structured prompts, bạn có thể đảm bảo rằng mọi lần gọi API đều trả về kết quả theo cùng một định dạng . Điều này rất quan trọng trong các ứng dụng sản xuất, nơi tính nhất quán là yếu tố then chốt.</p>
+</li>
+<li>
+<p><strong>Cải thiện khả năng tích hợp</strong>: Dữ liệu có cấu trúc dễ dàng tích hợp vào các hệ thống khác, chẳng hạn như cơ sở dữ liệu, API, hoặc giao diện người dùng .</p>
+</li>
+<li>
+<p><strong>Giảm thiểu lỗi</strong>: Định dạng có cấu trúc giúp giảm thiểu nguy cơ xảy ra lỗi do hiểu sai ý nghĩa của dữ liệu .</p>
+</li>
+<li>
+<p><strong>Tối ưu hóa SEO</strong>: Các bài viết hoặc nội dung được tạo ra theo định dạng có cấu trúc thường dễ dàng hơn để tối ưu hóa cho công cụ tìm kiếm .</p>
+</li>
+</ol>
+<hr>
+<h2 id="các-chiến-lược-tạo-structured-prompts-hiệu-quả">Các chiến lược tạo Structured Prompts hiệu quả<a class="anchor ms-1" href="#các-chiến-lược-tạo-structured-prompts-hiệu-quả"><i class="fas fa-link"></i></a></h2>
+<p>Để tạo ra các structured prompts hiệu quả, bạn cần áp dụng một số chiến lược sau:</p>
+<ol>
+<li>
+<p><strong>Sử dụng ví dụ</strong>: Đưa ra một vài ví dụ về định dạng đầu ra mà bạn mong đợi. Điều này giúp LLM hiểu rõ hơn về yêu cầu của bạn .</p>
+<p><strong>Ví dụ</strong>:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln"> 1</span><span class="cl">Hãy tạo một danh sách các món ăn Việt Nam nổi tiếng. Kết quả phải ở dạng JSON với các trường &#34;dish&#34; (tên món ăn) và &#34;region&#34; (vùng miền).
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">Ví dụ:
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">{
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">  &#34;dishes&#34;: [
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">    {
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">      &#34;dish&#34;: &#34;Phở&#34;,
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">      &#34;region&#34;: &#34;Bắc&#34;
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">    },
+</span></span><span class="line"><span class="ln">10</span><span class="cl">    {
+</span></span><span class="line"><span class="ln">11</span><span class="cl">      &#34;dish&#34;: &#34;Bánh xèo&#34;,
+</span></span><span class="line"><span class="ln">12</span><span class="cl">      &#34;region&#34;: &#34;Trung&#34;
+</span></span><span class="line"><span class="ln">13</span><span class="cl">    }
+</span></span><span class="line"><span class="ln">14</span><span class="cl">  ]
+</span></span><span class="line"><span class="ln">15</span><span class="cl">}
+</span></span></code></pre></div></li>
+<li>
+<p><strong>Sử dụng dấu phân cách rõ ràng</strong>: Nếu bạn muốn LLM tạo ra nhiều đoạn thông tin khác nhau, hãy sử dụng các dấu phân cách như tiêu đề hoặc số thứ tự .</p>
+<p><strong>Ví dụ</strong>:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl">Hãy tạo một bài báo ngắn về lợi ích của việc tập thể dục. Bài báo phải có ba phần: Giới thiệu, Lợi ích, và Kết luận. Mỗi phần phải bắt đầu bằng một tiêu đề in đậm.
+</span></span></code></pre></div></li>
+<li>
+<p><strong>Yêu cầu kiểm tra chất lượng</strong>: Bạn có thể yêu cầu LLM kiểm tra lại kết quả trước khi trả về. Điều này giúp đảm bảo rằng dữ liệu đầu ra đáp ứng đúng yêu cầu .</p>
+<p><strong>Ví dụ</strong>:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl">Hãy tạo một danh sách các quốc gia Đông Nam Á kèm theo dân số. Kiểm tra lại để đảm bảo rằng tất cả các quốc gia đều nằm trong khu vực Đông Nam Á.
+</span></span></code></pre></div></li>
+</ol>
+<hr>
+<h1 id="ứng-dụng-structured-prompt-outputs-trong-các-dự-án-ai">Ứng dụng Structured Prompt Outputs trong các dự án AI.<a class="anchor ms-1" href="#ứng-dụng-structured-prompt-outputs-trong-các-dự-án-ai"><i class="fas fa-link"></i></a></h1>
+<h2 id="1-xây-dựng-hệ-thống-quản-lý-công-việc-task-management-system">1. Xây dựng hệ thống quản lý công việc (Task Management System)<a class="anchor ms-1" href="#1-xây-dựng-hệ-thống-quản-lý-công-việc-task-management-system"><i class="fas fa-link"></i></a></h2>
+<p>Giả sử bạn đang phát triển một ứng dụng quản lý công việc, nơi người dùng có thể yêu cầu AI tạo ra danh sách các nhiệm vụ cần làm cho một ngày cụ thể. Bạn có thể sử dụng <strong>Structured Prompt Outputs</strong> để đảm bảo rằng dữ liệu đầu ra luôn ở định dạng JSON, dễ dàng tích hợp vào cơ sở dữ liệu hoặc giao diện người dùng.</p>
+<p><strong>Prompt</strong>:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl">Hãy tạo một danh sách các công việc cần làm cho một lập trình viên vào thứ Hai. Mỗi công việc phải bao gồm tên công việc, thời gian bắt đầu, và mức độ ưu tiên (từ 1 đến 5). Trả lời dưới dạng JSON.
+</span></span></code></pre></div><p><strong>Kết quả dự kiến</strong>:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">  <span class="nt">&#34;tasks&#34;</span><span class="p">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">      <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;Kiểm tra email&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">      <span class="nt">&#34;start_time&#34;</span><span class="p">:</span> <span class="s2">&#34;09:00 AM&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">      <span class="nt">&#34;priority&#34;</span><span class="p">:</span> <span class="mi">3</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">    <span class="p">},</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">      <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;Code review&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">      <span class="nt">&#34;start_time&#34;</span><span class="p">:</span> <span class="s2">&#34;10:00 AM&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl">      <span class="nt">&#34;priority&#34;</span><span class="p">:</span> <span class="mi">4</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl">    <span class="p">},</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="ln">14</span><span class="cl">      <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;Viết tài liệu&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl">      <span class="nt">&#34;start_time&#34;</span><span class="p">:</span> <span class="s2">&#34;02:00 PM&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">16</span><span class="cl">      <span class="nt">&#34;priority&#34;</span><span class="p">:</span> <span class="mi">2</span>
+</span></span><span class="line"><span class="ln">17</span><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="ln">18</span><span class="cl">  <span class="p">]</span>
+</span></span><span class="line"><span class="ln">19</span><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>Dữ liệu này có thể được sử dụng trực tiếp trong ứng dụng của bạn để hiển thị lịch làm việc hàng ngày .</p>
+<hr>
+<h2 id="2-tạo-api-giả-lập-cho-dữ-liệu-sản-phẩm">2. Tạo API giả lập cho dữ liệu sản phẩm<a class="anchor ms-1" href="#2-tạo-api-giả-lập-cho-dữ-liệu-sản-phẩm"><i class="fas fa-link"></i></a></h2>
+<p>Nếu bạn đang xây dựng một trang thương mại điện tử và muốn thử nghiệm với dữ liệu sản phẩm mà không cần kết nối tới cơ sở dữ liệu thật, bạn có thể yêu cầu LLM tạo ra một bộ dữ liệu giả lập dưới dạng JSON.</p>
+<p><strong>Prompt</strong>:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl">Hãy tạo một danh sách các sản phẩm điện tử với các trường: tên sản phẩm, giá cả, và đánh giá từ khách hàng (từ 1 đến 5 sao). Kết quả phải ở dạng JSON.
+</span></span></code></pre></div><p><strong>Kết quả dự kiến</strong>:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">  <span class="nt">&#34;products&#34;</span><span class="p">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">      <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;Laptop Dell XPS 13&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">      <span class="nt">&#34;price&#34;</span><span class="p">:</span> <span class="s2">&#34;$999&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">      <span class="nt">&#34;rating&#34;</span><span class="p">:</span> <span class="mf">4.8</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">    <span class="p">},</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">      <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;Smartphone Samsung Galaxy S23&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">      <span class="nt">&#34;price&#34;</span><span class="p">:</span> <span class="s2">&#34;$799&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl">      <span class="nt">&#34;rating&#34;</span><span class="p">:</span> <span class="mf">4.6</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl">    <span class="p">},</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="ln">14</span><span class="cl">      <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;Tai nghe AirPods Pro&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl">      <span class="nt">&#34;price&#34;</span><span class="p">:</span> <span class="s2">&#34;$249&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">16</span><span class="cl">      <span class="nt">&#34;rating&#34;</span><span class="p">:</span> <span class="mf">4.9</span>
+</span></span><span class="line"><span class="ln">17</span><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="ln">18</span><span class="cl">  <span class="p">]</span>
+</span></span><span class="line"><span class="ln">19</span><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>Bộ dữ liệu này có thể được sử dụng để kiểm tra giao diện người dùng hoặc các tính năng tìm kiếm/sắp xếp sản phẩm .</p>
+<hr>
+<h2 id="3-phân-tích-dữ-liệu-bán-hàng">3. Phân tích dữ liệu bán hàng<a class="anchor ms-1" href="#3-phân-tích-dữ-liệu-bán-hàng"><i class="fas fa-link"></i></a></h2>
+<p>Trong một dự án phân tích dữ liệu, bạn có thể yêu cầu AI xử lý dữ liệu bán hàng và tạo ra báo cáo dưới dạng JSON. Điều này giúp bạn dễ dàng tích hợp kết quả vào các công cụ phân tích như Tableau hoặc Power BI.</p>
+<p><strong>Prompt</strong>:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl">Hãy phân tích dữ liệu bán hàng sau và tạo ra một báo cáo tổng quan. Dữ liệu bao gồm các sản phẩm: Laptop ($1000, bán được 10 cái), Smartphone ($800, bán được 20 cái), và Tablet ($600, bán được 15 cái). Báo cáo phải bao gồm tổng doanh thu và số lượng sản phẩm bán được. Trả lời dưới dạng JSON.
+</span></span></code></pre></div><p><strong>Kết quả dự kiến</strong>:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">  <span class="nt">&#34;sales_report&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">    <span class="nt">&#34;total_revenue&#34;</span><span class="p">:</span> <span class="s2">&#34;$29,000&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">    <span class="nt">&#34;total_products_sold&#34;</span><span class="p">:</span> <span class="mi">45</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">    <span class="nt">&#34;details&#34;</span><span class="p">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">      <span class="p">{</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">        <span class="nt">&#34;product&#34;</span><span class="p">:</span> <span class="s2">&#34;Laptop&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">        <span class="nt">&#34;revenue&#34;</span><span class="p">:</span> <span class="s2">&#34;$10,000&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">        <span class="nt">&#34;quantity_sold&#34;</span><span class="p">:</span> <span class="mi">10</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">      <span class="p">},</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl">      <span class="p">{</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl">        <span class="nt">&#34;product&#34;</span><span class="p">:</span> <span class="s2">&#34;Smartphone&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl">        <span class="nt">&#34;revenue&#34;</span><span class="p">:</span> <span class="s2">&#34;$16,000&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">14</span><span class="cl">        <span class="nt">&#34;quantity_sold&#34;</span><span class="p">:</span> <span class="mi">20</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl">      <span class="p">},</span>
+</span></span><span class="line"><span class="ln">16</span><span class="cl">      <span class="p">{</span>
+</span></span><span class="line"><span class="ln">17</span><span class="cl">        <span class="nt">&#34;product&#34;</span><span class="p">:</span> <span class="s2">&#34;Tablet&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">18</span><span class="cl">        <span class="nt">&#34;revenue&#34;</span><span class="p">:</span> <span class="s2">&#34;$9,000&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">19</span><span class="cl">        <span class="nt">&#34;quantity_sold&#34;</span><span class="p">:</span> <span class="mi">15</span>
+</span></span><span class="line"><span class="ln">20</span><span class="cl">      <span class="p">}</span>
+</span></span><span class="line"><span class="ln">21</span><span class="cl">    <span class="p">]</span>
+</span></span><span class="line"><span class="ln">22</span><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="ln">23</span><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>Dữ liệu này rất hữu ích khi bạn muốn tạo dashboard hoặc biểu đồ phân tích .</p>
+<hr>
+<h2 id="4-tạo-nội-dung-bài-viết-có-cấu-trúc">4. Tạo nội dung bài viết có cấu trúc<a class="anchor ms-1" href="#4-tạo-nội-dung-bài-viết-có-cấu-trúc"><i class="fas fa-link"></i></a></h2>
+<p>Nếu bạn đang sử dụng AI để hỗ trợ viết bài, bạn có thể yêu cầu nó tạo ra nội dung theo một cấu trúc nhất định. Ví dụ, bạn có thể yêu cầu AI viết một bài báo ngắn về lợi ích của việc đọc sách.</p>
+<p><strong>Prompt</strong>:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl">Hãy viết một bài báo ngắn về lợi ích của việc đọc sách. Bài báo phải có ba phần: Giới thiệu, Lợi ích, và Kết luận. Mỗi phần phải bắt đầu bằng một tiêu đề in đậm. Trả lời dưới dạng JSON.
+</span></span></code></pre></div><p><strong>Kết quả dự kiến</strong>:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="ln">1</span><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl">  <span class="nt">&#34;article&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl">    <span class="nt">&#34;introduction&#34;</span><span class="p">:</span> <span class="s2">&#34;**Giới thiệu**: Đọc sách là một thói quen mang lại nhiều lợi ích cho sức khỏe tinh thần và trí tuệ.&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">4</span><span class="cl">    <span class="nt">&#34;benefits&#34;</span><span class="p">:</span> <span class="s2">&#34;**Lợi ích**: Đọc sách giúp cải thiện vốn từ vựng, tăng khả năng tập trung, và giảm căng thẳng.&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">5</span><span class="cl">    <span class="nt">&#34;conclusion&#34;</span><span class="p">:</span> <span class="s2">&#34;**Kết luận**: Hãy dành ít nhất 30 phút mỗi ngày để đọc sách và tận hưởng những lợi ích tuyệt vời mà nó mang lại.&#34;</span>
+</span></span><span class="line"><span class="ln">6</span><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="ln">7</span><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>Định dạng này giúp bạn dễ dàng chuyển đổi nội dung thành các định dạng khác, chẳng hạn như HTML hoặc Markdown .</p>
+<hr>
+<h2 id="5-tạo-công-thức-nấu-ăn-có-cấu-trúc">5. Tạo công thức nấu ăn có cấu trúc<a class="anchor ms-1" href="#5-tạo-công-thức-nấu-ăn-có-cấu-trúc"><i class="fas fa-link"></i></a></h2>
+<p>Nếu bạn đang xây dựng một ứng dụng chia sẻ công thức nấu ăn, bạn có thể yêu cầu AI tạo ra các công thức có cấu trúc, bao gồm tên món ăn, danh sách nguyên liệu, và các bước thực hiện.</p>
+<p><strong>Prompt</strong>:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl">Hãy tạo một công thức nấu ăn cho món &#34;Bánh xèo&#34;. Công thức phải bao gồm các trường: tên món ăn, danh sách nguyên liệu, và các bước thực hiện. Trả lời dưới dạng JSON.
+</span></span></code></pre></div><p><strong>Kết quả dự kiến</strong>:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">  <span class="nt">&#34;recipe&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">    <span class="nt">&#34;name&#34;</span><span class="p">:</span> <span class="s2">&#34;Bánh xèo&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">    <span class="nt">&#34;ingredients&#34;</span><span class="p">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">      <span class="s2">&#34;200g bột gạo&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">      <span class="s2">&#34;100g tôm&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">      <span class="s2">&#34;50g giá đỗ&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">      <span class="s2">&#34;1 củ hành tím&#34;</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">    <span class="p">],</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">    <span class="nt">&#34;steps&#34;</span><span class="p">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl">      <span class="s2">&#34;Trộn bột gạo với nước để tạo hỗn hợp lỏng.&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl">      <span class="s2">&#34;Phi thơm hành tím và cho tôm vào xào sơ.&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl">      <span class="s2">&#34;Đổ hỗn hợp bột lên chảo nóng và thêm giá đỗ.&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">14</span><span class="cl">      <span class="s2">&#34;Gập đôi bánh và chiên vàng đều hai mặt.&#34;</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl">    <span class="p">]</span>
+</span></span><span class="line"><span class="ln">16</span><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="ln">17</span><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>Công thức này có thể được tích hợp trực tiếp vào ứng dụng của bạn để hiển thị cho người dùng .</p>
+<hr>
+<h2 id="6-tạo-câu-hỏi-khảo-sát-có-cấu-trúc">6. Tạo câu hỏi khảo sát có cấu trúc<a class="anchor ms-1" href="#6-tạo-câu-hỏi-khảo-sát-có-cấu-trúc"><i class="fas fa-link"></i></a></h2>
+<p>Nếu bạn đang thiết kế một cuộc khảo sát, bạn có thể yêu cầu AI tạo ra một bộ câu hỏi có cấu trúc, bao gồm loại câu hỏi (trắc nghiệm, mở, thang đo) và các tùy chọn trả lời.</p>
+<p><strong>Prompt</strong>:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl">Hãy tạo một bộ câu hỏi khảo sát về thói quen đọc sách. Mỗi câu hỏi phải bao gồm các trường: nội dung câu hỏi, loại câu hỏi, và các tùy chọn trả lời (nếu có). Trả lời dưới dạng JSON.
+</span></span></code></pre></div><p><strong>Kết quả dự kiến</strong>:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">  <span class="nt">&#34;survey_questions&#34;</span><span class="p">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">      <span class="nt">&#34;question&#34;</span><span class="p">:</span> <span class="s2">&#34;Bạn đọc sách bao nhiêu lần mỗi tuần?&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">      <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;multiple_choice&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">      <span class="nt">&#34;options&#34;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&#34;Không bao giờ&#34;</span><span class="p">,</span> <span class="s2">&#34;1-2 lần&#34;</span><span class="p">,</span> <span class="s2">&#34;3-4 lần&#34;</span><span class="p">,</span> <span class="s2">&#34;Hàng ngày&#34;</span><span class="p">]</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">    <span class="p">},</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">      <span class="nt">&#34;question&#34;</span><span class="p">:</span> <span class="s2">&#34;Thể loại sách yêu thích của bạn là gì?&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">      <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;open_ended&#34;</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl">    <span class="p">},</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl">      <span class="nt">&#34;question&#34;</span><span class="p">:</span> <span class="s2">&#34;Bạn đánh giá mức độ hài lòng với thói quen đọc sách hiện tại như thế nào?&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">14</span><span class="cl">      <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;scale&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl">      <span class="nt">&#34;options&#34;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&#34;1 - Rất không hài lòng&#34;</span><span class="p">,</span> <span class="s2">&#34;2&#34;</span><span class="p">,</span> <span class="s2">&#34;3&#34;</span><span class="p">,</span> <span class="s2">&#34;4&#34;</span><span class="p">,</span> <span class="s2">&#34;5 - Rất hài lòng&#34;</span><span class="p">]</span>
+</span></span><span class="line"><span class="ln">16</span><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="ln">17</span><span class="cl">  <span class="p">]</span>
+</span></span><span class="line"><span class="ln">18</span><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>Bộ câu hỏi này có thể được sử dụng để tạo form khảo sát trên các nền tảng như Google Forms hoặc Typeform .</p>
+<hr>
+<h1 id="sử-dụng-structured-prompt-outputs-trong-chatbot">Sử dụng Structured Prompt Outputs trong chatbot<a class="anchor ms-1" href="#sử-dụng-structured-prompt-outputs-trong-chatbot"><i class="fas fa-link"></i></a></h1>
+<p>Chatbot là một nhân viên ảo, cần mẫn, chăm chỉ, không cần trả lương, không cần trả BHXH, có thể online 24/24 giải quyết nhu cầu của khác hàng. Ngày nay, có nhiều công ty / tập đoàn đã tích hợp chatbot vào các ứng dụng tự động của mình , giúp tăng cường trải nghiệm khách hàng.</p>
+<p>Ở phần này, mình show một usecase nhỏ về cách sử dụng Structured Prompt Outputs trong chatbot</p>
+<h2 id="cấu-hình-bot">Cấu hình bot<a class="anchor ms-1" href="#cấu-hình-bot"><i class="fas fa-link"></i></a></h2>
+<h3 id="bước-1-định-nghĩa-cấu-trúc-đầu-ra">Bước 1: Định nghĩa cấu trúc đầu ra<a class="anchor ms-1" href="#bước-1-định-nghĩa-cấu-trúc-đầu-ra"><i class="fas fa-link"></i></a></h3>
+<p>Trước tiên, bạn cần xác định cấu trúc đầu ra mà bạn mong đợi từ LLM. Ví dụ, nếu bạn muốn chatbot cung cấp thông tin về sản phẩm, bạn có thể định nghĩa một lược đồ JSON như sau:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="ln">1</span><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl">  <span class="nt">&#34;product_name&#34;</span><span class="p">:</span> <span class="s2">&#34;Tên sản phẩm&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl">  <span class="nt">&#34;price&#34;</span><span class="p">:</span> <span class="s2">&#34;Giá sản phẩm&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">4</span><span class="cl">  <span class="nt">&#34;availability&#34;</span><span class="p">:</span> <span class="s2">&#34;Có sẵn hay không&#34;</span>
+</span></span><span class="line"><span class="ln">5</span><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><h3 id="bước-2-tạo-prompt-có-cấu-trúc">Bước 2: Tạo prompt có cấu trúc<a class="anchor ms-1" href="#bước-2-tạo-prompt-có-cấu-trúc"><i class="fas fa-link"></i></a></h3>
+<p>Sử dụng <strong>prompt controls</strong>, một thành phần giao diện người dùng (UI) bao quanh trường nhập liệu trong chatbot, để hướng dẫn người dùng hoặc hệ thống cung cấp đầu vào phù hợp . Bạn có thể viết một prompt như sau:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl">Hãy cung cấp thông tin về sản phẩm dưới dạng JSON với các trường: product_name, price, và availability.
+</span></span></code></pre></div><h3 id="bước-3-xử-lý-đầu-ra">Bước 3: Xử lý đầu ra<a class="anchor ms-1" href="#bước-3-xử-lý-đầu-ra"><i class="fas fa-link"></i></a></h3>
+<p>Khi LLM trả về kết quả, bạn có thể sử dụng các công cụ như <strong>Structured Outputs API</strong> của OpenAI để đảm bảo rằng đầu ra luôn tuân thủ lược đồ JSON mà bạn đã định nghĩa . Ví dụ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="ln">1</span><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl">  <span class="nt">&#34;product_name&#34;</span><span class="p">:</span> <span class="s2">&#34;Laptop Dell XPS 13&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl">  <span class="nt">&#34;price&#34;</span><span class="p">:</span> <span class="s2">&#34;$999&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">4</span><span class="cl">  <span class="nt">&#34;availability&#34;</span><span class="p">:</span> <span class="s2">&#34;Có sẵn&#34;</span>
+</span></span><span class="line"><span class="ln">5</span><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><h3 id="bước-4-tích-hợp-vào-chatbot">Bước 4: Tích hợp vào chatbot<a class="anchor ms-1" href="#bước-4-tích-hợp-vào-chatbot"><i class="fas fa-link"></i></a></h3>
+<p>Sau khi nhận được đầu ra có cấu trúc, bạn có thể tích hợp nó vào ứng dụng chatbot bằng cách:</p>
+<ul>
+<li>Hiển thị thông tin trực tiếp cho người dùng.</li>
+<li>Lưu trữ dữ liệu vào cơ sở dữ liệu.</li>
+<li>Gọi các API khác để thực hiện các hành động tiếp theo.</li>
+</ul>
+<hr>
+<h2 id="2-ví-dụ-thực-tế">2. Ví dụ thực tế<a class="anchor ms-1" href="#2-ví-dụ-thực-tế"><i class="fas fa-link"></i></a></h2>
+<h4 id="ví-dụ-1-chatbot-hỗ-trợ-đặt-hàng">Ví dụ 1: Chatbot hỗ trợ đặt hàng<a class="anchor ms-1" href="#ví-dụ-1-chatbot-hỗ-trợ-đặt-hàng"><i class="fas fa-link"></i></a></h4>
+<p>Giả sử bạn đang xây dựng một chatbot hỗ trợ khách hàng đặt hàng sản phẩm. Bạn có thể yêu cầu LLM tạo ra một phản hồi có cấu trúc như sau:</p>
+<p><strong>Prompt</strong>:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl">Khách hàng muốn đặt mua một chiếc laptop Dell XPS 13. Hãy tạo một phản hồi có cấu trúc với các trường: product_name, quantity, và total_price. Trả lời dưới dạng JSON.
+</span></span></code></pre></div><p><strong>Kết quả dự kiến</strong>:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="ln">1</span><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl">  <span class="nt">&#34;product_name&#34;</span><span class="p">:</span> <span class="s2">&#34;Laptop Dell XPS 13&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl">  <span class="nt">&#34;quantity&#34;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">4</span><span class="cl">  <span class="nt">&#34;total_price&#34;</span><span class="p">:</span> <span class="s2">&#34;$999&#34;</span>
+</span></span><span class="line"><span class="ln">5</span><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>Dữ liệu này có thể được sử dụng để hiển thị thông tin đơn hàng cho khách hàng hoặc gửi yêu cầu đến hệ thống quản lý đơn hàng .</p>
+<h3 id="ví-dụ-2-chatbot-phân-loại-ý-kiến-khách-hàng">Ví dụ 2: Chatbot phân loại ý kiến khách hàng<a class="anchor ms-1" href="#ví-dụ-2-chatbot-phân-loại-ý-kiến-khách-hàng"><i class="fas fa-link"></i></a></h3>
+<p>Nếu bạn đang xây dựng một chatbot để phân loại ý kiến khách hàng, bạn có thể yêu cầu LLM tạo ra một phản hồi có cấu trúc bao gồm loại ý kiến (positive, negative, neutral) và nội dung chi tiết.</p>
+<p><strong>Prompt</strong>:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl">Phân loại ý kiến sau: &#34;Tôi rất hài lòng với dịch vụ của công ty.&#34; Trả lời dưới dạng JSON với các trường: sentiment và content.
+</span></span></code></pre></div><p><strong>Kết quả dự kiến</strong>:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="ln">1</span><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl">  <span class="nt">&#34;sentiment&#34;</span><span class="p">:</span> <span class="s2">&#34;positive&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl">  <span class="nt">&#34;content&#34;</span><span class="p">:</span> <span class="s2">&#34;Tôi rất hài lòng với dịch vụ của công ty.&#34;</span>
+</span></span><span class="line"><span class="ln">4</span><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><h2 id="một-số-khó-khăn-khi-triển-khai-chatbot-và-cách-giải-quyết">Một số khó khăn khi triển khai chatbot và cách giải quyết<a class="anchor ms-1" href="#một-số-khó-khăn-khi-triển-khai-chatbot-và-cách-giải-quyết"><i class="fas fa-link"></i></a></h2>
+<h3 id="1-thiếu-hiểu-biết-về-ngôn-ngữ-tự-nhiên-nlp">1. Thiếu hiểu biết về ngôn ngữ tự nhiên (NLP)<a class="anchor ms-1" href="#1-thiếu-hiểu-biết-về-ngôn-ngữ-tự-nhiên-nlp"><i class="fas fa-link"></i></a></h3>
+<p>Một trong những thách thức lớn nhất khi triển khai AI cho chatbot nói chung và Structured Prompt Outputs nói riêng là khả năng xử lý ngôn ngữ tự nhiên (NLP). Chatbots cần hiểu được ý định của người dùng và tạo ra phản hồi phù hợp theo định dạng đã chỉ định. Nếu không có sự hiểu biết sâu sắc về NLP, việc yêu cầu LLM tạo ra đầu ra có cấu trúc có thể dẫn đến kết quả không mong muốn hoặc thiếu chính xác .</p>
+<p><strong>Cách giải quyết</strong>:</p>
+<ul>
+<li>Sử dụng các công cụ như <strong>Prompt Engineering</strong> để tối ưu hóa câu lệnh (prompt) sao cho rõ ràng và cụ thể.</li>
+<li>Áp dụng các kỹ thuật như <strong>meta prompting</strong> để tinh chỉnh yêu cầu ban đầu .</li>
+</ul>
+<hr>
+<h3 id="2-khó-khăn-trong-việc-thiết-kế-prompt">2. Khó khăn trong việc thiết kế prompt<a class="anchor ms-1" href="#2-khó-khăn-trong-việc-thiết-kế-prompt"><i class="fas fa-link"></i></a></h3>
+<p>Để nhận được đầu ra có cấu trúc, bạn cần thiết kế các câu lệnh (prompts) một cách cẩn thận. Nếu câu lệnh không đủ rõ ràng hoặc không bao gồm ví dụ minh họa, LLM có thể trả về kết quả không tuân thủ định dạng mong muốn .</p>
+<p><strong>Ví dụ</strong>:</p>
+<ul>
+<li>Một prompt không rõ ràng: &ldquo;Hãy liệt kê các sản phẩm.&rdquo;</li>
+<li>Một prompt rõ ràng: &ldquo;Hãy liệt kê các sản phẩm dưới dạng JSON với các trường &lsquo;product_name&rsquo;, &lsquo;price&rsquo;, và &lsquo;availability&rsquo;.&rdquo;</li>
+</ul>
+<p><strong>Cách giải quyết</strong>:</p>
+<ul>
+<li>Cung cấp ví dụ cụ thể về định dạng đầu ra mong đợi.</li>
+<li>Sử dụng <strong>XML tags</strong> hoặc <strong>Markdown</strong> để định dạng và cấu trúc prompt, tăng tính rõ ràng .</li>
+</ul>
+<hr>
+<h3 id="3-chi-phí-đầu-tư-ban-đầu-cao">3. Chi phí đầu tư ban đầu cao<a class="anchor ms-1" href="#3-chi-phí-đầu-tư-ban-đầu-cao"><i class="fas fa-link"></i></a></h3>
+<p>Việc triển khai Structured Prompt Outputs đòi hỏi đầu tư vào các công cụ và nền tảng AI, chẳng hạn như OpenAI Structured Outputs API hoặc Google AI Studio. Điều này có thể gây khó khăn cho các doanh nghiệp nhỏ hoặc vừa .</p>
+<p><strong>Cách giải quyết</strong>:</p>
+<ul>
+<li>Bắt đầu với các công cụ miễn phí hoặc thử nghiệm trước khi chuyển sang các giải pháp thương mại.</li>
+<li>Sử dụng các nền tảng như <strong>Google AI Studio</strong>, nơi bạn có thể tạo và thử nghiệm các câu lệnh có cấu trúc một cách dễ dàng .</li>
+</ul>
+<hr>
+<h3 id="4-thiếu-dữ-liệu-chất-lượng">4. Thiếu dữ liệu chất lượng<a class="anchor ms-1" href="#4-thiếu-dữ-liệu-chất-lượng"><i class="fas fa-link"></i></a></h3>
+<p>Để huấn luyện chatbot tạo ra đầu ra có cấu trúc chính xác, bạn cần có dữ liệu đầu vào chất lượng cao. Nếu dữ liệu không đầy đủ hoặc không chính xác, chatbot có thể gặp khó khăn trong việc hiểu yêu cầu và tạo ra kết quả phù hợp .</p>
+<p><strong>Cách giải quyết</strong>:</p>
+<ul>
+<li>Xây dựng cơ sở dữ liệu chất lượng cao từ các tương tác thực tế với khách hàng.</li>
+<li>Sử dụng các công cụ phân tích dữ liệu để cải thiện chất lượng dữ liệu đầu vào.</li>
+</ul>
+<hr>
+<h3 id="5-lo-ngại-về-quyền-riêng-tư-và-bảo-mật">5. Lo ngại về quyền riêng tư và bảo mật<a class="anchor ms-1" href="#5-lo-ngại-về-quyền-riêng-tư-và-bảo-mật"><i class="fas fa-link"></i></a></h3>
+<p>Khi triển khai chatbot sử dụng Structured Prompt Outputs, đặc biệt là trong các lĩnh vực nhạy cảm như chăm sóc sức khỏe hoặc tài chính, vấn đề quyền riêng tư và bảo mật luôn là mối quan tâm lớn . Người dùng có thể lo ngại rằng dữ liệu của họ sẽ bị lưu trữ hoặc sử dụng không đúng cách.</p>
+<p><strong>Cách giải quyết</strong>:</p>
+<ul>
+<li>Đảm bảo rằng dữ liệu được mã hóa và lưu trữ an toàn.</li>
+<li>Tuân thủ các quy định về quyền riêng tư, chẳng hạn như GDPR hoặc CCPA.</li>
+</ul>
+<hr>
+<h3 id="6-khách-hàng-không-có-niềm-tin-vào-ai">6. Khách hàng không có niềm tin vào AI<a class="anchor ms-1" href="#6-khách-hàng-không-có-niềm-tin-vào-ai"><i class="fas fa-link"></i></a></h3>
+<p>Không phải khách hàng nào cũng thoải mái với việc tương tác cùng chatbot thay vì con người. Sự e dè này thường xuất phát từ trải nghiệm kém với các chatbot trước đây hoặc lo ngại về khả năng hiểu sai ý của AI .</p>
+<p><strong>Cách giải quyết</strong>:</p>
+<ul>
+<li>Thiết kế giao diện thân thiện và cung cấp tùy chọn chuyển sang hỗ trợ con người nếu cần.</li>
+<li>Tạo ra các tình huống thử nghiệm để chứng minh hiệu quả của chatbot.</li>
+</ul>
+<hr>
+<h3 id="7-xác-định-trường-hợp-sử-dụng-chưa-phù-hợp">7. Xác định trường hợp sử dụng chưa phù hợp<a class="anchor ms-1" href="#7-xác-định-trường-hợp-sử-dụng-chưa-phù-hợp"><i class="fas fa-link"></i></a></h3>
+<p>Một thách thức khác là việc xác định trường hợp sử dụng chatbot chưa phù hợp. Nếu chatbot được triển khai trong các tình huống không cần thiết hoặc không phù hợp, nó có thể gây ra sự thất vọng cho người dùng .</p>
+<p><strong>Ví dụ</strong>:</p>
+<ul>
+<li>Sử dụng chatbot để xử lý các vấn đề phức tạp yêu cầu tư duy sáng tạo.</li>
+<li>Sử dụng chatbot để thay thế hoàn toàn nhân viên hỗ trợ khách hàng.</li>
+</ul>
+<p><strong>Cách giải quyết</strong>:</p>
+<ul>
+<li>Phân tích kỹ lưỡng các kịch bản sử dụng trước khi triển khai chatbot.</li>
+<li>Kết hợp chatbot với sự hỗ trợ của con người trong các tình huống phức tạp.</li>
+</ul>
+<hr>
+<h3 id="8-không-xây-dựng-kịch-bản-riêng-cho-doanh-nghiệp">8. Không xây dựng kịch bản riêng cho doanh nghiệp<a class="anchor ms-1" href="#8-không-xây-dựng-kịch-bản-riêng-cho-doanh-nghiệp"><i class="fas fa-link"></i></a></h3>
+<p>Mỗi doanh nghiệp có nhu cầu và quy trình riêng. Nếu chatbot không được thiết kế và huấn luyện theo kịch bản riêng của doanh nghiệp, nó có thể không đáp ứng được kỳ vọng của người dùng .</p>
+<p><strong>Cách giải quyết</strong>:</p>
+<ul>
+<li>Xây dựng kịch bản sử dụng dựa trên nhu cầu cụ thể của doanh nghiệp.</li>
+<li>Huấn luyện chatbot bằng dữ liệu thực tế từ hoạt động kinh doanh.</li>
+</ul>
+<hr>
+<h1 id="đo-lường-hiệu-suất-của-structured-prompt-outputs">Đo lường hiệu suất của Structured Prompt Outputs<a class="anchor ms-1" href="#đo-lường-hiệu-suất-của-structured-prompt-outputs"><i class="fas fa-link"></i></a></h1>
+<h2 id="1-xác-định-các-chỉ-số-đo-lường-hiệu-suất-kpi">1. Xác định các chỉ số đo lường hiệu suất (KPI)<a class="anchor ms-1" href="#1-xác-định-các-chỉ-số-đo-lường-hiệu-suất-kpi"><i class="fas fa-link"></i></a></h2>
+<p>Các chỉ số đo lường hiệu suất (KPI) là công cụ quan trọng để đánh giá mức độ thành công của chatbot khi sử dụng Structured Prompt Outputs. Một số KPI phổ biến bao gồm:</p>
+<ul>
+<li>
+<p><strong>Tỷ lệ phản hồi chính xác</strong>: Đây là tỷ lệ mà chatbot cung cấp đầu ra có cấu trúc chính xác theo yêu cầu . Ví dụ, nếu bạn yêu cầu JSON nhưng chatbot trả về văn bản thuần túy, đó được coi là lỗi.</p>
+</li>
+<li>
+<p><strong>Tốc độ xử lý yêu cầu</strong>: Đo lường thời gian mà chatbot mất để tạo ra đầu ra có cấu trúc từ khi nhận được câu lệnh . Tốc độ nhanh giúp cải thiện trải nghiệm người dùng.</p>
+</li>
+<li>
+<p><strong>Tỷ lệ tự phục vụ (Self-service Rate)</strong>: Đây là tỷ lệ tương tác mà chatbot xử lý thành công mà không cần sự can thiệp của con người . Đối với Structured Prompt Outputs, tỷ lệ này càng cao thì hiệu quả càng lớn.</p>
+</li>
+<li>
+<p><strong>Tỷ lệ ngăn chặn chatbot (Deflection Rate)</strong>: Chỉ số này đo lường khả năng chatbot giải quyết vấn đề mà không cần chuyển tiếp đến nhân viên hỗ trợ . Một chatbot hiệu quả sẽ giảm thiểu nhu cầu chuyển tiếp.</p>
+</li>
+</ul>
+<hr>
+<h2 id="2-phân-tích-nguồn-tương-tác">2. Phân tích nguồn tương tác<a class="anchor ms-1" href="#2-phân-tích-nguồn-tương-tác"><i class="fas fa-link"></i></a></h2>
+<p>Hiểu rõ nguồn tương tác của người dùng là bước quan trọng để tối ưu hóa hiệu suất chatbot. Bạn cần xác định người dùng đến từ đâu—ví dụ, từ website, ứng dụng di động, hay nền tảng mạng xã hội như YouTube . Điều này giúp bạn điều chỉnh prompt và cấu trúc đầu ra phù hợp với từng kênh.</p>
+<hr>
+<h2 id="3-sử-dụng-phân-tích-nâng-cao-advanced-analytics">3. Sử dụng phân tích nâng cao (Advanced Analytics)<a class="anchor ms-1" href="#3-sử-dụng-phân-tích-nâng-cao-advanced-analytics"><i class="fas fa-link"></i></a></h2>
+<p>Công cụ phân tích nâng cao có thể giúp bạn đo lường hiệu suất của chatbot một cách chi tiết hơn. Ví dụ, bạn có thể sử dụng <strong>Chatbot Analytics</strong> để phân tích:</p>
+<ul>
+<li><strong>Khối lượng công việc của chatbot</strong>: Số lượng yêu cầu mà chatbot xử lý mỗi ngày .</li>
+<li><strong>Chất lượng đầu ra</strong>: Đánh giá xem dữ liệu đầu ra có tuân thủ đúng định dạng JSON hoặc XML hay không .</li>
+<li><strong>Tỷ lệ lỗi</strong>: Xác định tỷ lệ mà chatbot không thể tạo ra đầu ra có cấu trúc chính xác.</li>
+</ul>
+<p>Ngoài ra, các công cụ như <strong>Botpress</strong> cung cấp hướng dẫn từng bước để triển khai phân tích nâng cao cho chatbot .</p>
+<hr>
+<h2 id="4-kiểm-tra-tính-nhất-quán-của-đầu-ra">4. Kiểm tra tính nhất quán của đầu ra<a class="anchor ms-1" href="#4-kiểm-tra-tính-nhất-quán-của-đầu-ra"><i class="fas fa-link"></i></a></h2>
+<p>Một trong những thách thức lớn nhất của Structured Prompt Outputs là đảm bảo rằng đầu ra luôn nhất quán. Để kiểm tra điều này, bạn có thể:</p>
+<ul>
+<li>So sánh đầu ra của chatbot với lược đồ JSON hoặc XML đã định nghĩa trước.</li>
+<li>Sử dụng các công cụ kiểm tra cú pháp để phát hiện lỗi trong đầu ra.</li>
+</ul>
+<p>Ví dụ, nếu bạn yêu cầu chatbot tạo ra một danh sách sản phẩm dưới dạng JSON, hãy đảm bảo rằng tất cả các trường như &ldquo;product_name&rdquo;, &ldquo;price&rdquo;, và &ldquo;availability&rdquo; đều được điền đầy đủ và chính xác.</p>
+<hr>
+<h2 id="5-thu-thập-phản-hồi-từ-người-dùng">5. Thu thập phản hồi từ người dùng<a class="anchor ms-1" href="#5-thu-thập-phản-hồi-từ-người-dùng"><i class="fas fa-link"></i></a></h2>
+<p>Phản hồi từ người dùng là nguồn thông tin quý giá để đánh giá hiệu suất của chatbot. Bạn có thể thu thập phản hồi thông qua:</p>
+<ul>
+<li><strong>Bảng khảo sát ngắn gọn</strong>: Sau mỗi tương tác, hỏi người dùng về mức độ hài lòng với câu trả lời của chatbot.</li>
+<li><strong>Phân tích cảm xúc (Sentiment Analysis)</strong>: Sử dụng AI để phân tích cảm xúc trong phản hồi của người dùng, giúp xác định xem họ có hài lòng với đầu ra có cấu trúc hay không .</li>
+</ul>
+<hr>
+<h2 id="6-thực-hiện-ab-testing">6. Thực hiện A/B Testing<a class="anchor ms-1" href="#6-thực-hiện-ab-testing"><i class="fas fa-link"></i></a></h2>
+<p>A/B Testing là phương pháp thử nghiệm hai phiên bản khác nhau của cùng một prompt để xác định phiên bản nào hiệu quả hơn. Ví dụ:</p>
+<ul>
+<li>Phiên bản A: Yêu cầu chatbot tạo ra đầu ra JSON với ít ví dụ minh họa.</li>
+<li>Phiên bản B: Yêu cầu chatbot tạo ra đầu ra JSON với nhiều ví dụ minh họa.</li>
+</ul>
+<p>So sánh kết quả từ hai phiên bản để tìm ra cách tối ưu hóa prompt.</p>
+<hr>
+<h2 id="7-theo-dõi-và-cải-tiến-liên-tục">7. Theo dõi và cải tiến liên tục<a class="anchor ms-1" href="#7-theo-dõi-và-cải-tiến-liên-tục"><i class="fas fa-link"></i></a></h2>
+<p>Hiệu suất của chatbot không phải là một yếu tố cố định mà cần được theo dõi và cải tiến liên tục. Hãy thực hiện các bước sau:</p>
+<ul>
+<li><strong>Lưu trữ dữ liệu tương tác</strong>: Lưu lại tất cả các tương tác giữa chatbot và người dùng để phân tích sau này .</li>
+<li><strong>Cập nhật prompt</strong>: Dựa trên dữ liệu thu thập được, điều chỉnh và cải tiến prompt để tăng hiệu suất.</li>
+<li><strong>Huấn luyện mô hình</strong>: Nếu có thể, huấn luyện lại mô hình ngôn ngữ lớn (LLM) bằng cách sử dụng dữ liệu thực tế từ các tương tác.
+ßß</li>
+</ul>
+<hr>
+<p>Cảm ơn bạn đã theo dõi bài viết, hẹn gặp lại ở các bài viết tiếp theo</p>
+</div></div>
+  <div class="card-footer"><div class="post-navs d-flex justify-content-evenly"><div class="post-nav post-prev">
+    <i class="fas fa-fw fa-chevron-left"></i>
+    <a href="/blog/2025-04-26-phishing-email/">Machine Learning - Train Mô Hình Nhận Dạng Email Lừa Đảo
+</a>
+  </div></div></div>
+</article><div class="card component row post-comments" id="post-comments">
+  <div class="card-header">
+    <h2 class="card-title">Comments</h2>
+  </div>
+  <div class="card-body"><script src="https://utteranc.es/client.js"
+  repo="AlexBlack2202/utterances"
+  issue-term="pathname"
+  label="comment"
+  theme="github-dark"
+  crossorigin="anonymous"
+  async>
+</script></div>
+</div></div>
+</div><aside class="col-lg-3 col-md-4 sidebar d-flex">
+  <div class="container d-flex flex-column">
+    
+    <div class="post-toc row mb-4 card component" id="postTOC">
+  <div class="card-header">
+    <h2 class="card-title">Contents</h2>
+  </div>
+  <div class="card-body">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#structured-prompt-outputs-là-gì-">Structured Prompt Outputs là gì ?</a>
+      <ul>
+        <li><a href="#cách-tạo-structured-prompt-outputs">Cách tạo Structured Prompt Outputs</a>
+          <ul>
+            <li><a href="#ví-dụ-tạo-một-danh-sách-công-việc-hàng-ngày">Ví dụ: Tạo một danh sách công việc hàng ngày</a></li>
+          </ul>
+        </li>
+        <li><a href="#các-lợi-ích-của-structured-prompt-outputs">Các lợi ích của Structured Prompt Outputs</a></li>
+        <li><a href="#các-chiến-lược-tạo-structured-prompts-hiệu-quả">Các chiến lược tạo Structured Prompts hiệu quả</a></li>
+      </ul>
+    </li>
+    <li><a href="#ứng-dụng-structured-prompt-outputs-trong-các-dự-án-ai">Ứng dụng <strong>Structured Prompt Outputs</strong> trong các dự án AI.</a>
+      <ul>
+        <li><a href="#1-xây-dựng-hệ-thống-quản-lý-công-việc-task-management-system">1. <strong>Xây dựng hệ thống quản lý công việc (Task Management System)</strong></a></li>
+        <li><a href="#2-tạo-api-giả-lập-cho-dữ-liệu-sản-phẩm">2. <strong>Tạo API giả lập cho dữ liệu sản phẩm</strong></a></li>
+        <li><a href="#3-phân-tích-dữ-liệu-bán-hàng">3. <strong>Phân tích dữ liệu bán hàng</strong></a></li>
+        <li><a href="#4-tạo-nội-dung-bài-viết-có-cấu-trúc">4. <strong>Tạo nội dung bài viết có cấu trúc</strong></a></li>
+        <li><a href="#5-tạo-công-thức-nấu-ăn-có-cấu-trúc">5. <strong>Tạo công thức nấu ăn có cấu trúc</strong></a></li>
+        <li><a href="#6-tạo-câu-hỏi-khảo-sát-có-cấu-trúc">6. <strong>Tạo câu hỏi khảo sát có cấu trúc</strong></a></li>
+      </ul>
+    </li>
+    <li><a href="#sử-dụng-structured-prompt-outputs-trong-chatbot">Sử dụng Structured Prompt Outputs trong chatbot</a>
+      <ul>
+        <li><a href="#cấu-hình-bot">Cấu hình bot</a>
+          <ul>
+            <li><a href="#bước-1-định-nghĩa-cấu-trúc-đầu-ra">Bước 1: Định nghĩa cấu trúc đầu ra</a></li>
+            <li><a href="#bước-2-tạo-prompt-có-cấu-trúc">Bước 2: Tạo prompt có cấu trúc</a></li>
+            <li><a href="#bước-3-xử-lý-đầu-ra">Bước 3: Xử lý đầu ra</a></li>
+            <li><a href="#bước-4-tích-hợp-vào-chatbot">Bước 4: Tích hợp vào chatbot</a></li>
+          </ul>
+        </li>
+        <li><a href="#2-ví-dụ-thực-tế">2. <strong>Ví dụ thực tế</strong></a>
+          <ul>
+            <li></li>
+            <li><a href="#ví-dụ-2-chatbot-phân-loại-ý-kiến-khách-hàng">Ví dụ 2: Chatbot phân loại ý kiến khách hàng</a></li>
+          </ul>
+        </li>
+        <li><a href="#một-số-khó-khăn-khi-triển-khai-chatbot-và-cách-giải-quyết">Một số khó khăn khi triển khai chatbot và cách giải quyết</a>
+          <ul>
+            <li><a href="#1-thiếu-hiểu-biết-về-ngôn-ngữ-tự-nhiên-nlp">1. <strong>Thiếu hiểu biết về ngôn ngữ tự nhiên (NLP)</strong></a></li>
+            <li><a href="#2-khó-khăn-trong-việc-thiết-kế-prompt">2. <strong>Khó khăn trong việc thiết kế prompt</strong></a></li>
+            <li><a href="#3-chi-phí-đầu-tư-ban-đầu-cao">3. <strong>Chi phí đầu tư ban đầu cao</strong></a></li>
+            <li><a href="#4-thiếu-dữ-liệu-chất-lượng">4. <strong>Thiếu dữ liệu chất lượng</strong></a></li>
+            <li><a href="#5-lo-ngại-về-quyền-riêng-tư-và-bảo-mật">5. <strong>Lo ngại về quyền riêng tư và bảo mật</strong></a></li>
+            <li><a href="#6-khách-hàng-không-có-niềm-tin-vào-ai">6. <strong>Khách hàng không có niềm tin vào AI</strong></a></li>
+            <li><a href="#7-xác-định-trường-hợp-sử-dụng-chưa-phù-hợp">7. <strong>Xác định trường hợp sử dụng chưa phù hợp</strong></a></li>
+            <li><a href="#8-không-xây-dựng-kịch-bản-riêng-cho-doanh-nghiệp">8. <strong>Không xây dựng kịch bản riêng cho doanh nghiệp</strong></a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+    <li><a href="#đo-lường-hiệu-suất-của-structured-prompt-outputs">Đo lường hiệu suất của <strong>Structured Prompt Outputs</strong></a>
+      <ul>
+        <li><a href="#1-xác-định-các-chỉ-số-đo-lường-hiệu-suất-kpi">1. <strong>Xác định các chỉ số đo lường hiệu suất (KPI)</strong></a></li>
+        <li><a href="#2-phân-tích-nguồn-tương-tác">2. <strong>Phân tích nguồn tương tác</strong></a></li>
+        <li><a href="#3-sử-dụng-phân-tích-nâng-cao-advanced-analytics">3. <strong>Sử dụng phân tích nâng cao (Advanced Analytics)</strong></a></li>
+        <li><a href="#4-kiểm-tra-tính-nhất-quán-của-đầu-ra">4. <strong>Kiểm tra tính nhất quán của đầu ra</strong></a></li>
+        <li><a href="#5-thu-thập-phản-hồi-từ-người-dùng">5. <strong>Thu thập phản hồi từ người dùng</strong></a></li>
+        <li><a href="#6-thực-hiện-ab-testing">6. <strong>Thực hiện A/B Testing</strong></a></li>
+        <li><a href="#7-theo-dõi-và-cải-tiến-liên-tục">7. <strong>Theo dõi và cải tiến liên tục</strong></a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div><section class="recent-posts row card component">
+  <div class="card-header">
+    <h2 class="card-title">Recent Posts</h2>
+  </div>
+  <div class="card-body">
+    <ul class="post-list"><li>
+        <a href="/blog/2025-04-28-structured-prompt-outputs/">Machine Learning - Sử Dụng Structured Prompt Outputs Để Tối Ưu Hóa Kết Quả Từ LLMs
+</a>
+      </li><li>
+        <a href="/blog/2025-04-26-phishing-email/">Machine Learning - Train Mô Hình Nhận Dạng Email Lừa Đảo
+</a>
+      </li><li>
+        <a href="/blog/2025-04-26-how-brands-grow/">Khám Phá Bí Mật Đằng Sau Sự Thành Công Của Các Thương Hiệu
+</a>
+      </li><li>
+        <a href="/blog/2025-04-20-ai-viet-truyen-tuyet-giac-truc-lam/">Tuyết Giác Trúc Lâm - Truyện AI
+</a>
+      </li><li>
+        <a href="/blog/2025-04-11-hash-equilibrium/">Cân Bằng Nash - Nash Equilibrium
+</a>
+      </li></ul>
+  </div>
+</section><section class="series-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="/series">series</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="/series/kh%C3%B3a-h%E1%BB%8Dc-python-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học Python Căn Bản">
+            Khóa Học Python Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="/series/kh%C3%B3a-h%E1%BB%8Dc-c&#43;&#43;-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học C&#43;&#43; Căn Bản">
+            Khóa Học C&#43;&#43; Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="/series/machine-learning-dataset/" class="badge rounded post-taxonomy" title="Machine Learning Dataset">
+            Machine Learning Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a><a href="/series/ch%E1%BB%A9ng-kho%C3%A1n-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Chứng Khoán Căn Bản">
+            Chứng Khoán Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">1</span></a></div>
+      </div>
+    </section><section class="tools-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="/tools">tools</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="/tools/tool-random/" class="badge rounded post-taxonomy" title="Tool Random">
+            Tool Random<span class="badge badge-sm text-white bg-accent ms-1">2</span></a></div>
+      </div>
+    </section><section class="categories-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="/categories">categories</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="/categories/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="/categories/c&#43;&#43;/" class="badge rounded post-taxonomy" title="C&#43;&#43;">
+            C&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="/categories/dataset/" class="badge rounded post-taxonomy" title="Dataset">
+            Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a></div>
+      </div>
+    </section><section class="tags-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="/tags">tags</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="/tags/machine-learning/" class="badge rounded post-taxonomy" title="Machine Learning">
+            Machine Learning<span class="badge badge-sm text-white bg-accent ms-1">45</span></a><a href="/tags/deep-learning/" class="badge rounded post-taxonomy" title="Deep Learning">
+            Deep Learning<span class="badge badge-sm text-white bg-accent ms-1">21</span></a><a href="/tags/deeplearning/" class="badge rounded post-taxonomy" title="DeepLearning">
+            DeepLearning<span class="badge badge-sm text-white bg-accent ms-1">21</span></a><a href="/tags/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">11</span></a><a href="/tags/opencv/" class="badge rounded post-taxonomy" title="Opencv">
+            Opencv<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="/tags/c&#43;&#43;/" class="badge rounded post-taxonomy" title="C&#43;&#43;">
+            C&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/marketing/" class="badge rounded post-taxonomy" title="Marketing">
+            Marketing<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/normalization/" class="badge rounded post-taxonomy" title="Normalization">
+            Normalization<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/object-detector/" class="badge rounded post-taxonomy" title="Object Detector">
+            Object Detector<span class="badge badge-sm text-white bg-accent ms-1">4</span></a><a href="/tags/recommendation/" class="badge rounded post-taxonomy" title="Recommendation">
+            Recommendation<span class="badge badge-sm text-white bg-accent ms-1">4</span></a></div>
+      </div>
+    </section>
+    
+  </div>
+</aside>
+</div>
+    </main><footer class="footer mt-auto py-3 text-center container"><ul class="nav justify-content-between footer-memu mb-3"><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Support
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-github"></i>Repository
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-comments"></i>Discussions
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/contact/"><i class="fas fa-fw fa-info-circle"></i>Contact Us
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/faq/"><i class="fas fa-fw fa-question-circle"></i>FAQs
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Docs
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="/team_of_services" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-users"></i>Điều khoản sử dụng
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/privacy" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-lock"></i>Chính sách bảo mật
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Features
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.phamduytung.com/utils/gen_paswords/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-paw"></i>Tạo password ngẫu nhiên
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Liên kết khác
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">Netlify
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">facebook
+</a>
+        </li></ul></li></ul>
+<div class="copyright mb-2">
+  Copyright © 2016-2025 Phạm Duy Tùng. All Rights Reserved.
+</div>
+<div class="powered-by mb-2">
+  Website chia sẻ kiến thức của Phạm Duy Tùng và Đặng Thị Hằng. Vui lòng liên hệ email alexblack2202@gmail.com nếu bạn có thông tin cần trao đổi.
+</div></footer>
+<script src="/js/main.ed2053ad82a243b263761567b5c1aaf974487aa84adacb89ae3ddf803ecc248a.js" integrity="sha256-7SBTrYKiQ7JjdhVntcGq&#43;XRIeqhK2suJrj3fgD7MJIo=" crossorigin="anonymous" defer></script><script src="/js/icons.min.8ff200851002b8138e6b35314683092e02edc155465d9dbfb7d115460f8f1fbe.js" integrity="sha256-j/IAhRACuBOOazUxRoMJLgLtwVVGXZ2/t9EVRg&#43;PH74=" crossorigin="anonymous" defer></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('\/service-worker.js').then(function(reg) {
+      console.log('Successfully registered service worker', reg);
+    }).catch(function(err) {
+      console.warn('Error whilst registering service worker', err);
+    });
+  });
+}
+</script><script src="/js/viewer.min.ec58d2aa1a8916addf393be975fdf0070e8c872b0caef1673cb9f7eea067ce57.js" integrity="sha256-7FjSqhqJFq3fOTvpdf3wBw6MhysMrvFnPLn37qBnzlc=" crossorigin="anonymous" defer></script><script defer src="/js/katex.min.d5052035160facae59b60000106771baf2eb7671123813d21f1097a5a9218b6e.js" integrity="sha256-1QUgNRYPrK5ZtgAAEGdxuvLrdnESOBPSHxCXpakhi24=" crossorigin="anonymous"></script>
+
+<script  data-ad-client="ca-pub-4644989745435991"  async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4644989745435991"
+     crossorigin="anonymous"></script><script data-cfasync="false" type="text/javascript" data-adel="atag" src="//acscdn.com/script/atg.js" czid="eul3gyjdmm"></script>
+  </body>
+</html>
