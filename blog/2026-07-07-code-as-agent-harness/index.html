@@ -1,0 +1,999 @@
+<!doctype html><html lang="vi" data-palette="blue"
+   data-mode="light">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Code as Agent Harness: Khi AI Agent Không Chỉ Nói, Mà Bắt Đầu Suy Luận Bằng Code - Phạm Duy Tùng Machine Learning Blog</title>
+    <meta name="a.validate.02" content="1QZXZ8oi7g57H-GxBrBPkTYBydwii-Ic9iJu" /><link rel="apple-touch-icon" href="https://www.phamduytung.com/images/icons/icon-180x180.png" sizes="180x180">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/icon-32x32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/icon-16x16.png" sizes="16x16" type="image/png">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/favicon.ico">
+<link rel="manifest" href="https://www.phamduytung.com/manifest.json">
+<meta name="keywords" content="" />
+<meta name="description" content="Ngôn ngữ tự nhiên rất tiện, nhưng cũng rất mơ hồ. Khi AI agent chỉ suy luận bằng chữ, nó có thể nói nghe rất hợp lý nhưng vẫn sai. Hướng Code as Agent Harness đề xuất một cách nhìn khác: để agent viết code, chạy code trong sandbox, nhận lỗi từ compiler/runtime, rồi tự sửa. Khi đó, code không chỉ là kết quả đầu ra, mà trở thành bộ xương, đôi tay và cái chuồng an toàn của AI agent." /><meta name="robots" content="index, follow" />
+	<meta itemprop="name" content="Code as Agent Harness: Khi AI Agent Không Chỉ Nói, Mà Bắt Đầu Suy Luận Bằng Code">
+	<meta itemprop="description" content="Ngôn ngữ tự nhiên rất tiện, nhưng cũng rất mơ hồ. Khi AI agent chỉ suy luận bằng chữ, nó có thể nói nghe rất hợp lý nhưng vẫn sai. Hướng Code as Agent Harness đề xuất một cách nhìn khác: để agent viết code, chạy code trong sandbox, nhận lỗi từ compiler/runtime, rồi tự sửa. Khi đó, code không chỉ là kết quả đầu ra, mà trở thành bộ xương, đôi tay và cái chuồng an toàn của AI agent.">
+	<meta itemprop="datePublished" content="2026-07-07T00:00:00+03:00">
+	<meta itemprop="dateModified" content="2026-07-07T00:00:00+03:00">
+	<meta itemprop="wordCount" content="5101">
+	<meta itemprop="image" content="https://www.phamduytung.com/images/posts/2026-07-07-code-as-agent-harness/cover.svg">
+	<meta itemprop="keywords" content="Llm,Ai-Agent,Code-Agent,Harness,Codex"><meta property="og:url" content="https://www.phamduytung.com/blog/2026-07-07-code-as-agent-harness/">
+	<meta property="og:site_name" content="Phạm Duy Tùng Machine Learning Blog">
+	<meta property="og:title" content="Code as Agent Harness: Khi AI Agent Không Chỉ Nói, Mà Bắt Đầu Suy Luận Bằng Code">
+	<meta property="og:description" content="Ngôn ngữ tự nhiên rất tiện, nhưng cũng rất mơ hồ. Khi AI agent chỉ suy luận bằng chữ, nó có thể nói nghe rất hợp lý nhưng vẫn sai. Hướng Code as Agent Harness đề xuất một cách nhìn khác: để agent viết code, chạy code trong sandbox, nhận lỗi từ compiler/runtime, rồi tự sửa. Khi đó, code không chỉ là kết quả đầu ra, mà trở thành bộ xương, đôi tay và cái chuồng an toàn của AI agent.">
+	<meta property="og:locale" content="vi_VN">
+	<meta property="og:type" content="article">
+		<meta property="article:section" content="blog">
+		<meta property="article:published_time" content="2026-07-07T00:00:00+03:00">
+		<meta property="article:modified_time" content="2026-07-07T00:00:00+03:00">
+		<meta property="article:tag" content="Llm">
+		<meta property="article:tag" content="Ai-Agent">
+		<meta property="article:tag" content="Code-Agent">
+		<meta property="article:tag" content="Harness">
+		<meta property="article:tag" content="Codex">
+		<meta property="og:image" content="https://www.phamduytung.com/images/posts/2026-07-07-code-as-agent-harness/cover.svg">
+
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:image" content="https://www.phamduytung.com/images/posts/2026-07-07-code-as-agent-harness/cover.svg">
+	<meta name="twitter:title" content="Code as Agent Harness: Khi AI Agent Không Chỉ Nói, Mà Bắt Đầu Suy Luận Bằng Code">
+	<meta name="twitter:description" content="Ngôn ngữ tự nhiên rất tiện, nhưng cũng rất mơ hồ. Khi AI agent chỉ suy luận bằng chữ, nó có thể nói nghe rất hợp lý nhưng vẫn sai. Hướng Code as Agent Harness đề xuất một cách nhìn khác: để agent viết code, chạy code trong sandbox, nhận lỗi từ compiler/runtime, rồi tự sửa. Khi đó, code không chỉ là kết quả đầu ra, mà trở thành bộ xương, đôi tay và cái chuồng an toàn của AI agent.">
+<link rel="stylesheet" href="https://www.phamduytung.com/css/main.min.c1ef86c22347c28611821a79439f702e45f2b913292d0a674f113c13e0475f86.css" integrity="sha256-we&#43;GwiNHwoYRghp5Q59wLkXyuRMpLQpnTxE8E&#43;BHX4Y=" crossorigin="anonymous"><link rel="stylesheet" href="https://www.phamduytung.com/css/katex.min.4d6aa053ca8a5675016fa2c9c48ee5359bfaafb8295184458af9d64abce84c47.css" integrity="sha256-TWqgU8qKVnUBb6LJxI7lNZv6r7gpUYRFivnWSrzoTEc=" crossorigin="anonymous">
+<link rel="stylesheet" href="https://www.phamduytung.com/css/viewer.min.e882eb3a023412b73bb741b4604a1222a9f13aa7783c828d26d066ab8642bd51.css" integrity="sha256-6ILrOgI0Erc7t0G0YEoSIqnxOqd4PIKNJtBmq4ZCvVE=" crossorigin="anonymous"><link rel="canonical" href="https://www.phamduytung.com/blog/2026-07-07-code-as-agent-harness/"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Phạm Duy Tùng"},"dateModified":"2026-07-07T00:00:00+03:00","datePublished":"2026-07-07T00:00:00+03:00","description":"Ngôn ngữ tự nhiên rất tiện, nhưng cũng rất mơ hồ. Khi AI agent chỉ suy luận bằng chữ, nó có thể nói nghe rất hợp lý nhưng vẫn sai. Hướng Code as Agent Harness đề xuất một cách nhìn khác: để agent viết code, chạy code trong sandbox, nhận lỗi từ compiler/runtime, rồi tự sửa. Khi đó, code không chỉ là …","headline":"Code as Agent Harness: Khi AI Agent Không Chỉ Nói, Mà Bắt Đầu Suy Luận Bằng Code","image":["https://www.phamduytung.com/images/posts/2026-07-07-code-as-agent-harness/cover.svg"],"inLanguage":"vi","keywords":"llm, ai-agent, code-agent, harness, codex","mainEntityOfPage":{"@id":"https://www.phamduytung.com/blog/2026-07-07-code-as-agent-harness/","@type":"WebPage"},"publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://www.phamduytung.com/images/logo.png"},"name":"Phạm Duy Tùng Machine Learning Blog"},"url":"https://www.phamduytung.com/blog/2026-07-07-code-as-agent-harness/"}</script></head>
+  <body><script>const items=["mode","palette"];items.forEach(function(e){const t=localStorage.getItem("hbs-"+e);t&&document.body.parentElement.setAttribute("data-"+e,t)})</script><header><nav class="navbar top-app-bar top-app-bar-expand-lg fixed-top">
+  <div class="container">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <i class="fas fa-bars"></i>
+    </button><a class="navbar-brand flex-grow-1 flex-lg-grow-0 text-center text-lg-start mx-auto me-lg-3" href="https://www.phamduytung.com/"><img class="logo" alt="Logo" src="https://www.phamduytung.com/images/logo.webp" loading="lazy"  title="Logo"
+   width="32" height="32"
+   />
+Phạm Duy Tùng
+    </a>
+    <div class="offcanvas offcanvas-bottom surface" tabindex="-1" id="offcanvasSocialShare" aria-labelledby="offcanvasSocialShare">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Share</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body">
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Twitter Share Button"
+      target="_blank" href="https://twitter.com/intent/tweet?title=Code%20as%20Agent%20Harness%3a%20Khi%20AI%20Agent%20Kh%c3%b4ng%20Ch%e1%bb%89%20N%c3%b3i%2c%20M%c3%a0%20B%e1%ba%aft%20%c4%90%e1%ba%a7u%20Suy%20Lu%e1%ba%adn%20B%e1%ba%b1ng%20Code&url=https%3a%2f%2fwww.phamduytung.com%2fblog%2f2026-07-07-code-as-agent-harness%2f">
+      <i class="fab fa-fw fa-twitter"></i> Twitter
+    </a>
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Facebook Share Button"
+      target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.phamduytung.com%2fblog%2f2026-07-07-code-as-agent-harness%2f">
+      <i class="fab fa-fw fa-facebook-f"></i> Facebook
+    </a>
+  </div>
+</div>
+    <button class="navbar-settings" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSettings"
+  aria-controls="offcanvasSettings" aria-label="Toggle settings">
+  <i class="fas fa-ellipsis-v"></i>
+</button>
+
+<div class="offcanvas offcanvas-end surface h-100" tabindex="-1" id="offcanvasSettings" aria-labelledby="offcanvasSettings">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Cài đặt</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body d-flex flex-column">
+
+
+
+<section class="setting">
+  <form class="font-size-switcher-form row">
+    <div class="col-auto">
+      <label for="fontSize" class="form-label"><i class="fas fa-fw fa-font"></i> Cỡ chữ</label>
+    </div>
+    <div class="col-auto ms-auto">
+      <input type="range" class="form-range" min="-2" max="2" id="fontSize">
+    </div>
+  </form>
+</section>
+
+
+<section class="setting palettes">
+  <form class="row">
+    <div class="col-auto">
+      <label><i class="fas fa-fw fa-palette"></i> Bảng màu</label>
+    </div>
+    <div class="col-auto ms-auto">
+      <a id="btnPalette" class="btn btn-sm btn-outline-primary" role="button" aria-label="palettePicker">
+        <i class="fas fa-eye-dropper"></i>
+      </a>
+    </div>
+  </form>
+  <div class="mt-2 d-flex justify-content-between visually-hidden" id="palettePicker"><button type="button" id="palette-blue" aria-label="Xanh dương"
+        class="btn btn-sm w-100 palette" data-palette="blue">
+      </button><button type="button" id="palette-blue-gray" aria-label="Xanh xám"
+        class="btn btn-sm w-100 palette" data-palette="blue-gray">
+      </button><button type="button" id="palette-brown" aria-label="Nâu"
+        class="btn btn-sm w-100 palette" data-palette="brown">
+      </button><button type="button" id="palette-cyan" aria-label="Xanh cyan"
+        class="btn btn-sm w-100 palette" data-palette="cyan">
+      </button><button type="button" id="palette-green" aria-label="Xanh lá"
+        class="btn btn-sm w-100 palette" data-palette="green">
+      </button><button type="button" id="palette-indigo" aria-label="Chàm"
+        class="btn btn-sm w-100 palette" data-palette="indigo">
+      </button><button type="button" id="palette-orange" aria-label="Cam"
+        class="btn btn-sm w-100 palette" data-palette="orange">
+      </button><button type="button" id="palette-pink" aria-label="Hồng"
+        class="btn btn-sm w-100 palette" data-palette="pink">
+      </button><button type="button" id="palette-purple" aria-label="Tím"
+        class="btn btn-sm w-100 palette" data-palette="purple">
+      </button><button type="button" id="palette-red" aria-label="Đỏ"
+        class="btn btn-sm w-100 palette" data-palette="red">
+      </button><button type="button" id="palette-teal" aria-label="Xanh teal"
+        class="btn btn-sm w-100 palette" data-palette="teal">
+      </button><button type="button" id="palette-yellow" aria-label="Vàng"
+        class="btn btn-sm w-100 palette" data-palette="yellow">
+      </button></div>
+</section>
+<section class="setting actions d-flex justify-content-around mt-auto overflow-auto">
+  <a role="button" class="action action-go-back" href="javascript: window.history.back();">
+    <span class="action-icon"><i class="fas fa-2x fa-arrow-left"></i></span> Quay lại
+  </a>
+  <a role="button" class="action action-reload-page">
+    <span class="action-icon"><i class="fas fa-2x fa-redo-alt"></i></span> Tải lại
+  </a>
+  <a role="button" class="action action-copy-url">
+    <span class="action-icon"><i class="fas fa-2x fa-link"></i></span> Sao chép URL
+  </a><a class="action action-social-share" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSocialShare"
+    aria-controls="offcanvasSocialShare" aria-label="Toggle social share">
+    <span class="action-icon"><i class="fas fa-2x fa-share-alt"></i></span> Chia sẻ
+  </a></section>
+
+</div>
+</div>
+
+    <div class="collapse navbar-collapse" tabindex="-1" id="navbarSupportedContent" aria-labelledby="navbarSupportedContent">
+      <form class="search-bar my-1" action="https://www.phamduytung.com/search">
+  <div class="input-group input-group-sm">
+    <span class="btn btn-search disabled position-absolute left-0"><i class="fas fa-fw fa-search"></i></span>
+    <input class="form-control rounded-pill" name="q" type="search" aria-label="Search">
+  </div>
+</form>
+      <ul class="navbar-nav ms-auto"><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/series/">
+            <i class="fas fa-fw fa-columns"></i>Courses
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/tools/">
+            <i class="fas fa-fw fa-folder"></i>Tools
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/categories/">
+            <i class="fas fa-fw fa-folder"></i>Categories
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/archives/">
+            <i class="fas fa-fw fa-file-archive"></i>Archives
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/tags/">
+            <i class="fas fa-fw fa-tags"></i>Tags
+          </a>
+        </li><li class="nav-item dropdown">
+          <a class="nav-link" id="navbarDropdownSupport" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-fw fa-comments"></i>Community
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdownSupport"><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Facebook Group
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://github.com/AlexBlack2202/alexblack2202.github.io" target="_blank" rel="noopener noreferrer">
+                GitHub
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/contact/">
+                Contact
+              </a>
+            </li><li><hr class="dropdown-divider"></li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/faq/">
+                FAQs
+              </a>
+            </li></ul>
+        </li></ul>
+    </div>
+  </div>
+</nav>
+</header>
+<main role="main" class="container" style="line-height:1.7em">
+      <div class="row content">
+<div class="col-lg-9 col-md-8">
+  <div class="container"><nav class="row card component" aria-label="breadcrumb">
+  <div class="card-body">
+    <ol class="breadcrumb "><li class="breadcrumb-item"><a href="https://www.phamduytung.com/">Trang chủ</a></li><li class="breadcrumb-item"><a href="https://www.phamduytung.com/blog/">Blogs</a></li><li class="breadcrumb-item active">Code as Agent Harness: Khi AI Agent Không Chỉ Nói, Mà Bắt Đầu Suy Luận Bằng Code</li></ol>
+  </div>
+</nav>
+<div class="post-panel-wrapper">
+  <div class="d-flex flex-column component rounded post-panel">
+    
+    <a class="action action-panel-toggler" role="button" title="Panel toggler">
+      <i class="fas fa-fw fa-chevron-circle-down"></i>
+    </a>
+    <a id="sidebarToggler" class="action d-none d-lg-block" role="button" title="Sidebar toggler">
+  <i class="fas fa-fw fa-expand-alt" data-fa-transform="rotate-45"></i>
+</a>
+
+    
+
+    
+    
+    <a class="action" href="#post-comments" role="button" aria-label="Comments" title="Comments">
+  <i class="fas fa-fw fa-comments"></i>
+</a>
+    <a class="action" href="#postTOC" aria-controls="Table of contents" role="button" title="Table of contents">
+  <i class="fas fa-fw fa-list-alt"></i>
+</a>
+    
+  </div>
+</div>
+<article class="row card component mb-4 post">
+  <div class="card-header "><div class="bgcover" style="background-image:url(https://www.phamduytung.com/images/posts/2026-07-07-code-as-agent-harness/cover.svg)" aria-label="Code as Agent Harness: Khi AI Agent Không Chỉ Nói, Mà Bắt Đầu Suy Luận Bằng Code">
+      <div class="bgtrans">
+          <h1>Code as Agent Harness: Khi AI Agent Không Chỉ Nói, Mà Bắt Đầu Suy Luận Bằng Code
+</h1>
+      </div>
+  </div>
+</div>
+  <div class="card-body"><div class="post-meta">
+  <span class="post-date" title="tạo ngày 2026-07-07 04:00:00 &#43;0700 &#43;07.">
+    07/07/2026
+  </span><span class="post-reading-time">
+    24 phút đọc
+  </span><span class="post-taxonomies"><a href="https://www.phamduytung.com/tags/llm/" class="badge post-taxonomy">llm</a><a href="https://www.phamduytung.com/tags/ai-agent/" class="badge post-taxonomy">ai-agent</a><a href="https://www.phamduytung.com/tags/code-agent/" class="badge post-taxonomy">code-agent</a><a href="https://www.phamduytung.com/tags/harness/" class="badge post-taxonomy">harness</a><a href="https://www.phamduytung.com/tags/codex/" class="badge post-taxonomy">codex</a></span>
+</div>
+<div class="post-content mb-3"><hr>
+<div class="toc">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#đặt-vấn-đề">Đặt vấn đề</a></li>
+    <li><a href="#bài-toán-chính">Bài toán chính</a></li>
+    <li><a href="#vì-sao-natural-language-không-đủ">Vì sao natural language không đủ?</a></li>
+    <li><a href="#code-as-agent-harness-là-gì">Code as Agent Harness là gì?</a></li>
+    <li><a href="#từ-chain-of-thought-tới-program-of-thought">Từ Chain-of-Thought tới Program-of-Thought</a></li>
+    <li><a href="#codeact-khi-code-trở-thành-hành-động-của-agent">CodeAct: Khi code trở thành hành động của agent</a></li>
+    <li><a href="#compiler-và-runtime-như-người-gác-cổng-khó-tính">Compiler và runtime như người gác cổng khó tính</a></li>
+    <li><a href="#sandbox-cái-hộp-cát-để-agent-nghịch-mà-không-đốt-nhà">Sandbox: cái hộp cát để agent nghịch mà không đốt nhà</a></li>
+    <li><a href="#agent-computer-interface-giao-diện-cho-một-người-dùng-không-phải-người">Agent-Computer Interface: giao diện cho một “người dùng” không phải người</a></li>
+    <li><a href="#meta-harness-tối-ưu-cái-chuồng-trước-khi-đổi-con-thú">Meta-Harness: tối ưu cái chuồng trước khi đổi con thú</a></li>
+    <li><a href="#autoharness-và-agentic-harness-engineering">AutoHarness và Agentic Harness Engineering</a></li>
+    <li><a href="#code-không-làm-agent-hết-sai-nhưng-làm-cái-sai-dễ-bắt-hơn">Code không làm agent hết sai, nhưng làm cái sai dễ bắt hơn</a></li>
+    <li><a href="#một-ví-dụ-nhỏ-agent-tính-doanh-thu">Một ví dụ nhỏ: agent tính doanh thu</a></li>
+    <li><a href="#code-as-agent-harness-khác-gì-tool-calling">Code as Agent Harness khác gì tool calling?</a></li>
+    <li><a href="#codex-và-thế-giới-agent-first">Codex và thế giới agent-first</a></li>
+    <li><a href="#ưu-điểm-và-hạn-chế">Ưu điểm và hạn chế</a>
+      <ul>
+        <li><a href="#ưu-điểm">Ưu điểm</a></li>
+        <li><a href="#hạn-chế">Hạn chế</a></li>
+      </ul>
+    </li>
+    <li><a href="#nên-hiểu-xu-hướng-này-như-thế-nào">Nên hiểu xu hướng này như thế nào?</a></li>
+    <li><a href="#tổng-kết">Tổng kết</a></li>
+    <li><a href="#tham-khảo">Tham khảo</a></li>
+  </ul>
+</nav>
+  </div>
+<h1 id="đặt-vấn-đề">Đặt vấn đề<a class="anchor ms-1" href="#đặt-vấn-đề"><i class="fas fa-link"></i></a></h1>
+<p>Không có gì là hoàn toàn “ảo”.</p>
+<p>Một câu trả lời của ChatGPT nhìn trên màn hình thì nhẹ như hơi nước. Một dòng chữ hiện ra, trôi qua mắt chúng ta, rồi biến mất trong lịch sử chat. Nhưng đằng sau đó không phải là phép màu. Đó là điện, là GPU nóng rực, là RAM, là network packet, là file system, là container, là log, là permission, là sandbox, là hàng tỷ phép nhân ma trận đang chạy như một đàn kiến điện tử trong lòng data center.</p>
+<p>AI agent cũng vậy.</p>
+<p>Ngày xưa, khi nói tới AI agent, ta hay tưởng tượng một cái đầu biết nói. Ta giao việc bằng tiếng người:</p>
+<blockquote>
+<p>“Hãy đọc repo này, sửa bug, chạy test, rồi tạo pull request.”</p>
+</blockquote>
+<p>Nghe rất đơn giản. Như sai một đứa em đi mua ổ bánh mì.</p>
+<p>Nhưng vấn đề bắt đầu xuất hiện ở chữ “sửa bug”.</p>
+<p>Sửa bug là sửa chỗ nào? Đọc file nào trước? Test nào cần chạy? Nếu test fail thì fail vì bug thật, hay vì thiếu dependency? Nếu agent nói “tôi đã sửa xong” thì làm sao biết nó không nói xạo? Nếu nó tự tin tuyên bố mọi thứ ổn, trong khi code còn thiếu dấu ngoặc, thì ta nên tin cái miệng của nó hay tin compiler?</p>
+<p>Ngôn ngữ tự nhiên rất mềm. Nó giống như sương mù. Đẹp, mượt, dễ hiểu, nhưng đưa tay ra thì không nắm được.</p>
+<p>Code thì khác.</p>
+<p>Code cứng hơn, khó chịu hơn, hay bắt bẻ hơn. Thiếu dấu hai chấm là Python la. Gọi sai biến là runtime quăng traceback. Import thiếu package là chương trình nằm vật ra như con cá thiếu nước. Nhưng chính vì vậy, code có một thứ mà lời nói không có: <strong>nó có thể chạy được</strong>.</p>
+<p>Và khi một AI agent bắt đầu suy luận bằng code, hành động bằng code, kiểm tra chính nó bằng code, thì ta không còn nhìn nó như một chatbot biết nói nữa. Ta bắt đầu nhìn nó như một sinh vật kỳ lạ hơn: một cái đầu bằng mô hình ngôn ngữ, đôi tay bằng Python, đôi mắt bằng log, cái lồng an toàn bằng sandbox, và hệ thần kinh bằng harness.</p>
+<h1 id="bài-toán-chính">Bài toán chính<a class="anchor ms-1" href="#bài-toán-chính"><i class="fas fa-link"></i></a></h1>
+<p>Ở bài viết này, mình muốn nói về một xu hướng khá thú vị trong nghiên cứu AI agent: <strong>Code as Agent Harness</strong>.</p>
+<p>Hiểu đơn giản, đây là hướng biến code thành một phần cốt lõi trong cách agent hoạt động. Code không chỉ là thứ agent sinh ra sau cùng để nộp cho người dùng. Code trở thành:</p>
+<ul>
+<li>Cách agent suy luận</li>
+<li>Cách agent gọi tool</li>
+<li>Cách agent thao tác với môi trường</li>
+<li>Cách agent kiểm tra đáp án</li>
+<li>Cách agent giới hạn hành động nguy hiểm</li>
+<li>Cách agent ghi nhớ và tái sử dụng kỹ năng</li>
+<li>Cách hệ thống quan sát, debug và đánh giá agent</li>
+</ul>
+<p>Nghe hơi to tát, nhưng lấy ví dụ đời thường cho dễ hiểu.</p>
+<p>Giả sử bạn hỏi một agent:</p>
+<blockquote>
+<p>“Tính giúp tôi tổng doanh thu của cửa hàng A trong 30 ngày gần nhất, bỏ qua các đơn bị hủy.”</p>
+</blockquote>
+<p>Nếu agent chỉ trả lời bằng chữ, nó có thể nói:</p>
+<blockquote>
+<p>“Tổng doanh thu là khoảng 1.2 tỷ.”</p>
+</blockquote>
+<p>Nghe có vẻ ổn. Nhưng “khoảng” là bao nhiêu? Nó có lọc đơn hủy chưa? Nó có tính nhầm ngày không? Nó có dùng đúng timezone không? Nó có lấy nhầm cửa hàng A thành cửa hàng B không?</p>
+<p>Bây giờ agent thay vì chỉ nói, nó viết một đoạn code:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln">1</span><span class="cl"><span class="n">orders</span> <span class="o">=</span> <span class="n">load_orders</span><span class="p">(</span><span class="n">store_id</span><span class="o">=</span><span class="s2">&#34;A&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="n">valid_orders</span> <span class="o">=</span> <span class="p">[</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl">    <span class="n">order</span> <span class="k">for</span> <span class="n">order</span> <span class="ow">in</span> <span class="n">orders</span>
+</span></span><span class="line"><span class="ln">4</span><span class="cl">    <span class="k">if</span> <span class="n">order</span><span class="o">.</span><span class="n">status</span> <span class="o">!=</span> <span class="s2">&#34;cancelled&#34;</span>
+</span></span><span class="line"><span class="ln">5</span><span class="cl">    <span class="ow">and</span> <span class="n">order</span><span class="o">.</span><span class="n">date</span> <span class="o">&gt;=</span> <span class="n">today</span> <span class="o">-</span> <span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">6</span><span class="cl"><span class="p">]</span>
+</span></span><span class="line"><span class="ln">7</span><span class="cl">
+</span></span><span class="line"><span class="ln">8</span><span class="cl"><span class="n">revenue</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">order</span><span class="o">.</span><span class="n">amount</span> <span class="k">for</span> <span class="n">order</span> <span class="ow">in</span> <span class="n">valid_orders</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">9</span><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="n">revenue</span><span class="p">)</span>
+</span></span></code></pre></div><p>Đoạn code này vẫn có thể sai, nhưng cái sai của nó bắt đầu có hình dạng. Ta có thể đọc. Có thể chạy. Có thể test. Có thể log. Có thể sửa. Có thể hỏi tiếp:</p>
+<ul>
+<li><code>today</code> lấy theo timezone nào?</li>
+<li><code>amount</code> đã trừ hoàn tiền chưa?</li>
+<li><code>status != &quot;cancelled&quot;</code> có đủ chưa, hay còn <code>refunded</code>?</li>
+<li>30 ngày gần nhất là tính từ hiện tại hay từ ngày dữ liệu mới nhất?</li>
+</ul>
+<p>Code biến sự mơ hồ thành vật thể.</p>
+<p>Nó giống như bạn bắt một con ma phải in dấu chân trên nền xi măng ướt. Trước đó nó bay lơ lửng trong lời nói. Bây giờ nó để lại vết.</p>
+<h1 id="vì-sao-natural-language-không-đủ">Vì sao natural language không đủ?<a class="anchor ms-1" href="#vì-sao-natural-language-không-đủ"><i class="fas fa-link"></i></a></h1>
+<p>Natural language là cách rất tốt để giao tiếp với con người, nhưng lại là nền khá trơn khi dùng làm “hệ điều hành” cho agent.</p>
+<p>Vấn đề không nằm ở chỗ tiếng Việt hay tiếng Anh. Vấn đề là bản chất của ngôn ngữ tự nhiên vốn mơ hồ.</p>
+<p>Ví dụ câu:</p>
+<blockquote>
+<p>“Hãy tối ưu đoạn code này cho nhanh hơn.”</p>
+</blockquote>
+<p>Nhanh hơn là nhanh hơn bao nhiêu? 10% hay 10 lần? Ưu tiên latency hay throughput? Có được đổi thuật toán không? Có được tăng RAM không? Có được dùng cache không? Có được hy sinh độ chính xác không?</p>
+<p>Con người đọc thì tự suy đoán bằng kinh nghiệm. Nhưng agent nếu đoán sai, nó vẫn có thể viết ra một câu trả lời nghe rất tự tin:</p>
+<blockquote>
+<p>“Tôi đã tối ưu bằng cách cải thiện hiệu suất tổng thể.”</p>
+</blockquote>
+<p>Câu này nghe như có ý nghĩa, nhưng thật ra nó mềm như bánh tráng nhúng nước.</p>
+<p>Không có benchmark. Không có test. Không có compiler. Không có runtime. Không có bằng chứng vật lý nào cho thấy “nhanh hơn” thật sự xảy ra.</p>
+<p>Đây là lý do các paper gần đây bắt đầu đẩy agent xuống một tầng thấp hơn: từ tầng chữ nghĩa xuống tầng thực thi.</p>
+<p>Ở tầng chữ nghĩa, agent có thể nói:</p>
+<blockquote>
+<p>“Tôi nghĩ đoạn này đúng.”</p>
+</blockquote>
+<p>Ở tầng code, agent phải đối mặt với câu hỏi lạnh lùng hơn:</p>
+<blockquote>
+<p>“Chạy được không?”</p>
+</blockquote>
+<p>Và câu hỏi này rất đáng sợ.</p>
+<p>Vì máy tính không biết nịnh. Compiler không quan tâm bạn viết prompt hay cỡ nào. Runtime không vỗ vai bạn vì bạn “có ý tưởng tốt”. Test case không khen bạn sáng tạo. Sai là đỏ. Đúng là xanh. Rất trẻ con, rất tàn nhẫn, và rất cần thiết.</p>
+<h1 id="code-as-agent-harness-là-gì">Code as Agent Harness là gì?<a class="anchor ms-1" href="#code-as-agent-harness-là-gì"><i class="fas fa-link"></i></a></h1>
+<p>Từ “harness” có thể hiểu nôm na là <strong>bộ dây cương</strong>, <strong>khung điều khiển</strong>, hoặc <strong>lớp bao quanh giúp agent hoạt động an toàn và có cấu trúc</strong>.</p>
+<p>Nếu model là bộ não, thì harness là phần cơ thể và môi trường làm việc quanh bộ não đó.</p>
+<p>Một agent hiện đại thường không chỉ có mỗi LLM. Nó còn có:</p>
+<ul>
+<li>System prompt</li>
+<li>Tool definitions</li>
+<li>Memory</li>
+<li>File system</li>
+<li>Terminal</li>
+<li>Python interpreter</li>
+<li>Browser</li>
+<li>Database connector</li>
+<li>Permission layer</li>
+<li>Sandbox</li>
+<li>Logger</li>
+<li>Evaluator</li>
+<li>Retry mechanism</li>
+<li>Test runner</li>
+<li>Context selection</li>
+<li>Code editor</li>
+<li>Policy guardrail</li>
+</ul>
+<p>Tất cả những thứ này hợp lại thành một cái “harness”.</p>
+<p>Trước đây ta hay nghĩ: muốn agent giỏi hơn thì đổi model mạnh hơn. GPT đời mới hơn, Claude đời mới hơn, Qwen đời mới hơn, DeepSeek đời mới hơn. Cứ bơm thêm não.</p>
+<p>Nhưng các paper như <strong>Meta-Harness</strong> hay <strong>AI Harness Engineering</strong> đặt lại vấn đề:</p>
+<blockquote>
+<p>Có khi não chưa phải chỗ duy nhất cần tối ưu. Cái bàn làm việc của agent, cái terminal nó dùng, cái format log nó đọc, cái cách context được nhét vào prompt, cái tool nào được mở, cái permission nào bị khóa — tất cả những thứ đó cũng quyết định agent làm việc tốt hay ngu đi.</p>
+</blockquote>
+<p>Nghe giống chuyện rất đời thường.</p>
+<p>Một lập trình viên giỏi nhưng bị nhốt vào một máy không có terminal, không có search, không có test, không có quyền đọc log, thì cũng thành cá mắc cạn. Ngược lại, một lập trình viên bình thường nhưng có IDE tốt, test rõ, log sạch, script chạy một lệnh là xong, thì năng suất tăng lên rất nhiều.</p>
+<p>AI agent cũng vậy.</p>
+<p>Không chỉ cần model thông minh. Cần một cái harness tốt.</p>
+<h1 id="từ-chain-of-thought-tới-program-of-thought">Từ Chain-of-Thought tới Program-of-Thought<a class="anchor ms-1" href="#từ-chain-of-thought-tới-program-of-thought"><i class="fas fa-link"></i></a></h1>
+<p>Trước khi nói tới agent hành động bằng code, ta nên đi từ bài toán nhỏ hơn: <strong>suy luận bằng code</strong>.</p>
+<p>Chain-of-Thought từng là một kỹ thuật rất nổi tiếng. Ta bảo model:</p>
+<blockquote>
+<p>“Hãy suy nghĩ từng bước.”</p>
+</blockquote>
+<p>Model sẽ viết ra các bước giải bằng ngôn ngữ tự nhiên. Cách này giúp model làm toán, logic, reasoning tốt hơn trong nhiều trường hợp.</p>
+<p>Nhưng Chain-of-Thought vẫn có một vấn đề: nó có thể viết một chuỗi lý luận nghe hợp lý nhưng tính sai.</p>
+<p>Ví dụ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Một cửa hàng có 120 sản phẩm. Bán được 35%. Hỏi còn lại bao nhiêu?
+</span></span></code></pre></div><p>Model có thể viết:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">35% của 120 là 42.
+</span></span><span class="line"><span class="ln">2</span><span class="cl">Còn lại 120 - 42 = 88.
+</span></span></code></pre></div><p>Sai rất nhẹ, vì <code>120 - 42 = 78</code>, không phải 88.</p>
+<p>Lỗi này nhìn buồn cười, nhưng với bài toán dài hơn, financial QA, thống kê, hoặc dữ liệu thật, lỗi kiểu này rất nguy hiểm. Nó giống như một ông kế toán vừa đọc thơ vừa bấm nhầm máy tính.</p>
+<p>Các hướng như <strong>PAL (Program-aided Language Models)</strong> và <strong>Program of Thoughts</strong> đề xuất một cách khác: để model sinh chương trình, rồi giao phần tính toán cho interpreter.</p>
+<p>Thay vì bắt model tự nhẩm:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">120 * 0.35 = 42
+</span></span><span class="line"><span class="ln">2</span><span class="cl">120 - 42 = 78
+</span></span></code></pre></div><p>Ta để nó viết code:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln">1</span><span class="cl"><span class="n">total</span> <span class="o">=</span> <span class="mi">120</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="n">sold_ratio</span> <span class="o">=</span> <span class="mf">0.35</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="n">remaining</span> <span class="o">=</span> <span class="n">total</span> <span class="o">-</span> <span class="n">total</span> <span class="o">*</span> <span class="n">sold_ratio</span>
+</span></span><span class="line"><span class="ln">4</span><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="n">remaining</span><span class="p">)</span>
+</span></span></code></pre></div><p>Xong thuật toán, quá dễ.</p>
+<p>Nhưng ý tưởng phía sau không hề nhỏ. Nó chuyển vai trò của LLM từ “người vừa nghĩ vừa tính” thành “người viết kế hoạch tính toán”. Còn việc tính chính xác thì giao cho máy.</p>
+<p>Nói hơi ngáo một chút: LLM là đứa bé 6 tuổi rất giỏi kể chuyện, nhưng đừng bắt nó nhân số lớn bằng miệng. Hãy đưa nó cái máy tính. Nếu nó biết bấm đúng phím, thế giới sẽ bớt hỗn loạn hơn một chút.</p>
+<h1 id="codeact-khi-code-trở-thành-hành-động-của-agent">CodeAct: Khi code trở thành hành động của agent<a class="anchor ms-1" href="#codeact-khi-code-trở-thành-hành-động-của-agent"><i class="fas fa-link"></i></a></h1>
+<p>PAL và Program-of-Thought chủ yếu dùng code để giải bài toán tính toán. Nhưng các paper như <strong>CodeAct</strong> đẩy ý tưởng này xa hơn.</p>
+<p>Thay vì xem code là “nháp để tính”, CodeAct xem code là <strong>action space</strong> của agent.</p>
+<p>Thông thường, một agent có thể hành động bằng cách gọi tool theo format nào đó:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="ln">1</span><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl">  <span class="nt">&#34;tool&#34;</span><span class="p">:</span> <span class="s2">&#34;search&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl">  <span class="nt">&#34;query&#34;</span><span class="p">:</span> <span class="s2">&#34;latest AI agent papers&#34;</span>
+</span></span><span class="line"><span class="ln">4</span><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>Cách này ổn, nhưng hơi cứng. Nếu có nhiều tool, nhiều bước, nhiều điều kiện, nhiều vòng lặp, agent phải nhảy qua lại giữa natural language và tool call. Đôi khi format sai một chút là hỏng. Đôi khi agent muốn kết hợp nhiều tool thì lại vướng schema.</p>
+<p>CodeAct đưa ra một ý tưởng tự nhiên hơn: cho agent viết code để hành động.</p>
+<p>Ví dụ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln">1</span><span class="cl"><span class="n">papers</span> <span class="o">=</span> <span class="n">search</span><span class="p">(</span><span class="s2">&#34;code as agent harness LLM agents&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="k">for</span> <span class="n">paper</span> <span class="ow">in</span> <span class="n">papers</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl">    <span class="k">if</span> <span class="s2">&#34;agent&#34;</span> <span class="ow">in</span> <span class="n">paper</span><span class="o">.</span><span class="n">title</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+</span></span><span class="line"><span class="ln">4</span><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="n">paper</span><span class="o">.</span><span class="n">title</span><span class="p">,</span> <span class="n">paper</span><span class="o">.</span><span class="n">url</span><span class="p">)</span>
+</span></span></code></pre></div><p>Hoặc trong môi trường software engineering:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln">1</span><span class="cl"><span class="n">result</span> <span class="o">=</span> <span class="n">run_tests</span><span class="p">(</span><span class="s2">&#34;tests/test_api.py&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="k">if</span> <span class="ow">not</span> <span class="n">result</span><span class="o">.</span><span class="n">ok</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+</span></span></code></pre></div><p>Agent viết code, hệ thống chạy code, rồi trả observation về cho agent. Nếu lỗi, agent đọc lỗi và sửa tiếp.</p>
+<p>Vòng lặp sẽ giống như sau:</p>
+<ol>
+<li>Agent quan sát trạng thái hiện tại.</li>
+<li>Agent sinh code.</li>
+<li>Code chạy trong environment.</li>
+<li>Environment trả output, error hoặc state mới.</li>
+<li>Agent đọc kết quả.</li>
+<li>Agent sinh code tiếp theo.</li>
+</ol>
+<p>Đây là một thay đổi rất quan trọng.</p>
+<p>Vì code không chỉ mô tả hành động. Code <strong>thực hiện</strong> hành động.</p>
+<p>Nó giống khác biệt giữa việc bạn nói:</p>
+<blockquote>
+<p>“Tôi sẽ lau nhà.”</p>
+</blockquote>
+<p>và việc bạn thật sự cầm cây lau, nhúng nước, kéo qua sàn, rồi để lại một vệt nước dài như con rắn bạc bò qua phòng khách.</p>
+<p>Code để lại dấu vết. Có stdout. Có stderr. Có file được tạo. Có test được chạy. Có exception bị ném ra. Có log để đọc lại. Có state thay đổi.</p>
+<p>Natural language thì có thể trôi đi. Code thì va vào máy.</p>
+<h1 id="compiler-và-runtime-như-người-gác-cổng-khó-tính">Compiler và runtime như người gác cổng khó tính<a class="anchor ms-1" href="#compiler-và-runtime-như-người-gác-cổng-khó-tính"><i class="fas fa-link"></i></a></h1>
+<p>Một điểm mạnh của code là nó có nhiều lớp kiểm tra tự nhiên.</p>
+<p>Đầu tiên là cú pháp.</p>
+<p>Nếu agent viết:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln">1</span><span class="cl"><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+</span></span></code></pre></div><p>Python sẽ la ngay vì thiếu dấu hai chấm.</p>
+<p>Tiếp theo là runtime.</p>
+<p>Nếu agent viết:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln">1</span><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="n">users</span><span class="p">[</span><span class="mi">100</span><span class="p">])</span>
+</span></span></code></pre></div><p>trong khi list chỉ có 10 phần tử, chương trình sẽ báo lỗi.</p>
+<p>Tiếp theo là test.</p>
+<p>Nếu agent sửa code mà làm hỏng logic cũ, unit test có thể bắt được.</p>
+<p>Tiếp theo là type checker, linter, static analyzer, permission system, sandbox, quota, timeout.</p>
+<p>Từng lớp một giống như các chốt kiểm soát trong sân bay. Agent muốn đi qua thì phải trình giấy tờ. Không phải cứ nói “tôi ổn” là được lên máy bay.</p>
+<p>Điểm này rất quan trọng khi xây dựng agent thực tế.</p>
+<p>Vì LLM có thể hallucinate. Nó có thể bịa API. Nó có thể tưởng một file tồn tại trong repo. Nó có thể nói test pass dù chưa chạy test. Nó có thể trả lời rất có lý nhưng dựa trên dữ kiện không có thật.</p>
+<p>Nhưng nếu bắt agent chạy code trong môi trường thật, nhiều lời nói dối sẽ bị bóc ra ngay.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="ln">1</span><span class="cl">ModuleNotFoundError: No module named <span class="s1">&#39;magic_database_client&#39;</span>
+</span></span></code></pre></div><p>Một dòng lỗi bé tí, nhưng nó như cái búa đập vào lâu đài tưởng tượng của agent.</p>
+<p>Không có module đó em ơi. Đừng bịa nữa.</p>
+<h1 id="sandbox-cái-hộp-cát-để-agent-nghịch-mà-không-đốt-nhà">Sandbox: cái hộp cát để agent nghịch mà không đốt nhà<a class="anchor ms-1" href="#sandbox-cái-hộp-cát-để-agent-nghịch-mà-không-đốt-nhà"><i class="fas fa-link"></i></a></h1>
+<p>Tuy nhiên, cho agent chạy code cũng nguy hiểm.</p>
+<p>Một agent có khả năng viết và chạy code thì rất mạnh. Nhưng mạnh quá thì phải nhốt đúng cách. Nếu không, một câu prompt sai có thể biến agent thành đứa trẻ cầm búa chạy quanh phòng server.</p>
+<p>Sandbox sinh ra để xử lý chuyện này.</p>
+<p>Sandbox là môi trường giới hạn nơi code của agent được phép chạy. Nó có thể giới hạn:</p>
+<ul>
+<li>File nào được đọc</li>
+<li>Folder nào được ghi</li>
+<li>Có được truy cập internet không</li>
+<li>Có được gọi shell command không</li>
+<li>Có được đọc biến môi trường không</li>
+<li>Có được kết nối database không</li>
+<li>Timeout bao lâu</li>
+<li>RAM tối đa bao nhiêu</li>
+<li>CPU/GPU được dùng thế nào</li>
+<li>Package nào được import</li>
+<li>API nào bị chặn</li>
+</ul>
+<p>Về bản chất, sandbox là cái sân chơi có hàng rào.</p>
+<p>Agent có thể đào cát, xây lâu đài, đập lâu đài, thử nghiệm, té ngã, đứng dậy. Nhưng nó không được chạy ra đường cao tốc.</p>
+<p>Các platform như <strong>OpenHands</strong> hay các coding agent kiểu <strong>SWE-agent</strong>, <strong>Codex CLI</strong>, <strong>Claude Code</strong> đều xoay quanh một ý tưởng thực dụng: nếu muốn agent làm việc như developer, hãy cho nó môi trường giống developer — có terminal, file, test, browser, repo — nhưng phải có lớp giới hạn để nó không phá lung tung.</p>
+<p>Nói cách khác, agent cần đôi tay. Nhưng đôi tay đó nên đeo găng cách điện.</p>
+<h1 id="agent-computer-interface-giao-diện-cho-một-người-dùng-không-phải-người">Agent-Computer Interface: giao diện cho một “người dùng” không phải người<a class="anchor ms-1" href="#agent-computer-interface-giao-diện-cho-một-người-dùng-không-phải-người"><i class="fas fa-link"></i></a></h1>
+<p>Một điểm rất hay trong paper <strong>SWE-agent</strong> là khái niệm <strong>Agent-Computer Interface</strong>.</p>
+<p>Con người dùng máy tính qua GUI, terminal, IDE, browser. Những giao diện này được thiết kế cho mắt người, tay người, trí nhớ người.</p>
+<p>Nhưng LLM agent không nhìn và nhớ giống chúng ta. Nó đọc text context. Nó bị giới hạn context window. Nó cần output ngắn gọn. Nó cần lệnh rõ ràng. Nó dễ rối nếu log quá dài. Nó dễ bỏ sót nếu file quá lớn. Nó có thể cần tool riêng để search code, edit file, chạy test, xem diff.</p>
+<p>Vậy nên, nếu ta đưa nguyên một cái terminal lộn xộn cho agent, chưa chắc đã tốt.</p>
+<p>Ví dụ khi test fail, thay vì trả cho agent 50.000 dòng log, harness có thể tóm tắt:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">FAILED tests/test_payment.py::test_refund_partial
+</span></span><span class="line"><span class="ln">2</span><span class="cl">Expected: 70000
+</span></span><span class="line"><span class="ln">3</span><span class="cl">Actual: 100000
+</span></span><span class="line"><span class="ln">4</span><span class="cl">Likely issue: refund amount was not subtracted before revenue aggregation.
+</span></span></code></pre></div><p>Thông tin này có ích hơn nhiều.</p>
+<p>Nó giống như dạy một đứa trẻ 6 tuổi đi siêu thị. Bạn không đưa cho nó bản đồ quy hoạch đô thị, sơ đồ điện, danh sách nhà cung cấp, hóa đơn nhập kho, rồi bảo “tự tìm sữa đi”. Bạn nói:</p>
+<blockquote>
+<p>“Con đi thẳng, tới kệ màu xanh, lấy hộp sữa có hình con bò.”</p>
+</blockquote>
+<p>Agent cũng vậy. Không phải càng nhiều context càng tốt. Context phải được đóng gói đúng cách.</p>
+<p>Harness tốt là harness biết đưa cho agent đúng thứ nó cần, vào đúng lúc, với đúng độ chi tiết.</p>
+<h1 id="meta-harness-tối-ưu-cái-chuồng-trước-khi-đổi-con-thú">Meta-Harness: tối ưu cái chuồng trước khi đổi con thú<a class="anchor ms-1" href="#meta-harness-tối-ưu-cái-chuồng-trước-khi-đổi-con-thú"><i class="fas fa-link"></i></a></h1>
+<p>Paper <strong>Meta-Harness</strong> đưa ra một góc nhìn rất đáng chú ý: hiệu năng của LLM system phụ thuộc mạnh vào harness.</p>
+<p>Một harness có thể quyết định:</p>
+<ul>
+<li>Dữ liệu nào được retrieve</li>
+<li>Context nào được đưa vào prompt</li>
+<li>Tool nào được gọi</li>
+<li>Output được parse ra sao</li>
+<li>Feedback được ghi lại thế nào</li>
+<li>Candidate solution được đánh giá bằng metric nào</li>
+<li>Vòng lặp sửa lỗi diễn ra ra sao</li>
+</ul>
+<p>Nếu harness dở, model giỏi cũng có thể làm ngu.</p>
+<p>Giả sử bạn có một agent coding. Nó cần sửa bug trong repo. Có hai kiểu harness.</p>
+<p>Harness A chỉ nói:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Đây là toàn bộ repo. Hãy sửa bug.
+</span></span></code></pre></div><p>Rồi nhét 200 file vào context như nhét cả cái chợ Bến Thành vào một cái vali.</p>
+<p>Harness B làm khác:</p>
+<ul>
+<li>Search file liên quan</li>
+<li>Tóm tắt cấu trúc repo</li>
+<li>Chạy test ban đầu</li>
+<li>Đưa error quan trọng vào context</li>
+<li>Cho agent sửa từng file</li>
+<li>Chạy lại test</li>
+<li>Hiển thị diff</li>
+<li>Nếu fail, đưa lỗi mới</li>
+<li>Nếu pass, yêu cầu agent giải thích thay đổi</li>
+</ul>
+<p>Cùng một model, nhưng harness B có thể cho kết quả tốt hơn rất nhiều.</p>
+<p>Đây là điểm khá “đời”. Đừng lúc nào cũng hỏi model nào thông minh hơn. Nhiều khi phải hỏi:</p>
+<blockquote>
+<p>Mình đã cho nó một cái môi trường làm việc tử tế chưa?</p>
+</blockquote>
+<p>Một người thợ giỏi mà bị đưa cái tua vít cong, cái bàn lung lay, bóng đèn chớp tắt, bản vẽ thiếu trang, thì làm sao không chửi thề trong lòng.</p>
+<h1 id="autoharness-và-agentic-harness-engineering">AutoHarness và Agentic Harness Engineering<a class="anchor ms-1" href="#autoharness-và-agentic-harness-engineering"><i class="fas fa-link"></i></a></h1>
+<p>Nếu harness quan trọng như vậy, câu hỏi tiếp theo là:</p>
+<blockquote>
+<p>Ai sẽ viết harness?</p>
+</blockquote>
+<p>Ban đầu là con người viết. Engineer thiết kế tool, prompt, memory, logging, sandbox, evaluator. Nhưng hướng nghiên cứu mới bắt đầu hỏi tiếp:</p>
+<blockquote>
+<p>Có thể để agent tự cải thiện harness không?</p>
+</blockquote>
+<p>Đây là chỗ các paper như <strong>AutoHarness</strong> và <strong>Agentic Harness Engineering</strong> xuất hiện.</p>
+<p>Ý tưởng nghe hơi meta, nhưng thú vị: agent không chỉ giải bài toán, mà còn quan sát cách nó thất bại, rồi đề xuất chỉnh lại harness.</p>
+<p>Ví dụ trong một game như chess, agent có thể thua không phải vì nó không hiểu chiến thuật, mà vì nó sinh ra nước đi không hợp lệ. Khi đó harness có thể thêm một lớp kiểm tra:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln">1</span><span class="cl"><span class="k">if</span> <span class="n">move</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">legal_moves</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl">    <span class="k">raise</span> <span class="n">InvalidMoveError</span><span class="p">(</span><span class="n">move</span><span class="p">)</span>
+</span></span></code></pre></div><p>Hoặc tốt hơn, harness chỉ cho agent chọn trong danh sách nước đi hợp lệ.</p>
+<p>Như vậy agent không còn được “ảo tưởng” rằng nó có thể đi con tượng như con xe. Luật chơi được đóng vào code. Cái mơ hồ bị ép xuống thành điều kiện kiểm tra.</p>
+<p>Trong coding agent, harness có thể học rằng:</p>
+<ul>
+<li>Trước khi sửa code nên chạy test baseline</li>
+<li>Sau khi sửa phải chạy đúng test liên quan</li>
+<li>Không nên đọc toàn bộ repo nếu chỉ cần 3 file</li>
+<li>Log quá dài thì phải summarize</li>
+<li>Khi gặp lỗi dependency thì không nên sửa business logic</li>
+<li>Khi sửa API thì phải update cả test và documentation</li>
+</ul>
+<p>Nói vui một chút: agent ban đầu như đứa bé thò tay vào ổ điện. Harness đời đầu là người lớn hét “đừng!”. Harness tốt hơn là cái nắp ổ điện. Harness tự tiến hóa là cái nhà thông minh thấy trẻ con bò tới ổ điện thì tự ngắt cầu dao.</p>
+<h1 id="code-không-làm-agent-hết-sai-nhưng-làm-cái-sai-dễ-bắt-hơn">Code không làm agent hết sai, nhưng làm cái sai dễ bắt hơn<a class="anchor ms-1" href="#code-không-làm-agent-hết-sai-nhưng-làm-cái-sai-dễ-bắt-hơn"><i class="fas fa-link"></i></a></h1>
+<p>Tới đây có thể có một hiểu lầm: cứ cho agent dùng code là hết hallucination.</p>
+<p>Không có chuyện đó.</p>
+<p>Agent vẫn có thể viết code sai. Vẫn có thể chọn sai thuật toán. Vẫn có thể hiểu sai yêu cầu. Vẫn có thể chạy test không đủ. Vẫn có thể overfit vào benchmark. Vẫn có thể tạo ra một đống spaghetti code làm người maintain sau này muốn bỏ nghề đi bán bánh mì.</p>
+<p>Nhưng code có một ưu điểm lớn: <strong>nó làm cái sai trở nên quan sát được</strong>.</p>
+<p>Một câu trả lời sai bằng natural language đôi khi rất khó bắt, vì nó nghe trơn tru. Nhưng code sai thường để lại dấu:</p>
+<ul>
+<li>Syntax error</li>
+<li>Runtime error</li>
+<li>Test fail</li>
+<li>Type mismatch</li>
+<li>Permission denied</li>
+<li>Timeout</li>
+<li>Memory exceeded</li>
+<li>Wrong output</li>
+<li>Diff bất thường</li>
+<li>Log mâu thuẫn</li>
+</ul>
+<p>Những dấu này là thức ăn cho vòng lặp cải thiện.</p>
+<p>Agent đọc lỗi, sửa code, chạy lại, đọc lỗi mới, sửa tiếp. Mỗi lần như vậy, nó không còn bay trong mây chữ nghĩa nữa. Nó đang bò trên mặt đất, đầu gối trầy, tay dính bụi, nhưng ít nhất nó biết mình vừa vấp ở đâu.</p>
+<p>Đây là khác biệt lớn giữa “nói đúng” và “làm đúng”.</p>
+<p>Nói đúng có thể là ảo giác có văn phong tốt.</p>
+<p>Làm đúng thì phải qua kiểm tra.</p>
+<h1 id="một-ví-dụ-nhỏ-agent-tính-doanh-thu">Một ví dụ nhỏ: agent tính doanh thu<a class="anchor ms-1" href="#một-ví-dụ-nhỏ-agent-tính-doanh-thu"><i class="fas fa-link"></i></a></h1>
+<p>Giả sử ta có một bài toán rất đơn giản.</p>
+<p>Có danh sách đơn hàng:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln">1</span><span class="cl"><span class="n">orders</span> <span class="o">=</span> <span class="p">[</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl">    <span class="p">{</span><span class="s2">&#34;id&#34;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&#34;store&#34;</span><span class="p">:</span> <span class="s2">&#34;A&#34;</span><span class="p">,</span> <span class="s2">&#34;amount&#34;</span><span class="p">:</span> <span class="mi">100_000</span><span class="p">,</span> <span class="s2">&#34;status&#34;</span><span class="p">:</span> <span class="s2">&#34;paid&#34;</span><span class="p">},</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl">    <span class="p">{</span><span class="s2">&#34;id&#34;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&#34;store&#34;</span><span class="p">:</span> <span class="s2">&#34;A&#34;</span><span class="p">,</span> <span class="s2">&#34;amount&#34;</span><span class="p">:</span> <span class="mi">50_000</span><span class="p">,</span> <span class="s2">&#34;status&#34;</span><span class="p">:</span> <span class="s2">&#34;cancelled&#34;</span><span class="p">},</span>
+</span></span><span class="line"><span class="ln">4</span><span class="cl">    <span class="p">{</span><span class="s2">&#34;id&#34;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s2">&#34;store&#34;</span><span class="p">:</span> <span class="s2">&#34;A&#34;</span><span class="p">,</span> <span class="s2">&#34;amount&#34;</span><span class="p">:</span> <span class="mi">70_000</span><span class="p">,</span> <span class="s2">&#34;status&#34;</span><span class="p">:</span> <span class="s2">&#34;paid&#34;</span><span class="p">},</span>
+</span></span><span class="line"><span class="ln">5</span><span class="cl">    <span class="p">{</span><span class="s2">&#34;id&#34;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="s2">&#34;store&#34;</span><span class="p">:</span> <span class="s2">&#34;B&#34;</span><span class="p">,</span> <span class="s2">&#34;amount&#34;</span><span class="p">:</span> <span class="mi">200_000</span><span class="p">,</span> <span class="s2">&#34;status&#34;</span><span class="p">:</span> <span class="s2">&#34;paid&#34;</span><span class="p">},</span>
+</span></span><span class="line"><span class="ln">6</span><span class="cl"><span class="p">]</span>
+</span></span></code></pre></div><p>Yêu cầu:</p>
+<blockquote>
+<p>Tính doanh thu của cửa hàng A, bỏ qua đơn bị hủy.</p>
+</blockquote>
+<p>Nếu agent chỉ nói bằng chữ, nó có thể trả lời nhầm:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Doanh thu cửa hàng A là 220.000.
+</span></span></code></pre></div><p>Vì nó cộng cả đơn bị hủy.</p>
+<p>Nếu agent viết code:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln">1</span><span class="cl"><span class="n">revenue</span> <span class="o">=</span> <span class="mi">0</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl">
+</span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="k">for</span> <span class="n">order</span> <span class="ow">in</span> <span class="n">orders</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln">4</span><span class="cl">    <span class="k">if</span> <span class="n">order</span><span class="p">[</span><span class="s2">&#34;store&#34;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&#34;A&#34;</span> <span class="ow">and</span> <span class="n">order</span><span class="p">[</span><span class="s2">&#34;status&#34;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&#34;cancelled&#34;</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln">5</span><span class="cl">        <span class="n">revenue</span> <span class="o">+=</span> <span class="n">order</span><span class="p">[</span><span class="s2">&#34;amount&#34;</span><span class="p">]</span>
+</span></span><span class="line"><span class="ln">6</span><span class="cl">
+</span></span><span class="line"><span class="ln">7</span><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="n">revenue</span><span class="p">)</span>
+</span></span></code></pre></div><p>Kết quả là:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">170000
+</span></span></code></pre></div><p>Ta có thể thêm test:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln">1</span><span class="cl"><span class="k">def</span> <span class="nf">test_revenue_store_a_exclude_cancelled</span><span class="p">():</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl">    <span class="k">assert</span> <span class="n">calculate_revenue</span><span class="p">(</span><span class="n">orders</span><span class="p">,</span> <span class="n">store</span><span class="o">=</span><span class="s2">&#34;A&#34;</span><span class="p">)</span> <span class="o">==</span> <span class="mi">170_000</span>
+</span></span></code></pre></div><p>Bây giờ yêu cầu không còn là một câu nói trôi nổi nữa. Nó trở thành một contract nhỏ. Agent muốn nói gì thì nói, cuối cùng vẫn phải qua test.</p>
+<p>Trong thực tế, bài toán có thể lớn hơn rất nhiều:</p>
+<ul>
+<li>1 tỷ dòng order</li>
+<li>Nhiều trạng thái đơn hàng</li>
+<li>Nhiều timezone</li>
+<li>Refund một phần</li>
+<li>Voucher</li>
+<li>Phí vận chuyển</li>
+<li>Đồng bộ chậm</li>
+<li>Dữ liệu thiếu</li>
+<li>Đơn split nhiều shipment</li>
+</ul>
+<p>Nhưng nguyên lý vẫn vậy.</p>
+<p>Càng nhiều mơ hồ, càng cần code, test, log và harness để ép hệ thống về mặt đất.</p>
+<h1 id="code-as-agent-harness-khác-gì-tool-calling">Code as Agent Harness khác gì tool calling?<a class="anchor ms-1" href="#code-as-agent-harness-khác-gì-tool-calling"><i class="fas fa-link"></i></a></h1>
+<p>Tool calling là một bước rất quan trọng. Nó giúp LLM gọi các công cụ bên ngoài như search, calculator, database, calendar, API nội bộ.</p>
+<p>Nhưng code-as-harness đi xa hơn tool calling thông thường.</p>
+<p>Với tool calling, agent thường chọn một tool và truyền argument:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="ln">1</span><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl">  <span class="nt">&#34;tool&#34;</span><span class="p">:</span> <span class="s2">&#34;get_orders&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl">  <span class="nt">&#34;store_id&#34;</span><span class="p">:</span> <span class="s2">&#34;A&#34;</span>
+</span></span><span class="line"><span class="ln">4</span><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>Với code action, agent có thể viết logic kết hợp nhiều bước:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln">1</span><span class="cl"><span class="n">orders</span> <span class="o">=</span> <span class="n">get_orders</span><span class="p">(</span><span class="n">store_id</span><span class="o">=</span><span class="s2">&#34;A&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="n">orders</span> <span class="o">=</span> <span class="n">filter_cancelled</span><span class="p">(</span><span class="n">orders</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="n">orders</span> <span class="o">=</span> <span class="n">filter_last_30_days</span><span class="p">(</span><span class="n">orders</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">4</span><span class="cl"><span class="n">revenue</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">order</span><span class="o">.</span><span class="n">amount</span> <span class="k">for</span> <span class="n">order</span> <span class="ow">in</span> <span class="n">orders</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">5</span><span class="cl"><span class="n">plot_daily_revenue</span><span class="p">(</span><span class="n">orders</span><span class="p">)</span>
+</span></span></code></pre></div><p>Code trở thành một ngôn ngữ trung gian thống nhất để:</p>
+<ul>
+<li>Gọi tool</li>
+<li>Lọc dữ liệu</li>
+<li>Xử lý điều kiện</li>
+<li>Lặp qua kết quả</li>
+<li>Tạo biến tạm</li>
+<li>Ghi file</li>
+<li>Chạy test</li>
+<li>Tự kiểm tra</li>
+<li>Kết hợp nhiều API</li>
+</ul>
+<p>Nói đơn giản, tool calling giống như bấm từng nút riêng lẻ. Code giống như viết một kịch bản điều khiển cả dàn nút đó.</p>
+<p>Nếu tool calling là cái remote TV, thì code là cái bộ điều khiển nhà thông minh. Bấm được đèn, máy lạnh, rèm cửa, camera, nhưng cũng cần quyền, log và cầu dao chống cháy.</p>
+<h1 id="codex-và-thế-giới-agent-first">Codex và thế giới agent-first<a class="anchor ms-1" href="#codex-và-thế-giới-agent-first"><i class="fas fa-link"></i></a></h1>
+<p>Trong các hệ thống như Codex, Claude Code, Cursor agent, OpenHands hay SWE-agent, ta thấy rõ xu hướng agent-first.</p>
+<p>Người dùng không chỉ hỏi:</p>
+<blockquote>
+<p>“Đoạn code này sai ở đâu?”</p>
+</blockquote>
+<p>Mà giao việc:</p>
+<blockquote>
+<p>“Đọc repo, hiểu bug, sửa, chạy test, tạo diff.”</p>
+</blockquote>
+<p>Đây không còn là bài toán chat đơn giản. Đây là bài toán vận hành một agent trong môi trường phần mềm thật.</p>
+<p>Một coding agent muốn làm tốt cần nhiều thứ:</p>
+<ul>
+<li>Biết đọc cấu trúc project</li>
+<li>Biết tìm file liên quan</li>
+<li>Biết sửa file an toàn</li>
+<li>Biết chạy command</li>
+<li>Biết đọc traceback</li>
+<li>Biết chạy test đúng phạm vi</li>
+<li>Biết không phá file không liên quan</li>
+<li>Biết giải thích diff</li>
+<li>Biết dừng lại khi không đủ quyền hoặc thiếu thông tin</li>
+</ul>
+<p>Những thứ này không thể giải quyết chỉ bằng một system prompt kiểu:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">You are a helpful coding assistant.
+</span></span></code></pre></div><p>Nghe thì dễ thương, nhưng không đủ.</p>
+<p>Cần harness.</p>
+<p>Cần environment.</p>
+<p>Cần sandbox.</p>
+<p>Cần policy.</p>
+<p>Cần evaluator.</p>
+<p>Cần log.</p>
+<p>Cần rollback.</p>
+<p>Cần permission.</p>
+<p>Cần một cái nhà máy nhỏ bao quanh con model, để mỗi suy nghĩ của nó có thể biến thành hành động, mỗi hành động có thể bị quan sát, mỗi lỗi có thể được phản hồi, và mỗi nguy cơ có thể bị chặn trước khi chạm vào hệ thống thật.</p>
+<h1 id="ưu-điểm-và-hạn-chế">Ưu điểm và hạn chế<a class="anchor ms-1" href="#ưu-điểm-và-hạn-chế"><i class="fas fa-link"></i></a></h1>
+<h2 id="ưu-điểm">Ưu điểm<a class="anchor ms-1" href="#ưu-điểm"><i class="fas fa-link"></i></a></h2>
+<p>Code as Agent Harness có vài ưu điểm rất rõ.</p>
+<p>Thứ nhất, code có thể chạy được. Đây là khác biệt nền tảng so với text. Một lập luận bằng chữ có thể nghe hợp lý, nhưng một đoạn code phải va vào interpreter, compiler hoặc test.</p>
+<p>Thứ hai, code giúp agent hành động có cấu trúc hơn. Thay vì gọi tool rời rạc, agent có thể kết hợp nhiều bước bằng logic lập trình.</p>
+<p>Thứ ba, code tạo ra log và trace. Điều này giúp debug agent dễ hơn. Ta biết nó chạy gì, lỗi ở đâu, output ra sao.</p>
+<p>Thứ tư, sandbox giúp giới hạn nguy cơ. Agent có thể thử nghiệm trong một cái hộp an toàn thay vì đụng thẳng vào production.</p>
+<p>Thứ năm, harness tốt có thể cải thiện performance mà không cần đổi model. Đôi khi chỉ cần đổi cách đưa context, cách chạy test, cách tóm tắt lỗi, kết quả đã khác rất nhiều.</p>
+<h2 id="hạn-chế">Hạn chế<a class="anchor ms-1" href="#hạn-chế"><i class="fas fa-link"></i></a></h2>
+<p>Nhưng hướng này cũng không phải cây đũa thần.</p>
+<p>Thứ nhất, agent vẫn có thể viết code sai. Compiler chỉ bắt lỗi cú pháp, không đảm bảo logic đúng.</p>
+<p>Thứ hai, test không bao giờ phủ hết mọi trường hợp. Nếu test thiếu, agent có thể pass test nhưng vẫn sai nghiệp vụ.</p>
+<p>Thứ ba, sandbox thiết kế không tốt có thể quá chặt hoặc quá lỏng. Quá chặt thì agent không làm được việc. Quá lỏng thì nguy hiểm.</p>
+<p>Thứ tư, chạy code tốn tài nguyên. Mỗi vòng agent viết code, chạy test, đọc log, sửa tiếp đều tốn thời gian và compute.</p>
+<p>Thứ năm, harness phức tạp cũng có bug. Khi hệ thống có nhiều lớp tool, memory, permission, evaluator, chính harness cũng trở thành một phần mềm cần được thiết kế, test và maintain nghiêm túc.</p>
+<p>Nói cách khác, ta không xóa được sự phức tạp. Ta chỉ chuyển nó từ sương mù ngôn ngữ sang bê tông phần mềm. Bê tông thì nặng hơn, nhưng ít nhất có thể đo, khoan, đục, kiểm định và sửa chữa.</p>
+<h1 id="nên-hiểu-xu-hướng-này-như-thế-nào">Nên hiểu xu hướng này như thế nào?<a class="anchor ms-1" href="#nên-hiểu-xu-hướng-này-như-thế-nào"><i class="fas fa-link"></i></a></h1>
+<p>Theo mình, cách hiểu đơn giản nhất là:</p>
+<blockquote>
+<p>AI agent đang đi từ “chatbot trả lời” sang “process biết chạy”.</p>
+</blockquote>
+<p>Chatbot trả lời bằng text.</p>
+<p>Agent chạy qua nhiều bước:</p>
+<ol>
+<li>Nhìn trạng thái</li>
+<li>Lập kế hoạch</li>
+<li>Viết code hoặc gọi tool</li>
+<li>Chạy trong môi trường giới hạn</li>
+<li>Đọc kết quả</li>
+<li>Sửa kế hoạch</li>
+<li>Lặp lại</li>
+<li>Trả kết quả cuối cùng kèm bằng chứng</li>
+</ol>
+<p>Khi đó, trọng tâm không chỉ là model nào trả lời hay hơn. Trọng tâm là toàn bộ hệ thống:</p>
+<ul>
+<li>Model</li>
+<li>Prompt</li>
+<li>Tool</li>
+<li>Runtime</li>
+<li>Sandbox</li>
+<li>Memory</li>
+<li>Code executor</li>
+<li>Test runner</li>
+<li>Permission</li>
+<li>Observability</li>
+<li>Evaluation</li>
+</ul>
+<p>Một agent tốt giống như một robot trong xưởng.</p>
+<p>Bộ não quan trọng, nhưng chưa đủ. Nó cần mắt để nhìn, tay để cầm, chân để đi, hàng rào để không lao vào máy cắt, cảm biến để biết mình đụng tường, và bảng điều khiển để con người hiểu nó đang làm gì.</p>
+<p>Không có những thứ đó, ta chỉ có một cái miệng rất thông minh đang đứng giữa nhà máy, nói về sản xuất nhưng không chạm được vào cái ốc vít nào.</p>
+<h1 id="tổng-kết">Tổng kết<a class="anchor ms-1" href="#tổng-kết"><i class="fas fa-link"></i></a></h1>
+<p>Code as Agent Harness là một hướng rất đáng chú ý vì nó kéo AI agent từ tầng lời nói xuống tầng thực thi.</p>
+<p>Ngôn ngữ tự nhiên vẫn quan trọng, vì con người giao việc bằng ngôn ngữ tự nhiên. Nhưng để agent làm việc đáng tin hơn, chỉ nói thôi là chưa đủ. Nó cần viết code, chạy code, đọc lỗi, kiểm tra kết quả, và hoạt động trong một harness có sandbox, permission, log, test và evaluator.</p>
+<p>Natural language là sương mù.</p>
+<p>Code là đường ray.</p>
+<p>Sandbox là hàng rào.</p>
+<p>Compiler là ông bảo vệ khó tính.</p>
+<p>Test là cái cân lạnh lùng.</p>
+<p>Harness là toàn bộ cái xưởng nơi agent được phép biến suy nghĩ thành hành động.</p>
+<p>Và có lẽ đây là một thay đổi khá lớn trong cách ta nhìn AI agent. Agent không còn là một cái hộp chat biết nói chuyện hay. Nó đang dần trở thành một tiến trình phần mềm biết quan sát, biết thử, biết sai, biết sửa, và quan trọng nhất: biết để lại dấu vết cho con người kiểm tra.</p>
+<p>Cảm ơn các bạn đã quan tâm và theo dõi bài viết, hẹn gặp lại ở các bài viết tiếp theo.</p>
+<h1 id="tham-khảo">Tham khảo<a class="anchor ms-1" href="#tham-khảo"><i class="fas fa-link"></i></a></h1>
+<ul>
+<li><a href="https://arxiv.org/abs/2605.18747" target="_blank" rel="noopener noreferrer">https://arxiv.org/abs/2605.18747</a></li>
+<li><a href="https://arxiv.org/abs/2603.28052" target="_blank" rel="noopener noreferrer">https://arxiv.org/abs/2603.28052</a></li>
+<li><a href="https://arxiv.org/abs/2402.01030" target="_blank" rel="noopener noreferrer">https://arxiv.org/abs/2402.01030</a></li>
+<li><a href="https://arxiv.org/abs/2209.07753" target="_blank" rel="noopener noreferrer">https://arxiv.org/abs/2209.07753</a></li>
+<li><a href="https://arxiv.org/abs/2211.10435" target="_blank" rel="noopener noreferrer">https://arxiv.org/abs/2211.10435</a></li>
+<li><a href="https://arxiv.org/abs/2211.12588" target="_blank" rel="noopener noreferrer">https://arxiv.org/abs/2211.12588</a></li>
+<li><a href="https://arxiv.org/abs/2301.13379" target="_blank" rel="noopener noreferrer">https://arxiv.org/abs/2301.13379</a></li>
+<li><a href="https://arxiv.org/abs/2407.16741" target="_blank" rel="noopener noreferrer">https://arxiv.org/abs/2407.16741</a></li>
+<li><a href="https://arxiv.org/abs/2405.15793" target="_blank" rel="noopener noreferrer">https://arxiv.org/abs/2405.15793</a></li>
+<li><a href="https://arxiv.org/abs/2305.16291" target="_blank" rel="noopener noreferrer">https://arxiv.org/abs/2305.16291</a></li>
+<li><a href="https://arxiv.org/abs/2603.03329" target="_blank" rel="noopener noreferrer">https://arxiv.org/abs/2603.03329</a></li>
+<li><a href="https://arxiv.org/abs/2604.25850" target="_blank" rel="noopener noreferrer">https://arxiv.org/abs/2604.25850</a></li>
+<li><a href="https://arxiv.org/abs/2605.13357" target="_blank" rel="noopener noreferrer">https://arxiv.org/abs/2605.13357</a></li>
+<li><a href="https://arxiv.org/abs/2606.10106" target="_blank" rel="noopener noreferrer">https://arxiv.org/abs/2606.10106</a></li>
+<li><a href="https://arxiv.org/abs/2302.04761" target="_blank" rel="noopener noreferrer">https://arxiv.org/abs/2302.04761</a></li>
+<li><a href="https://openai.com/index/harness-engineering/" target="_blank" rel="noopener noreferrer">https://openai.com/index/harness-engineering/</a></li>
+</ul>
+</div></div>
+  <div class="card-footer"><div class="post-navs d-flex justify-content-evenly"><div class="post-nav post-prev">
+    <i class="fas fa-fw fa-chevron-left"></i>
+    <a href="https://www.phamduytung.com/blog/2026-07-06-mcp-server-architerch/">MCP Server Architecture Patterns - Khi API không còn phục vụ con người
+</a>
+  </div></div></div>
+</article><div class="card component row post-comments" id="post-comments">
+  <div class="card-header">
+    <h2 class="card-title">Bình luận</h2>
+  </div>
+  <div class="card-body"><script src="https://utteranc.es/client.js"
+  repo="AlexBlack2202/utterances"
+  issue-term="pathname"
+  label="comment"
+  theme="github-dark"
+  crossorigin="anonymous"
+  async>
+</script></div>
+</div></div>
+</div><aside class="col-lg-3 col-md-4 sidebar d-flex">
+  <div class="container d-flex flex-column">
+    
+    <a href="https://www.buymeacoffee.com/alexblack28"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=🍎&slug=alexblack28&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" /></a><div class="post-toc row mb-4 card component" id="postTOC">
+  <div class="card-header">
+    <h2 class="card-title">Mục lục</h2>
+  </div>
+  <div class="card-body">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#đặt-vấn-đề">Đặt vấn đề</a></li>
+    <li><a href="#bài-toán-chính">Bài toán chính</a></li>
+    <li><a href="#vì-sao-natural-language-không-đủ">Vì sao natural language không đủ?</a></li>
+    <li><a href="#code-as-agent-harness-là-gì">Code as Agent Harness là gì?</a></li>
+    <li><a href="#từ-chain-of-thought-tới-program-of-thought">Từ Chain-of-Thought tới Program-of-Thought</a></li>
+    <li><a href="#codeact-khi-code-trở-thành-hành-động-của-agent">CodeAct: Khi code trở thành hành động của agent</a></li>
+    <li><a href="#compiler-và-runtime-như-người-gác-cổng-khó-tính">Compiler và runtime như người gác cổng khó tính</a></li>
+    <li><a href="#sandbox-cái-hộp-cát-để-agent-nghịch-mà-không-đốt-nhà">Sandbox: cái hộp cát để agent nghịch mà không đốt nhà</a></li>
+    <li><a href="#agent-computer-interface-giao-diện-cho-một-người-dùng-không-phải-người">Agent-Computer Interface: giao diện cho một “người dùng” không phải người</a></li>
+    <li><a href="#meta-harness-tối-ưu-cái-chuồng-trước-khi-đổi-con-thú">Meta-Harness: tối ưu cái chuồng trước khi đổi con thú</a></li>
+    <li><a href="#autoharness-và-agentic-harness-engineering">AutoHarness và Agentic Harness Engineering</a></li>
+    <li><a href="#code-không-làm-agent-hết-sai-nhưng-làm-cái-sai-dễ-bắt-hơn">Code không làm agent hết sai, nhưng làm cái sai dễ bắt hơn</a></li>
+    <li><a href="#một-ví-dụ-nhỏ-agent-tính-doanh-thu">Một ví dụ nhỏ: agent tính doanh thu</a></li>
+    <li><a href="#code-as-agent-harness-khác-gì-tool-calling">Code as Agent Harness khác gì tool calling?</a></li>
+    <li><a href="#codex-và-thế-giới-agent-first">Codex và thế giới agent-first</a></li>
+    <li><a href="#ưu-điểm-và-hạn-chế">Ưu điểm và hạn chế</a>
+      <ul>
+        <li><a href="#ưu-điểm">Ưu điểm</a></li>
+        <li><a href="#hạn-chế">Hạn chế</a></li>
+      </ul>
+    </li>
+    <li><a href="#nên-hiểu-xu-hướng-này-như-thế-nào">Nên hiểu xu hướng này như thế nào?</a></li>
+    <li><a href="#tổng-kết">Tổng kết</a></li>
+    <li><a href="#tham-khảo">Tham khảo</a></li>
+  </ul>
+</nav>
+  </div>
+</div><section class="recent-posts row card component">
+  <div class="card-header">
+    <h2 class="card-title">Bài gần đây</h2>
+  </div>
+  <div class="card-body">
+    <ul class="post-list"><li>
+        <a href="https://www.phamduytung.com/blog/2026-07-07-code-as-agent-harness/">Code as Agent Harness: Khi AI Agent Không Chỉ Nói, Mà Bắt Đầu Suy Luận Bằng Code
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-07-06-mcp-server-architerch/">MCP Server Architecture Patterns - Khi API không còn phục vụ con người
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-07-04-aiagent-dream/">AI Agent và giấc mơ công ty tự chạy. Robot làm việc được, nhưng ai chịu trách nhiệm?
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-07-04-ai-on-fly/">AI không bay trên mây. Cái giá vật lý sau một câu prompt
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2025-09-14-llm-tai-chinh/">Xu hướng sử dụng LLM. Phân tích dựa trên ứng dụng của LLM trong tài chính
+</a>
+      </li></ul>
+  </div>
+</section><section class="series-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/series">series</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/series/kh%C3%B3a-h%E1%BB%8Dc-python-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học Python Căn Bản">
+            Khóa Học Python Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="https://www.phamduytung.com/series/kh%C3%B3a-h%E1%BB%8Dc-c&#43;&#43;-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học C&#43;&#43; Căn Bản">
+            Khóa Học C&#43;&#43; Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="https://www.phamduytung.com/series/machine-learning-dataset/" class="badge rounded post-taxonomy" title="Machine Learning Dataset">
+            Machine Learning Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a><a href="https://www.phamduytung.com/series/ch%E1%BB%A9ng-kho%C3%A1n-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Chứng Khoán Căn Bản">
+            Chứng Khoán Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">1</span></a></div>
+      </div>
+    </section><section class="tools-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/tools">tools</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/tools/tool-random/" class="badge rounded post-taxonomy" title="Tool Random">
+            Tool Random<span class="badge badge-sm text-white bg-accent ms-1">3</span></a></div>
+      </div>
+    </section><section class="categories-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/categories">categories</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/categories/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="https://www.phamduytung.com/categories/c&#43;&#43;/" class="badge rounded post-taxonomy" title="C&#43;&#43;">
+            C&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="https://www.phamduytung.com/categories/dataset/" class="badge rounded post-taxonomy" title="Dataset">
+            Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a></div>
+      </div>
+    </section><section class="tags-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/tags">tags</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/tags/machine-learning/" class="badge rounded post-taxonomy" title="Machine Learning">
+            Machine Learning<span class="badge badge-sm text-white bg-accent ms-1">25</span></a><a href="https://www.phamduytung.com/tags/deep-learning/" class="badge rounded post-taxonomy" title="Deep Learning">
+            Deep Learning<span class="badge badge-sm text-white bg-accent ms-1">23</span></a><a href="https://www.phamduytung.com/tags/computer-vision/" class="badge rounded post-taxonomy" title="Computer Vision">
+            Computer Vision<span class="badge badge-sm text-white bg-accent ms-1">16</span></a><a href="https://www.phamduytung.com/tags/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">14</span></a><a href="https://www.phamduytung.com/tags/llm/" class="badge rounded post-taxonomy" title="Llm">
+            Llm<span class="badge badge-sm text-white bg-accent ms-1">9</span></a><a href="https://www.phamduytung.com/tags/recommendation-system/" class="badge rounded post-taxonomy" title="Recommendation System">
+            Recommendation System<span class="badge badge-sm text-white bg-accent ms-1">6</span></a><a href="https://www.phamduytung.com/tags/time-series/" class="badge rounded post-taxonomy" title="Time Series">
+            Time Series<span class="badge badge-sm text-white bg-accent ms-1">6</span></a><a href="https://www.phamduytung.com/tags/model-training/" class="badge rounded post-taxonomy" title="Model Training">
+            Model Training<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="https://www.phamduytung.com/tags/object-detection/" class="badge rounded post-taxonomy" title="Object Detection">
+            Object Detection<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="https://www.phamduytung.com/tags/opencv/" class="badge rounded post-taxonomy" title="Opencv">
+            Opencv<span class="badge badge-sm text-white bg-accent ms-1">5</span></a></div>
+      </div>
+    </section>
+    
+  </div>
+</aside>
+</div>
+    </main><footer class="footer mt-auto py-3 text-center container"><ul class="nav justify-content-between footer-memu mb-3"><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Community
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-facebook"></i>Facebook Group
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://github.com/AlexBlack2202/alexblack2202.github.io" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-github"></i>GitHub
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/contact/"><i class="fas fa-fw fa-info-circle"></i>Contact Us
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/faq/"><i class="fas fa-fw fa-question-circle"></i>FAQs
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Docs
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="/team_of_services" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-users"></i>Điều khoản sử dụng
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/privacy" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-lock"></i>Chính sách bảo mật
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Features
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="/utils/gen_paswords/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-key"></i>Tạo password ngẫu nhiên
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Liên kết khác
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">Netlify
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">facebook
+</a>
+        </li></ul></li></ul>
+<div class="copyright mb-2">
+  Copyright © 2016-2026 Phạm Duy Tùng. All Rights Reserved.
+</div>
+<div class="powered-by mb-2">
+  Website chia sẻ kiến thức của Phạm Duy Tùng và Đặng Thị Hằng. Vui lòng liên hệ email alexblack2202@gmail.com nếu bạn có thông tin cần trao đổi.
+</div></footer>
+<script src="https://www.phamduytung.com/js/main.ed2053ad82a243b263761567b5c1aaf974487aa84adacb89ae3ddf803ecc248a.js" integrity="sha256-7SBTrYKiQ7JjdhVntcGq&#43;XRIeqhK2suJrj3fgD7MJIo=" crossorigin="anonymous" defer></script><script src="https://www.phamduytung.com/js/icons.min.cb4c9958dbc49e29ac644e168e82db2d0de9a741a15751cc5bf2b0af21eb2845.js" integrity="sha256-y0yZWNvEnimsZE4WjoLbLQ3pp0GhV1HMW/KwryHrKEU=" crossorigin="anonymous" defer></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('https:\/\/www.phamduytung.com\/service-worker.js').then(function(reg) {
+      console.log('Successfully registered service worker', reg);
+    }).catch(function(err) {
+      console.warn('Error whilst registering service worker', err);
+    });
+  });
+}
+</script><script src="https://www.phamduytung.com/js/viewer.min.28bcf5233e406dae6715f46c8b9e8ca7c6cbf347e8678f5a2bebe5369c3270bb.js" integrity="sha256-KLz1Iz5Aba5nFfRsi56Mp8bL80foZ49aK&#43;vlNpwycLs=" crossorigin="anonymous" defer></script><script defer src="https://www.phamduytung.com/js/katex.min.8582b9feadf92a2a977ed303b97d7713cf2754ccf2b4eb60d8be7453a21042c2.js" integrity="sha256-hYK5/q35KiqXftMDuX13E88nVMzytOtg2L50U6IQQsI=" crossorigin="anonymous"></script>
+
+<script  data-ad-client="ca-pub-4644989745435991"  async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4644989745435991"
+     crossorigin="anonymous"></script><script data-cfasync="false" type="text/javascript" data-adel="atag" src="//acscdn.com/script/atg.js" czid="eul3gyjdmm"></script>
+  </body>
+</html>
