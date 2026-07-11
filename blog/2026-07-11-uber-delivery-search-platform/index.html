@@ -1,0 +1,1353 @@
+<!doctype html><html lang="vi" data-palette="brown"
+   data-mode="light">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Search ở quy mô Uber Eats: Máy không cần đọc đúng chữ, nó phải hiểu người đang đói muốn gì - Phạm Duy Tùng Machine Learning Blog</title>
+    <meta name="a.validate.02" content="1QZXZ8oi7g57H-GxBrBPkTYBydwii-Ic9iJu" /><link rel="apple-touch-icon" href="https://www.phamduytung.com/images/icons/icon-180x180.png" sizes="180x180">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/icon-32x32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/icon-16x16.png" sizes="16x16" type="image/png">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/favicon.ico">
+<link rel="manifest" href="https://www.phamduytung.com/manifest.json">
+<meta name="keywords" content="" />
+<meta name="description" content="Từ một ô tìm kiếm nhỏ trên Uber Eats là cả một hệ thống semantic search với Qwen, two-tower embedding, HNSW, Matryoshka Representation Learning, quantization và cơ chế blue-green deployment. Điều đáng học không chỉ là cách tìm giữa hàng tỷ sản phẩm, mà là cách đưa một mô hình biết hiểu ngôn ngữ vào production mà không đốt cháy CPU, ngân sách và niềm tin của người dùng." /><meta name="robots" content="index, follow" />
+	<meta itemprop="name" content="Search ở quy mô Uber Eats: Máy không cần đọc đúng chữ, nó phải hiểu người đang đói muốn gì">
+	<meta itemprop="description" content="Từ một ô tìm kiếm nhỏ trên Uber Eats là cả một hệ thống semantic search với Qwen, two-tower embedding, HNSW, Matryoshka Representation Learning, quantization và cơ chế blue-green deployment. Điều đáng học không chỉ là cách tìm giữa hàng tỷ sản phẩm, mà là cách đưa một mô hình biết hiểu ngôn ngữ vào production mà không đốt cháy CPU, ngân sách và niềm tin của người dùng.">
+	<meta itemprop="datePublished" content="2026-07-11T00:00:00+03:00">
+	<meta itemprop="dateModified" content="2026-07-11T00:00:00+03:00">
+	<meta itemprop="wordCount" content="6566">
+	<meta itemprop="image" content="https://www.phamduytung.com/images/posts/2026-07-11-uber-delivery-search-platform/cover.png">
+	<meta itemprop="keywords" content="Search Engine,Semantic Search,Embedding,Vector Search,Qwen,HNSW,Uber Engineering"><meta property="og:url" content="https://www.phamduytung.com/blog/2026-07-11-uber-delivery-search-platform/">
+	<meta property="og:site_name" content="Phạm Duy Tùng Machine Learning Blog">
+	<meta property="og:title" content="Search ở quy mô Uber Eats: Máy không cần đọc đúng chữ, nó phải hiểu người đang đói muốn gì">
+	<meta property="og:description" content="Từ một ô tìm kiếm nhỏ trên Uber Eats là cả một hệ thống semantic search với Qwen, two-tower embedding, HNSW, Matryoshka Representation Learning, quantization và cơ chế blue-green deployment. Điều đáng học không chỉ là cách tìm giữa hàng tỷ sản phẩm, mà là cách đưa một mô hình biết hiểu ngôn ngữ vào production mà không đốt cháy CPU, ngân sách và niềm tin của người dùng.">
+	<meta property="og:locale" content="vi_VN">
+	<meta property="og:type" content="article">
+		<meta property="article:section" content="blog">
+		<meta property="article:published_time" content="2026-07-11T00:00:00+03:00">
+		<meta property="article:modified_time" content="2026-07-11T00:00:00+03:00">
+		<meta property="article:tag" content="Search Engine">
+		<meta property="article:tag" content="Semantic Search">
+		<meta property="article:tag" content="Embedding">
+		<meta property="article:tag" content="Vector Search">
+		<meta property="article:tag" content="Qwen">
+		<meta property="article:tag" content="HNSW">
+		<meta property="og:image" content="https://www.phamduytung.com/images/posts/2026-07-11-uber-delivery-search-platform/cover.png">
+
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:image" content="https://www.phamduytung.com/images/posts/2026-07-11-uber-delivery-search-platform/cover.png">
+	<meta name="twitter:title" content="Search ở quy mô Uber Eats: Máy không cần đọc đúng chữ, nó phải hiểu người đang đói muốn gì">
+	<meta name="twitter:description" content="Từ một ô tìm kiếm nhỏ trên Uber Eats là cả một hệ thống semantic search với Qwen, two-tower embedding, HNSW, Matryoshka Representation Learning, quantization và cơ chế blue-green deployment. Điều đáng học không chỉ là cách tìm giữa hàng tỷ sản phẩm, mà là cách đưa một mô hình biết hiểu ngôn ngữ vào production mà không đốt cháy CPU, ngân sách và niềm tin của người dùng.">
+<link rel="stylesheet" href="https://www.phamduytung.com/css/main.min.0aa7373d751b40dcbe96232f76639e455436d25cf0e69da3d7427f45b6fcc905.css" integrity="sha256-Cqc3PXUbQNy&#43;liMvdmOeRVQ20lzw5p2j10J/Rbb8yQU=" crossorigin="anonymous"><link rel="stylesheet" href="https://www.phamduytung.com/css/katex.min.4d6aa053ca8a5675016fa2c9c48ee5359bfaafb8295184458af9d64abce84c47.css" integrity="sha256-TWqgU8qKVnUBb6LJxI7lNZv6r7gpUYRFivnWSrzoTEc=" crossorigin="anonymous">
+<link rel="stylesheet" href="https://www.phamduytung.com/css/viewer.min.e882eb3a023412b73bb741b4604a1222a9f13aa7783c828d26d066ab8642bd51.css" integrity="sha256-6ILrOgI0Erc7t0G0YEoSIqnxOqd4PIKNJtBmq4ZCvVE=" crossorigin="anonymous"><link rel="canonical" href="https://www.phamduytung.com/blog/2026-07-11-uber-delivery-search-platform/"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Phạm Duy Tùng"},"dateModified":"2026-07-11T00:00:00+03:00","datePublished":"2026-07-11T00:00:00+03:00","description":"Từ một ô tìm kiếm nhỏ trên Uber Eats là cả một hệ thống semantic search với Qwen, two-tower embedding, HNSW, Matryoshka Representation Learning, quantization và cơ chế blue-green deployment. Điều đáng học không chỉ là cách tìm giữa hàng tỷ sản phẩm, mà là cách đưa một mô hình biết hiểu ngôn ngữ vào …","headline":"Search ở quy mô Uber Eats: Máy không cần đọc đúng chữ, nó phải hiểu người đang đói muốn gì","image":["https://www.phamduytung.com/images/posts/2026-07-11-uber-delivery-search-platform/cover.png"],"inLanguage":"vi","keywords":"Search Engine, Semantic Search, Embedding, Vector Search, Qwen, HNSW, Uber Engineering","mainEntityOfPage":{"@id":"https://www.phamduytung.com/blog/2026-07-11-uber-delivery-search-platform/","@type":"WebPage"},"publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://www.phamduytung.com/images/logo.png"},"name":"Phạm Duy Tùng Machine Learning Blog"},"url":"https://www.phamduytung.com/blog/2026-07-11-uber-delivery-search-platform/"}</script></head>
+  <body><script>const items=["mode","palette"];items.forEach(function(e){const t=localStorage.getItem("hbs-"+e);t&&document.body.parentElement.setAttribute("data-"+e,t)})</script><header><nav class="navbar top-app-bar top-app-bar-expand-lg fixed-top">
+  <div class="container">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <i class="fas fa-bars"></i>
+    </button><a class="navbar-brand flex-grow-1 flex-lg-grow-0 text-center text-lg-start mx-auto me-lg-3" href="https://www.phamduytung.com/"><img class="logo" alt="Logo" src="https://www.phamduytung.com/images/logo.webp" loading="lazy"  title="Logo"
+   width="32" height="32"
+   />
+Phạm Duy Tùng
+    </a>
+    <div class="offcanvas offcanvas-bottom surface" tabindex="-1" id="offcanvasSocialShare" aria-labelledby="offcanvasSocialShare">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Share</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body">
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Twitter Share Button"
+      target="_blank" href="https://twitter.com/intent/tweet?title=Search%20%e1%bb%9f%20quy%20m%c3%b4%20Uber%20Eats%3a%20M%c3%a1y%20kh%c3%b4ng%20c%e1%ba%a7n%20%c4%91%e1%bb%8dc%20%c4%91%c3%bang%20ch%e1%bb%af%2c%20n%c3%b3%20ph%e1%ba%a3i%20hi%e1%bb%83u%20ng%c6%b0%e1%bb%9di%20%c4%91ang%20%c4%91%c3%b3i%20mu%e1%bb%91n%20g%c3%ac&url=https%3a%2f%2fwww.phamduytung.com%2fblog%2f2026-07-11-uber-delivery-search-platform%2f">
+      <i class="fab fa-fw fa-twitter"></i> Twitter
+    </a>
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Facebook Share Button"
+      target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.phamduytung.com%2fblog%2f2026-07-11-uber-delivery-search-platform%2f">
+      <i class="fab fa-fw fa-facebook-f"></i> Facebook
+    </a>
+  </div>
+</div>
+    <button class="navbar-settings" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSettings"
+  aria-controls="offcanvasSettings" aria-label="Toggle settings">
+  <i class="fas fa-ellipsis-v"></i>
+</button>
+
+<div class="offcanvas offcanvas-end surface h-100" tabindex="-1" id="offcanvasSettings" aria-labelledby="offcanvasSettings">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Cài đặt</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body d-flex flex-column">
+
+
+
+<section class="setting">
+  <form class="font-size-switcher-form row">
+    <div class="col-auto">
+      <label for="fontSize" class="form-label"><i class="fas fa-fw fa-font"></i> Cỡ chữ</label>
+    </div>
+    <div class="col-auto ms-auto">
+      <input type="range" class="form-range" min="-2" max="2" id="fontSize">
+    </div>
+  </form>
+</section>
+
+
+
+<section class="setting actions d-flex justify-content-around mt-auto overflow-auto">
+  <a role="button" class="action action-go-back" href="javascript: window.history.back();">
+    <span class="action-icon"><i class="fas fa-2x fa-arrow-left"></i></span> Quay lại
+  </a>
+  <a role="button" class="action action-reload-page">
+    <span class="action-icon"><i class="fas fa-2x fa-redo-alt"></i></span> Tải lại
+  </a>
+  <a role="button" class="action action-copy-url">
+    <span class="action-icon"><i class="fas fa-2x fa-link"></i></span> Sao chép URL
+  </a><a class="action action-social-share" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSocialShare"
+    aria-controls="offcanvasSocialShare" aria-label="Toggle social share">
+    <span class="action-icon"><i class="fas fa-2x fa-share-alt"></i></span> Chia sẻ
+  </a></section>
+
+</div>
+</div>
+
+    <div class="collapse navbar-collapse" tabindex="-1" id="navbarSupportedContent" aria-labelledby="navbarSupportedContent">
+      <form class="search-bar my-1" action="https://www.phamduytung.com/search">
+  <div class="input-group input-group-sm">
+    <span class="btn btn-search disabled position-absolute left-0"><i class="fas fa-fw fa-search"></i></span>
+    <input class="form-control rounded-pill" name="q" type="search" aria-label="Search">
+  </div>
+</form>
+      <ul class="navbar-nav ms-auto"><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/series/">
+            <i class="fas fa-fw fa-columns"></i>Courses
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/tools/">
+            <i class="fas fa-fw fa-folder"></i>Tools
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/categories/">
+            <i class="fas fa-fw fa-folder"></i>Categories
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/archives/">
+            <i class="fas fa-fw fa-file-archive"></i>Archives
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/tags/">
+            <i class="fas fa-fw fa-tags"></i>Tags
+          </a>
+        </li><li class="nav-item dropdown">
+          <a class="nav-link" id="navbarDropdownSupport" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-fw fa-comments"></i>Community
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdownSupport"><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Facebook Group
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://github.com/AlexBlack2202/alexblack2202.github.io" target="_blank" rel="noopener noreferrer">
+                GitHub
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/contact/">
+                Contact
+              </a>
+            </li><li><hr class="dropdown-divider"></li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/faq/">
+                Câu hỏi thường gặp
+              </a>
+            </li></ul>
+        </li></ul>
+    </div>
+  </div>
+</nav>
+</header>
+<main role="main" class="container" style="line-height:1.7em">
+      <div class="row content">
+<div class="col-lg-9 col-md-8">
+  <div class="container"><nav class="row card component" aria-label="breadcrumb">
+  <div class="card-body">
+    <ol class="breadcrumb "><li class="breadcrumb-item"><a href="https://www.phamduytung.com/">Trang chủ</a></li><li class="breadcrumb-item"><a href="https://www.phamduytung.com/blog/">Blogs</a></li><li class="breadcrumb-item active">Search ở quy mô Uber Eats: Máy không cần đọc đúng chữ, nó phải hiểu người đang đói muốn gì</li></ol>
+  </div>
+</nav>
+<div class="post-panel-wrapper">
+  <div class="d-flex flex-column component rounded post-panel">
+    
+    <a class="action action-panel-toggler" role="button" title="Panel toggler">
+      <i class="fas fa-fw fa-chevron-circle-down"></i>
+    </a>
+    <a id="sidebarToggler" class="action d-none d-lg-block" role="button" title="Sidebar toggler">
+  <i class="fas fa-fw fa-expand-alt" data-fa-transform="rotate-45"></i>
+</a>
+
+    
+
+    
+    
+    <a class="action" href="#post-comments" role="button" aria-label="Comments" title="Comments">
+  <i class="fas fa-fw fa-comments"></i>
+</a>
+    <a class="action" href="#postTOC" aria-controls="Table of contents" role="button" title="Table of contents">
+  <i class="fas fa-fw fa-list-alt"></i>
+</a>
+    
+  </div>
+</div>
+<article class="row card component mb-4 post">
+  <div class="card-header "><div class="bgcover" style="background-image:url(https://www.phamduytung.com/images/posts/2026-07-11-uber-delivery-search-platform/cover.png)" aria-label="Search ở quy mô Uber Eats: Máy không cần đọc đúng chữ, nó phải hiểu người đang đói muốn gì">
+      <div class="bgtrans">
+          <h1>Search ở quy mô Uber Eats: Máy không cần đọc đúng chữ, nó phải hiểu người đang đói muốn gì
+</h1>
+      </div>
+  </div>
+</div>
+  <div class="card-body"><div class="post-meta">
+  <span class="post-date" title="tạo ngày 2026-07-11 04:00:00 &#43;0700 &#43;07.">
+    11/07/2026
+  </span><span class="post-reading-time">
+    31 phút đọc
+  </span><span class="post-taxonomies"><a href="https://www.phamduytung.com/tags/search-engine/" class="badge post-taxonomy">Search Engine</a><a href="https://www.phamduytung.com/tags/semantic-search/" class="badge post-taxonomy">Semantic Search</a><a href="https://www.phamduytung.com/tags/embedding/" class="badge post-taxonomy">Embedding</a><a href="https://www.phamduytung.com/tags/vector-search/" class="badge post-taxonomy">Vector Search</a><a href="https://www.phamduytung.com/tags/qwen/" class="badge post-taxonomy">Qwen</a><a href="https://www.phamduytung.com/tags/hnsw/" class="badge post-taxonomy">HNSW</a><a href="https://www.phamduytung.com/tags/uber-engineering/" class="badge post-taxonomy">Uber Engineering</a></span>
+</div>
+<div class="post-content mb-3"><hr>
+<div class="toc">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#người-dùng-gõ-sai-nhưng-vẫn-muốn-máy-hiểu-đúng">Người dùng gõ sai, nhưng vẫn muốn máy hiểu đúng</a></li>
+    <li><a href="#search-truyền-thống-giống-bác-thủ-kho-chỉ-biết-nhìn-nhãn">Search truyền thống giống bác thủ kho chỉ biết nhìn nhãn</a></li>
+    <li><a href="#một-từ-có-thể-đội-nhiều-cái-mũ">Một từ có thể đội nhiều cái mũ</a></li>
+    <li><a href="#semantic-search-biến-câu-chữ-thành-tọa-độ">Semantic search: Biến câu chữ thành tọa độ</a></li>
+    <li><a href="#search-giao-đồ-ăn-không-sống-trong-thế-giới-của-riêng-ngôn-ngữ">Search giao đồ ăn không sống trong thế giới của riêng ngôn ngữ</a></li>
+    <li><a href="#two-tower-hai-người-phiên-dịch-gặp-nhau-giữa-cây-cầu">Two-tower: Hai người phiên dịch gặp nhau giữa cây cầu</a></li>
+    <li><a href="#vì-sao-không-tính-mọi-thứ-ngay-khi-người-dùng-tìm-kiếm">Vì sao không tính mọi thứ ngay khi người dùng tìm kiếm?</a></li>
+    <li><a href="#model-lớn-chỉ-là-phần-đầu-của-dây-chuyền">Model lớn chỉ là phần đầu của dây chuyền</a></li>
+    <li><a href="#infonce-kéo-món-đúng-lại-gần-đẩy-món-sai-ra-xa">InfoNCE: Kéo món đúng lại gần, đẩy món sai ra xa</a></li>
+    <li><a href="#mathcall">$$
+\mathcal{L}</a></li>
+    <li><a href="#matryoshka-embedding-một-con-búp-bê-chứa-nhiều-con-búp-bê-nhỏ-hơn">Matryoshka embedding: Một con búp bê chứa nhiều con búp bê nhỏ hơn</a></li>
+    <li><a href="#hàng-tỷ-ứng-viên-không-thể-đi-gõ-cửa-từng-nhà">Hàng tỷ ứng viên: Không thể đi gõ cửa từng nhà</a></li>
+    <li><a href="#đừng-để-vector-search-tìm-trong-cả-trái-đất">Đừng để vector search tìm trong cả Trái Đất</a></li>
+    <li><a href="#k-không-phải-càng-lớn-càng-tốt">K không phải càng lớn càng tốt</a></li>
+    <li><a href="#quantization-không-cần-mang-theo-cả-tủ-quần-áo-để-đi-ăn-trưa">Quantization: Không cần mang theo cả tủ quần áo để đi ăn trưa</a></li>
+    <li><a href="#tam-giác-không-bao-giờ-ngủ-chất-lượng-tốc-độ-và-tiền">Tam giác không bao giờ ngủ: Chất lượng, tốc độ và tiền</a></li>
+    <li><a href="#document-embedding-cũng-cần-một-cái-kho-tử-tế">Document embedding cũng cần một cái kho tử tế</a></li>
+    <li><a href="#model-và-index-là-một-cặp-vợ-chồng-không-được-nhận-nhầm-nhau">Model và index là một cặp vợ chồng không được nhận nhầm nhau</a></li>
+    <li><a href="#blue-green-deployment-hai-căn-bếp-một-căn-đang-nấu">Blue-green deployment: Hai căn bếp, một căn đang nấu</a></li>
+    <li><a href="#ba-cánh-cửa-trước-khi-model-được-bước-vào-production">Ba cánh cửa trước khi model được bước vào production</a>
+      <ul>
+        <li><a href="#1-completeness">1. Completeness</a></li>
+        <li><a href="#2-backward-compatibility">2. Backward compatibility</a></li>
+        <li><a href="#3-correctness">3. Correctness</a></li>
+      </ul>
+    </li>
+    <li><a href="#kiểm-tra-lúc-build-chưa-đủ-vì-con-người-vẫn-có-thể-bấm-nhầm">Kiểm tra lúc build chưa đủ, vì con người vẫn có thể bấm nhầm</a></li>
+    <li><a href="#search-platform-không-tiến-hóa-theo-đường-thẳng">Search platform không tiến hóa theo đường thẳng</a></li>
+    <li><a href="#một-pipeline-đơn-giản-để-hình-dung">Một pipeline đơn giản để hình dung</a></li>
+    <li><a href="#nếu-áp-dụng-vào-search-bán-lẻ-việt-nam">Nếu áp dụng vào search bán lẻ Việt Nam</a></li>
+    <li><a href="#đừng-vội-thay-toàn-bộ-keyword-search-bằng-vector-search">Đừng vội thay toàn bộ keyword search bằng vector search</a></li>
+    <li><a href="#những-điều-không-nên-sao-chép-máy-móc-từ-uber">Những điều không nên sao chép máy móc từ Uber</a></li>
+    <li><a href="#điều-mình-tâm-đắc-nhất-semantic-search-không-phải-một-model">Điều mình tâm đắc nhất: Semantic search không phải một model</a></li>
+    <li><a href="#tổng-kết">Tổng kết</a></li>
+    <li><a href="#tham-khảo">Tham khảo</a></li>
+  </ul>
+</nav>
+  </div>
+<h1 id="người-dùng-gõ-sai-nhưng-vẫn-muốn-máy-hiểu-đúng">Người dùng gõ sai, nhưng vẫn muốn máy hiểu đúng<a class="anchor ms-1" href="#người-dùng-gõ-sai-nhưng-vẫn-muốn-máy-hiểu-đúng"><i class="fas fa-link"></i></a></h1>
+<p>Có một cảnh rất quen thuộc.</p>
+<p>Mười một giờ bốn mươi lăm phút trưa.</p>
+<p>Bạn đang đói.</p>
+<p>Đồng nghiệp bắt đầu đứng lên hỏi:</p>
+<blockquote>
+<p>Ăn gì?</p>
+</blockquote>
+<p>Cả phòng im lặng.</p>
+<p>Một người nói cơm.</p>
+<p>Một người nói bún.</p>
+<p>Một người vừa giảm cân được hai tiếng nên đề nghị salad.</p>
+<p>Cuối cùng, bạn mở ứng dụng giao đồ ăn và gõ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">ga ran pho mai
+</span></span></code></pre></div><p>Không dấu.</p>
+<p>Không viết hoa.</p>
+<p>Thiếu chữ.</p>
+<p>Có thể còn sai chính tả.</p>
+<p>Nhưng trong đầu bạn, yêu cầu rất rõ:</p>
+<blockquote>
+<p>Tôi muốn tìm gà rán có phô mai, giao được tới chỗ tôi, quán đang mở, giá đừng quá vô lý và tốt nhất là tới trước khi cuộc họp đầu giờ chiều bắt đầu.</p>
+</blockquote>
+<p>Ô tìm kiếm chỉ nhận được bốn từ.</p>
+<p>Phía sau bốn từ đó là cả một cục nhu cầu rất lớn.</p>
+<p>Nếu hệ thống chỉ tìm những nhà hàng có đúng chuỗi ký tự <code>ga ran pho mai</code>, nó có thể bỏ qua:</p>
+<ul>
+<li>Gà sốt phô mai</li>
+<li>Chicken cheese</li>
+<li>Gà cay phủ cheese</li>
+<li>Korean fried chicken</li>
+<li>Gà rán mozzarella</li>
+<li>Combo gà lắc phô mai</li>
+</ul>
+<p>Người dùng viết chưa đúng.</p>
+<p>Tên món cũng không giống hoàn toàn.</p>
+<p>Nhưng ý nghĩa lại đứng rất gần nhau.</p>
+<p>Đó là lúc bài toán search không còn là:</p>
+<blockquote>
+<p>Hai chuỗi chữ có giống nhau không?</p>
+</blockquote>
+<p>Nó trở thành:</p>
+<blockquote>
+<p>Hai ý định có đang nói về cùng một thứ không?</p>
+</blockquote>
+<p>Đây cũng là điều khiến mình tâm đắc khi đọc bài <strong>“Evolution and Scale of Uber’s Delivery Search Platform”</strong> của Uber Engineering.</p>
+<p>Uber không chỉ kể chuyện đưa thêm một mô hình embedding vào ô tìm kiếm.</p>
+<p>Họ kể một câu chuyện khó hơn nhiều:</p>
+<blockquote>
+<p>Làm sao để một hệ thống hiểu được ý người dùng bằng semantic search, tìm trong kho dữ liệu hàng tỷ ứng viên, trả lời đủ nhanh, chi phí không nổ tung và vẫn có thể rollback nếu model mới đột nhiên nổi hứng hiểu “apple” thành điện thoại thay vì trái cây?</p>
+</blockquote>
+<h1 id="search-truyền-thống-giống-bác-thủ-kho-chỉ-biết-nhìn-nhãn">Search truyền thống giống bác thủ kho chỉ biết nhìn nhãn<a class="anchor ms-1" href="#search-truyền-thống-giống-bác-thủ-kho-chỉ-biết-nhìn-nhãn"><i class="fas fa-link"></i></a></h1>
+<p>Cách search quen thuộc nhất là lexical search, tức tìm kiếm dựa trên từ ngữ.</p>
+<p>Người dùng gõ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">bún bò
+</span></span></code></pre></div><p>Hệ thống tìm những tài liệu có chứa:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">bún bò
+</span></span></code></pre></div><p>Rất hợp lý.</p>
+<p>Nhanh.</p>
+<p>Dễ giải thích.</p>
+<p>Nếu chữ trên tờ giấy giống chữ người dùng gõ vào, trả kết quả về.</p>
+<p>Có thể hình dung lexical search như một bác thủ kho.</p>
+<p>Bạn hỏi:</p>
+<blockquote>
+<p>Chú tìm giúp con thùng ghi “nước ngọt”.</p>
+</blockquote>
+<p>Bác đi dọc kho.</p>
+<p>Nhìn từng nhãn.</p>
+<p>Thấy thùng nào có chữ “nước ngọt” thì lấy ra.</p>
+<p>Vấn đề bắt đầu xuất hiện khi thùng hàng ghi:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">soft drink
+</span></span></code></pre></div><p>Hoặc:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">soda
+</span></span></code></pre></div><p>Hoặc người dùng gõ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">nuoc ngot ko duong
+</span></span></code></pre></div><p>Bác thủ kho có thể đứng nhìn hai thứ mang cùng một ý nghĩa nhưng không nhận ra chúng liên quan.</p>
+<p>Search bằng từ khóa làm rất tốt khi người dùng và dữ liệu dùng cùng một cách viết.</p>
+<p>Ngoài đời, điều đó không xảy ra thường xuyên như chúng ta mong muốn.</p>
+<p>Uber chỉ ra rằng truy vấn thực tế chứa đủ loại rắc rối:</p>
+<ul>
+<li>Từ đồng nghĩa như <code>soda</code> và <code>soft drink</code></li>
+<li>Lỗi chính tả như <code>mozzarela</code></li>
+<li>Viết tắt như <code>gf pizza</code></li>
+<li>Trộn nhiều ngôn ngữ</li>
+<li>Từ đa nghĩa như <code>apple</code></li>
+<li>Cùng một nhu cầu nhưng mỗi khu vực gọi bằng một tên khác nhau</li>
+</ul>
+<p>Lexical search nhìn thấy chữ.</p>
+<p>Nó không tự nhiên nhìn thấy ý nghĩa. (<a href="https://www.uber.com/us/en/blog/evolution-and-scale-of-ubers-delivery-search-platform/" title="Evolution and Scale of Uber’s Delivery Search Platform" target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<h1 id="một-từ-có-thể-đội-nhiều-cái-mũ">Một từ có thể đội nhiều cái mũ<a class="anchor ms-1" href="#một-từ-có-thể-đội-nhiều-cái-mũ"><i class="fas fa-link"></i></a></h1>
+<p>Ngôn ngữ không phải bảng mã vạch.</p>
+<p>Một từ không phải lúc nào cũng chỉ tới đúng một vật.</p>
+<p>Ví dụ người dùng gõ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">pan
+</span></span></code></pre></div><p>Trong tiếng Anh, <code>pan</code> có thể là cái chảo.</p>
+<p>Trong tiếng Tây Ban Nha, <code>pan</code> là bánh mì.</p>
+<p>Hệ thống search toàn cầu không thể nhìn thấy ba ký tự rồi vui vẻ kết luận:</p>
+<blockquote>
+<p>Đây chắc chắn là dụng cụ nhà bếp.</p>
+</blockquote>
+<p>Nó phải nhìn thêm:</p>
+<ul>
+<li>Người dùng đang ở quốc gia nào?</li>
+<li>Giao diện đang dùng ngôn ngữ gì?</li>
+<li>Người đó đang tìm trong mục nhà hàng hay bán lẻ?</li>
+<li>Những sản phẩm nào đang có thể giao tại khu vực đó?</li>
+<li>Hành vi trước đó là xem bánh mì hay xem đồ gia dụng?</li>
+</ul>
+<p>Search không còn là công việc dò từ trong từ điển.</p>
+<p>Nó giống một người phiên dịch đứng giữa một khu chợ đông người.</p>
+<p>Mỗi người nói một giọng.</p>
+<p>Một từ mang nhiều nghĩa.</p>
+<p>Âm thanh chen vào nhau.</p>
+<p>Người phiên dịch không chỉ cần nghe đúng chữ.</p>
+<p>Họ phải hiểu người nói đang đứng ở đâu và đang muốn mua cái gì.</p>
+<h1 id="semantic-search-biến-câu-chữ-thành-tọa-độ">Semantic search: Biến câu chữ thành tọa độ<a class="anchor ms-1" href="#semantic-search-biến-câu-chữ-thành-tọa-độ"><i class="fas fa-link"></i></a></h1>
+<p>Semantic search giải bài toán theo một hướng khác.</p>
+<p>Thay vì giữ câu truy vấn và sản phẩm dưới dạng chữ, hệ thống biến chúng thành các vector.</p>
+<p>Ví dụ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">&#34;gà rán phô mai&#34;
+</span></span></code></pre></div><p>được biến thành:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">[0.12, -0.43, 0.76, ...]
+</span></span></code></pre></div><p>Một món có tên:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">&#34;Korean cheese fried chicken&#34;
+</span></span></code></pre></div><p>cũng được biến thành một vector khác:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">[0.15, -0.39, 0.72, ...]
+</span></span></code></pre></div><p>Các con số cụ thể không quan trọng với con người.</p>
+<p>Điều quan trọng là trong không gian vector, hai thứ có ý nghĩa gần nhau sẽ được đặt gần nhau.</p>
+<p>Ta có thể dùng cosine similarity để đo mức độ gần:</p>
+<p>$$
+similarity(q, d) =
+\frac{q \cdot d}{\lVert q \rVert \lVert d \rVert}
+$$</p>
+<p>Trong đó:</p>
+<ul>
+<li>$q$ là vector của câu người dùng tìm kiếm.</li>
+<li>$d$ là vector của nhà hàng, món ăn hoặc sản phẩm.</li>
+<li>Giá trị càng cao thì hai vector càng có xu hướng gần nhau.</li>
+</ul>
+<p>Hãy tưởng tượng một thành phố rất lạ.</p>
+<p>Khu bán phở nằm gần khu bán bún bò.</p>
+<p>Pizza nằm gần pasta.</p>
+<p>Đồ ăn chay nằm gần salad.</p>
+<p>Điện thoại nằm xa bánh mì.</p>
+<p>Một câu truy vấn sau khi được biến thành tọa độ sẽ được thả vào thành phố đó.</p>
+<p>Hệ thống chỉ cần tìm những ngôi nhà gần nó nhất.</p>
+<p>Đó là trực giác của vector search.</p>
+<p>Nghe thì có vẻ đơn giản.</p>
+<p>Biến chữ thành vector.</p>
+<p>Tìm vector gần nhất.</p>
+<p>Xong thuật toán, quá dễ.</p>
+<p>Nhưng khi thành phố có hàng tỷ căn nhà, câu chuyện bắt đầu có mùi khói từ phòng máy chủ.</p>
+<h1 id="search-giao-đồ-ăn-không-sống-trong-thế-giới-của-riêng-ngôn-ngữ">Search giao đồ ăn không sống trong thế giới của riêng ngôn ngữ<a class="anchor ms-1" href="#search-giao-đồ-ăn-không-sống-trong-thế-giới-của-riêng-ngôn-ngữ"><i class="fas fa-link"></i></a></h1>
+<p>Giả sử semantic model hiểu rất chính xác rằng người dùng muốn sushi.</p>
+<p>Nó tìm được một nhà hàng sushi tuyệt vời.</p>
+<p>Điểm embedding cao.</p>
+<p>Đánh giá tốt.</p>
+<p>Menu đẹp.</p>
+<p>Chỉ có một vấn đề nhỏ.</p>
+<p>Quán nằm cách người dùng 1.200 kilomet.</p>
+<p>Mô hình không sai về ngôn ngữ.</p>
+<p>Nhưng bữa trưa vẫn không tới.</p>
+<p>Search giao đồ ăn khác với search tài liệu trên Internet ở chỗ nó bị trói chặt vào vật lý.</p>
+<p>Một kết quả tốt còn phải thỏa mãn:</p>
+<ul>
+<li>Quán nằm trong khu vực có thể giao</li>
+<li>Quán đang mở cửa</li>
+<li>Sản phẩm còn bán</li>
+<li>Hình thức giao hàng phù hợp</li>
+<li>Khu vực của người dùng được phục vụ</li>
+<li>Loại tài liệu đúng với truy vấn</li>
+<li>Thời gian và chi phí giao hàng chấp nhận được</li>
+</ul>
+<p>Một vector có thể nói hai vật rất giống nhau.</p>
+<p>Nhưng nó không thể làm đường phố ngắn lại.</p>
+<p>Nó không thể attention cho tài xế bay xuyên qua kẹt xe.</p>
+<p>Đây là điểm mình thấy search trong delivery thú vị hơn nhiều bài demo semantic search.</p>
+<p>Ý nghĩa chỉ là vòng đầu tiên.</p>
+<p>Sau đó là địa lý, tồn kho, vận hành và giới hạn của thế giới thật.</p>
+<h1 id="two-tower-hai-người-phiên-dịch-gặp-nhau-giữa-cây-cầu">Two-tower: Hai người phiên dịch gặp nhau giữa cây cầu<a class="anchor ms-1" href="#two-tower-hai-người-phiên-dịch-gặp-nhau-giữa-cây-cầu"><i class="fas fa-link"></i></a></h1>
+<p>Uber sử dụng kiến trúc <strong>two-tower</strong> cho mô hình semantic search.</p>
+<p>Một tower xử lý truy vấn.</p>
+<p>Tower còn lại xử lý tài liệu.</p>
+<p>Có thể hình dung như sau:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">Người dùng gõ câu tìm kiếm
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">           │
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">           ▼
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">       Query Tower
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">           │
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">           ▼
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">      Query Embedding
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">           │
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">           │ tìm vector gần nhất
+</span></span><span class="line"><span class="ln">10</span><span class="cl">           │
+</span></span><span class="line"><span class="ln">11</span><span class="cl">      Document Embeddings
+</span></span><span class="line"><span class="ln">12</span><span class="cl">           ▲
+</span></span><span class="line"><span class="ln">13</span><span class="cl">           │
+</span></span><span class="line"><span class="ln">14</span><span class="cl">      Document Tower
+</span></span><span class="line"><span class="ln">15</span><span class="cl">           ▲
+</span></span><span class="line"><span class="ln">16</span><span class="cl">           │
+</span></span><span class="line"><span class="ln">17</span><span class="cl">Nhà hàng / món ăn / sản phẩm
+</span></span></code></pre></div><p>Query Tower học cách hiểu câu người dùng gõ.</p>
+<p>Document Tower học cách hiểu nội dung phía bên kia:</p>
+<ul>
+<li>Nhà hàng</li>
+<li>Món ăn</li>
+<li>Sản phẩm tạp hóa</li>
+<li>Sản phẩm bán lẻ</li>
+</ul>
+<p>Hai tower giống hai người phiên dịch đứng ở hai đầu một cây cầu.</p>
+<p>Một người dịch ngôn ngữ của khách hàng.</p>
+<p>Người còn lại dịch ngôn ngữ của catalog.</p>
+<p>Mục tiêu huấn luyện là khiến hai bản dịch gặp nhau ở giữa.</p>
+<p>Nếu người dùng tìm <code>nước ngọt không đường</code>, vector truy vấn cần đứng gần:</p>
+<ul>
+<li>Coke Zero</li>
+<li>Pepsi không calo</li>
+<li>Soda zero sugar</li>
+</ul>
+<p>Và đứng xa:</p>
+<ul>
+<li>Nước rửa chén</li>
+<li>Bột giặt</li>
+<li>Cơm gà</li>
+</ul>
+<p>Uber dùng Qwen làm backbone cho cả hai tower, sau đó fine-tune bằng dữ liệu nội bộ của Uber Eats để không gian embedding thích nghi với bài toán giao đồ ăn, tạp hóa và bán lẻ. Một mô hình embedding chung hiện được dùng cho nhiều vertical và nhiều thị trường, tận dụng khả năng đa ngôn ngữ và kiến thức nền của mô hình ngôn ngữ lớn. (<a href="https://www.uber.com/us/en/blog/evolution-and-scale-of-ubers-delivery-search-platform/" title="Evolution and Scale of Uber’s Delivery Search Platform" target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<h1 id="vì-sao-không-tính-mọi-thứ-ngay-khi-người-dùng-tìm-kiếm">Vì sao không tính mọi thứ ngay khi người dùng tìm kiếm?<a class="anchor ms-1" href="#vì-sao-không-tính-mọi-thứ-ngay-khi-người-dùng-tìm-kiếm"><i class="fas fa-link"></i></a></h1>
+<p>Giả sử hệ thống có hàng tỷ tài liệu.</p>
+<p>Mỗi lần người dùng gõ một câu, ta làm như sau:</p>
+<ol>
+<li>Chạy Query Tower để tạo vector truy vấn.</li>
+<li>Chạy Document Tower cho hàng tỷ sản phẩm.</li>
+<li>So sánh toàn bộ.</li>
+<li>Trả kết quả.</li>
+</ol>
+<p>Nghe rất trong sáng.</p>
+<p>Máy chủ cũng sẽ sáng.</p>
+<p>Sáng rực lên vì nóng.</p>
+<p>Tài liệu thay đổi chậm hơn truy vấn.</p>
+<p>Tên một món ăn có thể giữ nguyên trong nhiều giờ hoặc nhiều ngày.</p>
+<p>Trong khi truy vấn mới xuất hiện liên tục.</p>
+<p>Vì vậy Uber tách hai công việc:</p>
+<ul>
+<li><strong>Query embedding</strong> được tính online theo thời gian thực.</li>
+<li><strong>Document embedding</strong> được tính trước bằng batch job offline.</li>
+</ul>
+<p>Khi người dùng search, hệ thống không cần đọc lại toàn bộ catalog bằng model.</p>
+<p>Nó chỉ tính vector của câu truy vấn rồi tìm trong kho vector đã được chuẩn bị sẵn.</p>
+<p>Đây là một trong những lợi ích lớn của two-tower.</p>
+<p>Hai phía được tách rời.</p>
+<p>Một bên chạy nhanh theo request.</p>
+<p>Một bên âm thầm chuẩn bị từ trước.</p>
+<p>Giống một nhà hàng không đợi khách gọi món rồi mới đi trồng rau.</p>
+<h1 id="model-lớn-chỉ-là-phần-đầu-của-dây-chuyền">Model lớn chỉ là phần đầu của dây chuyền<a class="anchor ms-1" href="#model-lớn-chỉ-là-phần-đầu-của-dây-chuyền"><i class="fas fa-link"></i></a></h1>
+<p>Uber phát triển mô hình bằng PyTorch và Hugging Face Transformers, dùng Ray để điều phối training phân tán, kết hợp Distributed Data Parallel với DeepSpeed ZeRO-3 để chia optimizer state, gradient và model parameter giữa nhiều thiết bị.</p>
+<p>Mixed precision và gradient accumulation giúp họ huấn luyện trên hàng trăm triệu điểm dữ liệu. Sau mỗi lần train thành công, hệ thống tạo các mã phiên bản riêng cho Query Model, Document Model và một ID chung đại diện cho cặp two-tower nhằm bảo đảm khả năng truy vết và tái tạo. (<a href="https://www.uber.com/us/en/blog/evolution-and-scale-of-ubers-delivery-search-platform/" title="Evolution and Scale of Uber’s Delivery Search Platform" target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<p>Phần này nghe giống danh sách công nghệ.</p>
+<p>Nhưng ý nghĩa phía sau rất đời thường.</p>
+<p>Một model trong production phải có giấy khai sinh.</p>
+<p>Phải biết:</p>
+<ul>
+<li>Nó được train từ dữ liệu nào.</li>
+<li>Query Tower phiên bản bao nhiêu.</li>
+<li>Document Tower phiên bản bao nhiêu.</li>
+<li>Hai tower có phải một cặp không.</li>
+<li>Index đang chứa embedding do model nào tạo ra.</li>
+<li>Khi có lỗi thì quay lại phiên bản nào.</li>
+</ul>
+<p>Nếu không có versioning, việc deploy model giống thay một nửa ổ khóa nhưng quên thay chìa khóa.</p>
+<p>Đến tối, cả đội đứng ngoài cửa và tranh luận xem ai đã làm chuyện đó.</p>
+<h1 id="infonce-kéo-món-đúng-lại-gần-đẩy-món-sai-ra-xa">InfoNCE: Kéo món đúng lại gần, đẩy món sai ra xa<a class="anchor ms-1" href="#infonce-kéo-món-đúng-lại-gần-đẩy-món-sai-ra-xa"><i class="fas fa-link"></i></a></h1>
+<p>Để huấn luyện không gian embedding, Uber sử dụng loss dựa trên InfoNCE kết hợp Matryoshka Representation Learning.</p>
+<p>Ở mức trực giác, InfoNCE làm một việc khá dễ hiểu.</p>
+<p>Với một truy vấn:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">pizza hải sản
+</span></span></code></pre></div><p>Mô hình cần:</p>
+<ul>
+<li>Kéo kết quả đúng như pizza hải sản lại gần.</li>
+<li>Đẩy những kết quả không liên quan ra xa.</li>
+</ul>
+<p>Một dạng công thức đơn giản có thể viết như sau:</p>
+<h1 id="mathcall">$$
+\mathcal{L}<a class="anchor ms-1" href="#mathcall"><i class="fas fa-link"></i></a></h1>
+<p>-\log
+\frac{
+\exp(sim(q,d^+)/\tau)
+}{
+\exp(sim(q,d^+)/\tau)
++
+\sum_{i=1}^{N}\exp(sim(q,d_i^-)/\tau)
+}
+$$</p>
+<p>Trong đó:</p>
+<ul>
+<li>$d^+$ là tài liệu phù hợp.</li>
+<li>$d_i^-$ là những tài liệu không phù hợp.</li>
+<li>$\tau$ là tham số temperature.</li>
+<li>$sim$ là hàm đo độ tương đồng.</li>
+</ul>
+<p>Nói theo cách lúa nhất có thể:</p>
+<p>Ta đưa cho model một tô phở thật và mười món không phải phở.</p>
+<p>Mỗi lần model chỉ nhầm ly trà sữa là phở, ta gõ nhẹ vào đầu nó bằng gradient.</p>
+<p>Lặp lại hàng trăm triệu lần.</p>
+<p>Cuối cùng, model bắt đầu biết đặt đúng thứ gần nhau hơn.</p>
+<p>InfoNCE là một mục tiêu phổ biến trong contrastive learning, nơi biểu diễn được học bằng cách kéo các cặp liên quan lại gần và tách các cặp không liên quan. (<a href="https://arxiv.org/abs/1807.03748?utm_source=chatgpt.com" title="Representation Learning with Contrastive Predictive Coding" target="_blank" rel="noopener noreferrer">arXiv</a>)</p>
+<h1 id="matryoshka-embedding-một-con-búp-bê-chứa-nhiều-con-búp-bê-nhỏ-hơn">Matryoshka embedding: Một con búp bê chứa nhiều con búp bê nhỏ hơn<a class="anchor ms-1" href="#matryoshka-embedding-một-con-búp-bê-chứa-nhiều-con-búp-bê-nhỏ-hơn"><i class="fas fa-link"></i></a></h1>
+<p>Embedding thường có kích thước cố định.</p>
+<p>Ví dụ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">1536 chiều
+</span></span></code></pre></div><p>Vector càng dài thì có thể chứa càng nhiều chi tiết.</p>
+<p>Nhưng nó cũng kéo theo:</p>
+<ul>
+<li>Tốn RAM hơn</li>
+<li>Tốn ổ đĩa hơn</li>
+<li>Tốn băng thông hơn</li>
+<li>Tốn CPU hơn khi tính khoảng cách</li>
+<li>Index lớn hơn</li>
+<li>Truy vấn chậm hơn</li>
+</ul>
+<p>Nếu dùng vector ngắn, hệ thống rẻ và nhanh hơn.</p>
+<p>Nhưng có thể mất chất lượng.</p>
+<p>Thông thường, muốn có model 256 chiều và model 1.536 chiều, ta có thể phải train hai model khác nhau.</p>
+<p>Matryoshka Representation Learning đưa ra một ý tưởng rất đẹp.</p>
+<p>Tên Matryoshka đến từ loại búp bê Nga.</p>
+<p>Mở một con lớn ra.</p>
+<p>Bên trong có một con nhỏ.</p>
+<p>Mở tiếp.</p>
+<p>Lại có một con nhỏ hơn nữa.</p>
+<p>Embedding Matryoshka cũng vậy.</p>
+<p>Một vector lớn được sắp xếp để phần đầu của nó vẫn có thể hoạt động như một embedding ngắn có ý nghĩa:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">[128 chiều]
+</span></span><span class="line"><span class="ln">2</span><span class="cl">    nằm trong
+</span></span><span class="line"><span class="ln">3</span><span class="cl">[256 chiều]
+</span></span><span class="line"><span class="ln">4</span><span class="cl">    nằm trong
+</span></span><span class="line"><span class="ln">5</span><span class="cl">[512 chiều]
+</span></span><span class="line"><span class="ln">6</span><span class="cl">    nằm trong
+</span></span><span class="line"><span class="ln">7</span><span class="cl">[1536 chiều]
+</span></span></code></pre></div><p>Phần ngắn giữ thông tin thô và quan trọng.</p>
+<p>Phần dài bổ sung thêm chi tiết.</p>
+<p>Một model có thể phục vụ nhiều mức ngân sách khác nhau mà không cần train riêng từng embedding size. Ý tưởng MRL ban đầu được thiết kế để học biểu diễn từ thô đến tinh, cho phép cắt vector theo nhiều kích thước tùy yêu cầu downstream. (<a href="https://arxiv.org/abs/2205.13147?utm_source=chatgpt.com" title="Matryoshka Representation Learning" target="_blank" rel="noopener noreferrer">arXiv</a>)</p>
+<p>Uber huấn luyện các kích thước:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">128, 256, 512, 768, 1024, 1280, 1536
+</span></span></code></pre></div><p>với trọng số ngang nhau. Trong đánh giá offline của họ, vector 256 chiều chỉ giảm chất lượng dưới 0,3% ở tiếng Anh và tiếng Tây Ban Nha so với embedding đầy đủ, đồng thời giúp giảm chi phí lưu trữ gần 50%. (<a href="https://www.uber.com/us/en/blog/evolution-and-scale-of-ubers-delivery-search-platform/" title="Evolution and Scale of Uber’s Delivery Search Platform" target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<p>Đây là đoạn mình rất thích.</p>
+<p>Không phải request nào cũng cần mặc áo giáp 1.536 chiều.</p>
+<p>Có lúc một chiếc áo mỏng 256 chiều đã đủ đi chợ.</p>
+<h1 id="hàng-tỷ-ứng-viên-không-thể-đi-gõ-cửa-từng-nhà">Hàng tỷ ứng viên: Không thể đi gõ cửa từng nhà<a class="anchor ms-1" href="#hàng-tỷ-ứng-viên-không-thể-đi-gõ-cửa-từng-nhà"><i class="fas fa-link"></i></a></h1>
+<p>Sau khi có Query Embedding và hàng tỷ Document Embedding, ta vẫn còn một câu hỏi:</p>
+<blockquote>
+<p>Làm sao tìm những vector gần nhất đủ nhanh?</p>
+</blockquote>
+<p>Cách chính xác nhất là so sánh truy vấn với từng tài liệu.</p>
+<p>Giả sử có một tỷ vector.</p>
+<p>Mỗi request phải tính một tỷ khoảng cách.</p>
+<p>Một người dùng gõ thêm chữ.</p>
+<p>Lại một tỷ lần.</p>
+<p>Mười nghìn người cùng search.</p>
+<p>Phòng máy chủ sẽ bắt đầu cầu nguyện.</p>
+<p>Vì vậy các hệ thống lớn thường dùng <strong>Approximate Nearest Neighbor</strong>, viết tắt là ANN.</p>
+<p>Từ khóa quan trọng là approximate: xấp xỉ.</p>
+<p>Hệ thống không cam kết lật từng viên đá trong thành phố để tìm ngôi nhà gần nhất tuyệt đối.</p>
+<p>Nó tìm một nhóm kết quả rất gần, nhưng nhanh hơn nhiều.</p>
+<p>Uber dùng HNSW graph trong hệ thống index.</p>
+<p>HNSW tổ chức các vector thành một mạng lưới nhiều tầng.</p>
+<p>Có thể hình dung như tìm đường trong thành phố:</p>
+<ul>
+<li>Tầng trên là đường cao tốc, ít điểm nhưng đi rất xa.</li>
+<li>Tầng giữa là đường lớn.</li>
+<li>Tầng dưới là đường nhỏ dẫn tới từng khu vực.</li>
+</ul>
+<p>Ta không đi qua từng căn nhà.</p>
+<p>Ta chạy trên cao tốc tới khu vực phù hợp, rẽ xuống đường lớn, rồi mới tìm trong những ngõ gần nhất.</p>
+<p>HNSW là một thuật toán ANN dựa trên đồ thị phân tầng, được thiết kế để tìm láng giềng gần trong không gian nhiều chiều với chi phí thấp hơn việc quét toàn bộ tập dữ liệu. (<a href="https://arxiv.org/abs/1603.09320?utm_source=chatgpt.com" title="Efficient and robust approximate nearest neighbor search ..." target="_blank" rel="noopener noreferrer">arXiv</a>)</p>
+<h1 id="đừng-để-vector-search-tìm-trong-cả-trái-đất">Đừng để vector search tìm trong cả Trái Đất<a class="anchor ms-1" href="#đừng-để-vector-search-tìm-trong-cả-trái-đất"><i class="fas fa-link"></i></a></h1>
+<p>Dù HNSW nhanh, không có nghĩa ta nên ném toàn bộ dữ liệu vào rồi bảo nó tự lo.</p>
+<p>Nếu người dùng đang ở TP.HCM, không cần search món ăn tại Paris.</p>
+<p>Nếu người dùng đang tìm nhà hàng, không cần kéo cả catalog bột giặt vào cuộc thi.</p>
+<p>Uber áp dụng các bộ lọc trước khi chạy ANN, gồm:</p>
+<ul>
+<li>Hexagon địa lý</li>
+<li><code>city_id</code></li>
+<li><code>doc_type</code></li>
+<li><code>fulfillment_types</code></li>
+</ul>
+<p>Những điều kiện này thu nhỏ tập ứng viên trước khi vector search bắt đầu.</p>
+<p>Sau khi ANN lấy top-k của từng vertical, hệ thống có thể chạy thêm một bước micro re-ranking bằng mạng neural nhỏ trước khi đưa kết quả sang các ranker phía sau. (<a href="https://www.uber.com/us/en/blog/evolution-and-scale-of-ubers-delivery-search-platform/" title="Evolution and Scale of Uber’s Delivery Search Platform" target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<p>Nói theo cách nhà quê nhất:</p>
+<p>Trước khi tìm con gà giống ảnh, hãy vào đúng chuồng gà.</p>
+<p>Đừng chạy sang chuồng vịt, ao cá và nhà hàng xóm rồi than rằng vector search tốn CPU.</p>
+<p>Đây là một bài học rất quan trọng.</p>
+<p>Semantic search không thay thế filter.</p>
+<p>Embedding không thay thế business rule.</p>
+<p>Vector rất giỏi đo ý nghĩa.</p>
+<p>Nó không nên bị bắt làm công việc của câu <code>WHERE</code>.</p>
+<h1 id="k-không-phải-càng-lớn-càng-tốt">K không phải càng lớn càng tốt<a class="anchor ms-1" href="#k-không-phải-càng-lớn-càng-tốt"><i class="fas fa-link"></i></a></h1>
+<p>Trong ANN search, tham số <code>k</code> ở mức shard ảnh hưởng tới số ứng viên được lấy ra.</p>
+<p>K lớn hơn thường tăng khả năng không bỏ sót kết quả tốt.</p>
+<p>Nhưng đổi lại:</p>
+<ul>
+<li>Tốn CPU hơn</li>
+<li>Tăng latency</li>
+<li>Tăng lượng dữ liệu cần merge</li>
+<li>Tăng chi phí downstream</li>
+</ul>
+<p>Nhiều người có xu hướng chọn số lớn để yên tâm.</p>
+<p>Giống đi chợ mua một bó hành nhưng thuê nguyên chiếc xe tải vì sợ thiếu chỗ.</p>
+<p>Uber thử nghiệm việc giảm shard-level <code>k</code> từ 1.200 xuống khoảng 200. Kết quả được công bố là latency giảm 34%, CPU giảm 17%, trong khi tác động lên recall không đáng kể. (<a href="https://www.uber.com/us/en/blog/evolution-and-scale-of-ubers-delivery-search-platform/" title="Evolution and Scale of Uber’s Delivery Search Platform" target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<p>Điều thú vị không phải là con số 200.</p>
+<p>Không nên sao chép nó về hệ thống của mình rồi coi như chân lý.</p>
+<p>Điều đáng học là Uber nhìn vào phân phối dữ liệu và đo trade-off.</p>
+<p>Hệ thống search tốt không phải hệ thống lấy nhiều nhất.</p>
+<p>Nó là hệ thống biết lấy vừa đủ.</p>
+<h1 id="quantization-không-cần-mang-theo-cả-tủ-quần-áo-để-đi-ăn-trưa">Quantization: Không cần mang theo cả tủ quần áo để đi ăn trưa<a class="anchor ms-1" href="#quantization-không-cần-mang-theo-cả-tủ-quần-áo-để-đi-ăn-trưa"><i class="fas fa-link"></i></a></h1>
+<p>Vector <code>float32</code> lưu mỗi chiều bằng 32 bit.</p>
+<p>Khi có hàng tỷ vector và hàng trăm hoặc hàng nghìn chiều, số byte bắt đầu biến thành một con quái vật.</p>
+<p>Quantization nén vector xuống dạng nhỏ hơn.</p>
+<p>Thay vì giữ mọi con số với độ chi tiết rất cao, ta chấp nhận một mức xấp xỉ để tiết kiệm:</p>
+<ul>
+<li>Bộ nhớ</li>
+<li>Băng thông</li>
+<li>Cache</li>
+<li>Chi phí tính toán</li>
+<li>Thời gian truy vấn</li>
+</ul>
+<p>Uber thử scalar quantization dạng <code>int7</code>. Theo kết quả họ công bố, cách này làm latency giảm hơn một nửa so với <code>float32</code>, trong khi recall vẫn trên 0,95. (<a href="https://www.uber.com/us/en/blog/evolution-and-scale-of-ubers-delivery-search-platform/" title="Evolution and Scale of Uber’s Delivery Search Platform" target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<p>Nghe giống việc chụp ảnh.</p>
+<p>Ảnh RAW giữ rất nhiều chi tiết.</p>
+<p>Tệp lớn.</p>
+<p>Xử lý nặng.</p>
+<p>Ảnh nén mất một ít thông tin.</p>
+<p>Nhưng nếu người dùng chỉ xem trên màn hình điện thoại nhỏ, phần mất đi có thể không đáng kể.</p>
+<p>Không phải dữ liệu càng chính xác tuyệt đối thì hệ thống càng tốt.</p>
+<p>Trong production, độ chính xác luôn ngồi cùng bàn với chi phí và thời gian.</p>
+<p>Ba người này thường cãi nhau.</p>
+<h1 id="tam-giác-không-bao-giờ-ngủ-chất-lượng-tốc-độ-và-tiền">Tam giác không bao giờ ngủ: Chất lượng, tốc độ và tiền<a class="anchor ms-1" href="#tam-giác-không-bao-giờ-ngủ-chất-lượng-tốc-độ-và-tiền"><i class="fas fa-link"></i></a></h1>
+<p>Khi xây semantic search ở quy mô lớn, ta thường đứng giữa ba thứ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Chất lượng
+</span></span><span class="line"><span class="ln">2</span><span class="cl">   /\
+</span></span><span class="line"><span class="ln">3</span><span class="cl">  /  \
+</span></span><span class="line"><span class="ln">4</span><span class="cl"> /____\
+</span></span><span class="line"><span class="ln">5</span><span class="cl">Tốc độ — Chi phí
+</span></span></code></pre></div><p>Muốn tăng chất lượng:</p>
+<ul>
+<li>Vector dài hơn</li>
+<li>K lớn hơn</li>
+<li>Model lớn hơn</li>
+<li>Nhiều ứng viên hơn</li>
+<li>Re-ranking sâu hơn</li>
+</ul>
+<p>Nhưng tất cả đều có giá.</p>
+<p>Muốn giảm latency:</p>
+<ul>
+<li>Giảm chiều embedding</li>
+<li>Giảm k</li>
+<li>Quantize</li>
+<li>Filter mạnh hơn</li>
+<li>Dùng model nhẹ hơn</li>
+</ul>
+<p>Nhưng đi quá xa có thể mất recall.</p>
+<p>Điều Uber làm không phải tìm một cấu hình hoàn hảo cho mọi nơi.</p>
+<p>Họ dùng MRL để có nhiều kích thước embedding từ cùng một model, điều chỉnh <code>k</code>, thử quantization và duy trì index riêng cho mảng nhà hàng so với grocery/retail. (<a href="https://www.uber.com/us/en/blog/evolution-and-scale-of-ubers-delivery-search-platform/" title="Evolution and Scale of Uber’s Delivery Search Platform" target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<p>Đây mới là engineering.</p>
+<p>Không phải hỏi:</p>
+<blockquote>
+<p>Công nghệ nào mạnh nhất?</p>
+</blockquote>
+<p>Mà hỏi:</p>
+<blockquote>
+<p>Trong ngân sách, latency và chất lượng hiện tại, cấu hình nào đủ tốt để hàng triệu người dùng không phải chờ tô phở quay vòng trên màn hình?</p>
+</blockquote>
+<h1 id="document-embedding-cũng-cần-một-cái-kho-tử-tế">Document embedding cũng cần một cái kho tử tế<a class="anchor ms-1" href="#document-embedding-cũng-cần-một-cái-kho-tử-tế"><i class="fas fa-link"></i></a></h1>
+<p>Với catalog rất lớn, Uber không tính embedding cho mọi bản sao dữ liệu một cách mù quáng.</p>
+<p>Họ tạo embedding ở cấp feature, chẳng hạn store hoặc item, rồi join các embedding đó trở lại catalog đầy đủ gồm hàng tỷ ứng viên trước khi index.</p>
+<p>Embedding được lưu trong feature store ổn định và khóa bằng entity ID, để có thể tái sử dụng cho retrieval lẫn ranking. (<a href="https://www.uber.com/us/en/blog/evolution-and-scale-of-ubers-delivery-search-platform/" title="Evolution and Scale of Uber’s Delivery Search Platform" target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<p>Đây là chi tiết dễ bị bỏ qua.</p>
+<p>Model tạo ra vector.</p>
+<p>Nhưng vector cần:</p>
+<ul>
+<li>Được lưu ở đâu</li>
+<li>Gắn với entity nào</li>
+<li>Phiên bản nào</li>
+<li>Sinh bởi model nào</li>
+<li>Có còn hợp lệ không</li>
+<li>Catalog đã thay đổi chưa</li>
+<li>Index đã nhận đủ chưa</li>
+</ul>
+<p>Một dự án vector search không kết thúc sau lệnh:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln">1</span><span class="cl"><span class="n">embedding</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+</span></span></code></pre></div><p>Nó chỉ vừa bắt đầu.</p>
+<p>Từ đó trở đi là câu chuyện của data pipeline, versioning, storage, indexing và vận hành.</p>
+<p>Vector không tự biết đường tới production.</p>
+<h1 id="model-và-index-là-một-cặp-vợ-chồng-không-được-nhận-nhầm-nhau">Model và index là một cặp vợ chồng không được nhận nhầm nhau<a class="anchor ms-1" href="#model-và-index-là-một-cặp-vợ-chồng-không-được-nhận-nhầm-nhau"><i class="fas fa-link"></i></a></h1>
+<p>Giả sử Query Model phiên bản mới tạo embedding theo một không gian khác.</p>
+<p>Nhưng production index vẫn chứa Document Embedding của phiên bản cũ.</p>
+<p>Cả hai đều là vector 256 chiều.</p>
+<p>Không lỗi kiểu dữ liệu.</p>
+<p>Không crash.</p>
+<p>Request vẫn trả HTTP 200.</p>
+<p>Chỉ có kết quả bắt đầu ngơ ngác.</p>
+<p>Giống một người nói tiếng Việt rất chuẩn với một người nghe tiếng Thái rất chăm chú.</p>
+<p>Hai bên đều hoạt động tốt.</p>
+<p>Chỉ không hiểu nhau.</p>
+<p>Đây là loại lỗi nguy hiểm.</p>
+<p>Hệ thống không chết.</p>
+<p>Nó chỉ âm thầm trở nên ngu hơn.</p>
+<p>Uber làm mới model và index theo một workflow đồng bộ hai tuần một lần. Mỗi lần chạy sẽ chuẩn bị model mục tiêu, tạo lại document embedding và xây index Lucene Plus mới mà chưa thay đổi đường đọc đang phục vụ production. (<a href="https://www.uber.com/us/en/blog/evolution-and-scale-of-ubers-delivery-search-platform/" title="Evolution and Scale of Uber’s Delivery Search Platform" target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<p>Từ khóa quan trọng là <strong>lockstep</strong>.</p>
+<p>Model và index phải bước cùng nhịp.</p>
+<p>Không ai được đi trước rồi quên người còn lại ở bến xe.</p>
+<h1 id="blue-green-deployment-hai-căn-bếp-một-căn-đang-nấu">Blue-green deployment: Hai căn bếp, một căn đang nấu<a class="anchor ms-1" href="#blue-green-deployment-hai-căn-bếp-một-căn-đang-nấu"><i class="fas fa-link"></i></a></h1>
+<p>Để cập nhật an toàn, Uber dùng mô hình blue-green ở cấp cột embedding.</p>
+<p>Mỗi index có hai cột cố định:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">embedding_blue
+</span></span><span class="line"><span class="ln">2</span><span class="cl">embedding_green
+</span></span></code></pre></div><p>Một cột đang active.</p>
+<p>Cột còn lại chờ cập nhật.</p>
+<p>Ví dụ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Blue  = model đang phục vụ
+</span></span><span class="line"><span class="ln">2</span><span class="cl">Green = model mới
+</span></span></code></pre></div><p>Hệ thống đưa embedding mới vào Green.</p>
+<p>Kiểm tra.</p>
+<p>Deploy.</p>
+<p>Sau đó chỉ cần đổi cấu hình để chuyển traffic từ Blue sang Green.</p>
+<p>Nếu có chuyện, quay lại Blue.</p>
+<p>Ý tưởng giống nhà hàng có hai căn bếp.</p>
+<p>Bếp Blue đang phục vụ khách.</p>
+<p>Bếp Green được lắp thiết bị mới, thử món và kiểm tra gas.</p>
+<p>Khi Green sẵn sàng, đổi bảng phân công.</p>
+<p>Nếu Green cháy chảo, khách quay lại Blue.</p>
+<p>Uber chọn hai cột trong cùng một index thay vì duy trì hai index hoàn toàn tách biệt để giảm chi phí lưu trữ và vận hành. Đổi lại, cách làm này tạo thêm rủi ro: quá trình xây snapshot mới vẫn materialize lại cả cột đang active, nên một bug có thể làm hỏng cả dữ liệu tưởng như không thay đổi. (<a href="https://www.uber.com/us/en/blog/evolution-and-scale-of-ubers-delivery-search-platform/" title="Evolution and Scale of Uber’s Delivery Search Platform" target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<p>Vì vậy blue-green không phải cây đũa thần.</p>
+<p>Nó chỉ cho ta một con đường chuyển đổi.</p>
+<p>Hai bên đường vẫn cần lan can.</p>
+<h1 id="ba-cánh-cửa-trước-khi-model-được-bước-vào-production">Ba cánh cửa trước khi model được bước vào production<a class="anchor ms-1" href="#ba-cánh-cửa-trước-khi-model-được-bước-vào-production"><i class="fas fa-link"></i></a></h1>
+<p>Uber đặt ba nhóm kiểm tra tự động trước khi deploy index mới.</p>
+<h2 id="1-completeness">1. Completeness<a class="anchor ms-1" href="#1-completeness"><i class="fas fa-link"></i></a></h2>
+<p>Hệ thống kiểm tra số lượng tài liệu trong index có khớp với dữ liệu nguồn hay không.</p>
+<p>Không chỉ tổng số record.</p>
+<p>Còn kiểm tra các tập con quan trọng sau filter.</p>
+<p>Điều này giúp phát hiện:</p>
+<ul>
+<li>Batch chưa chạy hết</li>
+<li>Một thị trường bị thiếu</li>
+<li>Một loại document biến mất</li>
+<li>Pipeline mới chỉ ingest được nửa catalog</li>
+</ul>
+<p>Một index rất nhanh nhưng thiếu 30% món ăn vẫn là index hỏng.</p>
+<h2 id="2-backward-compatibility">2. Backward compatibility<a class="anchor ms-1" href="#2-backward-compatibility"><i class="fas fa-link"></i></a></h2>
+<p>Cột đang active được kỳ vọng không thay đổi phải giống byte-for-byte giữa index cũ và index mới.</p>
+<p>Ví dụ Blue đang phục vụ.</p>
+<p>Quá trình build Green không được làm Blue thay đổi.</p>
+<p>Nếu một byte khác đi, pipeline dừng.</p>
+<p>Đây là cách kiểm tra khá cứng.</p>
+<p>Nhưng với phần dữ liệu “không được phép thay đổi”, sự cứng đầu là một đức tính tốt.</p>
+<h2 id="3-correctness">3. Correctness<a class="anchor ms-1" href="#3-correctness"><i class="fas fa-link"></i></a></h2>
+<p>Index mới được deploy vào môi trường không phải production.</p>
+<p>Hệ thống replay các truy vấn thật với tốc độ kiểm soát, sau đó so sánh recall với index đang chạy.</p>
+<p>Kiểm tra này giúp phát hiện:</p>
+<ul>
+<li>Dữ liệu bị hỏng trong lúc index</li>
+<li>Cấu hình khoảng cách sai</li>
+<li>Feature upstream bị regression</li>
+<li>Model mới tệ hơn model cũ</li>
+</ul>
+<p>Ba kiểm tra này bảo vệ production trước khi chuyển traffic. (<a href="https://www.uber.com/us/en/blog/evolution-and-scale-of-ubers-delivery-search-platform/" title="Evolution and Scale of Uber’s Delivery Search Platform" target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<p>Nói ngắn gọn:</p>
+<ul>
+<li>Đã mang đủ hàng chưa?</li>
+<li>Có làm hỏng hàng cũ không?</li>
+<li>Hàng mới có tốt hơn hoặc ít nhất không tệ hơn không?</li>
+</ul>
+<p>Nghe giống câu hỏi của bác quản lý kho.</p>
+<p>Nhưng nhiều hệ thống AI hỏng vì quên đúng ba câu này.</p>
+<h1 id="kiểm-tra-lúc-build-chưa-đủ-vì-con-người-vẫn-có-thể-bấm-nhầm">Kiểm tra lúc build chưa đủ, vì con người vẫn có thể bấm nhầm<a class="anchor ms-1" href="#kiểm-tra-lúc-build-chưa-đủ-vì-con-người-vẫn-có-thể-bấm-nhầm"><i class="fas fa-link"></i></a></h1>
+<p>Ngay cả khi pipeline hoàn hảo, production vẫn có thể gặp lỗi cấu hình.</p>
+<p>Ví dụ:</p>
+<ul>
+<li>Query Model trỏ nhầm phiên bản</li>
+<li>Active column mapping bị đặt sai</li>
+<li>Index được build bằng model khác với dự kiến</li>
+<li>Cấu hình rollout cập nhật không đồng bộ</li>
+</ul>
+<p>Uber đưa model ID vào metadata của từng cột index.</p>
+<p>Trong một số request được lấy mẫu, service kiểm tra xem model tạo Query Embedding có khớp với model ID ghi trên cột index đang active hay không.</p>
+<p>Nếu không khớp:</p>
+<ul>
+<li>Ghi metric compatibility error</li>
+<li>Log đầy đủ context</li>
+<li>Phát cảnh báo nếu lỗi không trở về 0 trong một khoảng ngắn</li>
+<li>Tự động rollback model về phiên bản trước</li>
+</ul>
+<p>Index vẫn giữ nguyên. (<a href="https://www.uber.com/us/en/blog/evolution-and-scale-of-ubers-delivery-search-platform/" title="Evolution and Scale of Uber’s Delivery Search Platform" target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<p>Đây là đoạn mình tâm đắc nhất về mặt production.</p>
+<p>Họ không tin hoàn toàn vào deployment pipeline.</p>
+<p>Họ cũng không tin hoàn toàn vào con người.</p>
+<p>Hệ thống tự kiểm tra giấy đăng ký kết hôn của Query Model và Document Index ngay trong lúc phục vụ.</p>
+<p>Nếu hai người không phải một cặp, cho quay xe.</p>
+<h1 id="search-platform-không-tiến-hóa-theo-đường-thẳng">Search platform không tiến hóa theo đường thẳng<a class="anchor ms-1" href="#search-platform-không-tiến-hóa-theo-đường-thẳng"><i class="fas fa-link"></i></a></h1>
+<p>Nhìn hệ thống semantic search hiện tại, ta dễ nghĩ Uber chỉ cần cài thêm vector search vào một nền tảng có sẵn.</p>
+<p>Thực tế, search platform của Uber đã đi qua nhiều giai đoạn.</p>
+<p>Thời kỳ đầu, họ dùng Elasticsearch và phải liên tục mở rộng cluster để theo kịp tăng trưởng.</p>
+<p>Sau đó, các yêu cầu cập nhật thời gian thực như tìm tài xế đang di chuyển khiến kiến trúc near-real-time mặc định không còn đủ phù hợp cho mọi use case. Uber xây Sia, một search engine nội bộ với lớp Live Index trong bộ nhớ, Snapshot Index và Base Index, đồng thời dùng Kafka cho pull-based ingestion và active-active deployment.</p>
+<p>Nhưng hệ thống tự xây cũng tạo ra một loại thuế khác.</p>
+<p>Mỗi tính năng Lucene mới phải được tích hợp lại vào kiến trúc riêng.</p>
+<p>Khi vector search và HNSW xuất hiện, Uber phải làm thêm rất nhiều công việc để đưa chúng vào mô hình Base/Snapshot/Live. Cuối cùng, họ nhận ra phần lớn workload không thực sự cần độ tươi tuyệt đối và bắt đầu chuyển hướng về hệ sinh thái mở, Lucene Plus và OpenSearch. (<a href="https://www.uber.com/us/en/blog/evolution-of-ubers-search-platform/" title="The Evolution of Uber’s Search Platform" target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<p>Đây là bài học khá đẹp.</p>
+<p>Một giải pháp tự xây có thể cứu doanh nghiệp ở giai đoạn này.</p>
+<p>Rồi trở thành gánh nặng ở giai đoạn khác.</p>
+<p>Kiến trúc không phải lời thề trăm năm.</p>
+<p>Nó là một thỏa thuận tạm thời giữa nhu cầu hiện tại và cái giá đội kỹ thuật chấp nhận trả.</p>
+<h1 id="một-pipeline-đơn-giản-để-hình-dung">Một pipeline đơn giản để hình dung<a class="anchor ms-1" href="#một-pipeline-đơn-giản-để-hình-dung"><i class="fas fa-link"></i></a></h1>
+<p>Nếu bỏ qua nhiều lớp hạ tầng, hệ thống có thể được hình dung như sau:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">                    OFFLINE
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">Catalog nhà hàng / món ăn / sản phẩm
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">                  │
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">                  ▼
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">            Document Tower
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">               (Qwen)
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">                  │
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">                  ▼
+</span></span><span class="line"><span class="ln">10</span><span class="cl">         Document Embeddings
+</span></span><span class="line"><span class="ln">11</span><span class="cl">                  │
+</span></span><span class="line"><span class="ln">12</span><span class="cl">                  ▼
+</span></span><span class="line"><span class="ln">13</span><span class="cl">             Feature Store
+</span></span><span class="line"><span class="ln">14</span><span class="cl">                  │
+</span></span><span class="line"><span class="ln">15</span><span class="cl">                  ▼
+</span></span><span class="line"><span class="ln">16</span><span class="cl">       Lucene Plus / HNSW Index
+</span></span><span class="line"><span class="ln">17</span><span class="cl">
+</span></span><span class="line"><span class="ln">18</span><span class="cl">
+</span></span><span class="line"><span class="ln">19</span><span class="cl">                     ONLINE
+</span></span><span class="line"><span class="ln">20</span><span class="cl">
+</span></span><span class="line"><span class="ln">21</span><span class="cl">Người dùng nhập truy vấn
+</span></span><span class="line"><span class="ln">22</span><span class="cl">                  │
+</span></span><span class="line"><span class="ln">23</span><span class="cl">                  ▼
+</span></span><span class="line"><span class="ln">24</span><span class="cl">             Query Tower
+</span></span><span class="line"><span class="ln">25</span><span class="cl">               (Qwen)
+</span></span><span class="line"><span class="ln">26</span><span class="cl">                  │
+</span></span><span class="line"><span class="ln">27</span><span class="cl">                  ▼
+</span></span><span class="line"><span class="ln">28</span><span class="cl">          Query Embedding
+</span></span><span class="line"><span class="ln">29</span><span class="cl">                  │
+</span></span><span class="line"><span class="ln">30</span><span class="cl">                  ▼
+</span></span><span class="line"><span class="ln">31</span><span class="cl">     Geo / city / type pre-filter
+</span></span><span class="line"><span class="ln">32</span><span class="cl">                  │
+</span></span><span class="line"><span class="ln">33</span><span class="cl">                  ▼
+</span></span><span class="line"><span class="ln">34</span><span class="cl">          ANN Search bằng HNSW
+</span></span><span class="line"><span class="ln">35</span><span class="cl">                  │
+</span></span><span class="line"><span class="ln">36</span><span class="cl">                  ▼
+</span></span><span class="line"><span class="ln">37</span><span class="cl">           Top-k candidates
+</span></span><span class="line"><span class="ln">38</span><span class="cl">                  │
+</span></span><span class="line"><span class="ln">39</span><span class="cl">                  ▼
+</span></span><span class="line"><span class="ln">40</span><span class="cl">          Micro re-ranking
+</span></span><span class="line"><span class="ln">41</span><span class="cl">                  │
+</span></span><span class="line"><span class="ln">42</span><span class="cl">                  ▼
+</span></span><span class="line"><span class="ln">43</span><span class="cl">        Downstream ranking
+</span></span><span class="line"><span class="ln">44</span><span class="cl">                  │
+</span></span><span class="line"><span class="ln">45</span><span class="cl">                  ▼
+</span></span><span class="line"><span class="ln">46</span><span class="cl">             Kết quả search
+</span></span></code></pre></div><p>Nhìn sơ đồ khá sạch.</p>
+<p>Production thật thì còn thêm:</p>
+<ul>
+<li>Model registry</li>
+<li>Workflow orchestration</li>
+<li>Distributed training</li>
+<li>Batch inference</li>
+<li>Index builder</li>
+<li>Snapshot validation</li>
+<li>Version mapping</li>
+<li>Canary rollout</li>
+<li>Metrics</li>
+<li>Alert</li>
+<li>Rollback</li>
+<li>Capacity planning</li>
+<li>Cost monitoring</li>
+</ul>
+<p>Sơ đồ kiến trúc luôn giống gian bếp trước giờ mở cửa.</p>
+<p>Sạch sẽ.</p>
+<p>Nồi nào nằm đúng chỗ nồi đó.</p>
+<p>Production lúc cao điểm thì giống 12 giờ trưa.</p>
+<p>Dầu nóng.</p>
+<p>Order kêu liên tục.</p>
+<p>CPU chạy gần đầy.</p>
+<p>Một index build trễ mười phút cũng đủ để vài người bắt đầu mở laptop trong lúc ăn cơm.</p>
+<h1 id="nếu-áp-dụng-vào-search-bán-lẻ-việt-nam">Nếu áp dụng vào search bán lẻ Việt Nam<a class="anchor ms-1" href="#nếu-áp-dụng-vào-search-bán-lẻ-việt-nam"><i class="fas fa-link"></i></a></h1>
+<p>Bài toán của Uber Eats rất gần với search trong thương mại điện tử.</p>
+<p>Người dùng Việt Nam hiếm khi gõ đúng tên catalog.</p>
+<p>Họ thường tìm theo nhu cầu:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">tivi 50 inch giá 10 triệu
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">máy lạnh phòng 18m2 tiết kiệm điện
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">điện thoại pin trâu chụp hình đẹp
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">laptop học IT chạy được AI
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">tủ lạnh cho gia đình 4 người
+</span></span></code></pre></div><p>Lexical search có thể cố gắng tách từ:</p>
+<ul>
+<li><code>tivi</code></li>
+<li><code>50 inch</code></li>
+<li><code>10 triệu</code></li>
+</ul>
+<p>Nhưng những truy vấn như:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">máy lạnh cho phòng nóng hướng tây
+</span></span></code></pre></div><p>không đơn giản là match từ khóa.</p>
+<p>Catalog có thể không hề chứa chữ <code>hướng tây</code>.</p>
+<p>Nhưng hệ thống cần hiểu rằng người dùng đang quan tâm:</p>
+<ul>
+<li>Công suất làm lạnh</li>
+<li>Diện tích phòng</li>
+<li>Khả năng tiết kiệm điện</li>
+<li>Mức độ nắng nóng</li>
+<li>Có thể cần dư công suất</li>
+</ul>
+<p>Semantic search giúp kéo truy vấn và sản phẩm gần nhau theo ý nghĩa.</p>
+<p>Nhưng vector search một mình vẫn chưa đủ.</p>
+<p>Ta cần filter bằng dữ liệu có cấu trúc:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Giá &lt;= 10 triệu
+</span></span><span class="line"><span class="ln">2</span><span class="cl">Kích thước = 50 inch
+</span></span><span class="line"><span class="ln">3</span><span class="cl">Còn hàng tại khu vực
+</span></span><span class="line"><span class="ln">4</span><span class="cl">Có giao lắp
+</span></span><span class="line"><span class="ln">5</span><span class="cl">Thương hiệu phù hợp
+</span></span></code></pre></div><p>Một kiến trúc thực tế có thể kết hợp:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">Query understanding
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">        │
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">        ├── Trích xuất filter có cấu trúc
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">        │
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">        └── Tạo semantic embedding
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">                       │
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">                       ▼
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">            Hybrid retrieval
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">      lexical + filter + vector search
+</span></span><span class="line"><span class="ln">10</span><span class="cl">                       │
+</span></span><span class="line"><span class="ln">11</span><span class="cl">                       ▼
+</span></span><span class="line"><span class="ln">12</span><span class="cl">                  Re-ranking
+</span></span></code></pre></div><p>Đây là điều rất đáng lưu ý.</p>
+<p>Đừng bắt embedding làm toán.</p>
+<p>Đừng nhờ vector tự hiểu rằng <code>dưới 10 triệu</code> là một điều kiện số học cứng.</p>
+<p>Semantic search hiểu ý.</p>
+<p>Database filter giữ kỷ luật.</p>
+<p>Hai bên phối hợp mới ra kết quả tốt.</p>
+<h1 id="đừng-vội-thay-toàn-bộ-keyword-search-bằng-vector-search">Đừng vội thay toàn bộ keyword search bằng vector search<a class="anchor ms-1" href="#đừng-vội-thay-toàn-bộ-keyword-search-bằng-vector-search"><i class="fas fa-link"></i></a></h1>
+<p>Semantic search rất hấp dẫn.</p>
+<p>Nhưng không phải mọi truy vấn đều cần model lớn.</p>
+<p>Người dùng gõ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">iphone 17 pro max 256gb
+</span></span></code></pre></div><p>Lexical search có thể đã làm rất tốt.</p>
+<p>Tên sản phẩm rõ.</p>
+<p>Thông số rõ.</p>
+<p>Ý định rõ.</p>
+<p>Nếu semantic search tự do quá mức, nó có thể trả thêm:</p>
+<ul>
+<li>iPhone 17 Pro</li>
+<li>iPhone 16 Pro Max</li>
+<li>Điện thoại Android cùng phân khúc</li>
+</ul>
+<p>Về ý nghĩa, chúng gần nhau.</p>
+<p>Về nhu cầu mua hàng, có thể hoàn toàn sai.</p>
+<p>Trong thực tế, hybrid search thường hợp lý hơn:</p>
+<ul>
+<li>Exact match cho mã sản phẩm và tên rõ ràng</li>
+<li>Lexical search cho từ khóa quan trọng</li>
+<li>Semantic search cho truy vấn tự nhiên, lỗi chính tả, từ đồng nghĩa và đa ngôn ngữ</li>
+<li>Filter cho điều kiện cứng</li>
+<li>Ranking model để phối hợp tất cả tín hiệu</li>
+</ul>
+<p>Search không nên cưới một thuật toán rồi cắt đứt quan hệ với phần còn lại của thế giới.</p>
+<p>Nó nên giống một ban nhạc.</p>
+<p>Keyword giữ nhịp.</p>
+<p>Vector chơi giai điệu.</p>
+<p>Filter đứng cửa kiểm vé.</p>
+<p>Ranker quyết định ai được lên sân khấu trước.</p>
+<h1 id="những-điều-không-nên-sao-chép-máy-móc-từ-uber">Những điều không nên sao chép máy móc từ Uber<a class="anchor ms-1" href="#những-điều-không-nên-sao-chép-máy-móc-từ-uber"><i class="fas fa-link"></i></a></h1>
+<p>Uber có catalog, lưu lượng và hạ tầng ở quy mô rất lớn.</p>
+<p>Không phải hệ thống nào cũng cần:</p>
+<ul>
+<li>Qwen làm backbone</li>
+<li>DeepSpeed ZeRO-3</li>
+<li>Hàng trăm triệu training samples</li>
+<li>HNSW cho hàng tỷ document</li>
+<li>Hai cột blue-green trong cùng index</li>
+<li>Model refresh hai tuần một lần</li>
+<li>Ray orchestration</li>
+<li>Multi-stage neural re-ranking</li>
+</ul>
+<p>Nếu website có 50.000 sản phẩm, ta có thể bắt đầu đơn giản hơn:</p>
+<ol>
+<li>Chuẩn hóa dữ liệu catalog.</li>
+<li>Sửa lỗi chính tả và synonym.</li>
+<li>Dùng hybrid lexical + vector search.</li>
+<li>Tạo embedding offline.</li>
+<li>Dùng một vector database hoặc search engine có HNSW.</li>
+<li>Thêm filter có cấu trúc.</li>
+<li>Theo dõi query không có kết quả.</li>
+<li>Đánh giá bằng dữ liệu click và conversion.</li>
+<li>Chỉ thêm model phức tạp khi hệ thống đơn giản đã chạm trần.</li>
+</ol>
+<p>Đừng xây sân bay quốc tế chỉ để chở một rổ rau ra chợ.</p>
+<p>Nhưng cũng đừng dùng cuốn sổ giấy rồi kỳ vọng search hiểu được:</p>
+<blockquote>
+<p>Tôi cần một cái tivi xem bóng đá rõ, phòng hơi sáng, giá vừa phải và vợ tôi không thích màn hình quá lớn.</p>
+</blockquote>
+<h1 id="điều-mình-tâm-đắc-nhất-semantic-search-không-phải-một-model">Điều mình tâm đắc nhất: Semantic search không phải một model<a class="anchor ms-1" href="#điều-mình-tâm-đắc-nhất-semantic-search-không-phải-một-model"><i class="fas fa-link"></i></a></h1>
+<p>Ban đầu, khi nhìn bài viết của Uber, thứ nổi bật nhất là Qwen.</p>
+<p>Sau đó là two-tower.</p>
+<p>Rồi HNSW.</p>
+<p>MRL.</p>
+<p>Quantization.</p>
+<p>Nhưng đọc kỹ hơn, mình thấy nhân vật chính không phải bất kỳ công nghệ nào trong số đó.</p>
+<p>Nhân vật chính là <strong>sự đồng bộ</strong>.</p>
+<p>Query Model phải hiểu cùng một thế giới với Document Model.</p>
+<p>Document Embedding phải khớp với index.</p>
+<p>Index mới phải đầy đủ như dữ liệu nguồn.</p>
+<p>Cột cũ phải không bị thay đổi.</p>
+<p>Model ID phải khớp metadata.</p>
+<p>Cấu hình phải biết cột nào đang active.</p>
+<p>Khi có lỗi, rollback phải xảy ra trước khi người dùng kịp nhận ra hệ thống đang nói tiếng khác.</p>
+<p>Semantic search không phải:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Text → Embedding → Vector DB
+</span></span></code></pre></div><p>Đó chỉ là hình vẽ demo.</p>
+<p>Semantic search production là:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">Ngôn ngữ
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">→ Dữ liệu huấn luyện
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">→ Model
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">→ Phiên bản
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">→ Embedding
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">→ Feature Store
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">→ Index
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">→ ANN
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">→ Filter
+</span></span><span class="line"><span class="ln">10</span><span class="cl">→ Ranking
+</span></span><span class="line"><span class="ln">11</span><span class="cl">→ Validation
+</span></span><span class="line"><span class="ln">12</span><span class="cl">→ Deployment
+</span></span><span class="line"><span class="ln">13</span><span class="cl">→ Monitoring
+</span></span><span class="line"><span class="ln">14</span><span class="cl">→ Rollback
+</span></span></code></pre></div><p>Model chỉ là một bánh răng.</p>
+<p>Đẹp.</p>
+<p>Thông minh.</p>
+<p>Rất đắt.</p>
+<p>Nhưng vẫn chỉ là một bánh răng.</p>
+<h1 id="tổng-kết">Tổng kết<a class="anchor ms-1" href="#tổng-kết"><i class="fas fa-link"></i></a></h1>
+<p>Một người dùng gõ vài chữ vào Uber Eats.</p>
+<p>Trong chưa đầy một khoảnh khắc, câu chữ được đưa qua Query Tower.</p>
+<p>Một vector được sinh ra.</p>
+<p>Bộ lọc địa lý thu nhỏ cả thế giới xuống một khu vực có thể giao.</p>
+<p>HNSW chạy qua mạng lưới hàng tỷ ứng viên.</p>
+<p>Những vector gần nhất được kéo ra.</p>
+<p>Một mạng nhỏ re-rank chúng.</p>
+<p>Các lớp ranking tiếp tục cân nhắc ý nghĩa, vị trí và điều kiện vận hành.</p>
+<p>Cuối cùng, màn hình hiện lên vài nhà hàng.</p>
+<p>Người dùng chỉ thấy hình một tô mì.</p>
+<p>Phía sau tô mì đó là hàng trăm triệu mẫu training, những GPU từng nóng lên để học ngôn ngữ, các batch job tạo embedding, những graph index nằm trong bộ nhớ, CPU tính khoảng cách, metadata kiểm tra model ID và hệ thống rollback đang đứng chờ như bình chữa cháy treo trên tường.</p>
+<p>Không có gì là hoàn toàn ảo.</p>
+<p>Một câu tìm kiếm không chỉ là chữ.</p>
+<p>Nó chạy qua dây điện.</p>
+<p>Đi vào chip.</p>
+<p>Biến thành số thực.</p>
+<p>Bị nén xuống <code>int7</code>.</p>
+<p>Chạy qua một đồ thị nhiều tầng.</p>
+<p>Va vào những giới hạn rất thật của địa lý, cửa hàng, kho hàng và thời gian giao.</p>
+<p>Rồi trở lại màn hình dưới hình dạng một kết quả có vẻ hiển nhiên.</p>
+<p>Đó là điều mình tâm đắc nhất từ hệ thống search của Uber.</p>
+<p>Máy không cần người dùng viết thật đúng.</p>
+<p>Nó phải hiểu đủ đúng.</p>
+<p>Nhưng để tạo ra cảm giác “máy hiểu mình”, phía sau không chỉ cần một model ngôn ngữ mạnh.</p>
+<p>Nó cần cả một nền công nghiệp nhỏ hoạt động đồng bộ, nơi chất lượng, tốc độ, chi phí và độ tin cậy liên tục kéo nhau về bốn hướng khác nhau.</p>
+<p>Search tốt không phải tìm được tài liệu có nhiều chữ giống nhất.</p>
+<p>Nó là khả năng nhìn vài ký tự vụng về của một con người đang đói, rồi tìm ra thứ người đó thực sự muốn trước khi họ mất kiên nhẫn và tự đi nấu mì gói.</p>
+<h1 id="tham-khảo">Tham khảo<a class="anchor ms-1" href="#tham-khảo"><i class="fas fa-link"></i></a></h1>
+<ul>
+<li><a href="https://www.uber.com/us/en/blog/evolution-and-scale-of-ubers-delivery-search-platform/" target="_blank" rel="noopener noreferrer">Uber Engineering – Evolution and Scale of Uber’s Delivery Search Platform</a></li>
+<li><a href="https://www.uber.com/us/en/blog/evolution-of-ubers-search-platform/" target="_blank" rel="noopener noreferrer">Uber Engineering – The Evolution of Uber’s Search Platform</a></li>
+<li><a href="https://arxiv.org/abs/2205.13147" target="_blank" rel="noopener noreferrer">Matryoshka Representation Learning</a></li>
+<li><a href="https://arxiv.org/abs/1603.09320" target="_blank" rel="noopener noreferrer">Efficient and Robust Approximate Nearest Neighbor Search Using HNSW</a></li>
+<li><a href="https://arxiv.org/abs/1807.03748" target="_blank" rel="noopener noreferrer">Representation Learning with Contrastive Predictive Coding</a></li>
+</ul>
+</div></div>
+  <div class="card-footer"><div class="post-navs d-flex justify-content-evenly"><div class="post-nav post-prev">
+    <i class="fas fa-fw fa-chevron-left"></i>
+    <a href="https://www.phamduytung.com/blog/2026-07-10-next-gen-restaurant-recommendation/">Hệ thống gợi ý nhà hàng thế hệ mới: Con người không ăn bằng hồ sơ, họ ăn bằng khoảnh khắc
+</a>
+  </div><div class="post-nav post-next">
+    <a href="https://www.phamduytung.com/blog/2026-07-11-ai-agent-identity-crisis/">AI Agent không thiếu trí thông minh, nó thiếu một tờ giấy khai sinh
+</a>
+    <i class="fas fa-fw fa-chevron-right"></i>
+  </div></div></div>
+</article><div class="card component row post-comments" id="post-comments">
+  <div class="card-header">
+    <h2 class="card-title">Bình luận</h2>
+  </div>
+  <div class="card-body"><script src="https://utteranc.es/client.js"
+  repo="AlexBlack2202/utterances"
+  issue-term="pathname"
+  label="comment"
+  theme="github-dark"
+  crossorigin="anonymous"
+  async>
+</script></div>
+</div></div>
+</div><aside class="col-lg-3 col-md-4 sidebar d-flex">
+  <div class="container d-flex flex-column">
+    
+    <a href="https://www.buymeacoffee.com/alexblack28"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=🍎&slug=alexblack28&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" /></a><div class="post-toc row mb-4 card component" id="postTOC">
+  <div class="card-header">
+    <h2 class="card-title">Mục lục</h2>
+  </div>
+  <div class="card-body">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#người-dùng-gõ-sai-nhưng-vẫn-muốn-máy-hiểu-đúng">Người dùng gõ sai, nhưng vẫn muốn máy hiểu đúng</a></li>
+    <li><a href="#search-truyền-thống-giống-bác-thủ-kho-chỉ-biết-nhìn-nhãn">Search truyền thống giống bác thủ kho chỉ biết nhìn nhãn</a></li>
+    <li><a href="#một-từ-có-thể-đội-nhiều-cái-mũ">Một từ có thể đội nhiều cái mũ</a></li>
+    <li><a href="#semantic-search-biến-câu-chữ-thành-tọa-độ">Semantic search: Biến câu chữ thành tọa độ</a></li>
+    <li><a href="#search-giao-đồ-ăn-không-sống-trong-thế-giới-của-riêng-ngôn-ngữ">Search giao đồ ăn không sống trong thế giới của riêng ngôn ngữ</a></li>
+    <li><a href="#two-tower-hai-người-phiên-dịch-gặp-nhau-giữa-cây-cầu">Two-tower: Hai người phiên dịch gặp nhau giữa cây cầu</a></li>
+    <li><a href="#vì-sao-không-tính-mọi-thứ-ngay-khi-người-dùng-tìm-kiếm">Vì sao không tính mọi thứ ngay khi người dùng tìm kiếm?</a></li>
+    <li><a href="#model-lớn-chỉ-là-phần-đầu-của-dây-chuyền">Model lớn chỉ là phần đầu của dây chuyền</a></li>
+    <li><a href="#infonce-kéo-món-đúng-lại-gần-đẩy-món-sai-ra-xa">InfoNCE: Kéo món đúng lại gần, đẩy món sai ra xa</a></li>
+    <li><a href="#mathcall">$$
+\mathcal{L}</a></li>
+    <li><a href="#matryoshka-embedding-một-con-búp-bê-chứa-nhiều-con-búp-bê-nhỏ-hơn">Matryoshka embedding: Một con búp bê chứa nhiều con búp bê nhỏ hơn</a></li>
+    <li><a href="#hàng-tỷ-ứng-viên-không-thể-đi-gõ-cửa-từng-nhà">Hàng tỷ ứng viên: Không thể đi gõ cửa từng nhà</a></li>
+    <li><a href="#đừng-để-vector-search-tìm-trong-cả-trái-đất">Đừng để vector search tìm trong cả Trái Đất</a></li>
+    <li><a href="#k-không-phải-càng-lớn-càng-tốt">K không phải càng lớn càng tốt</a></li>
+    <li><a href="#quantization-không-cần-mang-theo-cả-tủ-quần-áo-để-đi-ăn-trưa">Quantization: Không cần mang theo cả tủ quần áo để đi ăn trưa</a></li>
+    <li><a href="#tam-giác-không-bao-giờ-ngủ-chất-lượng-tốc-độ-và-tiền">Tam giác không bao giờ ngủ: Chất lượng, tốc độ và tiền</a></li>
+    <li><a href="#document-embedding-cũng-cần-một-cái-kho-tử-tế">Document embedding cũng cần một cái kho tử tế</a></li>
+    <li><a href="#model-và-index-là-một-cặp-vợ-chồng-không-được-nhận-nhầm-nhau">Model và index là một cặp vợ chồng không được nhận nhầm nhau</a></li>
+    <li><a href="#blue-green-deployment-hai-căn-bếp-một-căn-đang-nấu">Blue-green deployment: Hai căn bếp, một căn đang nấu</a></li>
+    <li><a href="#ba-cánh-cửa-trước-khi-model-được-bước-vào-production">Ba cánh cửa trước khi model được bước vào production</a>
+      <ul>
+        <li><a href="#1-completeness">1. Completeness</a></li>
+        <li><a href="#2-backward-compatibility">2. Backward compatibility</a></li>
+        <li><a href="#3-correctness">3. Correctness</a></li>
+      </ul>
+    </li>
+    <li><a href="#kiểm-tra-lúc-build-chưa-đủ-vì-con-người-vẫn-có-thể-bấm-nhầm">Kiểm tra lúc build chưa đủ, vì con người vẫn có thể bấm nhầm</a></li>
+    <li><a href="#search-platform-không-tiến-hóa-theo-đường-thẳng">Search platform không tiến hóa theo đường thẳng</a></li>
+    <li><a href="#một-pipeline-đơn-giản-để-hình-dung">Một pipeline đơn giản để hình dung</a></li>
+    <li><a href="#nếu-áp-dụng-vào-search-bán-lẻ-việt-nam">Nếu áp dụng vào search bán lẻ Việt Nam</a></li>
+    <li><a href="#đừng-vội-thay-toàn-bộ-keyword-search-bằng-vector-search">Đừng vội thay toàn bộ keyword search bằng vector search</a></li>
+    <li><a href="#những-điều-không-nên-sao-chép-máy-móc-từ-uber">Những điều không nên sao chép máy móc từ Uber</a></li>
+    <li><a href="#điều-mình-tâm-đắc-nhất-semantic-search-không-phải-một-model">Điều mình tâm đắc nhất: Semantic search không phải một model</a></li>
+    <li><a href="#tổng-kết">Tổng kết</a></li>
+    <li><a href="#tham-khảo">Tham khảo</a></li>
+  </ul>
+</nav>
+  </div>
+</div><section class="recent-posts row card component">
+  <div class="card-header">
+    <h2 class="card-title">Bài gần đây</h2>
+  </div>
+  <div class="card-body">
+    <ul class="post-list"><li>
+        <a href="https://www.phamduytung.com/blog/2026-07-11-ai-agent-identity-crisis/">AI Agent không thiếu trí thông minh, nó thiếu một tờ giấy khai sinh
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-07-11-uber-delivery-search-platform/">Search ở quy mô Uber Eats: Máy không cần đọc đúng chữ, nó phải hiểu người đang đói muốn gì
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-07-10-next-gen-restaurant-recommendation/">Hệ thống gợi ý nhà hàng thế hệ mới: Con người không ăn bằng hồ sơ, họ ăn bằng khoảnh khắc
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-07-09-ai-prd-reviewer/">AI review PRD: Một yêu cầu sai có thể sinh ra hàng nghìn dòng code đúng
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-07-08-ai-agent-identity-crisis/">AI Agent đang có một cuộc khủng hoảng danh tính
+</a>
+      </li></ul>
+  </div>
+</section><section class="series-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/series">series</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/series/kh%C3%B3a-h%E1%BB%8Dc-python-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học Python Căn Bản">
+            Khóa Học Python Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="https://www.phamduytung.com/series/kh%C3%B3a-h%E1%BB%8Dc-c&#43;&#43;-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học C&#43;&#43; Căn Bản">
+            Khóa Học C&#43;&#43; Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="https://www.phamduytung.com/series/machine-learning-dataset/" class="badge rounded post-taxonomy" title="Machine Learning Dataset">
+            Machine Learning Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a><a href="https://www.phamduytung.com/series/ch%E1%BB%A9ng-kho%C3%A1n-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Chứng Khoán Căn Bản">
+            Chứng Khoán Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">1</span></a></div>
+      </div>
+    </section><section class="tools-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/tools">tools</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/tools/tool-random/" class="badge rounded post-taxonomy" title="Tool Random">
+            Tool Random<span class="badge badge-sm text-white bg-accent ms-1">3</span></a></div>
+      </div>
+    </section><section class="categories-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/categories">categories</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/categories/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="https://www.phamduytung.com/categories/c&#43;&#43;/" class="badge rounded post-taxonomy" title="C&#43;&#43;">
+            C&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="https://www.phamduytung.com/categories/dataset/" class="badge rounded post-taxonomy" title="Dataset">
+            Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a></div>
+      </div>
+    </section><section class="tags-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/tags">tags</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/tags/machine-learning/" class="badge rounded post-taxonomy" title="Machine Learning">
+            Machine Learning<span class="badge badge-sm text-white bg-accent ms-1">26</span></a><a href="https://www.phamduytung.com/tags/deep-learning/" class="badge rounded post-taxonomy" title="Deep Learning">
+            Deep Learning<span class="badge badge-sm text-white bg-accent ms-1">23</span></a><a href="https://www.phamduytung.com/tags/computer-vision/" class="badge rounded post-taxonomy" title="Computer Vision">
+            Computer Vision<span class="badge badge-sm text-white bg-accent ms-1">16</span></a><a href="https://www.phamduytung.com/tags/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">14</span></a><a href="https://www.phamduytung.com/tags/llm/" class="badge rounded post-taxonomy" title="Llm">
+            Llm<span class="badge badge-sm text-white bg-accent ms-1">13</span></a><a href="https://www.phamduytung.com/tags/recommendation-system/" class="badge rounded post-taxonomy" title="Recommendation System">
+            Recommendation System<span class="badge badge-sm text-white bg-accent ms-1">7</span></a><a href="https://www.phamduytung.com/tags/system-design/" class="badge rounded post-taxonomy" title="System Design">
+            System Design<span class="badge badge-sm text-white bg-accent ms-1">6</span></a><a href="https://www.phamduytung.com/tags/time-series/" class="badge rounded post-taxonomy" title="Time Series">
+            Time Series<span class="badge badge-sm text-white bg-accent ms-1">6</span></a><a href="https://www.phamduytung.com/tags/uber-engineering/" class="badge rounded post-taxonomy" title="Uber Engineering">
+            Uber Engineering<span class="badge badge-sm text-white bg-accent ms-1">6</span></a><a href="https://www.phamduytung.com/tags/ai-agent/" class="badge rounded post-taxonomy" title="Ai Agent">
+            Ai Agent<span class="badge badge-sm text-white bg-accent ms-1">5</span></a></div>
+      </div>
+    </section>
+    
+  </div>
+</aside>
+</div>
+    </main><footer class="footer mt-auto py-3 text-center container"><ul class="nav justify-content-between footer-memu mb-3"><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Community
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-facebook"></i>Facebook Group
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://github.com/AlexBlack2202/alexblack2202.github.io" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-github"></i>GitHub
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/contact/"><i class="fas fa-fw fa-info-circle"></i>Contact Us
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/faq/"><i class="fas fa-fw fa-question-circle"></i>Câu hỏi thường gặp
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Docs
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="/team_of_services" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-users"></i>Điều khoản sử dụng
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/privacy" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-lock"></i>Chính sách bảo mật
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Features
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="/utils/gen_paswords/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-key"></i>Tạo password ngẫu nhiên
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Liên kết khác
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">Netlify
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">facebook
+</a>
+        </li></ul></li></ul>
+<div class="copyright mb-2">
+  Copyright © 2016-2026 Phạm Duy Tùng. All Rights Reserved.
+</div>
+<div class="powered-by mb-2">
+  Website chia sẻ kiến thức của Phạm Duy Tùng và Đặng Thị Hằng. Vui lòng liên hệ email alexblack2202@gmail.com nếu bạn có thông tin cần trao đổi.
+</div></footer>
+<script src="https://www.phamduytung.com/js/main.111d51a8c754010f8399ca010e552d803e2d5170b361f8886ad04ec6c21ca551.js" integrity="sha256-ER1RqMdUAQ&#43;DmcoBDlUtgD4tUXCzYfiIatBOxsIcpVE=" crossorigin="anonymous" defer></script><script src="https://www.phamduytung.com/js/icons.min.cb4c9958dbc49e29ac644e168e82db2d0de9a741a15751cc5bf2b0af21eb2845.js" integrity="sha256-y0yZWNvEnimsZE4WjoLbLQ3pp0GhV1HMW/KwryHrKEU=" crossorigin="anonymous" defer></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('https:\/\/www.phamduytung.com\/service-worker.js').then(function(reg) {
+      console.log('Successfully registered service worker', reg);
+    }).catch(function(err) {
+      console.warn('Error whilst registering service worker', err);
+    });
+  });
+}
+</script><script src="https://www.phamduytung.com/js/viewer.min.28bcf5233e406dae6715f46c8b9e8ca7c6cbf347e8678f5a2bebe5369c3270bb.js" integrity="sha256-KLz1Iz5Aba5nFfRsi56Mp8bL80foZ49aK&#43;vlNpwycLs=" crossorigin="anonymous" defer></script><script defer src="https://www.phamduytung.com/js/katex.min.8582b9feadf92a2a977ed303b97d7713cf2754ccf2b4eb60d8be7453a21042c2.js" integrity="sha256-hYK5/q35KiqXftMDuX13E88nVMzytOtg2L50U6IQQsI=" crossorigin="anonymous"></script>
+
+<script  data-ad-client="ca-pub-4644989745435991"  async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4644989745435991"
+     crossorigin="anonymous"></script><script data-cfasync="false" type="text/javascript" data-adel="atag" src="//acscdn.com/script/atg.js" czid="eul3gyjdmm"></script>
+  </body>
+</html>

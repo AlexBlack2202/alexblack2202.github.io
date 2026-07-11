@@ -1,0 +1,1419 @@
+<!doctype html><html lang="vi" data-palette="brown"
+   data-mode="light">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Responsible AI ở quy mô Uber: Không thể quản lý những cỗ máy mà chính mình không biết đang tồn tại - Phạm Duy Tùng Machine Learning Blog</title>
+    <meta name="a.validate.02" content="1QZXZ8oi7g57H-GxBrBPkTYBydwii-Ic9iJu" /><link rel="apple-touch-icon" href="https://www.phamduytung.com/images/icons/icon-180x180.png" sizes="180x180">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/icon-32x32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/icon-16x16.png" sizes="16x16" type="image/png">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/favicon.ico">
+<link rel="manifest" href="https://www.phamduytung.com/manifest.json">
+<meta name="keywords" content="" />
+<meta name="description" content="Responsible AI không bắt đầu bằng một bộ quy tắc đạo đức treo trên tường. Nó bắt đầu bằng những việc rất đời thường: biết công ty đang có bao nhiêu mô hình, ai sở hữu chúng, chúng dùng dữ liệu gì, vì sao chúng đưa ra quyết định và làm thế nào để dừng lại khi có sự cố." /><meta name="robots" content="index, follow" />
+	<meta itemprop="name" content="Responsible AI ở quy mô Uber: Không thể quản lý những cỗ máy mà chính mình không biết đang tồn tại">
+	<meta itemprop="description" content="Responsible AI không bắt đầu bằng một bộ quy tắc đạo đức treo trên tường. Nó bắt đầu bằng những việc rất đời thường: biết công ty đang có bao nhiêu mô hình, ai sở hữu chúng, chúng dùng dữ liệu gì, vì sao chúng đưa ra quyết định và làm thế nào để dừng lại khi có sự cố.">
+	<meta itemprop="datePublished" content="2026-07-05T00:00:00+03:00">
+	<meta itemprop="dateModified" content="2026-07-05T00:00:00+03:00">
+	<meta itemprop="wordCount" content="6467">
+	<meta itemprop="image" content="https://www.phamduytung.com/images/posts/2026-07-05-scaling-responsible-ai-at-uber/cover.png">
+	<meta itemprop="keywords" content="Responsible AI,Ai Governance,Model Card,Explainable AI,MLOps,Uber Engineering"><meta property="og:url" content="https://www.phamduytung.com/blog/2026-07-05-scaling-responsible-ai-at-uber/">
+	<meta property="og:site_name" content="Phạm Duy Tùng Machine Learning Blog">
+	<meta property="og:title" content="Responsible AI ở quy mô Uber: Không thể quản lý những cỗ máy mà chính mình không biết đang tồn tại">
+	<meta property="og:description" content="Responsible AI không bắt đầu bằng một bộ quy tắc đạo đức treo trên tường. Nó bắt đầu bằng những việc rất đời thường: biết công ty đang có bao nhiêu mô hình, ai sở hữu chúng, chúng dùng dữ liệu gì, vì sao chúng đưa ra quyết định và làm thế nào để dừng lại khi có sự cố.">
+	<meta property="og:locale" content="vi_VN">
+	<meta property="og:type" content="article">
+		<meta property="article:section" content="blog">
+		<meta property="article:published_time" content="2026-07-05T00:00:00+03:00">
+		<meta property="article:modified_time" content="2026-07-05T00:00:00+03:00">
+		<meta property="article:tag" content="Responsible AI">
+		<meta property="article:tag" content="Ai Governance">
+		<meta property="article:tag" content="Model Card">
+		<meta property="article:tag" content="Explainable AI">
+		<meta property="article:tag" content="MLOps">
+		<meta property="article:tag" content="Uber Engineering">
+		<meta property="og:image" content="https://www.phamduytung.com/images/posts/2026-07-05-scaling-responsible-ai-at-uber/cover.png">
+
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:image" content="https://www.phamduytung.com/images/posts/2026-07-05-scaling-responsible-ai-at-uber/cover.png">
+	<meta name="twitter:title" content="Responsible AI ở quy mô Uber: Không thể quản lý những cỗ máy mà chính mình không biết đang tồn tại">
+	<meta name="twitter:description" content="Responsible AI không bắt đầu bằng một bộ quy tắc đạo đức treo trên tường. Nó bắt đầu bằng những việc rất đời thường: biết công ty đang có bao nhiêu mô hình, ai sở hữu chúng, chúng dùng dữ liệu gì, vì sao chúng đưa ra quyết định và làm thế nào để dừng lại khi có sự cố.">
+<link rel="stylesheet" href="https://www.phamduytung.com/css/main.min.0aa7373d751b40dcbe96232f76639e455436d25cf0e69da3d7427f45b6fcc905.css" integrity="sha256-Cqc3PXUbQNy&#43;liMvdmOeRVQ20lzw5p2j10J/Rbb8yQU=" crossorigin="anonymous"><link rel="stylesheet" href="https://www.phamduytung.com/css/katex.min.4d6aa053ca8a5675016fa2c9c48ee5359bfaafb8295184458af9d64abce84c47.css" integrity="sha256-TWqgU8qKVnUBb6LJxI7lNZv6r7gpUYRFivnWSrzoTEc=" crossorigin="anonymous">
+<link rel="stylesheet" href="https://www.phamduytung.com/css/viewer.min.e882eb3a023412b73bb741b4604a1222a9f13aa7783c828d26d066ab8642bd51.css" integrity="sha256-6ILrOgI0Erc7t0G0YEoSIqnxOqd4PIKNJtBmq4ZCvVE=" crossorigin="anonymous"><link rel="canonical" href="https://www.phamduytung.com/blog/2026-07-05-scaling-responsible-ai-at-uber/"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Phạm Duy Tùng"},"dateModified":"2026-07-05T00:00:00+03:00","datePublished":"2026-07-05T00:00:00+03:00","description":"Responsible AI không bắt đầu bằng một bộ quy tắc đạo đức treo trên tường. Nó bắt đầu bằng những việc rất đời thường: biết công ty đang có bao nhiêu mô hình, ai sở hữu chúng, chúng dùng dữ liệu gì, vì sao chúng đưa ra quyết định và làm thế nào để dừng lại khi có sự cố.","headline":"Responsible AI ở quy mô Uber: Không thể quản lý những cỗ máy mà chính mình không biết đang tồn tại","image":["https://www.phamduytung.com/images/posts/2026-07-05-scaling-responsible-ai-at-uber/cover.png"],"inLanguage":"vi","keywords":"Responsible AI, AI Governance, Model Card, Explainable AI, MLOps, Uber Engineering","mainEntityOfPage":{"@id":"https://www.phamduytung.com/blog/2026-07-05-scaling-responsible-ai-at-uber/","@type":"WebPage"},"publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://www.phamduytung.com/images/logo.png"},"name":"Phạm Duy Tùng Machine Learning Blog"},"url":"https://www.phamduytung.com/blog/2026-07-05-scaling-responsible-ai-at-uber/"}</script></head>
+  <body><script>const items=["mode","palette"];items.forEach(function(e){const t=localStorage.getItem("hbs-"+e);t&&document.body.parentElement.setAttribute("data-"+e,t)})</script><header><nav class="navbar top-app-bar top-app-bar-expand-lg fixed-top">
+  <div class="container">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <i class="fas fa-bars"></i>
+    </button><a class="navbar-brand flex-grow-1 flex-lg-grow-0 text-center text-lg-start mx-auto me-lg-3" href="https://www.phamduytung.com/"><img class="logo" alt="Logo" src="https://www.phamduytung.com/images/logo.webp" loading="lazy"  title="Logo"
+   width="32" height="32"
+   />
+Phạm Duy Tùng
+    </a>
+    <div class="offcanvas offcanvas-bottom surface" tabindex="-1" id="offcanvasSocialShare" aria-labelledby="offcanvasSocialShare">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Share</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body">
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Twitter Share Button"
+      target="_blank" href="https://twitter.com/intent/tweet?title=Responsible%20AI%20%e1%bb%9f%20quy%20m%c3%b4%20Uber%3a%20Kh%c3%b4ng%20th%e1%bb%83%20qu%e1%ba%a3n%20l%c3%bd%20nh%e1%bb%afng%20c%e1%bb%97%20m%c3%a1y%20m%c3%a0%20ch%c3%adnh%20m%c3%acnh%20kh%c3%b4ng%20bi%e1%ba%bft%20%c4%91ang%20t%e1%bb%93n%20t%e1%ba%a1i&url=https%3a%2f%2fwww.phamduytung.com%2fblog%2f2026-07-05-scaling-responsible-ai-at-uber%2f">
+      <i class="fab fa-fw fa-twitter"></i> Twitter
+    </a>
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Facebook Share Button"
+      target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.phamduytung.com%2fblog%2f2026-07-05-scaling-responsible-ai-at-uber%2f">
+      <i class="fab fa-fw fa-facebook-f"></i> Facebook
+    </a>
+  </div>
+</div>
+    <button class="navbar-settings" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSettings"
+  aria-controls="offcanvasSettings" aria-label="Toggle settings">
+  <i class="fas fa-ellipsis-v"></i>
+</button>
+
+<div class="offcanvas offcanvas-end surface h-100" tabindex="-1" id="offcanvasSettings" aria-labelledby="offcanvasSettings">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Cài đặt</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body d-flex flex-column">
+
+
+
+<section class="setting">
+  <form class="font-size-switcher-form row">
+    <div class="col-auto">
+      <label for="fontSize" class="form-label"><i class="fas fa-fw fa-font"></i> Cỡ chữ</label>
+    </div>
+    <div class="col-auto ms-auto">
+      <input type="range" class="form-range" min="-2" max="2" id="fontSize">
+    </div>
+  </form>
+</section>
+
+
+
+<section class="setting actions d-flex justify-content-around mt-auto overflow-auto">
+  <a role="button" class="action action-go-back" href="javascript: window.history.back();">
+    <span class="action-icon"><i class="fas fa-2x fa-arrow-left"></i></span> Quay lại
+  </a>
+  <a role="button" class="action action-reload-page">
+    <span class="action-icon"><i class="fas fa-2x fa-redo-alt"></i></span> Tải lại
+  </a>
+  <a role="button" class="action action-copy-url">
+    <span class="action-icon"><i class="fas fa-2x fa-link"></i></span> Sao chép URL
+  </a><a class="action action-social-share" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSocialShare"
+    aria-controls="offcanvasSocialShare" aria-label="Toggle social share">
+    <span class="action-icon"><i class="fas fa-2x fa-share-alt"></i></span> Chia sẻ
+  </a></section>
+
+</div>
+</div>
+
+    <div class="collapse navbar-collapse" tabindex="-1" id="navbarSupportedContent" aria-labelledby="navbarSupportedContent">
+      <form class="search-bar my-1" action="https://www.phamduytung.com/search">
+  <div class="input-group input-group-sm">
+    <span class="btn btn-search disabled position-absolute left-0"><i class="fas fa-fw fa-search"></i></span>
+    <input class="form-control rounded-pill" name="q" type="search" aria-label="Search">
+  </div>
+</form>
+      <ul class="navbar-nav ms-auto"><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/series/">
+            <i class="fas fa-fw fa-columns"></i>Courses
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/tools/">
+            <i class="fas fa-fw fa-folder"></i>Tools
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/categories/">
+            <i class="fas fa-fw fa-folder"></i>Categories
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/archives/">
+            <i class="fas fa-fw fa-file-archive"></i>Archives
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/tags/">
+            <i class="fas fa-fw fa-tags"></i>Tags
+          </a>
+        </li><li class="nav-item dropdown">
+          <a class="nav-link" id="navbarDropdownSupport" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-fw fa-comments"></i>Community
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdownSupport"><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Facebook Group
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://github.com/AlexBlack2202/alexblack2202.github.io" target="_blank" rel="noopener noreferrer">
+                GitHub
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/contact/">
+                Contact
+              </a>
+            </li><li><hr class="dropdown-divider"></li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/faq/">
+                Câu hỏi thường gặp
+              </a>
+            </li></ul>
+        </li></ul>
+    </div>
+  </div>
+</nav>
+</header>
+<main role="main" class="container" style="line-height:1.7em">
+      <div class="row content">
+<div class="col-lg-9 col-md-8">
+  <div class="container"><nav class="row card component" aria-label="breadcrumb">
+  <div class="card-body">
+    <ol class="breadcrumb "><li class="breadcrumb-item"><a href="https://www.phamduytung.com/">Trang chủ</a></li><li class="breadcrumb-item"><a href="https://www.phamduytung.com/blog/">Blogs</a></li><li class="breadcrumb-item active">Responsible AI ở quy mô Uber: Không thể quản lý những cỗ máy mà chính mình không biết đang tồn tại</li></ol>
+  </div>
+</nav>
+<div class="post-panel-wrapper">
+  <div class="d-flex flex-column component rounded post-panel">
+    
+    <a class="action action-panel-toggler" role="button" title="Panel toggler">
+      <i class="fas fa-fw fa-chevron-circle-down"></i>
+    </a>
+    <a id="sidebarToggler" class="action d-none d-lg-block" role="button" title="Sidebar toggler">
+  <i class="fas fa-fw fa-expand-alt" data-fa-transform="rotate-45"></i>
+</a>
+
+    
+
+    
+    
+    <a class="action" href="#post-comments" role="button" aria-label="Comments" title="Comments">
+  <i class="fas fa-fw fa-comments"></i>
+</a>
+    <a class="action" href="#postTOC" aria-controls="Table of contents" role="button" title="Table of contents">
+  <i class="fas fa-fw fa-list-alt"></i>
+</a>
+    
+  </div>
+</div>
+<article class="row card component mb-4 post">
+  <div class="card-header "><div class="bgcover" style="background-image:url(https://www.phamduytung.com/images/posts/2026-07-05-scaling-responsible-ai-at-uber/cover.png)" aria-label="Responsible AI ở quy mô Uber: Không thể quản lý những cỗ máy mà chính mình không biết đang tồn tại">
+      <div class="bgtrans">
+          <h1>Responsible AI ở quy mô Uber: Không thể quản lý những cỗ máy mà chính mình không biết đang tồn tại
+</h1>
+      </div>
+  </div>
+</div>
+  <div class="card-body"><div class="post-meta">
+  <span class="post-date" title="tạo ngày 2026-07-05 04:00:00 &#43;0700 &#43;07.">
+    05/07/2026
+  </span><span class="post-reading-time">
+    31 phút đọc
+  </span><span class="post-taxonomies"><a href="https://www.phamduytung.com/tags/responsible-ai/" class="badge post-taxonomy">Responsible AI</a><a href="https://www.phamduytung.com/tags/ai-governance/" class="badge post-taxonomy">ai governance</a><a href="https://www.phamduytung.com/tags/model-card/" class="badge post-taxonomy">Model Card</a><a href="https://www.phamduytung.com/tags/explainable-ai/" class="badge post-taxonomy">Explainable AI</a><a href="https://www.phamduytung.com/tags/mlops/" class="badge post-taxonomy">MLOps</a><a href="https://www.phamduytung.com/tags/uber-engineering/" class="badge post-taxonomy">Uber Engineering</a></span>
+</div>
+<div class="post-content mb-3"><hr>
+<div class="toc">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#một-nhà-máy-không-biết-mình-đang-có-bao-nhiêu-cỗ-máy">Một nhà máy không biết mình đang có bao nhiêu cỗ máy</a></li>
+    <li><a href="#responsible-ai-là-gì-nói-theo-cách-lúa-nhất-có-thể">Responsible AI là gì, nói theo cách lúa nhất có thể?</a></li>
+    <li><a href="#vấn-đề-bắt-đầu-khi-ai-có-mặt-ở-khắp-nơi">Vấn đề bắt đầu khi AI có mặt ở khắp nơi</a></li>
+    <li><a href="#trụ-cột-thứ-nhất-muốn-quản-lý-ai-trước-hết-phải-tìm-thấy-nó">Trụ cột thứ nhất: Muốn quản lý AI, trước hết phải tìm thấy nó</a>
+      <ul>
+        <li><a href="#model-card-giống-giấy-đăng-ký-xe">Model Card giống giấy đăng ký xe</a></li>
+        <li><a href="#một-danh-sách-excel-chưa-phải-model-catalog">Một danh sách Excel chưa phải Model Catalog</a></li>
+      </ul>
+    </li>
+    <li><a href="#đừng-quản-lý-từng-file-hãy-quản-lý-cả-hệ-thống">Đừng quản lý từng file, hãy quản lý cả hệ thống</a></li>
+    <li><a href="#trụ-cột-thứ-hai-máy-đưa-ra-kết-quả-nhưng-vì-sao">Trụ cột thứ hai: Máy đưa ra kết quả, nhưng vì sao?</a>
+      <ul>
+        <li><a href="#global-explanation-cả-model-thường-nhìn-vào-điều-gì">Global explanation: Cả model thường nhìn vào điều gì?</a></li>
+        <li><a href="#local-explanation-vì-sao-trường-hợp-này-ra-kết-quả-như-vậy">Local explanation: Vì sao trường hợp này ra kết quả như vậy?</a></li>
+        <li><a href="#integrated-gradients-lần-theo-con-đường-từ-im-lặng-tới-quyết-định">Integrated Gradients: Lần theo con đường từ im lặng tới quyết định</a></li>
+      </ul>
+    </li>
+    <li><a href="#explainability-không-phải-máy-phát-hiện-sự-thật">Explainability không phải máy phát hiện sự thật</a></li>
+    <li><a href="#trụ-cột-thứ-ba-đừng-đợi-xây-xong-nhà-mới-kiểm-tra-bản-vẽ">Trụ cột thứ ba: Đừng đợi xây xong nhà mới kiểm tra bản vẽ</a>
+      <ul>
+        <li><a href="#kiểm-tra-trước-khi-đổ-bê-tông">Kiểm tra trước khi đổ bê tông</a></li>
+      </ul>
+    </li>
+    <li><a href="#governance-tốt-phải-nằm-trong-công-cụ">Governance tốt phải nằm trong công cụ</a></li>
+    <li><a href="#không-phải-model-nào-cũng-cần-cùng-một-hàng-rào">Không phải model nào cũng cần cùng một hàng rào</a>
+      <ul>
+        <li><a href="#rủi-ro-thấp">Rủi ro thấp</a></li>
+        <li><a href="#rủi-ro-trung-bình">Rủi ro trung bình</a></li>
+        <li><a href="#rủi-ro-cao">Rủi ro cao</a></li>
+      </ul>
+    </li>
+    <li><a href="#trụ-cột-thứ-tư-không-thể-giao-hết-trách-nhiệm-cho-một-phòng-ban">Trụ cột thứ tư: Không thể giao hết trách nhiệm cho một phòng ban</a>
+      <ul>
+        <li><a href="#responsible-ai-giống-an-toàn-cháy-nổ">Responsible AI giống an toàn cháy nổ</a></li>
+      </ul>
+    </li>
+    <li><a href="#trụ-cột-thứ-năm-đừng-chỉ-quản-lý-những-model-sinh-ra-từ-hôm-nay">Trụ cột thứ năm: Đừng chỉ quản lý những model sinh ra từ hôm nay</a>
+      <ul>
+        <li><a href="#model-cũ-giống-nhà-xây-trước-khi-có-luật-phòng-cháy-mới">Model cũ giống nhà xây trước khi có luật phòng cháy mới</a></li>
+      </ul>
+    </li>
+    <li><a href="#vòng-đời-model-không-bắt-đầu-ở-production">Vòng đời model không bắt đầu ở production</a></li>
+    <li><a href="#glass-box-không-có-nghĩa-model-phải-đơn-giản">“Glass box” không có nghĩa model phải đơn giản</a></li>
+    <li><a href="#một-kiến-trúc-responsible-ai-đơn-giản-cho-doanh-nghiệp">Một kiến trúc Responsible AI đơn giản cho doanh nghiệp</a>
+      <ul>
+        <li><a href="#1-model-registry-lưu-vật-thể">1. Model Registry lưu vật thể</a></li>
+        <li><a href="#2-model-catalog-lưu-ý-nghĩa">2. Model Catalog lưu ý nghĩa</a></li>
+        <li><a href="#3-policy-engine-quyết-định-cần-kiểm-tra-gì">3. Policy Engine quyết định cần kiểm tra gì</a></li>
+        <li><a href="#4-cicd-biến-trách-nhiệm-thành-hàng-rào-thật">4. CI/CD biến trách nhiệm thành hàng rào thật</a></li>
+        <li><a href="#5-monitoring-phải-kéo-dài-sau-deployment">5. Monitoring phải kéo dài sau deployment</a></li>
+      </ul>
+    </li>
+    <li><a href="#đo-responsible-ai-bằng-gì">Đo Responsible AI bằng gì?</a></li>
+    <li><a href="#những-cái-bẫy-rất-dễ-gặp">Những cái bẫy rất dễ gặp</a>
+      <ul>
+        <li><a href="#model-card-biến-thành-bài-văn-mẫu">Model Card biến thành bài văn mẫu</a></li>
+        <li><a href="#mọi-model-đều-được-đánh-giá-giống-nhau">Mọi model đều được đánh giá giống nhau</a></li>
+        <li><a href="#explainability-được-dùng-để-trang-trí">Explainability được dùng để trang trí</a></li>
+        <li><a href="#governance-chỉ-diễn-ra-trước-deployment">Governance chỉ diễn ra trước deployment</a></li>
+        <li><a href="#chỉ-quản-lý-model-tự-xây">Chỉ quản lý model tự xây</a></li>
+      </ul>
+    </li>
+    <li><a href="#điều-mình-tâm-đắc-nhất-responsible-ai-thực-ra-là-system-engineering">Điều mình tâm đắc nhất: Responsible AI thực ra là System Engineering</a></li>
+    <li><a href="#tổng-kết">Tổng kết</a></li>
+    <li><a href="#tham-khảo">Tham khảo</a></li>
+  </ul>
+</nav>
+  </div>
+<h1 id="một-nhà-máy-không-biết-mình-đang-có-bao-nhiêu-cỗ-máy">Một nhà máy không biết mình đang có bao nhiêu cỗ máy<a class="anchor ms-1" href="#một-nhà-máy-không-biết-mình-đang-có-bao-nhiêu-cỗ-máy"><i class="fas fa-link"></i></a></h1>
+<p>Giả sử một công ty có một nhà máy rất lớn.</p>
+<p>Trong nhà máy có hàng nghìn cỗ máy.</p>
+<p>Máy cắt thép.</p>
+<p>Máy đóng gói.</p>
+<p>Máy kiểm tra chất lượng.</p>
+<p>Máy điều khiển nhiệt độ.</p>
+<p>Máy tự động phân loại hàng hóa.</p>
+<p>Mỗi phòng ban tự mua máy riêng.</p>
+<p>Có máy được nhập từ Đức.</p>
+<p>Có máy do kỹ sư trong công ty tự chế.</p>
+<p>Có một chiếc máy cũ đến mức không ai nhớ ai đã mua nó.</p>
+<p>Có một chiếc vẫn chạy mỗi tối, nhưng người viết phần mềm điều khiển đã nghỉ việc từ ba năm trước.</p>
+<p>Một ngày, giám đốc nhà máy hỏi:</p>
+<blockquote>
+<p>Công ty hiện có bao nhiêu máy đang hoạt động?</p>
+</blockquote>
+<p>Mọi người nhìn nhau.</p>
+<p>Không ai biết.</p>
+<p>Ông hỏi tiếp:</p>
+<blockquote>
+<p>Máy nào đang trực tiếp quyết định sản phẩm đạt hay không đạt?</p>
+</blockquote>
+<p>Vẫn không ai biết.</p>
+<blockquote>
+<p>Nếu một chiếc máy phân loại sai hàng, ai chịu trách nhiệm?</p>
+</blockquote>
+<p>Không khí bắt đầu hơi lạnh.</p>
+<blockquote>
+<p>Nếu cần tắt toàn bộ máy của một nhà cung cấp thì phải tắt ở đâu?</p>
+</blockquote>
+<p>Lúc này, một kỹ sư mở laptop.</p>
+<p>Một người khác đi tìm file Excel.</p>
+<p>Có người lục lại email từ năm ngoái.</p>
+<p>Một người nhớ mang máng rằng danh sách máy từng nằm trong một thư mục Google Drive tên là:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">final_machine_inventory_v2_latest_revised.xlsx
+</span></span></code></pre></div><p>Nhưng không ai chắc đó có phải bản mới nhất hay không.</p>
+<p>Nghe khá buồn cười.</p>
+<p>Không một nhà máy nghiêm túc nào lại vận hành như vậy.</p>
+<p>Thế nhưng nhiều doanh nghiệp đang quản lý AI gần giống như thế.</p>
+<p>Một đội dùng mô hình dự báo.</p>
+<p>Đội khác dùng mô hình chống gian lận.</p>
+<p>Một nhóm tự xây recommendation.</p>
+<p>Một phòng ban gọi API của mô hình bên ngoài.</p>
+<p>Một lập trình viên nhúng LLM vào chatbot nội bộ.</p>
+<p>Một agent được cấp quyền đọc email.</p>
+<p>Một agent khác được phép gọi ERP.</p>
+<p>Các mô hình xuất hiện từng chút một, giống những chiếc máy được đưa qua cửa sau của nhà máy.</p>
+<p>Đến một ngày, công ty nhận ra AI đã có mặt ở khắp nơi.</p>
+<p>Nhưng không ai có thể trả lời đầy đủ:</p>
+<ul>
+<li>Có bao nhiêu hệ thống AI đang chạy?</li>
+<li>Chúng nằm ở đâu?</li>
+<li>Ai đang sở hữu?</li>
+<li>Chúng dùng dữ liệu nào?</li>
+<li>Chúng ảnh hưởng tới ai?</li>
+<li>Phiên bản nào đang phục vụ production?</li>
+<li>Chúng được phép làm gì?</li>
+<li>Khi có vấn đề thì phải gọi cho ai?</li>
+<li>Và quan trọng nhất: làm thế nào để tắt chúng?</li>
+</ul>
+<p>Đó cũng là lý do mình thấy bài viết <strong>“Under the Hood: Scaling Responsible AI at Uber”</strong> khá đáng đọc.</p>
+<p>Điều Uber chia sẻ không phải một mô hình mới.</p>
+<p>Không có Transformer khổng lồ.</p>
+<p>Không có benchmark sáng chói.</p>
+<p>Không có biểu đồ khoe rằng AI thông minh hơn con người 17,3%.</p>
+<p>Họ nói về một việc ít hào nhoáng hơn rất nhiều:</p>
+<blockquote>
+<p>Làm thế nào để biết những hệ thống AI nào đang tồn tại, hiểu chúng hoạt động ra sao và đưa trách nhiệm vào ngay trong quy trình xây dựng phần mềm?</p>
+</blockquote>
+<p>Nghe giống công việc hành chính.</p>
+<p>Nhưng ở quy mô lớn, những thứ trông giống hành chính thường chính là phần giữ cho cả tòa nhà không sập.</p>
+<h1 id="responsible-ai-là-gì-nói-theo-cách-lúa-nhất-có-thể">Responsible AI là gì, nói theo cách lúa nhất có thể?<a class="anchor ms-1" href="#responsible-ai-là-gì-nói-theo-cách-lúa-nhất-có-thể"><i class="fas fa-link"></i></a></h1>
+<p>Responsible AI thường được dịch là <strong>AI có trách nhiệm</strong>.</p>
+<p>Cụm từ này nghe khá trang trọng.</p>
+<p>Đọc vào dễ tưởng tượng một hội đồng gồm nhiều người mặc vest, ngồi quanh chiếc bàn dài, thảo luận xem robot có nên yêu con người hay không.</p>
+<p>Thực tế đời thường hơn nhiều.</p>
+<p>Responsible AI là khả năng trả lời được các câu hỏi rất cơ bản:</p>
+<blockquote>
+<p>AI này dùng để làm gì?</p>
+</blockquote>
+<blockquote>
+<p>Ai đã xây nó?</p>
+</blockquote>
+<blockquote>
+<p>Ai phê duyệt?</p>
+</blockquote>
+<blockquote>
+<p>Dữ liệu nào được dùng?</p>
+</blockquote>
+<blockquote>
+<p>Nó tốt trong trường hợp nào?</p>
+</blockquote>
+<blockquote>
+<p>Nó yếu trong trường hợp nào?</p>
+</blockquote>
+<blockquote>
+<p>Kết quả của nó ảnh hưởng tới ai?</p>
+</blockquote>
+<blockquote>
+<p>Khi nó sai, chúng ta có phát hiện được không?</p>
+</blockquote>
+<blockquote>
+<p>Ai có quyền sửa?</p>
+</blockquote>
+<blockquote>
+<p>Ai có quyền tắt?</p>
+</blockquote>
+<p>Một chiếc xe được phép chạy ngoài đường không chỉ vì động cơ mạnh.</p>
+<p>Nó còn cần:</p>
+<ul>
+<li>biển số,</li>
+<li>hồ sơ đăng kiểm,</li>
+<li>thông tin chủ sở hữu,</li>
+<li>giới hạn tải trọng,</li>
+<li>lịch bảo trì,</li>
+<li>và một người chịu trách nhiệm khi có tai nạn.</li>
+</ul>
+<p>AI cũng vậy.</p>
+<p>Một model đạt accuracy 95% chưa có nghĩa là nó đã sẵn sàng để đi vào đời sống.</p>
+<p>Ta còn phải biết 5% sai còn lại rơi vào đâu.</p>
+<p>Sai ngẫu nhiên hay sai tập trung ở một nhóm người?</p>
+<p>Sai trong môi trường thử nghiệm hay sai lúc dữ liệu thực tế thay đổi?</p>
+<p>Sai một gợi ý bài hát có thể chỉ làm người dùng khó chịu.</p>
+<p>Sai một quyết định liên quan tới tiền, an toàn hoặc quyền truy cập có thể để lại hậu quả rất khác.</p>
+<p>Responsible AI không phải lời hứa rằng AI sẽ không bao giờ sai.</p>
+<p>Không hệ thống nào đưa ra được lời hứa đó.</p>
+<p>Nó là việc xây đủ ánh sáng, hàng rào, biển báo và công tắc khẩn cấp xung quanh một thứ vốn có thể sai.</p>
+<h1 id="vấn-đề-bắt-đầu-khi-ai-có-mặt-ở-khắp-nơi">Vấn đề bắt đầu khi AI có mặt ở khắp nơi<a class="anchor ms-1" href="#vấn-đề-bắt-đầu-khi-ai-có-mặt-ở-khắp-nơi"><i class="fas fa-link"></i></a></h1>
+<p>Khi một công ty chỉ có ba mô hình machine learning, việc quản lý khá đơn giản.</p>
+<p>Mọi người biết nhau.</p>
+<p>Người xây model ngồi cách người vận hành vài chiếc bàn.</p>
+<p>Có vấn đề thì nhắn Slack:</p>
+<blockquote>
+<p>Anh ơi, model dự báo hôm nay hơi lạ.</p>
+</blockquote>
+<p>Nhưng khi AI phát triển trên nhiều nền tảng, nhiều đội và nhiều loại công nghệ khác nhau, cách quản lý bằng trí nhớ bắt đầu vỡ.</p>
+<p>Uber cho biết AI được phát triển trên nhiều nền tảng và bởi nhiều nhóm trong công ty, bao gồm các mô hình được xây trên Michelangelo — nền tảng AI nội bộ của Uber — cũng như các ứng dụng Generative AI mới. Vì vậy, governance không thể tồn tại như một lớp quy định nằm bên ngoài quy trình kỹ thuật; nó phải được đưa thẳng vào nơi kỹ sư đang thiết kế, huấn luyện và triển khai hệ thống. (<a href="https://www.uber.com/blog/scaling-responsible-ai/" title="Under the Hood: Scaling Responsible AI at Uber" target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<p>Đây là một khác biệt rất lớn.</p>
+<p>Cách làm dễ nhất là viết một bộ quy định dài 80 trang.</p>
+<p>Gửi email toàn công ty.</p>
+<p>Yêu cầu mọi người tự đọc.</p>
+<p>Sáu tháng sau kiểm tra lại.</p>
+<p>Một nửa chưa mở file.</p>
+<p>Một phần tư tưởng quy định chỉ áp dụng cho model deep learning.</p>
+<p>Số còn lại vẫn dùng template cũ vì link mới nằm trong một email đã bị chôn dưới 3.000 thông báo.</p>
+<p>Quy định tồn tại.</p>
+<p>Nhưng hành vi không thay đổi.</p>
+<p>Uber chọn cách đưa Responsible AI vào chính vòng đời phát triển AI, dựa trên năm trụ cột:</p>
+<ul>
+<li>Visibility: nhìn thấy các hệ thống AI.</li>
+<li>Explainability: hiểu đầu vào ảnh hưởng tới đầu ra như thế nào.</li>
+<li>Governance: đưa kiểm soát vào quy trình.</li>
+<li>Education: giúp nhân viên hiểu họ cần làm gì.</li>
+<li>Adoption: kéo cả hệ thống mới lẫn hệ thống cũ vào cùng một chuẩn. (<a href="https://www.uber.com/blog/scaling-responsible-ai/" title="Under the Hood: Scaling Responsible AI at Uber" target="_blank" rel="noopener noreferrer">Uber</a>)</li>
+</ul>
+<p>Nói theo cách đơn giản hơn:</p>
+<blockquote>
+<p>Biết máy nào đang chạy.</p>
+</blockquote>
+<blockquote>
+<p>Biết vì sao nó chạy như vậy.</p>
+</blockquote>
+<blockquote>
+<p>Đặt hàng rào trước khi mở máy.</p>
+</blockquote>
+<blockquote>
+<p>Dạy người vận hành cách dùng.</p>
+</blockquote>
+<blockquote>
+<p>Và đừng bỏ quên những chiếc máy cũ đang nằm dưới tầng hầm.</p>
+</blockquote>
+<h1 id="trụ-cột-thứ-nhất-muốn-quản-lý-ai-trước-hết-phải-tìm-thấy-nó">Trụ cột thứ nhất: Muốn quản lý AI, trước hết phải tìm thấy nó<a class="anchor ms-1" href="#trụ-cột-thứ-nhất-muốn-quản-lý-ai-trước-hết-phải-tìm-thấy-nó"><i class="fas fa-link"></i></a></h1>
+<p>Điều đầu tiên Uber xây không phải một mô hình phát hiện bias cực kỳ huyền bí.</p>
+<p>Họ xây một <strong>Model Catalog</strong>.</p>
+<p>Một cuốn sổ chung để biết các mô hình đang tồn tại trong công ty.</p>
+<p>Ở trung tâm của Model Catalog là <strong>Model Card</strong> — một tài liệu chuẩn hóa mô tả những thông tin quan trọng của từng model, chẳng hạn mục đích, đặc điểm, metric hiệu năng, thông tin triển khai và các tài liệu liên quan. Catalog có thể tìm kiếm, lọc theo trường dữ liệu và tự động điền một số thông tin từ tín hiệu hệ thống nhằm giảm công việc thủ công cho kỹ sư. (<a href="https://www.uber.com/blog/scaling-responsible-ai/" title="Under the Hood: Scaling Responsible AI at Uber" target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<h2 id="model-card-giống-giấy-đăng-ký-xe">Model Card giống giấy đăng ký xe<a class="anchor ms-1" href="#model-card-giống-giấy-đăng-ký-xe"><i class="fas fa-link"></i></a></h2>
+<p>Một Model Card tốt có thể trả lời:</p>
+<ul>
+<li>Tên model là gì?</li>
+<li>Model thuộc hệ thống nào?</li>
+<li>Ai là owner?</li>
+<li>Dùng cho mục đích nào?</li>
+<li>Không nên dùng cho mục đích nào?</li>
+<li>Loại model là gì?</li>
+<li>Được huấn luyện từ dữ liệu nào?</li>
+<li>Metric chính là gì?</li>
+<li>Phiên bản nào đang production?</li>
+<li>Được deploy ở đâu?</li>
+<li>Đầu vào và đầu ra là gì?</li>
+<li>Có rủi ro đặc biệt nào?</li>
+<li>Muốn báo lỗi thì liên hệ ai?</li>
+</ul>
+<p>Khái niệm Model Card được đề xuất nhằm đi kèm model với thông tin về mục đích sử dụng, điều kiện đánh giá, hiệu năng, giới hạn và bối cảnh phù hợp, để người dùng không mang một model ra sử dụng ở nơi nó chưa từng được thiết kế cho. (<a href="https://arxiv.org/abs/1810.03993?utm_source=chatgpt.com" title="Model Cards for Model Reporting" target="_blank" rel="noopener noreferrer">arXiv</a>)</p>
+<p>Nó giống giấy đăng ký xe.</p>
+<p>Một chiếc xe không chỉ được gọi là:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">xe màu đen
+</span></span></code></pre></div><p>Nó có biển số.</p>
+<p>Số khung.</p>
+<p>Số máy.</p>
+<p>Chủ sở hữu.</p>
+<p>Loại phương tiện.</p>
+<p>Ngày đăng kiểm.</p>
+<p>Một chiếc model cũng không thể được quản lý bằng tên:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">model_final_v3_new
+</span></span></code></pre></div><p>Bởi vì sáu tháng sau, không ai còn nhớ <code>v3</code> khác <code>v3_new_final2</code> ở điểm nào.</p>
+<h2 id="một-danh-sách-excel-chưa-phải-model-catalog">Một danh sách Excel chưa phải Model Catalog<a class="anchor ms-1" href="#một-danh-sách-excel-chưa-phải-model-catalog"><i class="fas fa-link"></i></a></h2>
+<p>Nhiều công ty nghe tới model inventory sẽ tạo một file Excel.</p>
+<p>Ban đầu khá ổn.</p>
+<p>Có 20 dòng.</p>
+<p>Mọi người chăm chỉ cập nhật.</p>
+<p>Ba tháng sau có 70 dòng.</p>
+<p>Một model đổi owner nhưng chưa sửa.</p>
+<p>Một model đã tắt vẫn ghi là production.</p>
+<p>Một model mới được deploy tối thứ Sáu nhưng chưa ai thêm vào.</p>
+<p>Một cột ghi accuracy 93%, nhưng không nói đo trên tập dữ liệu nào.</p>
+<p>Một link trỏ tới tài liệu đã bị xóa.</p>
+<p>Đến cuối năm, file Excel trở thành một nghĩa trang thông tin.</p>
+<p>Mọi thứ từng đúng.</p>
+<p>Nhưng không biết còn đúng hay không.</p>
+<p>Đây là lý do Uber tự động điền một phần metadata từ tín hiệu hệ thống và tích hợp Model Catalog vào quy trình phát triển ML. (<a href="https://www.uber.com/blog/scaling-responsible-ai/" title="Under the Hood: Scaling Responsible AI at Uber" target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<p>Những thông tin máy có thể biết thì đừng bắt con người gõ lại:</p>
+<ul>
+<li>Model ID</li>
+<li>Training job ID</li>
+<li>Git commit</li>
+<li>Owner của project</li>
+<li>Framework</li>
+<li>Ngày deploy</li>
+<li>Endpoint</li>
+<li>Model version</li>
+<li>Dataset version</li>
+<li>Metric từ pipeline</li>
+<li>Trạng thái production</li>
+</ul>
+<p>Con người nên bổ sung những thứ máy khó hiểu:</p>
+<ul>
+<li>Mục đích kinh doanh</li>
+<li>Giới hạn sử dụng</li>
+<li>Nhóm người bị ảnh hưởng</li>
+<li>Rủi ro</li>
+<li>Giả định</li>
+<li>Cách xử lý khi có sự cố</li>
+</ul>
+<p>Model Catalog sống được hay không phụ thuộc vào một nguyên tắc:</p>
+<blockquote>
+<p>Thông tin phải được sinh ra từ quy trình, không phải trông chờ vào trí nhớ.</p>
+</blockquote>
+<h1 id="đừng-quản-lý-từng-file-hãy-quản-lý-cả-hệ-thống">Đừng quản lý từng file, hãy quản lý cả hệ thống<a class="anchor ms-1" href="#đừng-quản-lý-từng-file-hãy-quản-lý-cả-hệ-thống"><i class="fas fa-link"></i></a></h1>
+<p>Một model hiếm khi sống một mình.</p>
+<p>Nó còn có:</p>
+<ul>
+<li>Pipeline dữ liệu</li>
+<li>Feature Store</li>
+<li>Code preprocessing</li>
+<li>Model artifact</li>
+<li>API serving</li>
+<li>Business rule</li>
+<li>Threshold</li>
+<li>Dashboard</li>
+<li>Human approval</li>
+<li>Downstream system</li>
+</ul>
+<p>Giả sử một model chống gian lận trả về điểm:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">0.87
+</span></span></code></pre></div><p>Con số đó không tự khóa giao dịch.</p>
+<p>Một rule phía sau có thể quy định:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Nếu score &gt; 0.8 thì chặn.
+</span></span></code></pre></div><p>Thay threshold từ <code>0.8</code> xuống <code>0.6</code> có thể ảnh hưởng lớn hơn việc thay model.</p>
+<p>Vì vậy, chỉ quản lý file model là chưa đủ.</p>
+<p>Uber nhấn mạnh governance phải hoạt động ở cấp hệ thống, bởi AI được xây dựng xuyên qua nhiều nền tảng, repository, nhóm và workflow khác nhau. (<a href="https://www.uber.com/blog/scaling-responsible-ai/" title="Under the Hood: Scaling Responsible AI at Uber" target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<p>Đây là bài học rất quan trọng.</p>
+<p>Trách nhiệm không nằm trong một file <code>.pt</code>.</p>
+<p>Nó nằm trong toàn bộ dây chuyền biến dữ liệu thành hành động.</p>
+<h1 id="trụ-cột-thứ-hai-máy-đưa-ra-kết-quả-nhưng-vì-sao">Trụ cột thứ hai: Máy đưa ra kết quả, nhưng vì sao?<a class="anchor ms-1" href="#trụ-cột-thứ-hai-máy-đưa-ra-kết-quả-nhưng-vì-sao"><i class="fas fa-link"></i></a></h1>
+<p>Giả sử model dự đoán thời gian giao hàng là 42 phút.</p>
+<p>Người dùng hỏi:</p>
+<blockquote>
+<p>Vì sao lâu vậy?</p>
+</blockquote>
+<p>Câu trả lời tệ nhất là:</p>
+<blockquote>
+<p>Máy tính tính ra như vậy.</p>
+</blockquote>
+<p>Đó không phải giải thích.</p>
+<p>Đó chỉ là một cách lịch sự để nói:</p>
+<blockquote>
+<p>Chúng tôi cũng không biết.</p>
+</blockquote>
+<p>Explainability cố gắng giúp con người hiểu những yếu tố nào đã ảnh hưởng tới kết quả của model.</p>
+<p>Uber tích hợp các công cụ feature attribution trực tiếp vào workflow của Michelangelo, ban đầu tập trung vào model dùng dữ liệu dạng bảng hoặc dữ liệu có cấu trúc. Họ triển khai ba cấp độ giải thích: Permutation Feature Importance cho góc nhìn toàn cục, SHAP cho từng dự đoán cụ thể và Integrated Gradients cho các mô hình khả vi như neural network. Kết quả phân tích feature importance được tính sau training và liên kết tự động vào Model Card. (<a href="https://www.uber.com/blog/scaling-responsible-ai/" title="Under the Hood: Scaling Responsible AI at Uber" target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<h2 id="global-explanation-cả-model-thường-nhìn-vào-điều-gì">Global explanation: Cả model thường nhìn vào điều gì?<a class="anchor ms-1" href="#global-explanation-cả-model-thường-nhìn-vào-điều-gì"><i class="fas fa-link"></i></a></h2>
+<p>Giả sử có một model dự đoán thời gian giao hàng dựa trên:</p>
+<ul>
+<li>Khoảng cách</li>
+<li>Thời tiết</li>
+<li>Giờ trong ngày</li>
+<li>Tình trạng giao thông</li>
+<li>Thời gian chuẩn bị món</li>
+<li>Khu vực</li>
+<li>Loại phương tiện</li>
+</ul>
+<p>Ta muốn biết, nhìn chung, model phụ thuộc nhiều nhất vào feature nào.</p>
+<p>Permutation Feature Importance, viết tắt là PFI, có một trực giác khá thú vị.</p>
+<p>Ta lấy một feature rồi xáo trộn giá trị của nó.</p>
+<p>Nếu model đột nhiên dự đoán tệ hơn nhiều, feature đó có vẻ quan trọng.</p>
+<p>Nếu xáo trộn mà kết quả gần như không thay đổi, model có thể không dựa nhiều vào nó.</p>
+<p>Giống như tháo từng chân khỏi một chiếc bàn.</p>
+<p>Tháo chân nào mà bàn ngã mạnh nhất, chân đó có vai trò lớn.</p>
+<p>PFI cho cái nhìn toàn cục:</p>
+<blockquote>
+<p>Nhìn chung, model đang dựa vào yếu tố nào?</p>
+</blockquote>
+<p>Nó hữu ích để phát hiện những chuyện lạ.</p>
+<p>Ví dụ, một feature tưởng rất quan trọng nhưng model gần như không dùng.</p>
+<p>Hoặc một feature không nên có ảnh hưởng lớn lại đang đứng đầu bảng.</p>
+<h2 id="local-explanation-vì-sao-trường-hợp-này-ra-kết-quả-như-vậy">Local explanation: Vì sao trường hợp này ra kết quả như vậy?<a class="anchor ms-1" href="#local-explanation-vì-sao-trường-hợp-này-ra-kết-quả-như-vậy"><i class="fas fa-link"></i></a></h2>
+<p>Global explanation nói về toàn bộ model.</p>
+<p>Nhưng người dùng thường hỏi về một trường hợp cụ thể.</p>
+<blockquote>
+<p>Vì sao đơn hàng này bị đánh giá rủi ro cao?</p>
+</blockquote>
+<blockquote>
+<p>Vì sao chuyến đi này được dự đoán lâu hơn?</p>
+</blockquote>
+<blockquote>
+<p>Vì sao sản phẩm này được xếp trước sản phẩm kia?</p>
+</blockquote>
+<p>SHAP gán cho từng feature một giá trị thể hiện mức đóng góp của nó vào một dự đoán cụ thể. Framework SHAP được xây dựng để hợp nhất một nhóm phương pháp giải thích dựa trên feature attribution và đưa ra các giá trị quan trọng cho từng đặc trưng trong mỗi prediction. (<a href="https://arxiv.org/abs/1705.07874?utm_source=chatgpt.com" title="A Unified Approach to Interpreting Model Predictions" target="_blank" rel="noopener noreferrer">arXiv</a>)</p>
+<p>Ví dụ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Dự đoán ban đầu: 25 phút
+</span></span><span class="line"><span class="ln">2</span><span class="cl">
+</span></span><span class="line"><span class="ln">3</span><span class="cl">Khoảng cách xa:             +8 phút
+</span></span><span class="line"><span class="ln">4</span><span class="cl">Nhà hàng chuẩn bị chậm:     +6 phút
+</span></span><span class="line"><span class="ln">5</span><span class="cl">Giao thông thuận lợi:       -3 phút
+</span></span><span class="line"><span class="ln">6</span><span class="cl">Ít tài xế trong khu vực:    +6 phút
+</span></span><span class="line"><span class="ln">7</span><span class="cl">
+</span></span><span class="line"><span class="ln">8</span><span class="cl">Kết quả:                    42 phút
+</span></span></code></pre></div><p>Con số thực tế phức tạp hơn nhiều.</p>
+<p>Nhưng trực giác là vậy.</p>
+<p>SHAP giống một nhóm người cùng đẩy một chiếc xe.</p>
+<p>Ta muốn biết mỗi người đã góp bao nhiêu lực vào hướng di chuyển cuối cùng.</p>
+<h2 id="integrated-gradients-lần-theo-con-đường-từ-im-lặng-tới-quyết-định">Integrated Gradients: Lần theo con đường từ im lặng tới quyết định<a class="anchor ms-1" href="#integrated-gradients-lần-theo-con-đường-từ-im-lặng-tới-quyết-định"><i class="fas fa-link"></i></a></h2>
+<p>Với neural network, Uber sử dụng Integrated Gradients.</p>
+<p>Phương pháp này xem xét sự thay đổi của đầu ra khi đầu vào đi dần từ một giá trị nền đến giá trị thật, rồi tích lũy gradient trên con đường đó để ước lượng mức đóng góp của từng đầu vào. Integrated Gradients được đề xuất với hai tính chất nền tảng là Sensitivity và Implementation Invariance, đồng thời không yêu cầu chỉnh sửa kiến trúc model. (<a href="https://proceedings.mlr.press/v70/sundararajan17a.html?utm_source=chatgpt.com" title="Axiomatic Attribution for Deep Networks" target="_blank" rel="noopener noreferrer">Proceedings of Machine Learning Research</a>)</p>
+<p>Hãy tưởng tượng một căn phòng tối.</p>
+<p>Ta bật từng chút ánh sáng lên.</p>
+<p>Mỗi lần sáng thêm một chút, ta quan sát đồ vật nào bắt đầu hiện rõ và ảnh hưởng tới điều mình đang nhìn.</p>
+<p>Cuối cùng, ta có một hình dung về yếu tố nào đã đưa model từ trạng thái nền tới kết quả hiện tại.</p>
+<h1 id="explainability-không-phải-máy-phát-hiện-sự-thật">Explainability không phải máy phát hiện sự thật<a class="anchor ms-1" href="#explainability-không-phải-máy-phát-hiện-sự-thật"><i class="fas fa-link"></i></a></h1>
+<p>Đây là chỗ cần hết sức cẩn thận.</p>
+<p>Một biểu đồ SHAP đẹp không có nghĩa model công bằng.</p>
+<p>Feature importance cao không có nghĩa feature đó là nguyên nhân thật trong đời sống.</p>
+<p>Hai feature tương quan với nhau có thể khiến attribution khó diễn giải.</p>
+<p>Một feature không xuất hiện trực tiếp vẫn có thể được đại diện bởi những feature khác.</p>
+<p>Ví dụ, xóa cột <code>giới tính</code> không đảm bảo model không còn học được tín hiệu tương quan từ hành vi, địa điểm hoặc những dữ liệu thay thế khác.</p>
+<p>Explainability giúp ta nhìn vào model.</p>
+<p>Nhưng nhìn thấy không đồng nghĩa đã hiểu hết.</p>
+<p>Một bác sĩ có thể nhìn ảnh X-quang.</p>
+<p>Điều đó không khiến mọi chẩn đoán tự động đúng.</p>
+<p>Explainability là chiếc đèn pin.</p>
+<p>Không phải giấy chứng nhận vô tội.</p>
+<p>Đây cũng là lý do Responsible AI không thể chỉ có một biểu đồ feature importance.</p>
+<p>Nó cần governance, kiểm thử, con người và khả năng đặt kết quả vào đúng bối cảnh.</p>
+<h1 id="trụ-cột-thứ-ba-đừng-đợi-xây-xong-nhà-mới-kiểm-tra-bản-vẽ">Trụ cột thứ ba: Đừng đợi xây xong nhà mới kiểm tra bản vẽ<a class="anchor ms-1" href="#trụ-cột-thứ-ba-đừng-đợi-xây-xong-nhà-mới-kiểm-tra-bản-vẽ"><i class="fas fa-link"></i></a></h1>
+<p>Một trong những ý tưởng mình tâm đắc nhất trong bài của Uber là <strong>shift-left governance</strong>.</p>
+<p>Thay vì chờ đến sát ngày release mới bắt đầu kiểm tra trách nhiệm, compliance và rủi ro, Uber đưa các bước này vào từ giai đoạn lập kế hoạch.</p>
+<p>Quy trình review tài liệu PRD và ERD được sử dụng như điểm vào sớm cho ML governance. Các yêu cầu chính sách được kết hợp với lời nhắc và cơ chế thực thi trong sản phẩm; kỹ sư được yêu cầu hoàn thành Model Card trước khi deploy, tạo thành một cổng kiểm soát có thể audit trong workflow giao phần mềm. (<a href="https://www.uber.com/blog/scaling-responsible-ai/" title="Under the Hood: Scaling Responsible AI at Uber" target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<h2 id="kiểm-tra-trước-khi-đổ-bê-tông">Kiểm tra trước khi đổ bê tông<a class="anchor ms-1" href="#kiểm-tra-trước-khi-đổ-bê-tông"><i class="fas fa-link"></i></a></h2>
+<p>Giả sử bản vẽ một tòa nhà đặt cửa thoát hiểm ở sai vị trí.</p>
+<p>Có hai thời điểm để phát hiện.</p>
+<p>Thời điểm thứ nhất: khi bản vẽ còn nằm trên màn hình.</p>
+<p>Kỹ sư kéo cửa sang chỗ khác.</p>
+<p>Mất mười phút.</p>
+<p>Thời điểm thứ hai: sau khi tòa nhà đã hoàn thành.</p>
+<p>Tường đã xây.</p>
+<p>Điện đã đi.</p>
+<p>Nội thất đã lắp.</p>
+<p>Muốn sửa phải đập cả một khu vực.</p>
+<p>AI governance cũng vậy.</p>
+<p>Nếu đến ngày deploy mới hỏi:</p>
+<ul>
+<li>Model đang ảnh hưởng tới ai?</li>
+<li>Dữ liệu này có được phép dùng không?</li>
+<li>Ai là owner?</li>
+<li>Có cơ chế giám sát chưa?</li>
+<li>Nếu model sai thì rollback thế nào?</li>
+<li>Model có giải thích được không?</li>
+</ul>
+<p>thì có thể đã quá muộn.</p>
+<p>Hàng tháng engineering đã trôi qua.</p>
+<p>API đã tích hợp.</p>
+<p>Dashboard đã xây.</p>
+<p>Business đang chờ release.</p>
+<p>Trong hoàn cảnh đó, governance team bị đẩy vào vai người đứng trước chuyến tàu đang chạy và giơ tấm bảng:</p>
+<blockquote>
+<p>Xin dừng lại để điền biểu mẫu.</p>
+</blockquote>
+<p>Không ai vui.</p>
+<p>Kỹ sư thấy governance cản trở.</p>
+<p>Governance thấy kỹ sư thiếu trách nhiệm.</p>
+<p>Shift-left giải quyết mâu thuẫn bằng cách hỏi sớm hơn.</p>
+<p>Khi ý tưởng còn mềm.</p>
+<p>Khi kiến trúc còn thay đổi được.</p>
+<p>Khi một rủi ro chưa biến thành 50 microservice.</p>
+<h1 id="governance-tốt-phải-nằm-trong-công-cụ">Governance tốt phải nằm trong công cụ<a class="anchor ms-1" href="#governance-tốt-phải-nằm-trong-công-cụ"><i class="fas fa-link"></i></a></h1>
+<p>Một quy định chỉ nằm trên wiki rất dễ bị quên.</p>
+<p>Một quy định nằm trong workflow khó bị bỏ qua hơn.</p>
+<p>Ví dụ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">Train model
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">Đánh giá metric
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">Sinh feature attribution
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">Cập nhật Model Card
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">Chạy compliance checks
+</span></span><span class="line"><span class="ln">10</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln">11</span><span class="cl">Approval nếu cần
+</span></span><span class="line"><span class="ln">12</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln">13</span><span class="cl">Deploy
+</span></span></code></pre></div><p>Nếu Model Card chưa đủ thông tin, pipeline không cho qua.</p>
+<p>Nếu model thuộc nhóm rủi ro cao, hệ thống yêu cầu thêm approval.</p>
+<p>Nếu owner trống, không deploy.</p>
+<p>Nếu model version và tài liệu không khớp, dừng lại.</p>
+<p>Nghe hơi khó chịu.</p>
+<p>Giống việc sân bay bắt kiểm tra an ninh.</p>
+<p>Không ai thích xếp hàng.</p>
+<p>Nhưng không ai muốn một sân bay bỏ kiểm tra chỉ để hành khách lên máy bay nhanh hơn ba phút.</p>
+<p>Responsible AI chỉ mở rộng được khi trách nhiệm trở thành tính năng của platform, không phải lòng tốt tự nguyện của từng kỹ sư.</p>
+<h1 id="không-phải-model-nào-cũng-cần-cùng-một-hàng-rào">Không phải model nào cũng cần cùng một hàng rào<a class="anchor ms-1" href="#không-phải-model-nào-cũng-cần-cùng-một-hàng-rào"><i class="fas fa-link"></i></a></h1>
+<p>Một model sắp xếp thứ tự bài viết nội bộ không có cùng mức rủi ro với model ảnh hưởng tới tiền, quyền truy cập hoặc an toàn.</p>
+<p>Nếu dùng cùng một quy trình kiểm soát cho mọi hệ thống, ta sẽ gặp hai vấn đề.</p>
+<p>Hoặc quy trình quá nhẹ với hệ thống quan trọng.</p>
+<p>Hoặc quá nặng với những thử nghiệm nhỏ.</p>
+<p>Cả hai đều tệ.</p>
+<p>Một cách thực tế là phân loại theo rủi ro.</p>
+<p>Ví dụ:</p>
+<h2 id="rủi-ro-thấp">Rủi ro thấp<a class="anchor ms-1" href="#rủi-ro-thấp"><i class="fas fa-link"></i></a></h2>
+<ul>
+<li>Tóm tắt tài liệu nội bộ</li>
+<li>Gợi ý nội dung không mang tính quyết định</li>
+<li>Sandbox thử nghiệm</li>
+<li>Prototype chưa có người dùng thật</li>
+</ul>
+<p>Có thể chỉ cần Model Card cơ bản, kiểm tra dữ liệu và owner.</p>
+<h2 id="rủi-ro-trung-bình">Rủi ro trung bình<a class="anchor ms-1" href="#rủi-ro-trung-bình"><i class="fas fa-link"></i></a></h2>
+<ul>
+<li>Recommendation cho khách hàng</li>
+<li>Dự báo vận hành</li>
+<li>Phân loại ticket</li>
+<li>Agent tạo nội dung nhưng cần con người duyệt</li>
+</ul>
+<p>Cần đánh giá metric, monitoring, giới hạn sử dụng và human oversight.</p>
+<h2 id="rủi-ro-cao">Rủi ro cao<a class="anchor ms-1" href="#rủi-ro-cao"><i class="fas fa-link"></i></a></h2>
+<ul>
+<li>Quyết định liên quan tới tiền</li>
+<li>Quyền truy cập</li>
+<li>An toàn</li>
+<li>Nhóm người dễ bị ảnh hưởng</li>
+<li>Agent được phép thực hiện hành động quan trọng</li>
+</ul>
+<p>Cần review chuyên sâu, kiểm thử fairness, security, privacy, approval rõ ràng và cơ chế dừng khẩn cấp.</p>
+<p>Uber cho biết họ chuyển từ các rule tĩnh sang hệ thống phân loại động, không phụ thuộc vào công nghệ cụ thể, đồng thời sử dụng ngữ cảnh và expert oversight để phân biệt hệ thống có ảnh hưởng thực sự với những cách dùng AI không đáng kể. (<a href="https://www.uber.com/blog/scaling-responsible-ai/" title="Under the Hood: Scaling Responsible AI at Uber" target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<p>Điểm này rất đáng học.</p>
+<p>Governance không nên hỏi:</p>
+<blockquote>
+<p>Có dùng neural network không?</p>
+</blockquote>
+<p>Nó nên hỏi:</p>
+<blockquote>
+<p>Hệ thống này có thể gây ra hậu quả gì?</p>
+</blockquote>
+<p>Công nghệ thay đổi rất nhanh.</p>
+<p>Hậu quả đối với con người mới là thứ cần được quản lý.</p>
+<h1 id="trụ-cột-thứ-tư-không-thể-giao-hết-trách-nhiệm-cho-một-phòng-ban">Trụ cột thứ tư: Không thể giao hết trách nhiệm cho một phòng ban<a class="anchor ms-1" href="#trụ-cột-thứ-tư-không-thể-giao-hết-trách-nhiệm-cho-một-phòng-ban"><i class="fas fa-link"></i></a></h1>
+<p>Giả sử công ty có một đội Responsible AI gồm mười người.</p>
+<p>Công ty có năm nghìn kỹ sư.</p>
+<p>Nếu mọi quyết định đều phải đi qua mười người đó, hàng đợi sẽ dài đến năm sau.</p>
+<p>Nếu chỉ mười người hiểu Responsible AI, phần còn lại của công ty sẽ coi nó như chuyện của phòng pháp lý.</p>
+<p>Đó là cách một chương trình chết rất nhanh.</p>
+<p>Uber xem Responsible AI là cam kết chung trong toàn công ty. Họ xây các khóa đào tạo để nhân viên hiểu nguyên tắc trước khi sử dụng hoặc triển khai model, đồng thời tạo một AI Resource Hub tập trung chứa tài liệu kỹ thuật, hướng dẫn và nguồn học tập. (<a href="https://www.uber.com/blog/scaling-responsible-ai/" title="Under the Hood: Scaling Responsible AI at Uber" target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<h2 id="responsible-ai-giống-an-toàn-cháy-nổ">Responsible AI giống an toàn cháy nổ<a class="anchor ms-1" href="#responsible-ai-giống-an-toàn-cháy-nổ"><i class="fas fa-link"></i></a></h2>
+<p>Một tòa nhà không thể nói:</p>
+<blockquote>
+<p>Việc chữa cháy là trách nhiệm của đội cứu hỏa, nhân viên bình thường không cần biết.</p>
+</blockquote>
+<p>Nhân viên vẫn phải biết:</p>
+<ul>
+<li>Lối thoát hiểm ở đâu</li>
+<li>Chuông báo cháy trông như thế nào</li>
+<li>Không được chặn cửa thoát hiểm</li>
+<li>Bình chữa cháy dùng ra sao</li>
+<li>Khi có khói thì gọi ai</li>
+</ul>
+<p>Họ không cần trở thành lính cứu hỏa.</p>
+<p>Nhưng họ cần đủ hiểu biết để không vô tình biến một tia lửa thành thảm họa.</p>
+<p>Kỹ sư cũng vậy.</p>
+<p>Không phải ai cũng cần trở thành chuyên gia fairness hay luật AI.</p>
+<p>Nhưng người xây hệ thống cần biết:</p>
+<ul>
+<li>Dữ liệu nào nhạy cảm</li>
+<li>Khi nào cần Model Card</li>
+<li>Khi nào phải review</li>
+<li>Explainability nào phù hợp</li>
+<li>Cách báo cáo sự cố</li>
+<li>Rủi ro nào không được tự quyết</li>
+<li>Model nào cần con người phê duyệt đầu ra</li>
+</ul>
+<p>AI literacy không chỉ là biết viết prompt.</p>
+<p>Nó còn là biết lúc nào không nên tin output.</p>
+<h1 id="trụ-cột-thứ-năm-đừng-chỉ-quản-lý-những-model-sinh-ra-từ-hôm-nay">Trụ cột thứ năm: Đừng chỉ quản lý những model sinh ra từ hôm nay<a class="anchor ms-1" href="#trụ-cột-thứ-năm-đừng-chỉ-quản-lý-những-model-sinh-ra-từ-hôm-nay"><i class="fas fa-link"></i></a></h1>
+<p>Giả sử công ty ban hành quy định:</p>
+<blockquote>
+<p>Từ thứ Hai, mọi model mới phải có Model Card.</p>
+</blockquote>
+<p>Nghe rất tốt.</p>
+<p>Nhưng còn hàng trăm model đang chạy từ ba năm trước thì sao?</p>
+<p>Chúng không biến mất chỉ vì quy định mới ra đời.</p>
+<p>Đây là phần khó nhất của governance.</p>
+<p>Xây quy trình đẹp cho hệ thống mới khá dễ.</p>
+<p>Đưa di sản cũ vào cùng tiêu chuẩn mới mới là việc tốn sức.</p>
+<p>Uber bắt đầu bằng giai đoạn onboarding thủ công và beta testing với các đội sở hữu model. Phản hồi từ người dùng nội bộ được dùng để sửa yêu cầu Model Card, phát hành phiên bản thứ hai và thực hiện một đợt tập trung nhằm đưa các model hiện hữu vào chuẩn chung. (<a href="https://www.uber.com/blog/scaling-responsible-ai/" title="Under the Hood: Scaling Responsible AI at Uber" target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<h2 id="model-cũ-giống-nhà-xây-trước-khi-có-luật-phòng-cháy-mới">Model cũ giống nhà xây trước khi có luật phòng cháy mới<a class="anchor ms-1" href="#model-cũ-giống-nhà-xây-trước-khi-có-luật-phòng-cháy-mới"><i class="fas fa-link"></i></a></h2>
+<p>Không thể yêu cầu phá toàn bộ thành phố rồi xây lại.</p>
+<p>Nhưng cũng không thể nói:</p>
+<blockquote>
+<p>Nhà này cũ nên không cần an toàn.</p>
+</blockquote>
+<p>Ta phải kiểm kê.</p>
+<p>Phân loại.</p>
+<p>Ưu tiên nhà rủi ro cao.</p>
+<p>Bổ sung lối thoát.</p>
+<p>Lắp báo cháy.</p>
+<p>Đưa dần vào chuẩn mới.</p>
+<p>Một chương trình adoption thực tế có thể đi theo thứ tự:</p>
+<ol>
+<li>Tìm tất cả model đang production.</li>
+<li>Xác định owner.</li>
+<li>Loại những model đã chết nhưng chưa được khai tử.</li>
+<li>Phân loại rủi ro.</li>
+<li>Ưu tiên model ảnh hưởng lớn.</li>
+<li>Bổ sung Model Card.</li>
+<li>Thêm monitoring và explainability.</li>
+<li>Đưa vào deployment gate.</li>
+<li>Thiết lập lịch review lại.</li>
+</ol>
+<p>Không thể hoàn thành trong một đêm.</p>
+<p>Nhưng ít nhất mỗi ngày tòa nhà sáng thêm một tầng.</p>
+<h1 id="vòng-đời-model-không-bắt-đầu-ở-production">Vòng đời model không bắt đầu ở production<a class="anchor ms-1" href="#vòng-đời-model-không-bắt-đầu-ở-production"><i class="fas fa-link"></i></a></h1>
+<p>Một model có thể tồn tại ở nhiều trạng thái:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">Ý tưởng
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">  ↓
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">Thử nghiệm
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">  ↓
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">Huấn luyện
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">  ↓
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">Đánh giá
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">  ↓
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">Shadow
+</span></span><span class="line"><span class="ln">10</span><span class="cl">  ↓
+</span></span><span class="line"><span class="ln">11</span><span class="cl">Canary
+</span></span><span class="line"><span class="ln">12</span><span class="cl">  ↓
+</span></span><span class="line"><span class="ln">13</span><span class="cl">Production
+</span></span><span class="line"><span class="ln">14</span><span class="cl">  ↓
+</span></span><span class="line"><span class="ln">15</span><span class="cl">Bảo trì
+</span></span><span class="line"><span class="ln">16</span><span class="cl">  ↓
+</span></span><span class="line"><span class="ln">17</span><span class="cl">Ngừng sử dụng
+</span></span></code></pre></div><p>Governance phải hiểu các trạng thái này.</p>
+<p>Một notebook thử nghiệm không cần quy trình giống model production.</p>
+<p>Nhưng nếu notebook bắt đầu xuất kết quả để nhân viên ra quyết định thật, nó không còn chỉ là thử nghiệm.</p>
+<p>Một model đã ngừng nhận traffic nhưng vẫn còn endpoint và credential cũng chưa thật sự chết.</p>
+<p>Uber gọi đây là <strong>life-cycle-aware governance</strong>: xác định thế nào là một model nằm trong phạm vi quản lý trên toàn bộ vòng đời, từ thử nghiệm sớm tới triển khai production. (<a href="https://www.uber.com/blog/scaling-responsible-ai/" title="Under the Hood: Scaling Responsible AI at Uber" target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<p>Điều này nghe đơn giản.</p>
+<p>Nhưng rất nhiều hệ thống AI sống trong vùng xám.</p>
+<p>Người xây nói:</p>
+<blockquote>
+<p>Đây chỉ là POC.</p>
+</blockquote>
+<p>Business nói:</p>
+<blockquote>
+<p>POC này đang gửi báo cáo cho giám đốc mỗi sáng.</p>
+</blockquote>
+<p>Nếu một POC có người dùng thật, dữ liệu thật và quyết định thật, nó đã rời khỏi phòng thí nghiệm từ lâu.</p>
+<p>Chỉ có nhãn dán trên cửa là chưa kịp đổi.</p>
+<h1 id="glass-box-không-có-nghĩa-model-phải-đơn-giản">“Glass box” không có nghĩa model phải đơn giản<a class="anchor ms-1" href="#glass-box-không-có-nghĩa-model-phải-đơn-giản"><i class="fas fa-link"></i></a></h1>
+<p>Người ta thường gọi machine learning là hộp đen.</p>
+<p>Dữ liệu đi vào.</p>
+<p>Kết quả đi ra.</p>
+<p>Bên trong có nhiều ma trận, gradient và những con số mà phần lớn con người không nhìn nổi quá năm phút.</p>
+<p>Uber dùng hình ảnh <strong>glass box</strong> — hộp kính — như một hướng tiếp cận: tạo visibility, explainability và governance xung quanh hệ thống AI để tổ chức có thể đổi mới mà vẫn giữ accountability và niềm tin. (<a href="https://www.uber.com/blog/scaling-responsible-ai/" title="Under the Hood: Scaling Responsible AI at Uber" target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<p>Hộp kính không có nghĩa mọi người đều nhìn vào neural network và hiểu từng neuron.</p>
+<p>Nó có nghĩa ta nhìn thấy những thứ cần thiết để quản lý:</p>
+<ul>
+<li>Model nào đang chạy</li>
+<li>Phiên bản nào</li>
+<li>Owner là ai</li>
+<li>Được thiết kế cho việc gì</li>
+<li>Dữ liệu nào đi vào</li>
+<li>Metric nào được theo dõi</li>
+<li>Feature nào ảnh hưởng lớn</li>
+<li>Ai đã phê duyệt</li>
+<li>Khi nào deploy</li>
+<li>Rủi ro nào đã được ghi nhận</li>
+<li>Cách rollback</li>
+<li>Khi nào cần đánh giá lại</li>
+</ul>
+<p>Ta không cần hiểu từng vòng quay trong động cơ để lái xe an toàn.</p>
+<p>Nhưng ta cần đồng hồ tốc độ, đèn báo dầu, phanh, lịch bảo trì và một cuốn hướng dẫn.</p>
+<p>Responsible AI là bảng điều khiển của cỗ máy.</p>
+<h1 id="một-kiến-trúc-responsible-ai-đơn-giản-cho-doanh-nghiệp">Một kiến trúc Responsible AI đơn giản cho doanh nghiệp<a class="anchor ms-1" href="#một-kiến-trúc-responsible-ai-đơn-giản-cho-doanh-nghiệp"><i class="fas fa-link"></i></a></h1>
+<p>Không phải công ty nào cũng cần xây Michelangelo.</p>
+<p>Nhưng có thể học cách ghép các thành phần.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">PRD / ERD
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">    │
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">    ▼
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">AI Risk Classification
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">    │
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">    ├── Low Risk
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">    ├── Medium Risk
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">    └── High Risk
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">    │
+</span></span><span class="line"><span class="ln">10</span><span class="cl">    ▼
+</span></span><span class="line"><span class="ln">11</span><span class="cl">Training Pipeline
+</span></span><span class="line"><span class="ln">12</span><span class="cl">    │
+</span></span><span class="line"><span class="ln">13</span><span class="cl">    ├── Dataset metadata
+</span></span><span class="line"><span class="ln">14</span><span class="cl">    ├── Model metrics
+</span></span><span class="line"><span class="ln">15</span><span class="cl">    ├── Feature attribution
+</span></span><span class="line"><span class="ln">16</span><span class="cl">    ├── Security checks
+</span></span><span class="line"><span class="ln">17</span><span class="cl">    └── Privacy checks
+</span></span><span class="line"><span class="ln">18</span><span class="cl">    │
+</span></span><span class="line"><span class="ln">19</span><span class="cl">    ▼
+</span></span><span class="line"><span class="ln">20</span><span class="cl">Model Registry
+</span></span><span class="line"><span class="ln">21</span><span class="cl">    │
+</span></span><span class="line"><span class="ln">22</span><span class="cl">    ▼
+</span></span><span class="line"><span class="ln">23</span><span class="cl">Model Catalog + Model Card
+</span></span><span class="line"><span class="ln">24</span><span class="cl">    │
+</span></span><span class="line"><span class="ln">25</span><span class="cl">    ▼
+</span></span><span class="line"><span class="ln">26</span><span class="cl">Approval / Deployment Gate
+</span></span><span class="line"><span class="ln">27</span><span class="cl">    │
+</span></span><span class="line"><span class="ln">28</span><span class="cl">    ▼
+</span></span><span class="line"><span class="ln">29</span><span class="cl">Production Serving
+</span></span><span class="line"><span class="ln">30</span><span class="cl">    │
+</span></span><span class="line"><span class="ln">31</span><span class="cl">    ├── Quality monitoring
+</span></span><span class="line"><span class="ln">32</span><span class="cl">    ├── Drift monitoring
+</span></span><span class="line"><span class="ln">33</span><span class="cl">    ├── Fairness monitoring
+</span></span><span class="line"><span class="ln">34</span><span class="cl">    ├── Cost monitoring
+</span></span><span class="line"><span class="ln">35</span><span class="cl">    ├── Incident management
+</span></span><span class="line"><span class="ln">36</span><span class="cl">    └── Human feedback
+</span></span><span class="line"><span class="ln">37</span><span class="cl">    │
+</span></span><span class="line"><span class="ln">38</span><span class="cl">    ▼
+</span></span><span class="line"><span class="ln">39</span><span class="cl">Review / Retrain / Retire
+</span></span></code></pre></div><h2 id="1-model-registry-lưu-vật-thể">1. Model Registry lưu vật thể<a class="anchor ms-1" href="#1-model-registry-lưu-vật-thể"><i class="fas fa-link"></i></a></h2>
+<p>Model Registry lưu:</p>
+<ul>
+<li>Model artifact</li>
+<li>Phiên bản</li>
+<li>Metric</li>
+<li>Dataset version</li>
+<li>Training run</li>
+<li>Deployment status</li>
+</ul>
+<h2 id="2-model-catalog-lưu-ý-nghĩa">2. Model Catalog lưu ý nghĩa<a class="anchor ms-1" href="#2-model-catalog-lưu-ý-nghĩa"><i class="fas fa-link"></i></a></h2>
+<p>Model Catalog trả lời:</p>
+<ul>
+<li>Model dùng để làm gì</li>
+<li>Ai sở hữu</li>
+<li>Ảnh hưởng tới ai</li>
+<li>Rủi ro gì</li>
+<li>Giới hạn ở đâu</li>
+<li>Tài liệu liên quan</li>
+<li>Quy trình xử lý sự cố</li>
+</ul>
+<p>Hai hệ thống có thể là một sản phẩm.</p>
+<p>Nhưng hai khái niệm không hoàn toàn giống nhau.</p>
+<p>Registry giống kho giữ máy.</p>
+<p>Catalog giống hồ sơ quản lý máy.</p>
+<h2 id="3-policy-engine-quyết-định-cần-kiểm-tra-gì">3. Policy Engine quyết định cần kiểm tra gì<a class="anchor ms-1" href="#3-policy-engine-quyết-định-cần-kiểm-tra-gì"><i class="fas fa-link"></i></a></h2>
+<p>Không phải mọi model đều chạy cùng checklist.</p>
+<p>Policy có thể dựa trên:</p>
+<ul>
+<li>Loại use case</li>
+<li>Dữ liệu nhạy cảm</li>
+<li>Mức tự động hóa</li>
+<li>Khả năng gây thiệt hại</li>
+<li>Phạm vi người dùng</li>
+<li>Có human approval hay không</li>
+<li>Model nội bộ hay bên thứ ba</li>
+<li>Có GenAI hay không</li>
+</ul>
+<h2 id="4-cicd-biến-trách-nhiệm-thành-hàng-rào-thật">4. CI/CD biến trách nhiệm thành hàng rào thật<a class="anchor ms-1" href="#4-cicd-biến-trách-nhiệm-thành-hàng-rào-thật"><i class="fas fa-link"></i></a></h2>
+<p>Ví dụ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Không có owner          → Không deploy
+</span></span><span class="line"><span class="ln">2</span><span class="cl">Thiếu Model Card        → Không deploy
+</span></span><span class="line"><span class="ln">3</span><span class="cl">Model rủi ro cao        → Cần approval
+</span></span><span class="line"><span class="ln">4</span><span class="cl">Metric dưới ngưỡng      → Không deploy
+</span></span><span class="line"><span class="ln">5</span><span class="cl">Dataset chưa được duyệt → Không train
+</span></span><span class="line"><span class="ln">6</span><span class="cl">Không có rollback plan  → Không production
+</span></span></code></pre></div><h2 id="5-monitoring-phải-kéo-dài-sau-deployment">5. Monitoring phải kéo dài sau deployment<a class="anchor ms-1" href="#5-monitoring-phải-kéo-dài-sau-deployment"><i class="fas fa-link"></i></a></h2>
+<p>Model không ngừng thay đổi chỉ vì file trọng số đứng yên.</p>
+<p>Thế giới xung quanh nó thay đổi.</p>
+<p>Người dùng thay đổi.</p>
+<p>Sản phẩm thay đổi.</p>
+<p>Dữ liệu thay đổi.</p>
+<p>Một model tốt hôm nay có thể trở nên tệ sau sáu tháng.</p>
+<p>Responsible AI không phải con dấu đóng một lần.</p>
+<p>Nó là việc theo dõi suốt vòng đời.</p>
+<h1 id="đo-responsible-ai-bằng-gì">Đo Responsible AI bằng gì?<a class="anchor ms-1" href="#đo-responsible-ai-bằng-gì"><i class="fas fa-link"></i></a></h1>
+<p>Một chương trình governance không nên chỉ báo cáo:</p>
+<blockquote>
+<p>Đã tổ chức 12 buổi đào tạo.</p>
+</blockquote>
+<blockquote>
+<p>Đã tạo 500 Model Card.</p>
+</blockquote>
+<p>Những con số này có ích.</p>
+<p>Nhưng chưa nói hệ thống có an toàn hơn hay không.</p>
+<p>Có thể theo dõi thêm:</p>
+<ul>
+<li>Tỷ lệ model production đã có owner</li>
+<li>Tỷ lệ model có Model Card đầy đủ</li>
+<li>Tỷ lệ metadata được tự động cập nhật</li>
+<li>Số model không còn traffic nhưng chưa retire</li>
+<li>Thời gian tìm owner khi xảy ra incident</li>
+<li>Tỷ lệ model rủi ro cao đã được review</li>
+<li>Tỷ lệ model có rollback plan</li>
+<li>Tỷ lệ explanation được sinh thành công</li>
+<li>Số vấn đề được phát hiện trước deployment</li>
+<li>Thời gian từ lúc phát hiện lỗi tới khi tắt model</li>
+<li>Số ngoại lệ governance tồn tại quá hạn</li>
+<li>Tỷ lệ model cũ đã được đưa vào chuẩn mới</li>
+</ul>
+<p>Mục tiêu không phải tạo nhiều giấy tờ hơn.</p>
+<p>Mục tiêu là giảm thời gian tổ chức phải đứng trong bóng tối khi có chuyện.</p>
+<h1 id="những-cái-bẫy-rất-dễ-gặp">Những cái bẫy rất dễ gặp<a class="anchor ms-1" href="#những-cái-bẫy-rất-dễ-gặp"><i class="fas fa-link"></i></a></h1>
+<h2 id="model-card-biến-thành-bài-văn-mẫu">Model Card biến thành bài văn mẫu<a class="anchor ms-1" href="#model-card-biến-thành-bài-văn-mẫu"><i class="fas fa-link"></i></a></h2>
+<p>Nếu Model Card có 50 câu hỏi nhưng người viết chỉ copy:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">No known risks.
+</span></span></code></pre></div><p>thì catalog vẫn đẹp.</p>
+<p>Thông tin vẫn vô dụng.</p>
+<p>Model Card phải ngắn đủ để được cập nhật, nhưng cụ thể đủ để sử dụng khi có vấn đề.</p>
+<h2 id="mọi-model-đều-được-đánh-giá-giống-nhau">Mọi model đều được đánh giá giống nhau<a class="anchor ms-1" href="#mọi-model-đều-được-đánh-giá-giống-nhau"><i class="fas fa-link"></i></a></h2>
+<p>Một chatbot nội bộ và model tự động từ chối giao dịch không nên đi qua cùng một checklist.</p>
+<p>Không có risk classification, governance sẽ trở thành một cục bê tông đổ lên mọi đội kỹ thuật.</p>
+<h2 id="explainability-được-dùng-để-trang-trí">Explainability được dùng để trang trí<a class="anchor ms-1" href="#explainability-được-dùng-để-trang-trí"><i class="fas fa-link"></i></a></h2>
+<p>Sinh một biểu đồ SHAP rồi gắn vào dashboard không có nghĩa ai đã đọc nó.</p>
+<p>Cần định nghĩa:</p>
+<ul>
+<li>Dấu hiệu nào là bất thường?</li>
+<li>Feature nào không được phép chi phối quá lớn?</li>
+<li>Ai xem?</li>
+<li>Xem khi nào?</li>
+<li>Có hành động gì sau khi xem?</li>
+</ul>
+<h2 id="governance-chỉ-diễn-ra-trước-deployment">Governance chỉ diễn ra trước deployment<a class="anchor ms-1" href="#governance-chỉ-diễn-ra-trước-deployment"><i class="fas fa-link"></i></a></h2>
+<p>Model có thể drift.</p>
+<p>Dataset có thể thay đổi.</p>
+<p>Owner có thể nghỉ việc.</p>
+<p>Policy có thể đổi.</p>
+<p>Một Model Card đúng hôm nay có thể sai sau một năm.</p>
+<h2 id="chỉ-quản-lý-model-tự-xây">Chỉ quản lý model tự xây<a class="anchor ms-1" href="#chỉ-quản-lý-model-tự-xây"><i class="fas fa-link"></i></a></h2>
+<p>Doanh nghiệp ngày càng sử dụng API model bên ngoài.</p>
+<p>Dù không sở hữu trọng số, công ty vẫn sở hữu cách model được đưa vào sản phẩm.</p>
+<p>Một hệ thống gọi model bên thứ ba vẫn cần:</p>
+<ul>
+<li>Owner</li>
+<li>Use case</li>
+<li>Dữ liệu gửi ra ngoài</li>
+<li>Version</li>
+<li>Prompt</li>
+<li>Tool permissions</li>
+<li>Evaluation</li>
+<li>Monitoring</li>
+<li>Fallback</li>
+<li>Incident process</li>
+</ul>
+<p>Thuê động cơ không có nghĩa được phép lái xe không cần phanh.</p>
+<h1 id="điều-mình-tâm-đắc-nhất-responsible-ai-thực-ra-là-system-engineering">Điều mình tâm đắc nhất: Responsible AI thực ra là System Engineering<a class="anchor ms-1" href="#điều-mình-tâm-đắc-nhất-responsible-ai-thực-ra-là-system-engineering"><i class="fas fa-link"></i></a></h1>
+<p>Khi nghe Responsible AI, người ta thường nghĩ tới triết học.</p>
+<p>Công bằng.</p>
+<p>Đạo đức.</p>
+<p>Niềm tin.</p>
+<p>Những khái niệm đó quan trọng.</p>
+<p>Nhưng để chúng tồn tại trong production, chúng phải được biến thành những thứ cực kỳ cụ thể:</p>
+<ul>
+<li>Một model ID</li>
+<li>Một owner</li>
+<li>Một Model Card</li>
+<li>Một policy</li>
+<li>Một pipeline</li>
+<li>Một approval</li>
+<li>Một dashboard</li>
+<li>Một alert</li>
+<li>Một nút rollback</li>
+<li>Một ngày hết hạn</li>
+<li>Một log audit</li>
+</ul>
+<p>Niềm tin nghe rất trừu tượng.</p>
+<p>Nhưng nó được xây bằng metadata.</p>
+<p>Trách nhiệm nghe rất lớn lao.</p>
+<p>Nhưng nó bắt đầu bằng việc điền đúng tên người sở hữu.</p>
+<p>Minh bạch nghe giống triết học.</p>
+<p>Nhưng đôi khi nó chỉ là khả năng tìm được model đang chạy trong vòng ba mươi giây.</p>
+<p>Đó là điều mình thích nhất trong cách Uber tiếp cận bài toán.</p>
+<p>Họ không cố giải Responsible AI chỉ bằng những tuyên bố đẹp.</p>
+<p>Họ xây catalog.</p>
+<p>Tự động sinh metadata.</p>
+<p>Đưa explainability vào training workflow.</p>
+<p>Gắn governance vào PRD và ERD.</p>
+<p>Đặt Model Card trước cửa deployment.</p>
+<p>Đào tạo người dùng.</p>
+<p>Sau đó quay lại lục từng model cũ để kéo chúng vào cùng một hệ thống. (<a href="https://www.uber.com/blog/scaling-responsible-ai/" title="Under the Hood: Scaling Responsible AI at Uber" target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<p>Không có phép màu.</p>
+<p>Chỉ có rất nhiều công việc nhỏ được nối đúng chỗ.</p>
+<p>Giống một cây cầu.</p>
+<p>Người đứng trên cầu nhìn thấy con đường phẳng.</p>
+<p>Không nhìn thấy hàng nghìn con ốc đang giữ từng thanh thép.</p>
+<p>Responsible AI cũng vậy.</p>
+<p>Người dùng chỉ nhìn thấy một kết quả AI xuất hiện trên màn hình.</p>
+<p>Phía sau kết quả đó cần có cả một cấu trúc đủ chắc để trả lời:</p>
+<blockquote>
+<p>Nó đến từ đâu?</p>
+</blockquote>
+<blockquote>
+<p>Vì sao nó xuất hiện?</p>
+</blockquote>
+<blockquote>
+<p>Ai đang chịu trách nhiệm?</p>
+</blockquote>
+<blockquote>
+<p>Và chuyện gì xảy ra nếu nó sai?</p>
+</blockquote>
+<h1 id="tổng-kết">Tổng kết<a class="anchor ms-1" href="#tổng-kết"><i class="fas fa-link"></i></a></h1>
+<p>AI càng phát triển, số lượng model sẽ càng tăng.</p>
+<p>Model không chỉ nằm trong đội machine learning.</p>
+<p>Nó sẽ xuất hiện trong search.</p>
+<p>Recommendation.</p>
+<p>Forecasting.</p>
+<p>Chăm sóc khách hàng.</p>
+<p>Tài chính.</p>
+<p>Nhân sự.</p>
+<p>Bảo mật.</p>
+<p>Marketing.</p>
+<p>Email.</p>
+<p>Tài liệu.</p>
+<p>Code.</p>
+<p>Và những AI Agent có khả năng tự gọi công cụ rồi tác động thẳng vào hệ thống doanh nghiệp.</p>
+<p>Khi đó, câu hỏi quan trọng không còn chỉ là:</p>
+<blockquote>
+<p>Model có chính xác không?</p>
+</blockquote>
+<p>Mà còn là:</p>
+<blockquote>
+<p>Công ty có biết model này đang tồn tại không?</p>
+</blockquote>
+<p>Một AI có thể rất thông minh.</p>
+<p>Nhưng nếu không ai biết nó nằm ở đâu, dùng dữ liệu gì, ai sở hữu và cách tắt nó, sự thông minh đó không còn là tài sản hoàn toàn.</p>
+<p>Nó bắt đầu trở thành một khoản nợ.</p>
+<p>Có lẽ Responsible AI không bắt đầu bằng việc dạy máy trở thành người tốt.</p>
+<p>Nó bắt đầu bằng việc con người chịu khó quản lý những gì mình đã tạo ra.</p>
+<p>Đặt tên cho nó.</p>
+<p>Làm giấy khai sinh.</p>
+<p>Ghi rõ chủ sở hữu.</p>
+<p>Giới hạn quyền hạn.</p>
+<p>Theo dõi hành vi.</p>
+<p>Kiểm tra sức khỏe.</p>
+<p>Và chuẩn bị sẵn một công tắc để dừng lại.</p>
+<p>Bởi vì trong một nhà máy có hàng nghìn cỗ máy tự động, thứ đáng sợ nhất không phải cỗ máy mạnh nhất.</p>
+<p>Mà là cỗ máy vẫn đang chạy, đang đưa ra quyết định, đang tác động lên con người — nhưng không ai trong nhà máy còn nhớ nó thuộc về ai.</p>
+<h1 id="tham-khảo">Tham khảo<a class="anchor ms-1" href="#tham-khảo"><i class="fas fa-link"></i></a></h1>
+<ul>
+<li><a href="https://www.uber.com/blog/scaling-responsible-ai/" target="_blank" rel="noopener noreferrer">Uber Engineering – Under the Hood: Scaling Responsible AI at Uber</a></li>
+<li><a href="https://arxiv.org/abs/1810.03993" target="_blank" rel="noopener noreferrer">Model Cards for Model Reporting</a></li>
+<li><a href="https://arxiv.org/abs/1705.07874" target="_blank" rel="noopener noreferrer">A Unified Approach to Interpreting Model Predictions – SHAP</a></li>
+<li><a href="https://proceedings.mlr.press/v70/sundararajan17a.html" target="_blank" rel="noopener noreferrer">Axiomatic Attribution for Deep Networks – Integrated Gradients</a></li>
+<li><a href="https://www.nist.gov/itl/ai-risk-management-framework" target="_blank" rel="noopener noreferrer">NIST AI Risk Management Framework</a></li>
+</ul>
+</div></div>
+  <div class="card-footer"><div class="post-navs d-flex justify-content-evenly"><div class="post-nav post-prev">
+    <i class="fas fa-fw fa-chevron-left"></i>
+    <a href="https://www.phamduytung.com/blog/2026-07-04-aiagent-dream/">AI Agent và giấc mơ công ty tự chạy. Robot làm việc được, nhưng ai chịu trách nhiệm?
+</a>
+  </div><div class="post-nav post-next">
+    <a href="https://www.phamduytung.com/blog/2026-07-06-mcp-server-architerch/">MCP Server Architecture Patterns - Khi API không còn phục vụ con người
+</a>
+    <i class="fas fa-fw fa-chevron-right"></i>
+  </div></div></div>
+</article><div class="card component row post-comments" id="post-comments">
+  <div class="card-header">
+    <h2 class="card-title">Bình luận</h2>
+  </div>
+  <div class="card-body"><script src="https://utteranc.es/client.js"
+  repo="AlexBlack2202/utterances"
+  issue-term="pathname"
+  label="comment"
+  theme="github-dark"
+  crossorigin="anonymous"
+  async>
+</script></div>
+</div></div>
+</div><aside class="col-lg-3 col-md-4 sidebar d-flex">
+  <div class="container d-flex flex-column">
+    
+    <a href="https://www.buymeacoffee.com/alexblack28"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=🍎&slug=alexblack28&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" /></a><div class="post-toc row mb-4 card component" id="postTOC">
+  <div class="card-header">
+    <h2 class="card-title">Mục lục</h2>
+  </div>
+  <div class="card-body">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#một-nhà-máy-không-biết-mình-đang-có-bao-nhiêu-cỗ-máy">Một nhà máy không biết mình đang có bao nhiêu cỗ máy</a></li>
+    <li><a href="#responsible-ai-là-gì-nói-theo-cách-lúa-nhất-có-thể">Responsible AI là gì, nói theo cách lúa nhất có thể?</a></li>
+    <li><a href="#vấn-đề-bắt-đầu-khi-ai-có-mặt-ở-khắp-nơi">Vấn đề bắt đầu khi AI có mặt ở khắp nơi</a></li>
+    <li><a href="#trụ-cột-thứ-nhất-muốn-quản-lý-ai-trước-hết-phải-tìm-thấy-nó">Trụ cột thứ nhất: Muốn quản lý AI, trước hết phải tìm thấy nó</a>
+      <ul>
+        <li><a href="#model-card-giống-giấy-đăng-ký-xe">Model Card giống giấy đăng ký xe</a></li>
+        <li><a href="#một-danh-sách-excel-chưa-phải-model-catalog">Một danh sách Excel chưa phải Model Catalog</a></li>
+      </ul>
+    </li>
+    <li><a href="#đừng-quản-lý-từng-file-hãy-quản-lý-cả-hệ-thống">Đừng quản lý từng file, hãy quản lý cả hệ thống</a></li>
+    <li><a href="#trụ-cột-thứ-hai-máy-đưa-ra-kết-quả-nhưng-vì-sao">Trụ cột thứ hai: Máy đưa ra kết quả, nhưng vì sao?</a>
+      <ul>
+        <li><a href="#global-explanation-cả-model-thường-nhìn-vào-điều-gì">Global explanation: Cả model thường nhìn vào điều gì?</a></li>
+        <li><a href="#local-explanation-vì-sao-trường-hợp-này-ra-kết-quả-như-vậy">Local explanation: Vì sao trường hợp này ra kết quả như vậy?</a></li>
+        <li><a href="#integrated-gradients-lần-theo-con-đường-từ-im-lặng-tới-quyết-định">Integrated Gradients: Lần theo con đường từ im lặng tới quyết định</a></li>
+      </ul>
+    </li>
+    <li><a href="#explainability-không-phải-máy-phát-hiện-sự-thật">Explainability không phải máy phát hiện sự thật</a></li>
+    <li><a href="#trụ-cột-thứ-ba-đừng-đợi-xây-xong-nhà-mới-kiểm-tra-bản-vẽ">Trụ cột thứ ba: Đừng đợi xây xong nhà mới kiểm tra bản vẽ</a>
+      <ul>
+        <li><a href="#kiểm-tra-trước-khi-đổ-bê-tông">Kiểm tra trước khi đổ bê tông</a></li>
+      </ul>
+    </li>
+    <li><a href="#governance-tốt-phải-nằm-trong-công-cụ">Governance tốt phải nằm trong công cụ</a></li>
+    <li><a href="#không-phải-model-nào-cũng-cần-cùng-một-hàng-rào">Không phải model nào cũng cần cùng một hàng rào</a>
+      <ul>
+        <li><a href="#rủi-ro-thấp">Rủi ro thấp</a></li>
+        <li><a href="#rủi-ro-trung-bình">Rủi ro trung bình</a></li>
+        <li><a href="#rủi-ro-cao">Rủi ro cao</a></li>
+      </ul>
+    </li>
+    <li><a href="#trụ-cột-thứ-tư-không-thể-giao-hết-trách-nhiệm-cho-một-phòng-ban">Trụ cột thứ tư: Không thể giao hết trách nhiệm cho một phòng ban</a>
+      <ul>
+        <li><a href="#responsible-ai-giống-an-toàn-cháy-nổ">Responsible AI giống an toàn cháy nổ</a></li>
+      </ul>
+    </li>
+    <li><a href="#trụ-cột-thứ-năm-đừng-chỉ-quản-lý-những-model-sinh-ra-từ-hôm-nay">Trụ cột thứ năm: Đừng chỉ quản lý những model sinh ra từ hôm nay</a>
+      <ul>
+        <li><a href="#model-cũ-giống-nhà-xây-trước-khi-có-luật-phòng-cháy-mới">Model cũ giống nhà xây trước khi có luật phòng cháy mới</a></li>
+      </ul>
+    </li>
+    <li><a href="#vòng-đời-model-không-bắt-đầu-ở-production">Vòng đời model không bắt đầu ở production</a></li>
+    <li><a href="#glass-box-không-có-nghĩa-model-phải-đơn-giản">“Glass box” không có nghĩa model phải đơn giản</a></li>
+    <li><a href="#một-kiến-trúc-responsible-ai-đơn-giản-cho-doanh-nghiệp">Một kiến trúc Responsible AI đơn giản cho doanh nghiệp</a>
+      <ul>
+        <li><a href="#1-model-registry-lưu-vật-thể">1. Model Registry lưu vật thể</a></li>
+        <li><a href="#2-model-catalog-lưu-ý-nghĩa">2. Model Catalog lưu ý nghĩa</a></li>
+        <li><a href="#3-policy-engine-quyết-định-cần-kiểm-tra-gì">3. Policy Engine quyết định cần kiểm tra gì</a></li>
+        <li><a href="#4-cicd-biến-trách-nhiệm-thành-hàng-rào-thật">4. CI/CD biến trách nhiệm thành hàng rào thật</a></li>
+        <li><a href="#5-monitoring-phải-kéo-dài-sau-deployment">5. Monitoring phải kéo dài sau deployment</a></li>
+      </ul>
+    </li>
+    <li><a href="#đo-responsible-ai-bằng-gì">Đo Responsible AI bằng gì?</a></li>
+    <li><a href="#những-cái-bẫy-rất-dễ-gặp">Những cái bẫy rất dễ gặp</a>
+      <ul>
+        <li><a href="#model-card-biến-thành-bài-văn-mẫu">Model Card biến thành bài văn mẫu</a></li>
+        <li><a href="#mọi-model-đều-được-đánh-giá-giống-nhau">Mọi model đều được đánh giá giống nhau</a></li>
+        <li><a href="#explainability-được-dùng-để-trang-trí">Explainability được dùng để trang trí</a></li>
+        <li><a href="#governance-chỉ-diễn-ra-trước-deployment">Governance chỉ diễn ra trước deployment</a></li>
+        <li><a href="#chỉ-quản-lý-model-tự-xây">Chỉ quản lý model tự xây</a></li>
+      </ul>
+    </li>
+    <li><a href="#điều-mình-tâm-đắc-nhất-responsible-ai-thực-ra-là-system-engineering">Điều mình tâm đắc nhất: Responsible AI thực ra là System Engineering</a></li>
+    <li><a href="#tổng-kết">Tổng kết</a></li>
+    <li><a href="#tham-khảo">Tham khảo</a></li>
+  </ul>
+</nav>
+  </div>
+</div><section class="recent-posts row card component">
+  <div class="card-header">
+    <h2 class="card-title">Bài gần đây</h2>
+  </div>
+  <div class="card-body">
+    <ul class="post-list"><li>
+        <a href="https://www.phamduytung.com/blog/2026-07-11-ai-agent-identity-crisis/">AI Agent không thiếu trí thông minh, nó thiếu một tờ giấy khai sinh
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-07-11-uber-delivery-search-platform/">Search ở quy mô Uber Eats: Máy không cần đọc đúng chữ, nó phải hiểu người đang đói muốn gì
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-07-10-next-gen-restaurant-recommendation/">Hệ thống gợi ý nhà hàng thế hệ mới: Con người không ăn bằng hồ sơ, họ ăn bằng khoảnh khắc
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-07-09-ai-prd-reviewer/">AI review PRD: Một yêu cầu sai có thể sinh ra hàng nghìn dòng code đúng
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-07-08-ai-agent-identity-crisis/">AI Agent đang có một cuộc khủng hoảng danh tính
+</a>
+      </li></ul>
+  </div>
+</section><section class="series-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/series">series</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/series/kh%C3%B3a-h%E1%BB%8Dc-python-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học Python Căn Bản">
+            Khóa Học Python Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="https://www.phamduytung.com/series/kh%C3%B3a-h%E1%BB%8Dc-c&#43;&#43;-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học C&#43;&#43; Căn Bản">
+            Khóa Học C&#43;&#43; Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="https://www.phamduytung.com/series/machine-learning-dataset/" class="badge rounded post-taxonomy" title="Machine Learning Dataset">
+            Machine Learning Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a><a href="https://www.phamduytung.com/series/ch%E1%BB%A9ng-kho%C3%A1n-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Chứng Khoán Căn Bản">
+            Chứng Khoán Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">1</span></a></div>
+      </div>
+    </section><section class="tools-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/tools">tools</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/tools/tool-random/" class="badge rounded post-taxonomy" title="Tool Random">
+            Tool Random<span class="badge badge-sm text-white bg-accent ms-1">3</span></a></div>
+      </div>
+    </section><section class="categories-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/categories">categories</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/categories/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="https://www.phamduytung.com/categories/c&#43;&#43;/" class="badge rounded post-taxonomy" title="C&#43;&#43;">
+            C&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="https://www.phamduytung.com/categories/dataset/" class="badge rounded post-taxonomy" title="Dataset">
+            Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a></div>
+      </div>
+    </section><section class="tags-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/tags">tags</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/tags/machine-learning/" class="badge rounded post-taxonomy" title="Machine Learning">
+            Machine Learning<span class="badge badge-sm text-white bg-accent ms-1">26</span></a><a href="https://www.phamduytung.com/tags/deep-learning/" class="badge rounded post-taxonomy" title="Deep Learning">
+            Deep Learning<span class="badge badge-sm text-white bg-accent ms-1">23</span></a><a href="https://www.phamduytung.com/tags/computer-vision/" class="badge rounded post-taxonomy" title="Computer Vision">
+            Computer Vision<span class="badge badge-sm text-white bg-accent ms-1">16</span></a><a href="https://www.phamduytung.com/tags/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">14</span></a><a href="https://www.phamduytung.com/tags/llm/" class="badge rounded post-taxonomy" title="Llm">
+            Llm<span class="badge badge-sm text-white bg-accent ms-1">13</span></a><a href="https://www.phamduytung.com/tags/recommendation-system/" class="badge rounded post-taxonomy" title="Recommendation System">
+            Recommendation System<span class="badge badge-sm text-white bg-accent ms-1">7</span></a><a href="https://www.phamduytung.com/tags/system-design/" class="badge rounded post-taxonomy" title="System Design">
+            System Design<span class="badge badge-sm text-white bg-accent ms-1">6</span></a><a href="https://www.phamduytung.com/tags/time-series/" class="badge rounded post-taxonomy" title="Time Series">
+            Time Series<span class="badge badge-sm text-white bg-accent ms-1">6</span></a><a href="https://www.phamduytung.com/tags/uber-engineering/" class="badge rounded post-taxonomy" title="Uber Engineering">
+            Uber Engineering<span class="badge badge-sm text-white bg-accent ms-1">6</span></a><a href="https://www.phamduytung.com/tags/ai-agent/" class="badge rounded post-taxonomy" title="Ai Agent">
+            Ai Agent<span class="badge badge-sm text-white bg-accent ms-1">5</span></a></div>
+      </div>
+    </section>
+    
+  </div>
+</aside>
+</div>
+    </main><footer class="footer mt-auto py-3 text-center container"><ul class="nav justify-content-between footer-memu mb-3"><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Community
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-facebook"></i>Facebook Group
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://github.com/AlexBlack2202/alexblack2202.github.io" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-github"></i>GitHub
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/contact/"><i class="fas fa-fw fa-info-circle"></i>Contact Us
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/faq/"><i class="fas fa-fw fa-question-circle"></i>Câu hỏi thường gặp
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Docs
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="/team_of_services" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-users"></i>Điều khoản sử dụng
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/privacy" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-lock"></i>Chính sách bảo mật
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Features
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="/utils/gen_paswords/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-key"></i>Tạo password ngẫu nhiên
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Liên kết khác
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">Netlify
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">facebook
+</a>
+        </li></ul></li></ul>
+<div class="copyright mb-2">
+  Copyright © 2016-2026 Phạm Duy Tùng. All Rights Reserved.
+</div>
+<div class="powered-by mb-2">
+  Website chia sẻ kiến thức của Phạm Duy Tùng và Đặng Thị Hằng. Vui lòng liên hệ email alexblack2202@gmail.com nếu bạn có thông tin cần trao đổi.
+</div></footer>
+<script src="https://www.phamduytung.com/js/main.111d51a8c754010f8399ca010e552d803e2d5170b361f8886ad04ec6c21ca551.js" integrity="sha256-ER1RqMdUAQ&#43;DmcoBDlUtgD4tUXCzYfiIatBOxsIcpVE=" crossorigin="anonymous" defer></script><script src="https://www.phamduytung.com/js/icons.min.cb4c9958dbc49e29ac644e168e82db2d0de9a741a15751cc5bf2b0af21eb2845.js" integrity="sha256-y0yZWNvEnimsZE4WjoLbLQ3pp0GhV1HMW/KwryHrKEU=" crossorigin="anonymous" defer></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('https:\/\/www.phamduytung.com\/service-worker.js').then(function(reg) {
+      console.log('Successfully registered service worker', reg);
+    }).catch(function(err) {
+      console.warn('Error whilst registering service worker', err);
+    });
+  });
+}
+</script><script src="https://www.phamduytung.com/js/viewer.min.28bcf5233e406dae6715f46c8b9e8ca7c6cbf347e8678f5a2bebe5369c3270bb.js" integrity="sha256-KLz1Iz5Aba5nFfRsi56Mp8bL80foZ49aK&#43;vlNpwycLs=" crossorigin="anonymous" defer></script><script defer src="https://www.phamduytung.com/js/katex.min.8582b9feadf92a2a977ed303b97d7713cf2754ccf2b4eb60d8be7453a21042c2.js" integrity="sha256-hYK5/q35KiqXftMDuX13E88nVMzytOtg2L50U6IQQsI=" crossorigin="anonymous"></script>
+
+<script  data-ad-client="ca-pub-4644989745435991"  async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4644989745435991"
+     crossorigin="anonymous"></script><script data-cfasync="false" type="text/javascript" data-adel="atag" src="//acscdn.com/script/atg.js" czid="eul3gyjdmm"></script>
+  </body>
+</html>

@@ -1,0 +1,1181 @@
+<!doctype html><html lang="vi" data-palette="brown"
+   data-mode="light">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>AI review PRD: Một yêu cầu sai có thể sinh ra hàng nghìn dòng code đúng - Phạm Duy Tùng Machine Learning Blog</title>
+    <meta name="a.validate.02" content="1QZXZ8oi7g57H-GxBrBPkTYBydwii-Ic9iJu" /><link rel="apple-touch-icon" href="https://www.phamduytung.com/images/icons/icon-180x180.png" sizes="180x180">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/icon-32x32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/icon-16x16.png" sizes="16x16" type="image/png">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/favicon.ico">
+<link rel="manifest" href="https://www.phamduytung.com/manifest.json">
+<meta name="keywords" content="" />
+<meta name="description" content="AI không nhất thiết phải thay Product Manager. Đôi khi, việc có giá trị nhất mà AI làm được chỉ là đọc bản PRD đầu tiên, lục lại những điều cả nhóm đã quên và hỏi những câu ngớ ngẩn trước khi một yêu cầu sai biến thành hàng nghìn dòng code." /><meta name="robots" content="index, follow" />
+	<meta itemprop="name" content="AI review PRD: Một yêu cầu sai có thể sinh ra hàng nghìn dòng code đúng">
+	<meta itemprop="description" content="AI không nhất thiết phải thay Product Manager. Đôi khi, việc có giá trị nhất mà AI làm được chỉ là đọc bản PRD đầu tiên, lục lại những điều cả nhóm đã quên và hỏi những câu ngớ ngẩn trước khi một yêu cầu sai biến thành hàng nghìn dòng code.">
+	<meta itemprop="datePublished" content="2026-07-09T00:00:00+03:00">
+	<meta itemprop="dateModified" content="2026-07-09T00:00:00+03:00">
+	<meta itemprop="wordCount" content="5918">
+	<meta itemprop="image" content="https://www.phamduytung.com/images/posts/2026-07-09-ai-prd-reviewer/cover.png">
+	<meta itemprop="keywords" content="AI,PRD,Product Management,Llm,RAG,System Design,Uber Engineering"><meta property="og:url" content="https://www.phamduytung.com/blog/2026-07-09-ai-prd-reviewer/">
+	<meta property="og:site_name" content="Phạm Duy Tùng Machine Learning Blog">
+	<meta property="og:title" content="AI review PRD: Một yêu cầu sai có thể sinh ra hàng nghìn dòng code đúng">
+	<meta property="og:description" content="AI không nhất thiết phải thay Product Manager. Đôi khi, việc có giá trị nhất mà AI làm được chỉ là đọc bản PRD đầu tiên, lục lại những điều cả nhóm đã quên và hỏi những câu ngớ ngẩn trước khi một yêu cầu sai biến thành hàng nghìn dòng code.">
+	<meta property="og:locale" content="vi_VN">
+	<meta property="og:type" content="article">
+		<meta property="article:section" content="blog">
+		<meta property="article:published_time" content="2026-07-09T00:00:00+03:00">
+		<meta property="article:modified_time" content="2026-07-09T00:00:00+03:00">
+		<meta property="article:tag" content="AI">
+		<meta property="article:tag" content="PRD">
+		<meta property="article:tag" content="Product Management">
+		<meta property="article:tag" content="Llm">
+		<meta property="article:tag" content="RAG">
+		<meta property="article:tag" content="System Design">
+		<meta property="og:image" content="https://www.phamduytung.com/images/posts/2026-07-09-ai-prd-reviewer/cover.png">
+
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:image" content="https://www.phamduytung.com/images/posts/2026-07-09-ai-prd-reviewer/cover.png">
+	<meta name="twitter:title" content="AI review PRD: Một yêu cầu sai có thể sinh ra hàng nghìn dòng code đúng">
+	<meta name="twitter:description" content="AI không nhất thiết phải thay Product Manager. Đôi khi, việc có giá trị nhất mà AI làm được chỉ là đọc bản PRD đầu tiên, lục lại những điều cả nhóm đã quên và hỏi những câu ngớ ngẩn trước khi một yêu cầu sai biến thành hàng nghìn dòng code.">
+<link rel="stylesheet" href="https://www.phamduytung.com/css/main.min.0aa7373d751b40dcbe96232f76639e455436d25cf0e69da3d7427f45b6fcc905.css" integrity="sha256-Cqc3PXUbQNy&#43;liMvdmOeRVQ20lzw5p2j10J/Rbb8yQU=" crossorigin="anonymous"><link rel="stylesheet" href="https://www.phamduytung.com/css/katex.min.4d6aa053ca8a5675016fa2c9c48ee5359bfaafb8295184458af9d64abce84c47.css" integrity="sha256-TWqgU8qKVnUBb6LJxI7lNZv6r7gpUYRFivnWSrzoTEc=" crossorigin="anonymous">
+<link rel="stylesheet" href="https://www.phamduytung.com/css/viewer.min.e882eb3a023412b73bb741b4604a1222a9f13aa7783c828d26d066ab8642bd51.css" integrity="sha256-6ILrOgI0Erc7t0G0YEoSIqnxOqd4PIKNJtBmq4ZCvVE=" crossorigin="anonymous"><link rel="canonical" href="https://www.phamduytung.com/blog/2026-07-09-ai-prd-reviewer/"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Phạm Duy Tùng"},"dateModified":"2026-07-09T00:00:00+03:00","datePublished":"2026-07-09T00:00:00+03:00","description":"AI không nhất thiết phải thay Product Manager. Đôi khi, việc có giá trị nhất mà AI làm được chỉ là đọc bản PRD đầu tiên, lục lại những điều cả nhóm đã quên và hỏi những câu ngớ ngẩn trước khi một yêu cầu sai biến thành hàng nghìn dòng code.","headline":"AI review PRD: Một yêu cầu sai có thể sinh ra hàng nghìn dòng code đúng","image":["https://www.phamduytung.com/images/posts/2026-07-09-ai-prd-reviewer/cover.png"],"inLanguage":"vi","keywords":"AI, PRD, Product Management, LLM, RAG, System Design, Uber Engineering","mainEntityOfPage":{"@id":"https://www.phamduytung.com/blog/2026-07-09-ai-prd-reviewer/","@type":"WebPage"},"publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://www.phamduytung.com/images/logo.png"},"name":"Phạm Duy Tùng Machine Learning Blog"},"url":"https://www.phamduytung.com/blog/2026-07-09-ai-prd-reviewer/"}</script></head>
+  <body><script>const items=["mode","palette"];items.forEach(function(e){const t=localStorage.getItem("hbs-"+e);t&&document.body.parentElement.setAttribute("data-"+e,t)})</script><header><nav class="navbar top-app-bar top-app-bar-expand-lg fixed-top">
+  <div class="container">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <i class="fas fa-bars"></i>
+    </button><a class="navbar-brand flex-grow-1 flex-lg-grow-0 text-center text-lg-start mx-auto me-lg-3" href="https://www.phamduytung.com/"><img class="logo" alt="Logo" src="https://www.phamduytung.com/images/logo.webp" loading="lazy"  title="Logo"
+   width="32" height="32"
+   />
+Phạm Duy Tùng
+    </a>
+    <div class="offcanvas offcanvas-bottom surface" tabindex="-1" id="offcanvasSocialShare" aria-labelledby="offcanvasSocialShare">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Share</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body">
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Twitter Share Button"
+      target="_blank" href="https://twitter.com/intent/tweet?title=AI%20review%20PRD%3a%20M%e1%bb%99t%20y%c3%aau%20c%e1%ba%a7u%20sai%20c%c3%b3%20th%e1%bb%83%20sinh%20ra%20h%c3%a0ng%20ngh%c3%acn%20d%c3%b2ng%20code%20%c4%91%c3%bang&url=https%3a%2f%2fwww.phamduytung.com%2fblog%2f2026-07-09-ai-prd-reviewer%2f">
+      <i class="fab fa-fw fa-twitter"></i> Twitter
+    </a>
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Facebook Share Button"
+      target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.phamduytung.com%2fblog%2f2026-07-09-ai-prd-reviewer%2f">
+      <i class="fab fa-fw fa-facebook-f"></i> Facebook
+    </a>
+  </div>
+</div>
+    <button class="navbar-settings" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSettings"
+  aria-controls="offcanvasSettings" aria-label="Toggle settings">
+  <i class="fas fa-ellipsis-v"></i>
+</button>
+
+<div class="offcanvas offcanvas-end surface h-100" tabindex="-1" id="offcanvasSettings" aria-labelledby="offcanvasSettings">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Cài đặt</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body d-flex flex-column">
+
+
+
+<section class="setting">
+  <form class="font-size-switcher-form row">
+    <div class="col-auto">
+      <label for="fontSize" class="form-label"><i class="fas fa-fw fa-font"></i> Cỡ chữ</label>
+    </div>
+    <div class="col-auto ms-auto">
+      <input type="range" class="form-range" min="-2" max="2" id="fontSize">
+    </div>
+  </form>
+</section>
+
+
+
+<section class="setting actions d-flex justify-content-around mt-auto overflow-auto">
+  <a role="button" class="action action-go-back" href="javascript: window.history.back();">
+    <span class="action-icon"><i class="fas fa-2x fa-arrow-left"></i></span> Quay lại
+  </a>
+  <a role="button" class="action action-reload-page">
+    <span class="action-icon"><i class="fas fa-2x fa-redo-alt"></i></span> Tải lại
+  </a>
+  <a role="button" class="action action-copy-url">
+    <span class="action-icon"><i class="fas fa-2x fa-link"></i></span> Sao chép URL
+  </a><a class="action action-social-share" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSocialShare"
+    aria-controls="offcanvasSocialShare" aria-label="Toggle social share">
+    <span class="action-icon"><i class="fas fa-2x fa-share-alt"></i></span> Chia sẻ
+  </a></section>
+
+</div>
+</div>
+
+    <div class="collapse navbar-collapse" tabindex="-1" id="navbarSupportedContent" aria-labelledby="navbarSupportedContent">
+      <form class="search-bar my-1" action="https://www.phamduytung.com/search">
+  <div class="input-group input-group-sm">
+    <span class="btn btn-search disabled position-absolute left-0"><i class="fas fa-fw fa-search"></i></span>
+    <input class="form-control rounded-pill" name="q" type="search" aria-label="Search">
+  </div>
+</form>
+      <ul class="navbar-nav ms-auto"><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/series/">
+            <i class="fas fa-fw fa-columns"></i>Courses
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/tools/">
+            <i class="fas fa-fw fa-folder"></i>Tools
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/categories/">
+            <i class="fas fa-fw fa-folder"></i>Categories
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/archives/">
+            <i class="fas fa-fw fa-file-archive"></i>Archives
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/tags/">
+            <i class="fas fa-fw fa-tags"></i>Tags
+          </a>
+        </li><li class="nav-item dropdown">
+          <a class="nav-link" id="navbarDropdownSupport" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-fw fa-comments"></i>Community
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdownSupport"><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Facebook Group
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://github.com/AlexBlack2202/alexblack2202.github.io" target="_blank" rel="noopener noreferrer">
+                GitHub
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/contact/">
+                Contact
+              </a>
+            </li><li><hr class="dropdown-divider"></li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/faq/">
+                Câu hỏi thường gặp
+              </a>
+            </li></ul>
+        </li></ul>
+    </div>
+  </div>
+</nav>
+</header>
+<main role="main" class="container" style="line-height:1.7em">
+      <div class="row content">
+<div class="col-lg-9 col-md-8">
+  <div class="container"><nav class="row card component" aria-label="breadcrumb">
+  <div class="card-body">
+    <ol class="breadcrumb "><li class="breadcrumb-item"><a href="https://www.phamduytung.com/">Trang chủ</a></li><li class="breadcrumb-item"><a href="https://www.phamduytung.com/blog/">Blogs</a></li><li class="breadcrumb-item active">AI review PRD: Một yêu cầu sai có thể sinh ra hàng nghìn dòng code đúng</li></ol>
+  </div>
+</nav>
+<div class="post-panel-wrapper">
+  <div class="d-flex flex-column component rounded post-panel">
+    
+    <a class="action action-panel-toggler" role="button" title="Panel toggler">
+      <i class="fas fa-fw fa-chevron-circle-down"></i>
+    </a>
+    <a id="sidebarToggler" class="action d-none d-lg-block" role="button" title="Sidebar toggler">
+  <i class="fas fa-fw fa-expand-alt" data-fa-transform="rotate-45"></i>
+</a>
+
+    
+
+    
+    
+    <a class="action" href="#post-comments" role="button" aria-label="Comments" title="Comments">
+  <i class="fas fa-fw fa-comments"></i>
+</a>
+    <a class="action" href="#postTOC" aria-controls="Table of contents" role="button" title="Table of contents">
+  <i class="fas fa-fw fa-list-alt"></i>
+</a>
+    
+  </div>
+</div>
+<article class="row card component mb-4 post">
+  <div class="card-header "><div class="bgcover" style="background-image:url(https://www.phamduytung.com/images/posts/2026-07-09-ai-prd-reviewer/cover.png)" aria-label="AI review PRD: Một yêu cầu sai có thể sinh ra hàng nghìn dòng code đúng">
+      <div class="bgtrans">
+          <h1>AI review PRD: Một yêu cầu sai có thể sinh ra hàng nghìn dòng code đúng
+</h1>
+      </div>
+  </div>
+</div>
+  <div class="card-body"><div class="post-meta">
+  <span class="post-date" title="tạo ngày 2026-07-09 04:00:00 &#43;0700 &#43;07.">
+    09/07/2026
+  </span><span class="post-reading-time">
+    28 phút đọc
+  </span><span class="post-taxonomies"><a href="https://www.phamduytung.com/tags/ai/" class="badge post-taxonomy">AI</a><a href="https://www.phamduytung.com/tags/prd/" class="badge post-taxonomy">PRD</a><a href="https://www.phamduytung.com/tags/product-management/" class="badge post-taxonomy">Product Management</a><a href="https://www.phamduytung.com/tags/llm/" class="badge post-taxonomy">llm</a><a href="https://www.phamduytung.com/tags/rag/" class="badge post-taxonomy">RAG</a><a href="https://www.phamduytung.com/tags/system-design/" class="badge post-taxonomy">system design</a><a href="https://www.phamduytung.com/tags/uber-engineering/" class="badge post-taxonomy">Uber Engineering</a></span>
+</div>
+<div class="post-content mb-3"><hr>
+<div class="toc">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#một-yêu-cầu-sai-có-thể-sinh-ra-hàng-nghìn-dòng-code-đúng">Một yêu cầu sai có thể sinh ra hàng nghìn dòng code đúng</a></li>
+    <li><a href="#prd-là-gì-nói-theo-cách-lúa-nhất-có-thể">PRD là gì, nói theo cách lúa nhất có thể?</a></li>
+    <li><a href="#mười-người-đọc-mười-bộ-não-khác-nhau">Mười người đọc, mười bộ não khác nhau</a></li>
+    <li><a href="#cuộc-họp-review-không-nên-là-nơi-mọi-người-đi-tìm-giấy-tờ-thất-lạc">Cuộc họp review không nên là nơi mọi người đi tìm giấy tờ thất lạc</a></li>
+    <li><a href="#ai-ở-đây-không-phải-ông-sếp-mà-là-đứa-trẻ-sáu-tuổi-rất-hay-hỏi">AI ở đây không phải ông sếp, mà là đứa trẻ sáu tuổi rất hay hỏi</a></li>
+    <li><a href="#điều-uber-xây-không-phải-một-công-cụ-sửa-văn">Điều Uber xây không phải một công cụ sửa văn</a></li>
+    <li><a href="#bước-một-đừng-chỉ-đọc-tờ-giấy-hãy-đi-lục-cả-tủ-hồ-sơ">Bước một: Đừng chỉ đọc tờ giấy, hãy đi lục cả tủ hồ sơ</a></li>
+    <li><a href="#context-quan-trọng-không-kém-model">Context quan trọng không kém model</a></li>
+    <li><a href="#bước-hai-không-thể-dùng-cùng-một-kính-lúp-để-soi-mọi-prd">Bước hai: Không thể dùng cùng một kính lúp để soi mọi PRD</a></li>
+    <li><a href="#bước-ba-một-prd-tốt-phải-đứng-được-trên-nhiều-chân">Bước ba: Một PRD tốt phải đứng được trên nhiều chân</a></li>
+    <li><a href="#bước-bốn-đừng-đưa-một-bức-tường-bình-luận-hãy-chỉ-vào-viên-gạch-cần-sửa-trước">Bước bốn: Đừng đưa một bức tường bình luận, hãy chỉ vào viên gạch cần sửa trước</a></li>
+    <li><a href="#framework-quan-trọng-hơn-một-lời-nhận-xét-thông-minh">Framework quan trọng hơn một lời nhận xét thông minh</a></li>
+    <li><a href="#ai-phải-biết-nói-tôi-không-đủ-bằng-chứng">AI phải biết nói: “Tôi không đủ bằng chứng”</a></li>
+    <li><a href="#nếu-cái-gì-cũng-quan-trọng-thì-chẳng-có-gì-quan-trọng">Nếu cái gì cũng quan trọng thì chẳng có gì quan trọng</a>
+      <ul>
+        <li><a href="#phải-sửa-trước-khi-review">Phải sửa trước khi review</a></li>
+        <li><a href="#nên-cải-thiện">Nên cải thiện</a></li>
+      </ul>
+    </li>
+    <li><a href="#ai-không-thay-người-review-cuối-cùng">AI không thay người review cuối cùng</a></li>
+    <li><a href="#nếu-tự-xây-một-ai-prd-reviewer-mình-sẽ-bắt-đầu-như-thế-nào">Nếu tự xây một AI PRD Reviewer, mình sẽ bắt đầu như thế nào?</a>
+      <ul>
+        <li><a href="#1-xây-một-framework-trước-khi-chọn-model">1. Xây một framework trước khi chọn model</a></li>
+        <li><a href="#2-kết-nối-đúng-nguồn-dữ-liệu">2. Kết nối đúng nguồn dữ liệu</a></li>
+        <li><a href="#3-bắt-buộc-trích-dẫn-bằng-chứng">3. Bắt buộc trích dẫn bằng chứng</a></li>
+        <li><a href="#4-giới-hạn-số-vấn-đề-quan-trọng">4. Giới hạn số vấn đề quan trọng</a></li>
+        <li><a href="#5-ghi-nhận-phản-hồi-của-người-dùng">5. Ghi nhận phản hồi của người dùng</a></li>
+      </ul>
+    </li>
+    <li><a href="#đo-thành-công-bằng-chất-lượng-cuộc-họp-không-phải-số-lượng-comment">Đo thành công bằng chất lượng cuộc họp, không phải số lượng comment</a></li>
+    <li><a href="#những-điều-ai-vẫn-có-thể-làm-rất-tệ">Những điều AI vẫn có thể làm rất tệ</a>
+      <ul>
+        <li><a href="#tìm-nhầm-tài-liệu">Tìm nhầm tài liệu</a></li>
+        <li><a href="#tin-tài-liệu-cũ-hơn-tài-liệu-mới">Tin tài liệu cũ hơn tài liệu mới</a></li>
+        <li><a href="#chấm-điểm-giả-chính-xác">Chấm điểm giả chính xác</a></li>
+        <li><a href="#khuyến-khích-viết-để-qua-bài">Khuyến khích viết để qua bài</a></li>
+        <li><a href="#làm-mọi-prd-trở-nên-giống-nhau">Làm mọi PRD trở nên giống nhau</a></li>
+      </ul>
+    </li>
+    <li><a href="#điều-mình-tâm-đắc-nhất-ai-nên-đứng-ở-nơi-có-chi-phí-sai-lầm-còn-thấp">Điều mình tâm đắc nhất: AI nên đứng ở nơi có chi phí sai lầm còn thấp</a></li>
+    <li><a href="#tổng-kết">Tổng kết</a></li>
+    <li><a href="#tham-khảo">Tham khảo</a></li>
+  </ul>
+</nav>
+  </div>
+<h1 id="một-yêu-cầu-sai-có-thể-sinh-ra-hàng-nghìn-dòng-code-đúng">Một yêu cầu sai có thể sinh ra hàng nghìn dòng code đúng<a class="anchor ms-1" href="#một-yêu-cầu-sai-có-thể-sinh-ra-hàng-nghìn-dòng-code-đúng"><i class="fas fa-link"></i></a></h1>
+<p>Có một chuyện hơi ngược đời trong ngành phần mềm.</p>
+<p>Một lập trình viên có thể viết code rất đúng.</p>
+<p>QA có thể kiểm thử rất kỹ.</p>
+<p>Database có thể chạy rất nhanh.</p>
+<p>Hệ thống có thể chịu được hàng triệu request.</p>
+<p>Nhưng sản phẩm cuối cùng vẫn sai.</p>
+<p>Không phải vì chương trình có bug.</p>
+<p>Mà vì ngay từ đầu, cả đội đã hiểu sai thứ cần xây.</p>
+<p>Giống như một đội thợ nhận được bản vẽ xây nhà.</p>
+<p>Bản vẽ ghi phòng ngủ rộng 20 mét vuông, nhưng người chủ thật ra muốn 12 mét vuông và dành phần còn lại làm nhà vệ sinh.</p>
+<p>Thợ xây không biết chuyện đó.</p>
+<p>Họ đo rất chuẩn.</p>
+<p>Trộn xi măng rất đều.</p>
+<p>Xây tường thẳng tắp.</p>
+<p>Lát gạch đẹp long lanh.</p>
+<p>Ba tháng sau, chủ nhà bước vào và hỏi:</p>
+<blockquote>
+<p>Nhà vệ sinh đâu?</p>
+</blockquote>
+<p>Người thợ mở bản vẽ ra.</p>
+<p>Không có.</p>
+<p>Tất cả mọi người đều làm đúng.</p>
+<p>Chỉ có căn nhà là sai.</p>
+<p>Phần mềm cũng vậy.</p>
+<p>Một yêu cầu sai không chỉ tạo ra một lỗi.</p>
+<p>Nó được nhân bản thành:</p>
+<ul>
+<li>hàng nghìn dòng code,</li>
+<li>hàng trăm test case,</li>
+<li>vài chục bảng dữ liệu,</li>
+<li>một đống dashboard,</li>
+<li>tài liệu hướng dẫn sử dụng,</li>
+<li>quy trình vận hành,</li>
+<li>và đôi khi là cả một hệ thống rất lớn đang chạy đúng một điều không ai thực sự cần.</li>
+</ul>
+<p>Đó là lý do mình khá tâm đắc khi đọc bài viết <strong>“Lessons from Building a First-Pass AI PRD Reviewer at Uber”</strong>.</p>
+<p>Uber không cố xây một AI Product Manager biết quyết định thay con người.</p>
+<p>Họ làm một việc nghe khiêm tốn hơn rất nhiều:</p>
+<blockquote>
+<p>Cho AI đọc bản PRD đầu tiên, trước khi những người đắt giá nhất trong phòng phải đọc nó.</p>
+</blockquote>
+<p>Nhưng đôi khi, chính những việc khiêm tốn như vậy mới tạo ra giá trị thật.</p>
+<h1 id="prd-là-gì-nói-theo-cách-lúa-nhất-có-thể">PRD là gì, nói theo cách lúa nhất có thể?<a class="anchor ms-1" href="#prd-là-gì-nói-theo-cách-lúa-nhất-có-thể"><i class="fas fa-link"></i></a></h1>
+<p>PRD là viết tắt của <strong>Product Requirement Document</strong>.</p>
+<p>Dịch ra là tài liệu yêu cầu sản phẩm.</p>
+<p>Nghe hơi học thuật.</p>
+<p>Nói đơn giản hơn, PRD là tờ giấy trả lời câu hỏi:</p>
+<blockquote>
+<p>Chúng ta sắp xây cái gì, xây cho ai, vì sao phải xây và làm sao biết nó có ích?</p>
+</blockquote>
+<p>Trước khi một đội kỹ thuật viết code cho tính năng hủy đơn hàng, PRD có thể phải mô tả:</p>
+<ul>
+<li>Khách hàng nào được hủy?</li>
+<li>Được hủy ở trạng thái nào?</li>
+<li>Hủy rồi có hoàn tiền không?</li>
+<li>Phí giao hàng xử lý ra sao?</li>
+<li>Voucher có trả lại không?</li>
+<li>Nhà bán hàng có bị trừ điểm không?</li>
+<li>Nhân viên chăm sóc khách hàng có can thiệp được không?</li>
+<li>Làm sao đo được tính năng này có hiệu quả?</li>
+</ul>
+<p>PRD giống như tờ giấy gọi món trong quán ăn.</p>
+<p>Khách ghi:</p>
+<blockquote>
+<p>Cho một tô phở.</p>
+</blockquote>
+<p>Bếp nhận được đúng bốn chữ đó.</p>
+<p>Nhưng phở bò hay phở gà?</p>
+<p>Có hành không?</p>
+<p>Có giá không?</p>
+<p>Ăn tại bàn hay mang về?</p>
+<p>Khách có dị ứng đậu phộng không?</p>
+<p>Một câu “cho một tô phở” nghe rất rõ trong đầu người viết.</p>
+<p>Nhưng với người phải nấu, nó lại là một cánh đồng sương mù.</p>
+<p>Vấn đề của PRD hiếm khi nằm ở câu chữ khó hiểu.</p>
+<p>Vấn đề nằm ở những thứ người viết tưởng rằng ai cũng biết nên không viết ra.</p>
+<h1 id="mười-người-đọc-mười-bộ-não-khác-nhau">Mười người đọc, mười bộ não khác nhau<a class="anchor ms-1" href="#mười-người-đọc-mười-bộ-não-khác-nhau"><i class="fas fa-link"></i></a></h1>
+<p>Giả sử trong PRD có một dòng:</p>
+<blockquote>
+<p>Khi khách hàng hủy đơn, hệ thống sẽ tự động hoàn tiền.</p>
+</blockquote>
+<p>Product Manager đọc câu đó và nghĩ:</p>
+<blockquote>
+<p>Hoàn lại số tiền khách đã thanh toán.</p>
+</blockquote>
+<p>Kế toán đọc và nghĩ:</p>
+<blockquote>
+<p>Phải trừ phí giao hàng.</p>
+</blockquote>
+<p>Lập trình viên đọc và nghĩ:</p>
+<blockquote>
+<p>Chỉ xử lý với giao dịch đã thanh toán thành công.</p>
+</blockquote>
+<p>QA đọc và hỏi:</p>
+<blockquote>
+<p>Nếu cổng thanh toán báo thành công nhưng ngân hàng chưa đối soát thì sao?</p>
+</blockquote>
+<p>Bộ phận vận hành lại nghĩ:</p>
+<blockquote>
+<p>Nếu tài xế đã lấy hàng thì ai chịu chi phí?</p>
+</blockquote>
+<p>Chăm sóc khách hàng hỏi thêm:</p>
+<blockquote>
+<p>Khách dùng một nửa voucher, một nửa tiền mặt thì hoàn kiểu gì?</p>
+</blockquote>
+<p>Không ai cố tình làm khó ai.</p>
+<p>Mỗi người chỉ đang đứng ở một cửa sổ khác nhau và nhìn vào cùng một căn phòng.</p>
+<p>PRD được sinh ra để kéo những góc nhìn đó về gần nhau.</p>
+<p>Nhưng nghịch lý nằm ở chỗ: để biết PRD đang thiếu gì, người viết thường phải biết trước tất cả những gì mình chưa biết.</p>
+<p>Mà con người không làm được chuyện đó.</p>
+<p>Chúng ta không thể nhớ lại một tài liệu mình chưa từng đọc.</p>
+<p>Không thể phát hiện một thí nghiệm đã được đội khác thực hiện ba năm trước nếu chưa từng nghe về nó.</p>
+<p>Không thể nhìn thấy một phụ thuộc nằm ngoài hệ thống mình đang phụ trách nếu chẳng ai nhắc tới.</p>
+<p>Theo Uber, chính những khoảng trống như giả định thiếu bằng chứng, ảnh hưởng tới hệ thống lân cận, tác động bậc hai, vấn đề chính sách và các thử nghiệm cũ thường chỉ xuất hiện khi PRD đã đi vào vòng review chính thức. Khi đó, cuộc họp đáng lẽ dùng để ra quyết định lại phải quay về làm công việc điều tra căn bản. (<a href="https://www.uber.com/us/en/blog/first-pass-prd/" title="Lessons from Building a First-Pass AI PRD Reviewer at Uber " target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<h1 id="cuộc-họp-review-không-nên-là-nơi-mọi-người-đi-tìm-giấy-tờ-thất-lạc">Cuộc họp review không nên là nơi mọi người đi tìm giấy tờ thất lạc<a class="anchor ms-1" href="#cuộc-họp-review-không-nên-là-nơi-mọi-người-đi-tìm-giấy-tờ-thất-lạc"><i class="fas fa-link"></i></a></h1>
+<p>Hãy tưởng tượng một cuộc họp có mười người.</p>
+<p>Có Product Lead.</p>
+<p>Có Engineering Lead.</p>
+<p>Có Designer.</p>
+<p>Có Data Scientist.</p>
+<p>Có Legal.</p>
+<p>Có Operations.</p>
+<p>Có Finance.</p>
+<p>Mỗi người ngồi đó một giờ.</p>
+<p>Nếu trong giờ đầu tiên, cả nhóm phải hỏi:</p>
+<blockquote>
+<p>Số liệu này lấy từ đâu?</p>
+</blockquote>
+<blockquote>
+<p>Đội nào từng thử việc này rồi?</p>
+</blockquote>
+<blockquote>
+<p>Metric này định nghĩa thế nào?</p>
+</blockquote>
+<blockquote>
+<p>Thay đổi này có ảnh hưởng tới hệ thống thanh toán không?</p>
+</blockquote>
+<blockquote>
+<p>Tại sao chọn con số 20%?</p>
+</blockquote>
+<p>Thì cuộc họp chưa thực sự review sản phẩm.</p>
+<p>Mọi người chỉ đang cùng nhau đi tìm những mảnh giấy bị rơi dưới gầm bàn.</p>
+<p>Đây là một sự lãng phí khá đắt.</p>
+<p>Không chỉ vì tiền lương của những người trong phòng.</p>
+<p>Mà vì khả năng phán đoán của con người là tài nguyên có giới hạn.</p>
+<p>Một Product Lead chỉ có một số giờ nhất định trong ngày.</p>
+<p>Một chuyên gia pháp lý không thể đọc mọi bản nháp từ dòng đầu tiên.</p>
+<p>Một kiến trúc sư hệ thống không nên dành nửa cuộc họp để hỏi lại những câu hoàn toàn có thể được phát hiện từ hôm qua.</p>
+<p>Điều Uber muốn làm không phải thay đổi quy trình phê duyệt.</p>
+<p>Họ muốn nâng chất lượng của thứ được đưa vào quy trình đó.</p>
+<p>Câu hỏi của họ khá đơn giản:</p>
+<blockquote>
+<p>Nếu mỗi Product Manager đều có một người review vòng đầu thật nhanh, có đủ ngữ cảnh và không biết mệt thì sao?</p>
+</blockquote>
+<p>Từ câu hỏi đó, Uber xây dựng <strong>PRD Evaluator</strong>, một hệ thống AI đứng trước vòng review chính thức, đọc bản nháp, tìm thêm tài liệu liên quan và trả về một bản đánh giá có cấu trúc. (<a href="https://www.uber.com/us/en/blog/first-pass-prd/" title="Lessons from Building a First-Pass AI PRD Reviewer at Uber " target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<h1 id="ai-ở-đây-không-phải-ông-sếp-mà-là-đứa-trẻ-sáu-tuổi-rất-hay-hỏi">AI ở đây không phải ông sếp, mà là đứa trẻ sáu tuổi rất hay hỏi<a class="anchor ms-1" href="#ai-ở-đây-không-phải-ông-sếp-mà-là-đứa-trẻ-sáu-tuổi-rất-hay-hỏi"><i class="fas fa-link"></i></a></h1>
+<p>Nhiều người nghe đến AI review PRD sẽ hình dung một chiếc máy chấm điểm.</p>
+<p>PRD được 85 điểm.</p>
+<p>Được duyệt.</p>
+<p>PRD kia được 42 điểm.</p>
+<p>Viết lại.</p>
+<p>Theo mình, hình dung như vậy hơi nguy hiểm.</p>
+<p>Sản phẩm không phải bài kiểm tra trắc nghiệm.</p>
+<p>Không có đáp án A, B, C, D được in sẵn ở cuối sách.</p>
+<p>Một AI review PRD tốt nên giống một đứa trẻ sáu tuổi.</p>
+<p>Bạn nói:</p>
+<blockquote>
+<p>Bố đi làm.</p>
+</blockquote>
+<p>Nó hỏi:</p>
+<blockquote>
+<p>Bố đi bằng gì?</p>
+</blockquote>
+<p>Bạn trả lời:</p>
+<blockquote>
+<p>Xe máy.</p>
+</blockquote>
+<p>Nó hỏi tiếp:</p>
+<blockquote>
+<p>Nếu xe hết xăng thì sao?</p>
+</blockquote>
+<p>Bạn nói:</p>
+<blockquote>
+<p>Bố đổ xăng.</p>
+</blockquote>
+<p>Nó lại hỏi:</p>
+<blockquote>
+<p>Nếu cây xăng đóng cửa thì sao?</p>
+</blockquote>
+<p>Người lớn thường khó chịu với kiểu hỏi này.</p>
+<p>Nhưng chính những câu hỏi nghe rất ngớ ngẩn lại bóc ra những giả định đang nằm im trong đầu chúng ta.</p>
+<p>AI không nhất thiết hiểu doanh nghiệp sâu hơn Product Manager.</p>
+<p>Nó chỉ có ba ưu điểm rất thực dụng:</p>
+<ul>
+<li>đọc nhanh,</li>
+<li>không ngại hỏi,</li>
+<li>và không mệt khi phải kiểm tra cùng một loại thiếu sót lần thứ một nghìn.</li>
+</ul>
+<p>Con người thường bỏ qua điều quen thuộc.</p>
+<p>Máy thì không có khái niệm “chắc ai cũng biết rồi”.</p>
+<h1 id="điều-uber-xây-không-phải-một-công-cụ-sửa-văn">Điều Uber xây không phải một công cụ sửa văn<a class="anchor ms-1" href="#điều-uber-xây-không-phải-một-công-cụ-sửa-văn"><i class="fas fa-link"></i></a></h1>
+<p>Một bản PRD có thể được viết rất đẹp.</p>
+<p>Câu chữ mượt mà.</p>
+<p>Heading ngay ngắn.</p>
+<p>Không sai chính tả.</p>
+<p>Đọc vào thấy tràn đầy niềm tin.</p>
+<p>Nhưng vẫn có thể hoàn toàn chưa sẵn sàng để triển khai.</p>
+<p>Ví dụ:</p>
+<blockquote>
+<p>Tính năng mới dự kiến giúp tăng tỷ lệ chuyển đổi đáng kể.</p>
+</blockquote>
+<p>Câu này nghe rất chuyên nghiệp.</p>
+<p>Nhưng “đáng kể” là bao nhiêu?</p>
+<p>Tăng từ 2% lên 2,1% hay từ 2% lên 4%?</p>
+<p>Dữ liệu nào cho thấy người dùng đang gặp vấn đề?</p>
+<p>Nếu tỷ lệ chuyển đổi tăng nhưng số đơn bị hủy cũng tăng thì sao?</p>
+<p>Có nhóm khách hàng nào bị ảnh hưởng xấu không?</p>
+<p>Đó là lý do Uber không muốn tạo ra một công cụ chỉ thưởng cho văn bản trau chuốt. PRD Evaluator của họ tập trung vào ngữ cảnh, logic quyết định, phạm vi, metric, rủi ro và mức độ sẵn sàng, thay vì chỉ nhìn xem tài liệu có được viết “hay” hay không. (<a href="https://www.uber.com/us/en/blog/first-pass-prd/" title="Lessons from Building a First-Pass AI PRD Reviewer at Uber " target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<p>Đây là điểm đầu tiên mình rất tâm đắc.</p>
+<blockquote>
+<p>AI review tài liệu không nên hỏi “bài này viết có hay không?”, mà phải hỏi “dựa vào đâu chúng ta tin đây là việc nên làm?”</p>
+</blockquote>
+<p>Hai câu hỏi nghe gần giống nhau.</p>
+<p>Nhưng một câu tạo ra văn bản đẹp.</p>
+<p>Câu còn lại có thể cứu cả dự án.</p>
+<h1 id="bước-một-đừng-chỉ-đọc-tờ-giấy-hãy-đi-lục-cả-tủ-hồ-sơ">Bước một: Đừng chỉ đọc tờ giấy, hãy đi lục cả tủ hồ sơ<a class="anchor ms-1" href="#bước-một-đừng-chỉ-đọc-tờ-giấy-hãy-đi-lục-cả-tủ-hồ-sơ"><i class="fas fa-link"></i></a></h1>
+<p>Nếu chỉ đưa một bản PRD cho LLM rồi yêu cầu:</p>
+<blockquote>
+<p>Review giúp tôi.</p>
+</blockquote>
+<p>Kết quả thường sẽ khá chung chung.</p>
+<p>AI sẽ nói:</p>
+<ul>
+<li>Cần làm rõ mục tiêu.</li>
+<li>Nên bổ sung rủi ro.</li>
+<li>Cần xác định KPI.</li>
+<li>Nên cân nhắc các trường hợp biên.</li>
+</ul>
+<p>Nghe không sai.</p>
+<p>Nhưng cũng không giúp được bao nhiêu.</p>
+<p>Nó giống như bác sĩ nhìn bệnh nhân từ bên kia đường rồi nói:</p>
+<blockquote>
+<p>Bạn nên ăn uống lành mạnh và ngủ đủ giấc.</p>
+</blockquote>
+<p>Lời khuyên đúng với gần như mọi người.</p>
+<p>Vì vậy cũng gần như vô dụng.</p>
+<p>Theo mô tả của Uber, PRD Evaluator không chỉ đọc bản PRD. Nó dùng tài liệu đó làm điểm bắt đầu, sau đó tập hợp thêm các tài liệu được liên kết, slide, ghi chú cuộc họp, thí nghiệm trước đây, tài liệu từ các bộ phận khác và những kiến thức nội bộ đã được chuẩn bị sẵn như nguyên tắc cốt lõi, định nghĩa metric và các “jobs to be done”. (<a href="https://www.uber.com/us/en/blog/first-pass-prd/" title="Lessons from Building a First-Pass AI PRD Reviewer at Uber " target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<p>Nói theo cách dễ hiểu hơn:</p>
+<p>AI không chỉ đọc tờ đơn xin xây nhà.</p>
+<p>Nó còn đi tìm:</p>
+<ul>
+<li>bản đồ khu đất,</li>
+<li>quy định xây dựng,</li>
+<li>bản thiết kế cũ,</li>
+<li>biên bản họp với hàng xóm,</li>
+<li>hồ sơ căn nhà từng bị nứt,</li>
+<li>và cuốn sổ ghi rằng khu vực này cứ tháng Chín là ngập.</li>
+</ul>
+<p>Đây mới là nơi phần lớn giá trị được tạo ra.</p>
+<p>Model có thể là bộ não biết nói.</p>
+<p>Nhưng kho tài liệu, quyền truy cập và khả năng tìm đúng ngữ cảnh mới là đôi mắt.</p>
+<p>Một bộ não thông minh mà bị bịt mắt thì vẫn có thể nói rất trôi chảy về thứ nó không nhìn thấy.</p>
+<h1 id="context-quan-trọng-không-kém-model">Context quan trọng không kém model<a class="anchor ms-1" href="#context-quan-trọng-không-kém-model"><i class="fas fa-link"></i></a></h1>
+<p>Đây cũng là một trong những bài học Uber rút ra: chất lượng ngôn ngữ chưa đủ, vì những tín hiệu quan trọng thường nằm ngoài chính bản PRD. Khi có thêm ngữ cảnh, hệ thống có thể phát hiện một tập điểm mù hoàn toàn khác so với khi chỉ đọc tài liệu đơn lẻ. (<a href="https://www.uber.com/us/en/blog/first-pass-prd/" title="Lessons from Building a First-Pass AI PRD Reviewer at Uber " target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<p>Theo mình, đây là chỗ nhiều dự án AI doanh nghiệp đi sai.</p>
+<p>Mọi người dành rất nhiều thời gian tranh luận:</p>
+<ul>
+<li>Dùng model 70B hay 200B?</li>
+<li>Temperature bao nhiêu?</li>
+<li>Prompt dài mấy nghìn token?</li>
+<li>Dùng agent hay workflow?</li>
+<li>Model nào reasoning tốt hơn?</li>
+</ul>
+<p>Trong khi dữ liệu đưa vào chỉ có đúng một file Word.</p>
+<p>Nó giống như mua một đầu bếp cực giỏi, đưa cho anh ta nửa củ hành, một gói mì và yêu cầu nấu tiệc cưới cho ba trăm người.</p>
+<p>Đầu bếp không phải vấn đề.</p>
+<p>Tủ lạnh mới là vấn đề.</p>
+<p>Một hệ thống review PRD thực tế cần kết nối được với nơi kiến thức đang nằm:</p>
+<ul>
+<li>kho tài liệu nội bộ,</li>
+<li>hệ thống quản lý dự án,</li>
+<li>dashboard dữ liệu,</li>
+<li>tài liệu thiết kế kỹ thuật,</li>
+<li>biên bản họp,</li>
+<li>kết quả A/B testing,</li>
+<li>chính sách pháp lý,</li>
+<li>và cả những quyết định cũ đã bị chôn dưới mười tầng thư mục.</li>
+</ul>
+<p>Trong trường hợp này, RAG không phải một từ khóa để trang trí slide.</p>
+<p>Nó là công việc đi lục lại trí nhớ của cả tổ chức.</p>
+<h1 id="bước-hai-không-thể-dùng-cùng-một-kính-lúp-để-soi-mọi-prd">Bước hai: Không thể dùng cùng một kính lúp để soi mọi PRD<a class="anchor ms-1" href="#bước-hai-không-thể-dùng-cùng-một-kính-lúp-để-soi-mọi-prd"><i class="fas fa-link"></i></a></h1>
+<p>Không phải thay đổi nào cũng nguy hiểm như nhau.</p>
+<p>Đổi màu một nút bấm không giống thay đổi cách tính giá.</p>
+<p>Thêm bộ lọc tìm kiếm không giống thay đổi chính sách hủy đơn.</p>
+<p>Chuyển một công cụ nội bộ sang giao diện mới không giống mở một mô hình kinh doanh hoàn toàn mới.</p>
+<p>Nếu mọi PRD đều bị review bằng cùng một mức độ, hệ thống sẽ rơi vào một trong hai trạng thái.</p>
+<p>Hoặc quá lỏng.</p>
+<p>Cái gì cũng “trông ổn”.</p>
+<p>Hoặc quá gắt.</p>
+<p>Đổi một dấu phẩy cũng bị hỏi về chiến lược ba năm.</p>
+<p>Uber giải quyết vấn đề này bằng cách phân loại đề xuất rồi điều chỉnh độ sâu review. Những thay đổi nhỏ như UX parity hoặc discoverability có thể được xem nhẹ hơn; thay đổi workflow hay migration cần mức vừa phải; tính năng hoàn toàn mới cần review đầy đủ; còn các thay đổi liên quan tới chính sách, giá hoặc marketplace cần thêm sự soi xét chuyên biệt. (<a href="https://www.uber.com/us/en/blog/first-pass-prd/" title="Lessons from Building a First-Pass AI PRD Reviewer at Uber " target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<p>Nói cách khác, trước khi khám bệnh, AI phải biết bệnh nhân đang bị xước tay hay chuẩn bị mổ tim.</p>
+<p>Cả hai đều cần bác sĩ.</p>
+<p>Nhưng không cần cùng một phòng phẫu thuật.</p>
+<h1 id="bước-ba-một-prd-tốt-phải-đứng-được-trên-nhiều-chân">Bước ba: Một PRD tốt phải đứng được trên nhiều chân<a class="anchor ms-1" href="#bước-ba-một-prd-tốt-phải-đứng-được-trên-nhiều-chân"><i class="fas fa-link"></i></a></h1>
+<p>Một chiếc bàn bốn chân chỉ cần thiếu một chân là đã bắt đầu rung.</p>
+<p>PRD cũng vậy.</p>
+<p>Tài liệu có thể mô tả tính năng rất rõ nhưng không chứng minh được vấn đề có thật.</p>
+<p>Có thể nêu vấn đề rất hay nhưng không định nghĩa thành công.</p>
+<p>Có thể có metric nhưng quên guardrail.</p>
+<p>Có thể mang lại lợi ích cho nhóm người dùng này nhưng gây thiệt hại cho nhóm khác.</p>
+<p>Uber đánh giá mức độ sẵn sàng của PRD theo nhiều chiều, trong đó có:</p>
+<ul>
+<li>Cơ hội và giả thuyết: vấn đề có thật không, thành công đã được định nghĩa đủ rõ chưa?</li>
+<li>Phạm vi sản phẩm: đề xuất có dễ hiểu, đúng phạm vi và đủ thông tin để quyết định không?</li>
+<li>Trải nghiệm và ảnh hưởng tới người dùng: tính năng có hoạt động hợp lý với các nhóm người dùng, khu vực và trường hợp biên khác nhau không?</li>
+<li>Metric và độ chặt chẽ của dữ liệu: có baseline, mục tiêu, guardrail và phương pháp kiểm chứng đáng tin cậy không? (<a href="https://www.uber.com/us/en/blog/first-pass-prd/" title="Lessons from Building a First-Pass AI PRD Reviewer at Uber " target="_blank" rel="noopener noreferrer">Uber</a>)</li>
+</ul>
+<p>Phần này nghe có vẻ nhiều thuật ngữ.</p>
+<p>Ta thử lúa hóa bằng một ví dụ.</p>
+<p>Giả sử một chuỗi bán lẻ muốn làm tính năng:</p>
+<blockquote>
+<p>Tự động gửi voucher cho khách hàng lâu ngày chưa mua hàng.</p>
+</blockquote>
+<p>Một PRD sơ sài có thể ghi:</p>
+<blockquote>
+<p>Hệ thống gửi voucher 100.000 đồng cho khách không phát sinh đơn hàng trong 90 ngày nhằm tăng tỷ lệ quay lại.</p>
+</blockquote>
+<p>Đọc rất hợp lý.</p>
+<p>Nhưng AI reviewer nên hỏi:</p>
+<p><strong>Vấn đề có thật không?</strong></p>
+<p>Khách không quay lại vì thiếu voucher, hay vì họ vừa mua một chiếc tủ lạnh và ba năm nữa mới cần mua tiếp?</p>
+<p><strong>Phạm vi là gì?</strong></p>
+<p>Áp dụng cho tất cả ngành hàng hay chỉ hàng tiêu dùng nhanh?</p>
+<p><strong>Ai bị ảnh hưởng?</strong></p>
+<p>Khách vừa khiếu nại có nhận voucher không?</p>
+<p>Khách đã yêu cầu không nhận quảng cáo thì sao?</p>
+<p><strong>Thành công là gì?</strong></p>
+<p>Tăng số đơn hàng, tăng doanh thu hay tăng lợi nhuận?</p>
+<p>Nếu khách dùng voucher 100.000 đồng để mua món hàng lợi nhuận 20.000 đồng thì hệ thống đang tăng doanh thu hay đang phát tiền?</p>
+<p><strong>Guardrail là gì?</strong></p>
+<p>Có giới hạn ngân sách không?</p>
+<p>Có ngăn một người tạo nhiều tài khoản không?</p>
+<p>Có loại trừ nhân viên nội bộ không?</p>
+<p>Một câu “gửi voucher để kéo khách quay lại” nghe rất đơn giản.</p>
+<p>Nhưng phía sau nó là một đoàn tàu chở theo tiền, dữ liệu, chính sách và hành vi con người.</p>
+<p>PRD tốt không cần dự đoán mọi thứ.</p>
+<p>Nhưng ít nhất phải nhìn thấy đoàn tàu đang chạy tới.</p>
+<h1 id="bước-bốn-đừng-đưa-một-bức-tường-bình-luận-hãy-chỉ-vào-viên-gạch-cần-sửa-trước">Bước bốn: Đừng đưa một bức tường bình luận, hãy chỉ vào viên gạch cần sửa trước<a class="anchor ms-1" href="#bước-bốn-đừng-đưa-một-bức-tường-bình-luận-hãy-chỉ-vào-viên-gạch-cần-sửa-trước"><i class="fas fa-link"></i></a></h1>
+<p>Có một kiểu feedback nghe rất sang nhưng gần như không dùng được:</p>
+<blockquote>
+<p>Cần làm rõ hơn chiến lược.</p>
+</blockquote>
+<blockquote>
+<p>Hãy suy nghĩ sâu hơn về rủi ro.</p>
+</blockquote>
+<blockquote>
+<p>Metric chưa đủ thuyết phục.</p>
+</blockquote>
+<blockquote>
+<p>Cần xem xét tác động dài hạn.</p>
+</blockquote>
+<p>Người viết đọc xong sẽ gật đầu.</p>
+<p>Sau đó không biết phải sửa dòng nào.</p>
+<p>Uber cho rằng lựa chọn thiết kế quan trọng nhất của PRD Evaluator không phải là chấm điểm, mà là biến phản biện thành hành động có thể thực hiện. Hệ thống trả về đánh giá mức độ sẵn sàng, điểm theo từng nhóm tiêu chí, một chỉ dẫn “bắt đầu từ đây”, các khoảng trống cụ thể, đề xuất nội dung thay thế, bằng chứng liên quan và danh sách hành động được chia thành yêu cầu quan trọng và phần tối ưu thêm. (<a href="https://www.uber.com/us/en/blog/first-pass-prd/" title="Lessons from Building a First-Pass AI PRD Reviewer at Uber " target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<p>Đây là điểm thứ hai mình rất thích.</p>
+<blockquote>
+<p>Một lời phê bình tốt không chỉ nói căn nhà đang dột. Nó phải chỉ đúng viên ngói nào cần thay trước cơn mưa.</p>
+</blockquote>
+<p>Ví dụ, thay vì viết:</p>
+<blockquote>
+<p>Phần metric chưa rõ.</p>
+</blockquote>
+<p>AI có thể nói:</p>
+<blockquote>
+<p>PRD hiện đặt mục tiêu “tăng tỷ lệ hoàn tất đơn hàng” nhưng chưa nêu baseline hiện tại, mức tăng kỳ vọng và guardrail cho tỷ lệ hủy. Hãy bổ sung ba thông tin này trước khi review.</p>
+</blockquote>
+<p>Thậm chí nó có thể đề xuất đoạn viết:</p>
+<blockquote>
+<p>Hiện tỷ lệ hoàn tất đơn hàng của nhóm A là 72%. Phiên bản đầu tiên đặt mục tiêu tăng lên 75% trong bốn tuần, đồng thời không làm tỷ lệ hủy sau thanh toán tăng quá 0,2 điểm phần trăm.</p>
+</blockquote>
+<p>Đoạn này chưa chắc đúng.</p>
+<p>Con người vẫn phải xác nhận con số.</p>
+<p>Nhưng ít nhất người viết biết mình đang thiếu gì và phải sửa ở đâu.</p>
+<h1 id="framework-quan-trọng-hơn-một-lời-nhận-xét-thông-minh">Framework quan trọng hơn một lời nhận xét thông minh<a class="anchor ms-1" href="#framework-quan-trọng-hơn-một-lời-nhận-xét-thông-minh"><i class="fas fa-link"></i></a></h1>
+<p>Một trong những bài học Uber công bố là <strong>framework tốt hơn generic critique</strong>.</p>
+<p>Nhận xét rộng và chung chung hiếm khi giúp đội sản phẩm tiến nhanh hơn. Giá trị thật đến từ một khung đánh giá gắn với tiêu chí ra quyết định và những kiểu thất bại đã biết. (<a href="https://www.uber.com/us/en/blog/first-pass-prd/" title="Lessons from Building a First-Pass AI PRD Reviewer at Uber " target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<p>Theo mình, đây là nguyên tắc cực kỳ quan trọng khi xây bất kỳ hệ thống AI reviewer nào.</p>
+<p>Không chỉ PRD.</p>
+<p>Mà cả:</p>
+<ul>
+<li>review code,</li>
+<li>review thiết kế hệ thống,</li>
+<li>review hợp đồng,</li>
+<li>review tài liệu bảo mật,</li>
+<li>review kiến trúc dữ liệu,</li>
+<li>review kế hoạch marketing.</li>
+</ul>
+<p>Nếu chỉ prompt:</p>
+<blockquote>
+<p>Hãy đóng vai chuyên gia hàng đầu và review thật kỹ tài liệu này.</p>
+</blockquote>
+<p>AI sẽ tạo ra một màn trình diễn rất mượt.</p>
+<p>Nhưng kết quả có thể thay đổi theo từng lần chạy.</p>
+<p>Lúc nói nhiều về metric.</p>
+<p>Lúc nói nhiều về UX.</p>
+<p>Lúc lại bị cuốn vào câu chữ.</p>
+<p>Framework giống như danh sách kiểm tra trước khi máy bay cất cánh.</p>
+<p>Phi công có thể rất giỏi.</p>
+<p>Đã bay hai mươi năm.</p>
+<p>Nhưng vẫn phải kiểm tra nhiên liệu, cánh tà, động cơ, liên lạc và áp suất.</p>
+<p>Không phải vì phi công ngu.</p>
+<p>Mà vì những hệ thống quan trọng không nên phụ thuộc hoàn toàn vào trí nhớ và tâm trạng của con người.</p>
+<p>AI cũng vậy.</p>
+<p>Model càng thông minh, chúng ta càng cần một khung rõ ràng để sự thông minh đó không chạy lung tung như con bò vừa thoát chuồng.</p>
+<h1 id="ai-phải-biết-nói-tôi-không-đủ-bằng-chứng">AI phải biết nói: “Tôi không đủ bằng chứng”<a class="anchor ms-1" href="#ai-phải-biết-nói-tôi-không-đủ-bằng-chứng"><i class="fas fa-link"></i></a></h1>
+<p>Một AI được huấn luyện để luôn giúp đỡ thường có xu hướng cố trả lời.</p>
+<p>Ngay cả khi thông tin thiếu.</p>
+<p>Đây là đặc tính khá nguy hiểm đối với một công cụ đánh giá.</p>
+<p>Nếu PRD không có baseline, AI không nên tự tưởng tượng baseline.</p>
+<p>Nếu tài liệu không nói tới chính sách hoàn tiền, AI không được tự suy ra chính sách.</p>
+<p>Nếu không tìm thấy thí nghiệm cũ, nó không nên viết như thể thí nghiệm đó chưa từng tồn tại.</p>
+<p>Uber nhận thấy các ranh giới cứng giúp đầu ra trung thực hơn. Việc định nghĩa một nhóm khoảng trống quan trọng giúp hệ thống tránh đánh giá PRD là sẵn sàng khi những nền móng căn bản vẫn còn thiếu. (<a href="https://www.uber.com/us/en/blog/first-pass-prd/" title="Lessons from Building a First-Pass AI PRD Reviewer at Uber " target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<p>Có thể hình dung thế này.</p>
+<p>Một bác bảo vệ tốt không phải người lúc nào cũng mở cửa.</p>
+<p>Mà là người biết lúc nào phải nói:</p>
+<blockquote>
+<p>Tôi chưa thấy giấy tờ. Anh vui lòng quay lại bổ sung.</p>
+</blockquote>
+<p>Một AI reviewer cũng cần quyền từ chối kết luận.</p>
+<p>Ví dụ:</p>
+<blockquote>
+<p>Chưa thể đánh giá mức độ sẵn sàng vì PRD thiếu baseline của metric chính và chưa có bằng chứng cho giả thuyết nhu cầu người dùng.</p>
+</blockquote>
+<p>Câu này ít hào nhoáng hơn một bài phân tích dài hai trang.</p>
+<p>Nhưng đáng tin hơn rất nhiều.</p>
+<h1 id="nếu-cái-gì-cũng-quan-trọng-thì-chẳng-có-gì-quan-trọng">Nếu cái gì cũng quan trọng thì chẳng có gì quan trọng<a class="anchor ms-1" href="#nếu-cái-gì-cũng-quan-trọng-thì-chẳng-có-gì-quan-trọng"><i class="fas fa-link"></i></a></h1>
+<p>AI rất giỏi tìm lỗi.</p>
+<p>Đưa một tài liệu đủ dài cho nó, nó có thể tạo ra năm mươi đề xuất.</p>
+<p>Vấn đề là Product Manager chỉ có hai giờ để sửa.</p>
+<p>Nếu hệ thống đánh dấu cả năm mươi mục đều “Critical”, nó không còn là reviewer.</p>
+<p>Nó trở thành một người đứng bên cạnh chiếc nhà đang cháy và hét:</p>
+<blockquote>
+<p>Mọi chỗ đều nóng!</p>
+</blockquote>
+<p>Uber xem việc ưu tiên là một phần của chính sản phẩm. Một công cụ review đánh dấu mọi thứ đều quan trọng sẽ không giúp ích nhiều; giá trị nằm ở việc chỉ ra điều gì phải sửa trước. (<a href="https://www.uber.com/us/en/blog/first-pass-prd/" title="Lessons from Building a First-Pass AI PRD Reviewer at Uber " target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<p>Theo mình, một đầu ra tốt nên chia rất rõ:</p>
+<h2 id="phải-sửa-trước-khi-review">Phải sửa trước khi review<a class="anchor ms-1" href="#phải-sửa-trước-khi-review"><i class="fas fa-link"></i></a></h2>
+<ul>
+<li>Chưa có bằng chứng cho giả thuyết chính.</li>
+<li>Metric thành công chưa có baseline.</li>
+<li>Thay đổi tác động đến hệ thống thanh toán nhưng chưa có đại diện Finance tham gia.</li>
+<li>Chưa có guardrail cho nhóm khách hàng dễ bị ảnh hưởng.</li>
+</ul>
+<h2 id="nên-cải-thiện">Nên cải thiện<a class="anchor ms-1" href="#nên-cải-thiện"><i class="fas fa-link"></i></a></h2>
+<ul>
+<li>Bổ sung sơ đồ user flow.</li>
+<li>Viết rõ phạm vi phiên bản đầu tiên.</li>
+<li>Thêm giải thích cho một số thuật ngữ.</li>
+<li>Liên kết tài liệu thử nghiệm cũ.</li>
+</ul>
+<p>Hai nhóm này khác nhau như “nhà chưa có móng” và “màu rèm cửa chưa đẹp”.</p>
+<p>Không nên trộn chung.</p>
+<h1 id="ai-không-thay-người-review-cuối-cùng">AI không thay người review cuối cùng<a class="anchor ms-1" href="#ai-không-thay-người-review-cuối-cùng"><i class="fas fa-link"></i></a></h1>
+<p>Uber nói rất rõ rằng PRD Evaluator không nhằm đưa ra quyết định phê duyệt cuối cùng hay thay thế chuyên gia lĩnh vực. Công cụ có giá trị nhất khi nó làm tài liệu mạnh hơn trước khi tài liệu tới tay con người. (<a href="https://www.uber.com/us/en/blog/first-pass-prd/" title="Lessons from Building a First-Pass AI PRD Reviewer at Uber " target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<p>Đây có lẽ là phần quan trọng nhất của cả câu chuyện.</p>
+<p>AI không ngồi ghế chủ tọa.</p>
+<p>Nó đứng ở ngoài cửa.</p>
+<p>Nó kiểm tra xem người bước vào đã mang đủ giấy tờ chưa.</p>
+<p>Quyết định có xây tính năng hay không vẫn cần:</p>
+<ul>
+<li>hiểu biết về khách hàng,</li>
+<li>chiến lược của doanh nghiệp,</li>
+<li>khẩu vị rủi ro,</li>
+<li>trách nhiệm pháp lý,</li>
+<li>kinh nghiệm vận hành,</li>
+<li>và đôi khi là trực giác của những người đã ăn ngủ với sản phẩm nhiều năm.</li>
+</ul>
+<p>Những thứ này không phải lúc nào cũng nằm trong tài liệu.</p>
+<p>Có những quyết định đúng nhưng dữ liệu chưa đủ.</p>
+<p>Có những quyết định nhìn rất đẹp trên dashboard nhưng đi ngược giá trị của doanh nghiệp.</p>
+<p>Có những rủi ro nhỏ về xác suất nhưng quá lớn về hậu quả nên không thể giao hoàn toàn cho máy.</p>
+<p>AI có thể làm sáng căn phòng.</p>
+<p>Nhưng con người vẫn phải quyết định sẽ đi về hướng nào.</p>
+<h1 id="nếu-tự-xây-một-ai-prd-reviewer-mình-sẽ-bắt-đầu-như-thế-nào">Nếu tự xây một AI PRD Reviewer, mình sẽ bắt đầu như thế nào?<a class="anchor ms-1" href="#nếu-tự-xây-một-ai-prd-reviewer-mình-sẽ-bắt-đầu-như-thế-nào"><i class="fas fa-link"></i></a></h1>
+<p>Không cần bắt đầu bằng một hệ thống agent phức tạp có mười hai con AI chạy vòng quanh.</p>
+<p>Phiên bản đầu tiên có thể rất đơn giản.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">PRD
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl"> │
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl"> ▼
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">Thu thập tài liệu liên quan
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl"> │
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl"> ▼
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">Phân loại loại thay đổi và mức rủi ro
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl"> │
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl"> ▼
+</span></span><span class="line"><span class="ln">10</span><span class="cl">Đánh giá theo framework cố định
+</span></span><span class="line"><span class="ln">11</span><span class="cl"> │
+</span></span><span class="line"><span class="ln">12</span><span class="cl"> ▼
+</span></span><span class="line"><span class="ln">13</span><span class="cl">Trích dẫn bằng chứng
+</span></span><span class="line"><span class="ln">14</span><span class="cl"> │
+</span></span><span class="line"><span class="ln">15</span><span class="cl"> ▼
+</span></span><span class="line"><span class="ln">16</span><span class="cl">Ưu tiên vấn đề cần sửa
+</span></span><span class="line"><span class="ln">17</span><span class="cl"> │
+</span></span><span class="line"><span class="ln">18</span><span class="cl"> ▼
+</span></span><span class="line"><span class="ln">19</span><span class="cl">Tạo scorecard
+</span></span></code></pre></div><h2 id="1-xây-một-framework-trước-khi-chọn-model">1. Xây một framework trước khi chọn model<a class="anchor ms-1" href="#1-xây-một-framework-trước-khi-chọn-model"><i class="fas fa-link"></i></a></h2>
+<p>Hãy ngồi với Product Lead, Engineering, QA, Data, Legal và Operations.</p>
+<p>Hỏi họ:</p>
+<blockquote>
+<p>Khi review PRD, anh chị thường tìm điều gì?</p>
+</blockquote>
+<blockquote>
+<p>Những thiếu sót nào từng gây rework lớn?</p>
+</blockquote>
+<blockquote>
+<p>Điều gì bắt buộc phải có trước khi tài liệu được đưa vào checkpoint?</p>
+</blockquote>
+<p>Sau đó biến câu trả lời thành rubric.</p>
+<p>Ví dụ:</p>
+<ul>
+<li>Problem definition</li>
+<li>Evidence</li>
+<li>Scope</li>
+<li>User segments</li>
+<li>Edge cases</li>
+<li>Metrics</li>
+<li>Guardrails</li>
+<li>Dependencies</li>
+<li>Operational impact</li>
+<li>Legal and policy risk</li>
+<li>Rollout plan</li>
+<li>Rollback plan</li>
+</ul>
+<p>Nếu chưa có framework mà đã chọn model, hệ thống sẽ nói rất nhiều nhưng không ai biết nó đang nói theo tiêu chuẩn nào.</p>
+<h2 id="2-kết-nối-đúng-nguồn-dữ-liệu">2. Kết nối đúng nguồn dữ liệu<a class="anchor ms-1" href="#2-kết-nối-đúng-nguồn-dữ-liệu"><i class="fas fa-link"></i></a></h2>
+<p>AI cần tìm được:</p>
+<ul>
+<li>PRD liên quan,</li>
+<li>tài liệu cũ,</li>
+<li>dashboard metric,</li>
+<li>kết quả thử nghiệm,</li>
+<li>biên bản quyết định,</li>
+<li>dependency map,</li>
+<li>chính sách và quy trình.</li>
+</ul>
+<p>Nhưng cần giữ nguyên quyền truy cập.</p>
+<p>Một Product Manager không có quyền xem tài liệu lương thì AI của họ cũng không được phép lục vào đó chỉ vì “có thể liên quan”.</p>
+<p>Đừng biến AI thành bác bảo vệ được phát chìa khóa tổng của cả tòa nhà.</p>
+<h2 id="3-bắt-buộc-trích-dẫn-bằng-chứng">3. Bắt buộc trích dẫn bằng chứng<a class="anchor ms-1" href="#3-bắt-buộc-trích-dẫn-bằng-chứng"><i class="fas fa-link"></i></a></h2>
+<p>Mỗi nhận xét quan trọng nên trả lời được:</p>
+<blockquote>
+<p>Anh dựa vào đâu để nói vậy?</p>
+</blockquote>
+<p>Nếu AI nói:</p>
+<blockquote>
+<p>Một thử nghiệm tương tự trước đây không hiệu quả.</p>
+</blockquote>
+<p>Nó phải dẫn tới tài liệu hoặc dashboard cụ thể.</p>
+<p>Nếu không có bằng chứng, nó phải ghi rõ đây là câu hỏi cần kiểm chứng, không phải một sự thật.</p>
+<h2 id="4-giới-hạn-số-vấn-đề-quan-trọng">4. Giới hạn số vấn đề quan trọng<a class="anchor ms-1" href="#4-giới-hạn-số-vấn-đề-quan-trọng"><i class="fas fa-link"></i></a></h2>
+<p>Ví dụ chỉ cho phép tối đa:</p>
+<ul>
+<li>3 critical gaps,</li>
+<li>5 important improvements,</li>
+<li>và một danh sách nhỏ các chỉnh sửa không bắt buộc.</li>
+</ul>
+<p>Giới hạn này buộc AI phải lựa chọn.</p>
+<p>Mà lựa chọn mới tạo ra giá trị.</p>
+<h2 id="5-ghi-nhận-phản-hồi-của-người-dùng">5. Ghi nhận phản hồi của người dùng<a class="anchor ms-1" href="#5-ghi-nhận-phản-hồi-của-người-dùng"><i class="fas fa-link"></i></a></h2>
+<p>Product Manager cần có thể đánh dấu:</p>
+<ul>
+<li>Nhận xét hữu ích</li>
+<li>Không liên quan</li>
+<li>Sai ngữ cảnh</li>
+<li>Đã có trong tài liệu</li>
+<li>Cần thêm bằng chứng</li>
+</ul>
+<p>Sau một thời gian, chính những phản hồi này sẽ giúp cải thiện framework, retrieval và prompt tốt hơn nhiều so với việc chỉ đổi sang model lớn hơn.</p>
+<h1 id="đo-thành-công-bằng-chất-lượng-cuộc-họp-không-phải-số-lượng-comment">Đo thành công bằng chất lượng cuộc họp, không phải số lượng comment<a class="anchor ms-1" href="#đo-thành-công-bằng-chất-lượng-cuộc-họp-không-phải-số-lượng-comment"><i class="fas fa-link"></i></a></h1>
+<p>Đây là điểm thứ ba mình tâm đắc từ bài viết của Uber.</p>
+<p>Họ nhận thấy dấu hiệu mạnh nhất cho thấy công cụ hoạt động không phải là AI tạo ra nhiều nhận xét hơn, mà là những cuộc thảo luận review sau đó trở nên sắc bén và nhanh hơn. (<a href="https://www.uber.com/us/en/blog/first-pass-prd/" title="Lessons from Building a First-Pass AI PRD Reviewer at Uber " target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<p>Điều này thay đổi hoàn toàn cách đo sản phẩm.</p>
+<p>Một AI PRD Reviewer không nên khoe:</p>
+<blockquote>
+<p>Tháng này chúng tôi tạo ra 18.000 comment.</p>
+</blockquote>
+<p>Số comment nhiều có thể chỉ chứng minh AI nói nhiều.</p>
+<p>Những metric có ý nghĩa hơn có thể là:</p>
+<ul>
+<li>Tỷ lệ critical gap được phát hiện trước checkpoint</li>
+<li>Thời gian từ bản nháp đầu tiên tới bản review-ready</li>
+<li>Số vòng sửa PRD</li>
+<li>Thời gian cuộc họp dành cho việc tìm ngữ cảnh</li>
+<li>Tỷ lệ nhận xét được PM đánh giá là hữu ích</li>
+<li>Tỷ lệ bằng chứng được trích dẫn chính xác</li>
+<li>Số dependency quan trọng được phát hiện sớm</li>
+<li>Mức giảm rework sau khi engineering bắt đầu</li>
+</ul>
+<p>Mục tiêu cuối cùng không phải tạo ra một AI có vẻ thông minh.</p>
+<p>Mục tiêu là làm cho con người đưa ra quyết định tốt hơn.</p>
+<h1 id="những-điều-ai-vẫn-có-thể-làm-rất-tệ">Những điều AI vẫn có thể làm rất tệ<a class="anchor ms-1" href="#những-điều-ai-vẫn-có-thể-làm-rất-tệ"><i class="fas fa-link"></i></a></h1>
+<p>Một bài về AI sẽ không đầy đủ nếu chỉ kể phần đẹp.</p>
+<p>AI PRD Reviewer có thể gặp khá nhiều vấn đề.</p>
+<h2 id="tìm-nhầm-tài-liệu">Tìm nhầm tài liệu<a class="anchor ms-1" href="#tìm-nhầm-tài-liệu"><i class="fas fa-link"></i></a></h2>
+<p>Hai dự án có tên gần giống nhau.</p>
+<p>AI lấy kết quả của dự án A để phản biện dự án B.</p>
+<p>Một câu trả lời trông rất thuyết phục nhưng đặt trên nền đất sai.</p>
+<h2 id="tin-tài-liệu-cũ-hơn-tài-liệu-mới">Tin tài liệu cũ hơn tài liệu mới<a class="anchor ms-1" href="#tin-tài-liệu-cũ-hơn-tài-liệu-mới"><i class="fas fa-link"></i></a></h2>
+<p>Một chính sách ba năm trước có thể đã hết hiệu lực.</p>
+<p>Nếu chỉ search theo độ tương đồng mà không quan tâm thời gian và trạng thái tài liệu, AI sẽ đào xác một quyết định cũ lên rồi bắt cả nhóm tranh luận lại.</p>
+<h2 id="chấm-điểm-giả-chính-xác">Chấm điểm giả chính xác<a class="anchor ms-1" href="#chấm-điểm-giả-chính-xác"><i class="fas fa-link"></i></a></h2>
+<p>PRD được 7,6/10 nghe rất khoa học.</p>
+<p>Nhưng 7,6 khác 7,4 ở đâu?</p>
+<p>Nếu không giải thích được, con số đó chỉ là lớp sơn toán học phủ lên một nhận định chủ quan.</p>
+<h2 id="khuyến-khích-viết-để-qua-bài">Khuyến khích viết để qua bài<a class="anchor ms-1" href="#khuyến-khích-viết-để-qua-bài"><i class="fas fa-link"></i></a></h2>
+<p>Khi mọi người biết AI dùng một rubric cố định, họ có thể học cách viết đủ từ khóa để được điểm cao mà không thực sự suy nghĩ sâu.</p>
+<p>Giống học sinh học thuộc văn mẫu.</p>
+<p>Bài rất tròn trịa.</p>
+<p>Nhưng không có ý tưởng.</p>
+<h2 id="làm-mọi-prd-trở-nên-giống-nhau">Làm mọi PRD trở nên giống nhau<a class="anchor ms-1" href="#làm-mọi-prd-trở-nên-giống-nhau"><i class="fas fa-link"></i></a></h2>
+<p>Nếu quá phụ thuộc vào replacement text, tài liệu của cả tổ chức có thể dần mang cùng một giọng máy móc.</p>
+<p>Rõ ràng hơn.</p>
+<p>Nhưng vô hồn hơn.</p>
+<p>Vì vậy AI nên giúp người viết nhìn thấy khoảng trống, chứ không nên chiếm luôn cây bút.</p>
+<h1 id="điều-mình-tâm-đắc-nhất-ai-nên-đứng-ở-nơi-có-chi-phí-sai-lầm-còn-thấp">Điều mình tâm đắc nhất: AI nên đứng ở nơi có chi phí sai lầm còn thấp<a class="anchor ms-1" href="#điều-mình-tâm-đắc-nhất-ai-nên-đứng-ở-nơi-có-chi-phí-sai-lầm-còn-thấp"><i class="fas fa-link"></i></a></h1>
+<p>Chúng ta thường thích đưa AI vào phần hào nhoáng nhất.</p>
+<p>Cho AI tự ra quyết định.</p>
+<p>Tự phê duyệt.</p>
+<p>Tự chạy chiến dịch.</p>
+<p>Tự gửi hàng nghìn email.</p>
+<p>Tự sửa production.</p>
+<p>Nhưng có lẽ vị trí phù hợp nhất của AI trong giai đoạn đầu lại nằm sớm hơn rất nhiều.</p>
+<p>Trước khi quyết định được ký.</p>
+<p>Trước khi code được viết.</p>
+<p>Trước khi ngân sách được tiêu.</p>
+<p>Trước khi một giả định mơ hồ được đúc thành bê tông.</p>
+<p>Ở giai đoạn PRD, sai lầm vẫn còn mềm.</p>
+<p>Nó chỉ là vài dòng chữ.</p>
+<p>Có thể sửa trong mười phút.</p>
+<p>Khi nó đi qua thiết kế, engineering, QA, vận hành và phát hành, sai lầm đó bắt đầu cứng lại.</p>
+<p>Nó trở thành database schema.</p>
+<p>API contract.</p>
+<p>Mobile app.</p>
+<p>Quy trình cửa hàng.</p>
+<p>Hợp đồng đối tác.</p>
+<p>Thói quen người dùng.</p>
+<p>Lúc đó, muốn sửa một câu đã hiểu sai, chúng ta phải kéo ngược cả một đoàn tàu.</p>
+<p>Đây là lý do mình cho rằng AI reviewer là một ứng dụng rất thực tế.</p>
+<p>Không phải vì AI giỏi hơn con người.</p>
+<p>Mà vì nó được đặt đúng chỗ.</p>
+<p>Nơi một câu hỏi ngớ ngẩn hôm nay có thể ngăn hàng tháng rework vào ngày mai.</p>
+<h1 id="tổng-kết">Tổng kết<a class="anchor ms-1" href="#tổng-kết"><i class="fas fa-link"></i></a></h1>
+<p>Bài học lớn nhất mình rút ra không phải là cách Uber dùng LLM để chấm PRD.</p>
+<p>Mà là cách họ đặt AI vào quy trình.</p>
+<p>AI không thay Product Manager.</p>
+<p>Không thay Product Lead.</p>
+<p>Không thay Engineering.</p>
+<p>Không thay người phê duyệt cuối cùng.</p>
+<p>Nó chỉ làm một việc rất cơ bản:</p>
+<blockquote>
+<p>Đọc trước, tìm lại ngữ cảnh, soi những khoảng trống và hỏi các câu cần được hỏi sớm hơn.</p>
+</blockquote>
+<p>Nghe thì có vẻ đơn giản.</p>
+<p>Nhưng phần mềm hiếm khi thất bại vì thiếu thêm một mô hình thật lớn.</p>
+<p>Nó thường thất bại vì một giả định nhỏ không ai hỏi lại.</p>
+<p>Một metric không ai định nghĩa.</p>
+<p>Một dependency không ai nhớ tới.</p>
+<p>Một trường hợp biên bị xem là “chắc không xảy ra đâu”.</p>
+<p>Một yêu cầu sai được chuyền từ người này sang người khác, rồi được hàng trăm con người rất giỏi biến thành một hệ thống hoàn chỉnh.</p>
+<p>Đó là nghịch lý đáng sợ nhất.</p>
+<p>Code có thể đúng.</p>
+<p>Test có thể xanh.</p>
+<p>Server có thể khỏe.</p>
+<p>Dashboard có thể đẹp.</p>
+<p>Nhưng nếu câu hỏi ban đầu sai, toàn bộ cỗ máy chỉ đang chạy thật nhanh về phía không ai muốn tới.</p>
+<p>Vì vậy, có lẽ tương lai gần của AI trong phát triển sản phẩm không phải là một ông sếp máy móc ngồi phê duyệt mọi thứ.</p>
+<p>Nó giống một người phản biện đầu tiên hơn.</p>
+<p>Một người không biết mệt.</p>
+<p>Không ngại lục lại tủ hồ sơ.</p>
+<p>Không xấu hổ khi hỏi những câu tưởng như ngớ ngẩn.</p>
+<p>Và quan trọng nhất, nó hỏi khi sai lầm vẫn còn là một dòng chữ có thể xóa đi, chưa kịp biến thành hàng nghìn dòng code được viết hoàn toàn đúng.</p>
+<h1 id="tham-khảo">Tham khảo<a class="anchor ms-1" href="#tham-khảo"><i class="fas fa-link"></i></a></h1>
+<ul>
+<li>Uber Engineering – <em>Lessons from Building a First-Pass AI PRD Reviewer at Uber</em>, Lakshmi Ashok, ngày 12/05/2026. (<a href="https://www.uber.com/us/en/blog/first-pass-prd/" title="Lessons from Building a First-Pass AI PRD Reviewer at Uber " target="_blank" rel="noopener noreferrer">Uber</a>)</li>
+</ul>
+</div></div>
+  <div class="card-footer"><div class="post-navs d-flex justify-content-evenly"><div class="post-nav post-prev">
+    <i class="fas fa-fw fa-chevron-left"></i>
+    <a href="https://www.phamduytung.com/blog/2026-07-08-ai-agent-identity-crisis/">AI Agent đang có một cuộc khủng hoảng danh tính
+</a>
+  </div><div class="post-nav post-next">
+    <a href="https://www.phamduytung.com/blog/2026-07-10-next-gen-restaurant-recommendation/">Hệ thống gợi ý nhà hàng thế hệ mới: Con người không ăn bằng hồ sơ, họ ăn bằng khoảnh khắc
+</a>
+    <i class="fas fa-fw fa-chevron-right"></i>
+  </div></div></div>
+</article><div class="card component row post-comments" id="post-comments">
+  <div class="card-header">
+    <h2 class="card-title">Bình luận</h2>
+  </div>
+  <div class="card-body"><script src="https://utteranc.es/client.js"
+  repo="AlexBlack2202/utterances"
+  issue-term="pathname"
+  label="comment"
+  theme="github-dark"
+  crossorigin="anonymous"
+  async>
+</script></div>
+</div></div>
+</div><aside class="col-lg-3 col-md-4 sidebar d-flex">
+  <div class="container d-flex flex-column">
+    
+    <a href="https://www.buymeacoffee.com/alexblack28"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=🍎&slug=alexblack28&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" /></a><div class="post-toc row mb-4 card component" id="postTOC">
+  <div class="card-header">
+    <h2 class="card-title">Mục lục</h2>
+  </div>
+  <div class="card-body">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#một-yêu-cầu-sai-có-thể-sinh-ra-hàng-nghìn-dòng-code-đúng">Một yêu cầu sai có thể sinh ra hàng nghìn dòng code đúng</a></li>
+    <li><a href="#prd-là-gì-nói-theo-cách-lúa-nhất-có-thể">PRD là gì, nói theo cách lúa nhất có thể?</a></li>
+    <li><a href="#mười-người-đọc-mười-bộ-não-khác-nhau">Mười người đọc, mười bộ não khác nhau</a></li>
+    <li><a href="#cuộc-họp-review-không-nên-là-nơi-mọi-người-đi-tìm-giấy-tờ-thất-lạc">Cuộc họp review không nên là nơi mọi người đi tìm giấy tờ thất lạc</a></li>
+    <li><a href="#ai-ở-đây-không-phải-ông-sếp-mà-là-đứa-trẻ-sáu-tuổi-rất-hay-hỏi">AI ở đây không phải ông sếp, mà là đứa trẻ sáu tuổi rất hay hỏi</a></li>
+    <li><a href="#điều-uber-xây-không-phải-một-công-cụ-sửa-văn">Điều Uber xây không phải một công cụ sửa văn</a></li>
+    <li><a href="#bước-một-đừng-chỉ-đọc-tờ-giấy-hãy-đi-lục-cả-tủ-hồ-sơ">Bước một: Đừng chỉ đọc tờ giấy, hãy đi lục cả tủ hồ sơ</a></li>
+    <li><a href="#context-quan-trọng-không-kém-model">Context quan trọng không kém model</a></li>
+    <li><a href="#bước-hai-không-thể-dùng-cùng-một-kính-lúp-để-soi-mọi-prd">Bước hai: Không thể dùng cùng một kính lúp để soi mọi PRD</a></li>
+    <li><a href="#bước-ba-một-prd-tốt-phải-đứng-được-trên-nhiều-chân">Bước ba: Một PRD tốt phải đứng được trên nhiều chân</a></li>
+    <li><a href="#bước-bốn-đừng-đưa-một-bức-tường-bình-luận-hãy-chỉ-vào-viên-gạch-cần-sửa-trước">Bước bốn: Đừng đưa một bức tường bình luận, hãy chỉ vào viên gạch cần sửa trước</a></li>
+    <li><a href="#framework-quan-trọng-hơn-một-lời-nhận-xét-thông-minh">Framework quan trọng hơn một lời nhận xét thông minh</a></li>
+    <li><a href="#ai-phải-biết-nói-tôi-không-đủ-bằng-chứng">AI phải biết nói: “Tôi không đủ bằng chứng”</a></li>
+    <li><a href="#nếu-cái-gì-cũng-quan-trọng-thì-chẳng-có-gì-quan-trọng">Nếu cái gì cũng quan trọng thì chẳng có gì quan trọng</a>
+      <ul>
+        <li><a href="#phải-sửa-trước-khi-review">Phải sửa trước khi review</a></li>
+        <li><a href="#nên-cải-thiện">Nên cải thiện</a></li>
+      </ul>
+    </li>
+    <li><a href="#ai-không-thay-người-review-cuối-cùng">AI không thay người review cuối cùng</a></li>
+    <li><a href="#nếu-tự-xây-một-ai-prd-reviewer-mình-sẽ-bắt-đầu-như-thế-nào">Nếu tự xây một AI PRD Reviewer, mình sẽ bắt đầu như thế nào?</a>
+      <ul>
+        <li><a href="#1-xây-một-framework-trước-khi-chọn-model">1. Xây một framework trước khi chọn model</a></li>
+        <li><a href="#2-kết-nối-đúng-nguồn-dữ-liệu">2. Kết nối đúng nguồn dữ liệu</a></li>
+        <li><a href="#3-bắt-buộc-trích-dẫn-bằng-chứng">3. Bắt buộc trích dẫn bằng chứng</a></li>
+        <li><a href="#4-giới-hạn-số-vấn-đề-quan-trọng">4. Giới hạn số vấn đề quan trọng</a></li>
+        <li><a href="#5-ghi-nhận-phản-hồi-của-người-dùng">5. Ghi nhận phản hồi của người dùng</a></li>
+      </ul>
+    </li>
+    <li><a href="#đo-thành-công-bằng-chất-lượng-cuộc-họp-không-phải-số-lượng-comment">Đo thành công bằng chất lượng cuộc họp, không phải số lượng comment</a></li>
+    <li><a href="#những-điều-ai-vẫn-có-thể-làm-rất-tệ">Những điều AI vẫn có thể làm rất tệ</a>
+      <ul>
+        <li><a href="#tìm-nhầm-tài-liệu">Tìm nhầm tài liệu</a></li>
+        <li><a href="#tin-tài-liệu-cũ-hơn-tài-liệu-mới">Tin tài liệu cũ hơn tài liệu mới</a></li>
+        <li><a href="#chấm-điểm-giả-chính-xác">Chấm điểm giả chính xác</a></li>
+        <li><a href="#khuyến-khích-viết-để-qua-bài">Khuyến khích viết để qua bài</a></li>
+        <li><a href="#làm-mọi-prd-trở-nên-giống-nhau">Làm mọi PRD trở nên giống nhau</a></li>
+      </ul>
+    </li>
+    <li><a href="#điều-mình-tâm-đắc-nhất-ai-nên-đứng-ở-nơi-có-chi-phí-sai-lầm-còn-thấp">Điều mình tâm đắc nhất: AI nên đứng ở nơi có chi phí sai lầm còn thấp</a></li>
+    <li><a href="#tổng-kết">Tổng kết</a></li>
+    <li><a href="#tham-khảo">Tham khảo</a></li>
+  </ul>
+</nav>
+  </div>
+</div><section class="recent-posts row card component">
+  <div class="card-header">
+    <h2 class="card-title">Bài gần đây</h2>
+  </div>
+  <div class="card-body">
+    <ul class="post-list"><li>
+        <a href="https://www.phamduytung.com/blog/2026-07-11-ai-agent-identity-crisis/">AI Agent không thiếu trí thông minh, nó thiếu một tờ giấy khai sinh
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-07-11-uber-delivery-search-platform/">Search ở quy mô Uber Eats: Máy không cần đọc đúng chữ, nó phải hiểu người đang đói muốn gì
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-07-10-next-gen-restaurant-recommendation/">Hệ thống gợi ý nhà hàng thế hệ mới: Con người không ăn bằng hồ sơ, họ ăn bằng khoảnh khắc
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-07-09-ai-prd-reviewer/">AI review PRD: Một yêu cầu sai có thể sinh ra hàng nghìn dòng code đúng
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-07-08-ai-agent-identity-crisis/">AI Agent đang có một cuộc khủng hoảng danh tính
+</a>
+      </li></ul>
+  </div>
+</section><section class="series-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/series">series</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/series/kh%C3%B3a-h%E1%BB%8Dc-python-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học Python Căn Bản">
+            Khóa Học Python Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="https://www.phamduytung.com/series/kh%C3%B3a-h%E1%BB%8Dc-c&#43;&#43;-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học C&#43;&#43; Căn Bản">
+            Khóa Học C&#43;&#43; Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="https://www.phamduytung.com/series/machine-learning-dataset/" class="badge rounded post-taxonomy" title="Machine Learning Dataset">
+            Machine Learning Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a><a href="https://www.phamduytung.com/series/ch%E1%BB%A9ng-kho%C3%A1n-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Chứng Khoán Căn Bản">
+            Chứng Khoán Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">1</span></a></div>
+      </div>
+    </section><section class="tools-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/tools">tools</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/tools/tool-random/" class="badge rounded post-taxonomy" title="Tool Random">
+            Tool Random<span class="badge badge-sm text-white bg-accent ms-1">3</span></a></div>
+      </div>
+    </section><section class="categories-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/categories">categories</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/categories/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="https://www.phamduytung.com/categories/c&#43;&#43;/" class="badge rounded post-taxonomy" title="C&#43;&#43;">
+            C&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="https://www.phamduytung.com/categories/dataset/" class="badge rounded post-taxonomy" title="Dataset">
+            Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a></div>
+      </div>
+    </section><section class="tags-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/tags">tags</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/tags/machine-learning/" class="badge rounded post-taxonomy" title="Machine Learning">
+            Machine Learning<span class="badge badge-sm text-white bg-accent ms-1">26</span></a><a href="https://www.phamduytung.com/tags/deep-learning/" class="badge rounded post-taxonomy" title="Deep Learning">
+            Deep Learning<span class="badge badge-sm text-white bg-accent ms-1">23</span></a><a href="https://www.phamduytung.com/tags/computer-vision/" class="badge rounded post-taxonomy" title="Computer Vision">
+            Computer Vision<span class="badge badge-sm text-white bg-accent ms-1">16</span></a><a href="https://www.phamduytung.com/tags/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">14</span></a><a href="https://www.phamduytung.com/tags/llm/" class="badge rounded post-taxonomy" title="Llm">
+            Llm<span class="badge badge-sm text-white bg-accent ms-1">13</span></a><a href="https://www.phamduytung.com/tags/recommendation-system/" class="badge rounded post-taxonomy" title="Recommendation System">
+            Recommendation System<span class="badge badge-sm text-white bg-accent ms-1">7</span></a><a href="https://www.phamduytung.com/tags/system-design/" class="badge rounded post-taxonomy" title="System Design">
+            System Design<span class="badge badge-sm text-white bg-accent ms-1">6</span></a><a href="https://www.phamduytung.com/tags/time-series/" class="badge rounded post-taxonomy" title="Time Series">
+            Time Series<span class="badge badge-sm text-white bg-accent ms-1">6</span></a><a href="https://www.phamduytung.com/tags/uber-engineering/" class="badge rounded post-taxonomy" title="Uber Engineering">
+            Uber Engineering<span class="badge badge-sm text-white bg-accent ms-1">6</span></a><a href="https://www.phamduytung.com/tags/ai-agent/" class="badge rounded post-taxonomy" title="Ai Agent">
+            Ai Agent<span class="badge badge-sm text-white bg-accent ms-1">5</span></a></div>
+      </div>
+    </section>
+    
+  </div>
+</aside>
+</div>
+    </main><footer class="footer mt-auto py-3 text-center container"><ul class="nav justify-content-between footer-memu mb-3"><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Community
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-facebook"></i>Facebook Group
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://github.com/AlexBlack2202/alexblack2202.github.io" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-github"></i>GitHub
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/contact/"><i class="fas fa-fw fa-info-circle"></i>Contact Us
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/faq/"><i class="fas fa-fw fa-question-circle"></i>Câu hỏi thường gặp
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Docs
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="/team_of_services" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-users"></i>Điều khoản sử dụng
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/privacy" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-lock"></i>Chính sách bảo mật
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Features
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="/utils/gen_paswords/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-key"></i>Tạo password ngẫu nhiên
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Liên kết khác
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">Netlify
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">facebook
+</a>
+        </li></ul></li></ul>
+<div class="copyright mb-2">
+  Copyright © 2016-2026 Phạm Duy Tùng. All Rights Reserved.
+</div>
+<div class="powered-by mb-2">
+  Website chia sẻ kiến thức của Phạm Duy Tùng và Đặng Thị Hằng. Vui lòng liên hệ email alexblack2202@gmail.com nếu bạn có thông tin cần trao đổi.
+</div></footer>
+<script src="https://www.phamduytung.com/js/main.111d51a8c754010f8399ca010e552d803e2d5170b361f8886ad04ec6c21ca551.js" integrity="sha256-ER1RqMdUAQ&#43;DmcoBDlUtgD4tUXCzYfiIatBOxsIcpVE=" crossorigin="anonymous" defer></script><script src="https://www.phamduytung.com/js/icons.min.cb4c9958dbc49e29ac644e168e82db2d0de9a741a15751cc5bf2b0af21eb2845.js" integrity="sha256-y0yZWNvEnimsZE4WjoLbLQ3pp0GhV1HMW/KwryHrKEU=" crossorigin="anonymous" defer></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('https:\/\/www.phamduytung.com\/service-worker.js').then(function(reg) {
+      console.log('Successfully registered service worker', reg);
+    }).catch(function(err) {
+      console.warn('Error whilst registering service worker', err);
+    });
+  });
+}
+</script><script src="https://www.phamduytung.com/js/viewer.min.28bcf5233e406dae6715f46c8b9e8ca7c6cbf347e8678f5a2bebe5369c3270bb.js" integrity="sha256-KLz1Iz5Aba5nFfRsi56Mp8bL80foZ49aK&#43;vlNpwycLs=" crossorigin="anonymous" defer></script><script defer src="https://www.phamduytung.com/js/katex.min.8582b9feadf92a2a977ed303b97d7713cf2754ccf2b4eb60d8be7453a21042c2.js" integrity="sha256-hYK5/q35KiqXftMDuX13E88nVMzytOtg2L50U6IQQsI=" crossorigin="anonymous"></script>
+
+<script  data-ad-client="ca-pub-4644989745435991"  async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4644989745435991"
+     crossorigin="anonymous"></script><script data-cfasync="false" type="text/javascript" data-adel="atag" src="//acscdn.com/script/atg.js" czid="eul3gyjdmm"></script>
+  </body>
+</html>

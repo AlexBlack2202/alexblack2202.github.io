@@ -1,0 +1,1229 @@
+<!doctype html><html lang="vi" data-palette="brown"
+   data-mode="light">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Hệ thống gợi ý nhà hàng thế hệ mới: Con người không ăn bằng hồ sơ, họ ăn bằng khoảnh khắc - Phạm Duy Tùng Machine Learning Blog</title>
+    <meta name="a.validate.02" content="1QZXZ8oi7g57H-GxBrBPkTYBydwii-Ic9iJu" /><link rel="apple-touch-icon" href="https://www.phamduytung.com/images/icons/icon-180x180.png" sizes="180x180">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/icon-32x32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/icon-16x16.png" sizes="16x16" type="image/png">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/favicon.ico">
+<link rel="manifest" href="https://www.phamduytung.com/manifest.json">
+<meta name="keywords" content="" />
+<meta name="description" content="Uber Eats đang chuyển hệ thống gợi ý nhà hàng từ những con số thống kê chậm chạp sang mô hình hiểu chuỗi hành vi gần thời gian thực. Điều đáng học không chỉ là Transformer hay Generative Recommendation, mà là cách một hệ thống bắt đầu nhìn người dùng như một câu chuyện đang diễn ra." /><meta name="robots" content="index, follow" />
+	<meta itemprop="name" content="Hệ thống gợi ý nhà hàng thế hệ mới: Con người không ăn bằng hồ sơ, họ ăn bằng khoảnh khắc">
+	<meta itemprop="description" content="Uber Eats đang chuyển hệ thống gợi ý nhà hàng từ những con số thống kê chậm chạp sang mô hình hiểu chuỗi hành vi gần thời gian thực. Điều đáng học không chỉ là Transformer hay Generative Recommendation, mà là cách một hệ thống bắt đầu nhìn người dùng như một câu chuyện đang diễn ra.">
+	<meta itemprop="datePublished" content="2026-07-10T00:00:00+03:00">
+	<meta itemprop="dateModified" content="2026-07-10T00:00:00+03:00">
+	<meta itemprop="wordCount" content="7280">
+	<meta itemprop="image" content="https://www.phamduytung.com/images/posts/2026-07-10-next-gen-restaurant-recommendation/cover.png">
+	<meta itemprop="keywords" content="Recommendation System,Generative Recommendation,Transformer,Real-Time Features,Machine Learning,Uber Engineering"><meta property="og:url" content="https://www.phamduytung.com/blog/2026-07-10-next-gen-restaurant-recommendation/">
+	<meta property="og:site_name" content="Phạm Duy Tùng Machine Learning Blog">
+	<meta property="og:title" content="Hệ thống gợi ý nhà hàng thế hệ mới: Con người không ăn bằng hồ sơ, họ ăn bằng khoảnh khắc">
+	<meta property="og:description" content="Uber Eats đang chuyển hệ thống gợi ý nhà hàng từ những con số thống kê chậm chạp sang mô hình hiểu chuỗi hành vi gần thời gian thực. Điều đáng học không chỉ là Transformer hay Generative Recommendation, mà là cách một hệ thống bắt đầu nhìn người dùng như một câu chuyện đang diễn ra.">
+	<meta property="og:locale" content="vi_VN">
+	<meta property="og:type" content="article">
+		<meta property="article:section" content="blog">
+		<meta property="article:published_time" content="2026-07-10T00:00:00+03:00">
+		<meta property="article:modified_time" content="2026-07-10T00:00:00+03:00">
+		<meta property="article:tag" content="Recommendation System">
+		<meta property="article:tag" content="Generative Recommendation">
+		<meta property="article:tag" content="Transformer">
+		<meta property="article:tag" content="Real-Time Features">
+		<meta property="article:tag" content="Machine Learning">
+		<meta property="article:tag" content="Uber Engineering">
+		<meta property="og:image" content="https://www.phamduytung.com/images/posts/2026-07-10-next-gen-restaurant-recommendation/cover.png">
+
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:image" content="https://www.phamduytung.com/images/posts/2026-07-10-next-gen-restaurant-recommendation/cover.png">
+	<meta name="twitter:title" content="Hệ thống gợi ý nhà hàng thế hệ mới: Con người không ăn bằng hồ sơ, họ ăn bằng khoảnh khắc">
+	<meta name="twitter:description" content="Uber Eats đang chuyển hệ thống gợi ý nhà hàng từ những con số thống kê chậm chạp sang mô hình hiểu chuỗi hành vi gần thời gian thực. Điều đáng học không chỉ là Transformer hay Generative Recommendation, mà là cách một hệ thống bắt đầu nhìn người dùng như một câu chuyện đang diễn ra.">
+<link rel="stylesheet" href="https://www.phamduytung.com/css/main.min.0aa7373d751b40dcbe96232f76639e455436d25cf0e69da3d7427f45b6fcc905.css" integrity="sha256-Cqc3PXUbQNy&#43;liMvdmOeRVQ20lzw5p2j10J/Rbb8yQU=" crossorigin="anonymous"><link rel="stylesheet" href="https://www.phamduytung.com/css/katex.min.4d6aa053ca8a5675016fa2c9c48ee5359bfaafb8295184458af9d64abce84c47.css" integrity="sha256-TWqgU8qKVnUBb6LJxI7lNZv6r7gpUYRFivnWSrzoTEc=" crossorigin="anonymous">
+<link rel="stylesheet" href="https://www.phamduytung.com/css/viewer.min.e882eb3a023412b73bb741b4604a1222a9f13aa7783c828d26d066ab8642bd51.css" integrity="sha256-6ILrOgI0Erc7t0G0YEoSIqnxOqd4PIKNJtBmq4ZCvVE=" crossorigin="anonymous"><link rel="canonical" href="https://www.phamduytung.com/blog/2026-07-10-next-gen-restaurant-recommendation/"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Phạm Duy Tùng"},"dateModified":"2026-07-10T00:00:00+03:00","datePublished":"2026-07-10T00:00:00+03:00","description":"Uber Eats đang chuyển hệ thống gợi ý nhà hàng từ những con số thống kê chậm chạp sang mô hình hiểu chuỗi hành vi gần thời gian thực. Điều đáng học không chỉ là Transformer hay Generative Recommendation, mà là cách một hệ thống bắt đầu nhìn người dùng như một câu chuyện đang diễn ra.","headline":"Hệ thống gợi ý nhà hàng thế hệ mới: Con người không ăn bằng hồ sơ, họ ăn bằng khoảnh khắc","image":["https://www.phamduytung.com/images/posts/2026-07-10-next-gen-restaurant-recommendation/cover.png"],"inLanguage":"vi","keywords":"Recommendation System, Generative Recommendation, Transformer, Real-Time Features, Machine Learning, Uber Engineering","mainEntityOfPage":{"@id":"https://www.phamduytung.com/blog/2026-07-10-next-gen-restaurant-recommendation/","@type":"WebPage"},"publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://www.phamduytung.com/images/logo.png"},"name":"Phạm Duy Tùng Machine Learning Blog"},"url":"https://www.phamduytung.com/blog/2026-07-10-next-gen-restaurant-recommendation/"}</script></head>
+  <body><script>const items=["mode","palette"];items.forEach(function(e){const t=localStorage.getItem("hbs-"+e);t&&document.body.parentElement.setAttribute("data-"+e,t)})</script><header><nav class="navbar top-app-bar top-app-bar-expand-lg fixed-top">
+  <div class="container">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <i class="fas fa-bars"></i>
+    </button><a class="navbar-brand flex-grow-1 flex-lg-grow-0 text-center text-lg-start mx-auto me-lg-3" href="https://www.phamduytung.com/"><img class="logo" alt="Logo" src="https://www.phamduytung.com/images/logo.webp" loading="lazy"  title="Logo"
+   width="32" height="32"
+   />
+Phạm Duy Tùng
+    </a>
+    <div class="offcanvas offcanvas-bottom surface" tabindex="-1" id="offcanvasSocialShare" aria-labelledby="offcanvasSocialShare">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Share</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body">
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Twitter Share Button"
+      target="_blank" href="https://twitter.com/intent/tweet?title=H%e1%bb%87%20th%e1%bb%91ng%20g%e1%bb%a3i%20%c3%bd%20nh%c3%a0%20h%c3%a0ng%20th%e1%ba%bf%20h%e1%bb%87%20m%e1%bb%9bi%3a%20Con%20ng%c6%b0%e1%bb%9di%20kh%c3%b4ng%20%c4%83n%20b%e1%ba%b1ng%20h%e1%bb%93%20s%c6%a1%2c%20h%e1%bb%8d%20%c4%83n%20b%e1%ba%b1ng%20kho%e1%ba%a3nh%20kh%e1%ba%afc&url=https%3a%2f%2fwww.phamduytung.com%2fblog%2f2026-07-10-next-gen-restaurant-recommendation%2f">
+      <i class="fab fa-fw fa-twitter"></i> Twitter
+    </a>
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Facebook Share Button"
+      target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.phamduytung.com%2fblog%2f2026-07-10-next-gen-restaurant-recommendation%2f">
+      <i class="fab fa-fw fa-facebook-f"></i> Facebook
+    </a>
+  </div>
+</div>
+    <button class="navbar-settings" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSettings"
+  aria-controls="offcanvasSettings" aria-label="Toggle settings">
+  <i class="fas fa-ellipsis-v"></i>
+</button>
+
+<div class="offcanvas offcanvas-end surface h-100" tabindex="-1" id="offcanvasSettings" aria-labelledby="offcanvasSettings">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Cài đặt</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body d-flex flex-column">
+
+
+
+<section class="setting">
+  <form class="font-size-switcher-form row">
+    <div class="col-auto">
+      <label for="fontSize" class="form-label"><i class="fas fa-fw fa-font"></i> Cỡ chữ</label>
+    </div>
+    <div class="col-auto ms-auto">
+      <input type="range" class="form-range" min="-2" max="2" id="fontSize">
+    </div>
+  </form>
+</section>
+
+
+
+<section class="setting actions d-flex justify-content-around mt-auto overflow-auto">
+  <a role="button" class="action action-go-back" href="javascript: window.history.back();">
+    <span class="action-icon"><i class="fas fa-2x fa-arrow-left"></i></span> Quay lại
+  </a>
+  <a role="button" class="action action-reload-page">
+    <span class="action-icon"><i class="fas fa-2x fa-redo-alt"></i></span> Tải lại
+  </a>
+  <a role="button" class="action action-copy-url">
+    <span class="action-icon"><i class="fas fa-2x fa-link"></i></span> Sao chép URL
+  </a><a class="action action-social-share" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSocialShare"
+    aria-controls="offcanvasSocialShare" aria-label="Toggle social share">
+    <span class="action-icon"><i class="fas fa-2x fa-share-alt"></i></span> Chia sẻ
+  </a></section>
+
+</div>
+</div>
+
+    <div class="collapse navbar-collapse" tabindex="-1" id="navbarSupportedContent" aria-labelledby="navbarSupportedContent">
+      <form class="search-bar my-1" action="https://www.phamduytung.com/search">
+  <div class="input-group input-group-sm">
+    <span class="btn btn-search disabled position-absolute left-0"><i class="fas fa-fw fa-search"></i></span>
+    <input class="form-control rounded-pill" name="q" type="search" aria-label="Search">
+  </div>
+</form>
+      <ul class="navbar-nav ms-auto"><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/series/">
+            <i class="fas fa-fw fa-columns"></i>Courses
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/tools/">
+            <i class="fas fa-fw fa-folder"></i>Tools
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/categories/">
+            <i class="fas fa-fw fa-folder"></i>Categories
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/archives/">
+            <i class="fas fa-fw fa-file-archive"></i>Archives
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/tags/">
+            <i class="fas fa-fw fa-tags"></i>Tags
+          </a>
+        </li><li class="nav-item dropdown">
+          <a class="nav-link" id="navbarDropdownSupport" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-fw fa-comments"></i>Community
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdownSupport"><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Facebook Group
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://github.com/AlexBlack2202/alexblack2202.github.io" target="_blank" rel="noopener noreferrer">
+                GitHub
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/contact/">
+                Contact
+              </a>
+            </li><li><hr class="dropdown-divider"></li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/faq/">
+                Câu hỏi thường gặp
+              </a>
+            </li></ul>
+        </li></ul>
+    </div>
+  </div>
+</nav>
+</header>
+<main role="main" class="container" style="line-height:1.7em">
+      <div class="row content">
+<div class="col-lg-9 col-md-8">
+  <div class="container"><nav class="row card component" aria-label="breadcrumb">
+  <div class="card-body">
+    <ol class="breadcrumb "><li class="breadcrumb-item"><a href="https://www.phamduytung.com/">Trang chủ</a></li><li class="breadcrumb-item"><a href="https://www.phamduytung.com/blog/">Blogs</a></li><li class="breadcrumb-item active">Hệ thống gợi ý nhà hàng thế hệ mới: Con người không ăn bằng hồ sơ, họ ăn bằng khoảnh khắc</li></ol>
+  </div>
+</nav>
+<div class="post-panel-wrapper">
+  <div class="d-flex flex-column component rounded post-panel">
+    
+    <a class="action action-panel-toggler" role="button" title="Panel toggler">
+      <i class="fas fa-fw fa-chevron-circle-down"></i>
+    </a>
+    <a id="sidebarToggler" class="action d-none d-lg-block" role="button" title="Sidebar toggler">
+  <i class="fas fa-fw fa-expand-alt" data-fa-transform="rotate-45"></i>
+</a>
+
+    
+
+    
+    
+    <a class="action" href="#post-comments" role="button" aria-label="Comments" title="Comments">
+  <i class="fas fa-fw fa-comments"></i>
+</a>
+    <a class="action" href="#postTOC" aria-controls="Table of contents" role="button" title="Table of contents">
+  <i class="fas fa-fw fa-list-alt"></i>
+</a>
+    
+  </div>
+</div>
+<article class="row card component mb-4 post">
+  <div class="card-header "><div class="bgcover" style="background-image:url(https://www.phamduytung.com/images/posts/2026-07-10-next-gen-restaurant-recommendation/cover.png)" aria-label="Hệ thống gợi ý nhà hàng thế hệ mới: Con người không ăn bằng hồ sơ, họ ăn bằng khoảnh khắc">
+      <div class="bgtrans">
+          <h1>Hệ thống gợi ý nhà hàng thế hệ mới: Con người không ăn bằng hồ sơ, họ ăn bằng khoảnh khắc
+</h1>
+      </div>
+  </div>
+</div>
+  <div class="card-body"><div class="post-meta">
+  <span class="post-date" title="tạo ngày 2026-07-10 04:00:00 &#43;0700 &#43;07.">
+    10/07/2026
+  </span><span class="post-reading-time">
+    35 phút đọc
+  </span><span class="post-taxonomies"><a href="https://www.phamduytung.com/tags/recommendation-system/" class="badge post-taxonomy">recommendation system</a><a href="https://www.phamduytung.com/tags/generative-recommendation/" class="badge post-taxonomy">Generative Recommendation</a><a href="https://www.phamduytung.com/tags/transformer/" class="badge post-taxonomy">Transformer</a><a href="https://www.phamduytung.com/tags/real-time-features/" class="badge post-taxonomy">Real-Time Features</a><a href="https://www.phamduytung.com/tags/machine-learning/" class="badge post-taxonomy">Machine Learning</a><a href="https://www.phamduytung.com/tags/uber-engineering/" class="badge post-taxonomy">Uber Engineering</a></span>
+</div>
+<div class="post-content mb-3"><hr>
+<div class="toc">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#con-người-không-ăn-bằng-lịch-sử-họ-ăn-bằng-khoảnh-khắc">Con người không ăn bằng lịch sử, họ ăn bằng khoảnh khắc</a></li>
+    <li><a href="#recommendation-không-phải-đọc-suy-nghĩ">Recommendation không phải đọc suy nghĩ</a></li>
+    <li><a href="#cách-cũ-đếm-những-gì-người-dùng-từng-làm">Cách cũ: Đếm những gì người dùng từng làm</a></li>
+    <li><a href="#một-bảng-chấm-công-không-kể-được-cuộc-đời-của-nhân-viên">Một bảng chấm công không kể được cuộc đời của nhân viên</a></li>
+    <li><a href="#bước-chuyển-đầu-tiên-biến-hành-vi-thành-một-câu-chuyện">Bước chuyển đầu tiên: Biến hành vi thành một câu chuyện</a></li>
+    <li><a href="#transformer-trong-recommendation-không-phải-để-viết-thơ-về-bún-bò">Transformer trong recommendation không phải để viết thơ về bún bò</a></li>
+    <li><a href="#target-aware-cùng-một-quá-khứ-nhưng-hỏi-về-từng-quán-khác-nhau">Target-aware: Cùng một quá khứ, nhưng hỏi về từng quán khác nhau</a></li>
+    <li><a href="#dữ-liệu-của-hôm-qua-không-hiểu-được-cơn-đói-hôm-nay">Dữ liệu của hôm qua không hiểu được cơn đói hôm nay</a></li>
+    <li><a href="#near-real-time-feature-nghe-tiếng-bước-chân-khi-nó-vừa-chạm-đất">Near real-time feature: Nghe tiếng bước chân khi nó vừa chạm đất</a></li>
+    <li><a href="#cold-start-không-hẳn-là-người-không-có-lịch-sử">Cold start không hẳn là người không có lịch sử</a></li>
+    <li><a href="#cái-bẫy-đáng-sợ-lúc-học-ăn-một-món-lúc-thi-lại-được-đưa-món-khác">Cái bẫy đáng sợ: Lúc học ăn một món, lúc thi lại được đưa món khác</a></li>
+    <li><a href="#điều-mình-tâm-đắc-đừng-cố-làm-model-thông-minh-trên-một-dòng-dữ-liệu-bị-lệch">Điều mình tâm đắc: Đừng cố làm model thông minh trên một dòng dữ liệu bị lệch</a></li>
+    <li><a href="#từ-pointwise-gọi-từng-quán-vào-phỏng-vấn">Từ pointwise: Gọi từng quán vào phỏng vấn</a></li>
+    <li><a href="#listwise-xếp-tất-cả-lên-cùng-một-bàn">Listwise: Xếp tất cả lên cùng một bàn</a></li>
+    <li><a href="#s_1-s_2-dots-s_t">$$
+[s_1, s_2, \dots, s_T]</a></li>
+    <li><a href="#generative-recommendation-không-phải-chatgpt-tự-bịa-ra-một-nhà-hàng">Generative Recommendation không phải ChatGPT tự bịa ra một nhà hàng</a></li>
+    <li><a href="#từ-dlrm-sang-transformer-centered-không-có-nghĩa-vứt-bỏ-mọi-feature-cũ">Từ DLRM sang Transformer-centered không có nghĩa vứt bỏ mọi feature cũ</a></li>
+    <li><a href="#model-lớn-hơn-kéo-theo-một-cái-bếp-lớn-hơn">Model lớn hơn kéo theo một cái bếp lớn hơn</a></li>
+    <li><a href="#chuyển-sang-pytorch-2-multi-hash-embedding-và-bf16">Chuyển sang PyTorch 2, multi-hash embedding và BF16</a></li>
+    <li><a href="#đừng-bắt-gpu-rửa-rau">Đừng bắt GPU rửa rau</a></li>
+    <li><a href="#tối-ưu-model-lúc-deploy-đừng-vừa-mở-cửa-hàng-vừa-lắp-bếp">Tối ưu model lúc deploy, đừng vừa mở cửa hàng vừa lắp bếp</a></li>
+    <li><a href="#recommendation-nhà-hàng-không-sống-trong-thế-giới-ảo">Recommendation nhà hàng không sống trong thế giới ảo</a></li>
+    <li><a href="#bài-toán-đặt-lại-món-cũ-và-khám-phá-món-mới">Bài toán đặt lại món cũ và khám phá món mới</a></li>
+    <li><a href="#sở-thích-nhất-thời-và-sở-thích-ăn-sâu">Sở thích nhất thời và sở thích ăn sâu</a></li>
+    <li><a href="#feed-không-phải-một-hàng-dọc-nó-là-cả-một-gian-hàng">Feed không phải một hàng dọc, nó là cả một gian hàng</a></li>
+    <li><a href="#một-kiến-trúc-đơn-giản-để-hình-dung">Một kiến trúc đơn giản để hình dung</a></li>
+    <li><a href="#nếu-áp-dụng-vào-recommendation-bán-lẻ-tại-việt-nam">Nếu áp dụng vào recommendation bán lẻ tại Việt Nam</a></li>
+    <li><a href="#những-điều-không-nên-học-một-cách-máy-móc">Những điều không nên học một cách máy móc</a></li>
+    <li><a href="#điều-mình-tâm-đắc-nhất-recommendation-là-mô-hình-của-thời-gian">Điều mình tâm đắc nhất: Recommendation là mô hình của thời gian</a></li>
+    <li><a href="#tổng-kết">Tổng kết</a></li>
+    <li><a href="#tham-khảo">Tham khảo</a></li>
+  </ul>
+</nav>
+  </div>
+<h1 id="con-người-không-ăn-bằng-lịch-sử-họ-ăn-bằng-khoảnh-khắc">Con người không ăn bằng lịch sử, họ ăn bằng khoảnh khắc<a class="anchor ms-1" href="#con-người-không-ăn-bằng-lịch-sử-họ-ăn-bằng-khoảnh-khắc"><i class="fas fa-link"></i></a></h1>
+<p>Có một chuyện khá buồn cười.</p>
+<p>Thứ Hai, bạn đặt cơm gà.</p>
+<p>Thứ Ba, bạn tiếp tục đặt cơm gà.</p>
+<p>Thứ Tư, vì không biết ăn gì, bạn lại đặt cơm gà.</p>
+<p>Hệ thống nhìn vào lịch sử và đi đến một kết luận rất khoa học:</p>
+<blockquote>
+<p>Người này yêu cơm gà.</p>
+</blockquote>
+<p>Thứ Năm, bạn vừa mở ứng dụng lên, cơm gà xuất hiện ở hàng đầu tiên.</p>
+<p>Thứ Sáu, vẫn là cơm gà.</p>
+<p>Thứ Bảy, cơm gà tiếp tục đứng đó, nhìn bạn bằng ánh mắt đầy hy vọng.</p>
+<p>Đến Chủ Nhật, hệ thống gần như tin rằng mục đích tồn tại của bạn trên Trái Đất là ăn cơm gà.</p>
+<p>Nhưng sự thật có thể đơn giản hơn nhiều.</p>
+<p>Ba ngày đó bạn tăng ca.</p>
+<p>Quán cơm gà ở gần công ty.</p>
+<p>Giao nhanh.</p>
+<p>Giá rẻ.</p>
+<p>Không phải suy nghĩ.</p>
+<p>Hôm nay bạn đang ở nhà cùng gia đình.</p>
+<p>Ngoài trời mưa.</p>
+<p>Mọi người muốn ăn lẩu.</p>
+<p>Đứa nhỏ muốn gà rán.</p>
+<p>Người lớn muốn món Việt.</p>
+<p>Còn bạn chỉ muốn một thứ gì đó đến trong vòng ba mươi phút để khỏi phải rửa chén.</p>
+<p>Một hệ thống chỉ nhìn vào thống kê cũ sẽ tiếp tục đưa cơm gà lên đầu.</p>
+<p>Một hệ thống hiểu được <strong>chuỗi hành vi</strong>, thời gian, vị trí và những tín hiệu vừa mới xảy ra có thể nhận ra rằng hôm nay là một câu chuyện hoàn toàn khác.</p>
+<p>Đó cũng là điều khiến mình tâm đắc khi đọc bài viết <strong>“Next-Gen Restaurant Recommendation with Generative Modeling and Real-Time Features”</strong> của Uber Engineering.</p>
+<p>Uber không chỉ thay một mô hình recommendation cũ bằng một mô hình lớn hơn.</p>
+<p>Họ thay đổi cách nhìn về người dùng.</p>
+<p>Từ một bảng thống kê bất động.</p>
+<p>Thành một câu chuyện đang diễn ra.</p>
+<h1 id="recommendation-không-phải-đọc-suy-nghĩ">Recommendation không phải đọc suy nghĩ<a class="anchor ms-1" href="#recommendation-không-phải-đọc-suy-nghĩ"><i class="fas fa-link"></i></a></h1>
+<p>Khi mở Uber Eats, người dùng có thể nhìn thấy hàng trăm nhà hàng, cửa hàng thực phẩm, siêu thị và nhiều loại dịch vụ khác nhau.</p>
+<p>Không ai muốn ngồi xem hết.</p>
+<p>Nhiệm vụ của home feed là thu nhỏ một thành phố rộng lớn thành vài lựa chọn có khả năng phù hợp nhất với người đang cầm điện thoại.</p>
+<p>Đối với người dùng, feed tốt giúp giảm bớt việc phải suy nghĩ.</p>
+<p>Đối với nhà hàng, vị trí xuất hiện trên feed có thể quyết định họ được nhìn thấy hay bị chìm xuống dưới hàng trăm đối thủ khác.</p>
+<p>Uber mô tả home feed là cửa ngõ khám phá chính của hàng triệu người dùng, được vận hành bởi hệ thống recommendation tổng hợp hàng tỷ tín hiệu, từ hành vi gần thời gian thực tới ngữ cảnh địa lý. Khi nền tảng mở rộng từ nhà hàng sang hàng tạp hóa, đồ uống và bán lẻ, bài toán này càng trở nên phức tạp. (<a href="https://www.uber.com/us/en/blog/next-gen-restaurant-recommendation/" title="Next-Gen Restaurant Recommendation with Generative Modeling and Real-Time Features" target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<p>Nghe tới đây, recommendation có vẻ giống một nhà ngoại cảm.</p>
+<p>Nhưng thực tế nó không đọc được suy nghĩ.</p>
+<p>Nó chỉ nhìn vào dấu chân.</p>
+<p>Bạn bấm vào đâu.</p>
+<p>Bạn bỏ qua món gì.</p>
+<p>Bạn đặt món nào.</p>
+<p>Bạn đang ở khu vực nào.</p>
+<p>Mấy giờ rồi.</p>
+<p>Bạn vừa tìm “bún bò” hay vừa xem năm quán sushi.</p>
+<p>Từ hàng tỷ dấu chân nhỏ đó, hệ thống cố đoán xem bước tiếp theo của bạn sẽ đi về đâu.</p>
+<p>Vấn đề là dấu chân không đứng yên.</p>
+<p>Một người có thể thích cà phê vào buổi sáng, cơm văn phòng vào buổi trưa, món ăn gia đình vào cuối tuần và một ly trà sữa rất vô lý vào lúc 11 giờ đêm.</p>
+<p>Con người không phải một dòng cố định trong database.</p>
+<p>Con người là một biến số biết đói.</p>
+<h1 id="cách-cũ-đếm-những-gì-người-dùng-từng-làm">Cách cũ: Đếm những gì người dùng từng làm<a class="anchor ms-1" href="#cách-cũ-đếm-những-gì-người-dùng-từng-làm"><i class="fas fa-link"></i></a></h1>
+<p>Trong nhiều năm, mô hình DeepCVR của Uber Eats chủ yếu dựa vào các đặc trưng thống kê tổng hợp và những feature được thiết kế thủ công để dự đoán mức độ phù hợp giữa người dùng với một nhà hàng.</p>
+<p>Ví dụ, hệ thống có thể biết:</p>
+<ul>
+<li>Người này từng đặt món Việt bao nhiêu lần.</li>
+<li>Giá trị đơn hàng trung bình là bao nhiêu.</li>
+<li>Người này thường đặt trong khung giờ nào.</li>
+<li>Nhà hàng có tỷ lệ được bấm vào bao nhiêu.</li>
+<li>Khoảng cách từ người dùng tới nhà hàng.</li>
+<li>Điểm đánh giá của quán.</li>
+<li>Mức độ phổ biến của loại món ăn.</li>
+</ul>
+<p>Đây là cách làm hợp lý.</p>
+<p>Nếu một người đã đặt phở hai mươi lần, khả năng họ đặt phở lần thứ hai mươi mốt không phải bằng không.</p>
+<p>Nếu một quán cách người dùng ba mươi kilomet, việc xếp nó xuống thấp cũng không phải ý tưởng tệ.</p>
+<p>Nhưng số liệu tổng hợp có một nhược điểm lớn.</p>
+<p>Nó biết <strong>bao nhiêu</strong>, nhưng thường không biết <strong>theo thứ tự nào</strong>.</p>
+<p>Giả sử lịch sử của hai người đều có:</p>
+<ul>
+<li>5 lần xem pizza</li>
+<li>3 lần xem sushi</li>
+<li>2 lần đặt cơm</li>
+</ul>
+<p>Nhìn vào bảng thống kê, hai người có vẻ giống nhau.</p>
+<p>Nhưng chuỗi hành vi của người thứ nhất có thể là:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Pizza → Pizza → Pizza → Sushi → Sushi → Cơm
+</span></span></code></pre></div><p>Người này có thể đã chán pizza và đang chuyển sang món khác.</p>
+<p>Trong khi người thứ hai lại có chuỗi:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Cơm → Sushi → Sushi → Pizza → Pizza → Pizza
+</span></span></code></pre></div><p>Người này vừa bắt đầu quan tâm tới pizza.</p>
+<p>Các con số tổng cộng giống nhau.</p>
+<p>Ý định hiện tại lại khác nhau.</p>
+<p>Giống như hai bộ phim có cùng số lượng diễn viên, xe hơi và tiếng súng.</p>
+<p>Không có nghĩa nội dung của chúng giống nhau.</p>
+<p>Thứ tự tạo ra câu chuyện.</p>
+<h1 id="một-bảng-chấm-công-không-kể-được-cuộc-đời-của-nhân-viên">Một bảng chấm công không kể được cuộc đời của nhân viên<a class="anchor ms-1" href="#một-bảng-chấm-công-không-kể-được-cuộc-đời-của-nhân-viên"><i class="fas fa-link"></i></a></h1>
+<p>Feature thống kê giống như bảng chấm công.</p>
+<p>Nó cho biết một nhân viên đã đi làm bao nhiêu ngày.</p>
+<p>Nhưng không cho biết tuần trước người đó vừa chuyển bộ phận.</p>
+<p>Không cho biết hôm qua họ vừa nghỉ bệnh.</p>
+<p>Không cho biết sáng nay họ bước vào công ty với một lá đơn xin nghỉ việc trong túi.</p>
+<p>Recommendation cũng vậy.</p>
+<p>Một bảng ghi:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Người dùng thích món Việt: 72%
+</span></span><span class="line"><span class="ln">2</span><span class="cl">Người dùng thích đồ ăn nhanh: 18%
+</span></span><span class="line"><span class="ln">3</span><span class="cl">Người dùng thích món Nhật: 10%
+</span></span></code></pre></div><p>trông rất chắc chắn.</p>
+<p>Nhưng nó có thể đã được tạo ra từ hành vi của ba tháng trước.</p>
+<p>Trong ba tháng đó, người dùng có thể đã chuyển nhà.</p>
+<p>Đổi công ty.</p>
+<p>Bắt đầu ăn chay.</p>
+<p>Có con nhỏ.</p>
+<p>Hoặc đơn giản là vừa nhận lương và hôm nay muốn ăn sang.</p>
+<p>Thống kê lịch sử vẫn có giá trị.</p>
+<p>Nhưng nó giống phần nền của bức tranh.</p>
+<p>Nó không nên che mất thứ vừa xảy ra ở phía trước.</p>
+<h1 id="bước-chuyển-đầu-tiên-biến-hành-vi-thành-một-câu-chuyện">Bước chuyển đầu tiên: Biến hành vi thành một câu chuyện<a class="anchor ms-1" href="#bước-chuyển-đầu-tiên-biến-hành-vi-thành-một-câu-chuyện"><i class="fas fa-link"></i></a></h1>
+<p>Để hiểu rõ hơn ý định đang thay đổi của người dùng, Uber bổ sung một nhánh xử lý chuỗi hành vi bằng Transformer.</p>
+<p>Kiến trúc mới ban đầu là một hệ thống lai gồm hai đường:</p>
+<ul>
+<li>Nhánh DCNv2 tiếp tục xử lý các feature số, feature phân loại, đặc trưng thưa và những thống kê truyền thống.</li>
+<li>Nhánh Transformer xử lý chuỗi hành động theo thời gian như click và order.</li>
+</ul>
+<p>Sau đó, biểu diễn được học từ chuỗi hành vi sẽ được ghép trở lại với mô hình DeepCVR chính để đưa ra dự đoán cuối cùng. (<a href="https://www.uber.com/us/en/blog/next-gen-restaurant-recommendation/" title="Next-Gen Restaurant Recommendation with Generative Modeling and Real-Time Features" target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<p>Có thể hình dung mô hình cũ giống một người bán hàng cầm cuốn sổ:</p>
+<blockquote>
+<p>Anh Tùng đã mua món Việt 14 lần. Chắc hôm nay anh ấy tiếp tục mua món Việt.</p>
+</blockquote>
+<p>Nhánh Transformer giống một người bán hàng chịu khó quan sát thêm:</p>
+<blockquote>
+<p>Nhưng năm phút vừa rồi anh ấy xem ba quán pizza, bấm vào một cửa hàng tiện lợi và tìm “đồ ăn cho bé”. Có lẽ hôm nay đừng đưa bún bò lên trước.</p>
+</blockquote>
+<p>Hai cách nhìn không loại trừ nhau.</p>
+<p>Một bên hiểu thói quen dài hạn.</p>
+<p>Một bên hiểu chuyển động gần đây.</p>
+<p>Ghép chúng lại giúp hệ thống vừa nhớ người dùng là ai, vừa nhìn thấy người dùng đang làm gì.</p>
+<h1 id="transformer-trong-recommendation-không-phải-để-viết-thơ-về-bún-bò">Transformer trong recommendation không phải để viết thơ về bún bò<a class="anchor ms-1" href="#transformer-trong-recommendation-không-phải-để-viết-thơ-về-bún-bò"><i class="fas fa-link"></i></a></h1>
+<p>Khi nghe tới Transformer, nhiều người nghĩ ngay tới ChatGPT.</p>
+<p>Một mô hình biết viết văn.</p>
+<p>Trả lời câu hỏi.</p>
+<p>Sinh code.</p>
+<p>Thỉnh thoảng bịa ra một thư viện Python chưa từng tồn tại.</p>
+<p>Nhưng Transformer không sinh ra chỉ để nói chuyện.</p>
+<p>Điểm mạnh quan trọng của nó là cơ chế attention, cho phép mô hình xem xét mối quan hệ giữa nhiều phần tử trong một chuỗi.</p>
+<p>Trong recommendation, mỗi hành động của người dùng có thể được xem như một “từ”.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Click quán A
+</span></span><span class="line"><span class="ln">2</span><span class="cl">→ xem menu
+</span></span><span class="line"><span class="ln">3</span><span class="cl">→ quay lại
+</span></span><span class="line"><span class="ln">4</span><span class="cl">→ tìm “pizza”
+</span></span><span class="line"><span class="ln">5</span><span class="cl">→ click quán B
+</span></span><span class="line"><span class="ln">6</span><span class="cl">→ thêm món vào giỏ
+</span></span></code></pre></div><p>Cả chuỗi giống một câu.</p>
+<p>Mô hình không chỉ đếm từng hành động riêng lẻ.</p>
+<p>Nó tìm hiểu hành động nào có liên quan tới hành động nào.</p>
+<p>Thứ gì vừa xảy ra.</p>
+<p>Thứ gì nên được chú ý nhiều hơn.</p>
+<p>Các mô hình như Behavior Sequence Transformer từng được đề xuất để khai thác tín hiệu tuần tự trong hành vi thương mại điện tử. DIN cũng nhấn mạnh rằng sở thích của người dùng nên được biểu diễn trong mối quan hệ với chính món hàng đang được đánh giá, thay vì nén toàn bộ lịch sử thành một vector bất động. (<a href="https://arxiv.org/abs/1706.06978?utm_source=chatgpt.com" title="Deep Interest Network for Click-Through Rate Prediction" target="_blank" rel="noopener noreferrer">arXiv</a>)</p>
+<p>Nói theo cách lúa nhất có thể:</p>
+<p>Transformer không chỉ hỏi:</p>
+<blockquote>
+<p>Người này từng ăn gì?</p>
+</blockquote>
+<p>Nó hỏi thêm:</p>
+<blockquote>
+<p>Người này vừa làm gì, theo thứ tự nào, và những việc đó đang dẫn tới món nào?</p>
+</blockquote>
+<h1 id="target-aware-cùng-một-quá-khứ-nhưng-hỏi-về-từng-quán-khác-nhau">Target-aware: Cùng một quá khứ, nhưng hỏi về từng quán khác nhau<a class="anchor ms-1" href="#target-aware-cùng-một-quá-khứ-nhưng-hỏi-về-từng-quán-khác-nhau"><i class="fas fa-link"></i></a></h1>
+<p>Một chi tiết kỹ thuật mình thấy rất hay trong kiến trúc của Uber là <strong>target-aware sequence modeling</strong>.</p>
+<p>Thay vì đọc lịch sử người dùng rồi tạo ra một biểu diễn chung cho mọi nhà hàng, hệ thống gắn thêm nhà hàng đang cần chấm điểm vào cuối chuỗi.</p>
+<p>Ví dụ, lịch sử người dùng là:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Click sushi
+</span></span><span class="line"><span class="ln">2</span><span class="cl">→ đặt cơm Nhật
+</span></span><span class="line"><span class="ln">3</span><span class="cl">→ xem ramen
+</span></span></code></pre></div><p>Khi chấm điểm một quán ramen, mô hình sẽ nhìn chuỗi theo dạng:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Click sushi
+</span></span><span class="line"><span class="ln">2</span><span class="cl">→ đặt cơm Nhật
+</span></span><span class="line"><span class="ln">3</span><span class="cl">→ xem ramen
+</span></span><span class="line"><span class="ln">4</span><span class="cl">→ [Quán ramen cần chấm điểm]
+</span></span></code></pre></div><p>Khi chấm điểm một quán bánh mì, chuỗi lại trở thành:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Click sushi
+</span></span><span class="line"><span class="ln">2</span><span class="cl">→ đặt cơm Nhật
+</span></span><span class="line"><span class="ln">3</span><span class="cl">→ xem ramen
+</span></span><span class="line"><span class="ln">4</span><span class="cl">→ [Quán bánh mì cần chấm điểm]
+</span></span></code></pre></div><p>Cùng một lịch sử.</p>
+<p>Nhưng câu hỏi khác nhau.</p>
+<p>Vì vậy mức độ liên quan cũng khác nhau.</p>
+<p>Uber cho biết kỹ thuật này được lấy cảm hứng từ những hướng như Deep Interest Network và Behavior Sequence Transformer. Nhà hàng mục tiêu được đưa vào chuỗi để Transformer trực tiếp tính quan hệ giữa hành vi quá khứ với ứng viên hiện tại. (<a href="https://www.uber.com/us/en/blog/next-gen-restaurant-recommendation/" title="Next-Gen Restaurant Recommendation with Generative Modeling and Real-Time Features" target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<p>Có thể viết trực giác này bằng một công thức đơn giản:</p>
+<p>$$
+h_m = Transformer(a_1, a_2, \dots, a_n, m)
+$$</p>
+<p>Trong đó:</p>
+<ul>
+<li>$a_1, a_2, \dots, a_n$ là các hành động trước đó.</li>
+<li>$m$ là nhà hàng đang được chấm điểm.</li>
+<li>$h_m$ là biểu diễn lịch sử người dùng trong mối quan hệ với chính nhà hàng đó.</li>
+</ul>
+<p>Điểm quan trọng nằm ở ký hiệu $m$.</p>
+<p>Lịch sử không được hiểu một cách cô lập.</p>
+<p>Nó được hiểu trong ngữ cảnh của thứ chúng ta đang cân nhắc đưa ra trước mặt người dùng.</p>
+<p>Ngoài đời cũng vậy.</p>
+<p>Khi một người nói:</p>
+<blockquote>
+<p>Tôi vừa chạy bộ một tiếng.</p>
+</blockquote>
+<p>Thông tin đó có thể làm tăng khả năng họ muốn uống nước.</p>
+<p>Nhưng không nhất thiết làm tăng khả năng họ muốn mua một cái tủ lạnh.</p>
+<p>Cùng một sự kiện.</p>
+<p>Ý nghĩa thay đổi theo câu hỏi đang được đặt ra.</p>
+<h1 id="dữ-liệu-của-hôm-qua-không-hiểu-được-cơn-đói-hôm-nay">Dữ liệu của hôm qua không hiểu được cơn đói hôm nay<a class="anchor ms-1" href="#dữ-liệu-của-hôm-qua-không-hiểu-được-cơn-đói-hôm-nay"><i class="fas fa-link"></i></a></h1>
+<p>Kiến trúc mô hình tốt vẫn chưa đủ nếu feature đến quá chậm.</p>
+<p>Trước đây, nhiều feature của hệ thống recommendation Uber được tính bằng các batch job offline, dẫn tới độ trễ 24 giờ hoặc lâu hơn.</p>
+<p>Điều đó có nghĩa mô hình có thể không biết người dùng vừa làm gì trong phiên hiện tại. (<a href="https://www.uber.com/us/en/blog/next-gen-restaurant-recommendation/" title="Next-Gen Restaurant Recommendation with Generative Modeling and Real-Time Features" target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<p>Hai mươi bốn giờ trong một số hệ thống không phải thời gian dài.</p>
+<p>Báo cáo doanh thu cuối ngày chậm một chút có thể vẫn dùng được.</p>
+<p>Nhưng với đồ ăn, 24 giờ gần như là một kiếp khác.</p>
+<p>Hôm qua bạn đặt cà phê không có nghĩa tối nay bạn muốn uống cà phê.</p>
+<p>Sáng nay bạn tìm đồ ăn sáng không có nghĩa buổi trưa hệ thống tiếp tục đưa bánh mì lên đầu.</p>
+<p>Năm phút trước bạn vừa bấm vào bốn quán đồ chay.</p>
+<p>Đó có thể là tín hiệu có giá trị hơn lịch sử sáu tháng trước.</p>
+<p>Recommendation cần sống gần với thời điểm con người đưa ra quyết định.</p>
+<p>Chậm một ngày không chỉ là dữ liệu cũ.</p>
+<p>Nó là hiểu sai bối cảnh.</p>
+<h1 id="near-real-time-feature-nghe-tiếng-bước-chân-khi-nó-vừa-chạm-đất">Near real-time feature: Nghe tiếng bước chân khi nó vừa chạm đất<a class="anchor ms-1" href="#near-real-time-feature-nghe-tiếng-bước-chân-khi-nó-vừa-chạm-đất"><i class="fas fa-link"></i></a></h1>
+<p>Để giảm khoảng cách này, Uber sử dụng nền tảng cá nhân hóa nội bộ Next Personalization Platform.</p>
+<p>Thành phần trung tâm là UserContext, một lịch sử hành động của người dùng theo mô hình event-sourced, được cập nhật gần thời gian thực và dùng xuyên qua nhiều mảng sản phẩm.</p>
+<p>Thay vì đợi batch job tạo sẵn hàng loạt con số tổng hợp, hệ thống có thể tính feature từ chuỗi hành động ngay lúc inference. Uber cho biết độ trễ dữ liệu đã được giảm từ nhiều ngày xuống còn vài giây, giúp mô hình nhìn thấy những tương tác gần nhất trong cùng phiên sử dụng. (<a href="https://www.uber.com/us/en/blog/next-gen-restaurant-recommendation/" title="Next-Gen Restaurant Recommendation with Generative Modeling and Real-Time Features" target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<p>Hãy tưởng tượng một người đi trên bãi cát.</p>
+<p>Batch feature giống như sáng hôm sau mới có người ra chụp lại dấu chân.</p>
+<p>Có thể vẫn biết người đó từng đi qua.</p>
+<p>Nhưng không biết họ đang ở đâu.</p>
+<p>Near real-time feature giống như nghe tiếng cát vừa lún xuống dưới bàn chân.</p>
+<p>Dấu vết còn mới.</p>
+<p>Hướng đi còn rõ.</p>
+<p>Bạn không chỉ biết người đó từng đi.</p>
+<p>Bạn có cơ hội đoán họ đang đi về đâu.</p>
+<h1 id="cold-start-không-hẳn-là-người-không-có-lịch-sử">Cold start không hẳn là người không có lịch sử<a class="anchor ms-1" href="#cold-start-không-hẳn-là-người-không-có-lịch-sử"><i class="fas fa-link"></i></a></h1>
+<p>Uber đặc biệt nhắc tới lợi ích của feature mới đối với nhóm cold-start, tức những người dùng có rất ít hoặc gần như chưa có lịch sử trên nền tảng. (<a href="https://www.uber.com/us/en/blog/next-gen-restaurant-recommendation/" title="Next-Gen Restaurant Recommendation with Generative Modeling and Real-Time Features" target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<p>Cold start thường được hình dung là một người vừa tạo tài khoản.</p>
+<p>Hệ thống không biết họ thích gì.</p>
+<p>Thế là đưa vài quán phổ biến lên trước và cầu nguyện.</p>
+<p>Nhưng ngay cả người dùng mới cũng bắt đầu tạo tín hiệu ngay khi mở ứng dụng:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Tìm “cơm”
+</span></span><span class="line"><span class="ln">2</span><span class="cl">→ bỏ qua đồ ăn nhanh
+</span></span><span class="line"><span class="ln">3</span><span class="cl">→ bấm món Việt
+</span></span><span class="line"><span class="ln">4</span><span class="cl">→ xem quán giao dưới 25 phút
+</span></span></code></pre></div><p>Chỉ vài hành động đã bắt đầu vẽ ra ý định.</p>
+<p>Nếu phải đợi tới ngày hôm sau mới dùng được những tín hiệu này, phiên hiện tại gần như bị bỏ phí.</p>
+<p>Khi dữ liệu được cập nhật trong vài giây, hệ thống có thể học ngay trong lần đầu người đó sử dụng.</p>
+<p>Người dùng chưa có quá khứ dài.</p>
+<p>Nhưng họ đã có một hiện tại.</p>
+<p>Và đôi khi hiện tại là tất cả những gì recommendation cần.</p>
+<h1 id="cái-bẫy-đáng-sợ-lúc-học-ăn-một-món-lúc-thi-lại-được-đưa-món-khác">Cái bẫy đáng sợ: Lúc học ăn một món, lúc thi lại được đưa món khác<a class="anchor ms-1" href="#cái-bẫy-đáng-sợ-lúc-học-ăn-một-món-lúc-thi-lại-được-đưa-món-khác"><i class="fas fa-link"></i></a></h1>
+<p>Một trong những vấn đề khó chịu nhất của hệ thống machine learning production là <strong>training-serving skew</strong>.</p>
+<p>Nói đơn giản, feature dùng khi train không giống feature được tính khi chạy thật.</p>
+<p>Giống như lúc ôn thi, giáo viên cho học sinh dùng máy tính.</p>
+<p>Đến ngày thi lại phát bàn tính.</p>
+<p>Hoặc lúc tập lái dùng xe số tự động.</p>
+<p>Đến ngày sát hạch được đưa một chiếc xe tải số sàn đang chết máy giữa dốc.</p>
+<p>Mô hình không nhất thiết kém.</p>
+<p>Môi trường đã thay đổi.</p>
+<p>Uber giải quyết vấn đề này bằng cách sử dụng cùng các FeatureExtractor cho cả online serving và quá trình tạo dữ liệu training.</p>
+<p>Ở online, các FeatureExtractor là những hàm Java thuần được gọi bởi Feature Store.</p>
+<p>Khi tạo training data, Spark tái dựng UserContext tại thời điểm inference trong quá khứ rồi gọi lại chính các FeatureExtractor đó. Uber còn ghi log mẫu feature online và so sánh với kết quả được tính lại offline để theo dõi độ nhất quán. (<a href="https://www.uber.com/us/en/blog/next-gen-restaurant-recommendation/" title="Next-Gen Restaurant Recommendation with Generative Modeling and Real-Time Features" target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<p>Đây là một chi tiết ít hào nhoáng hơn Transformer.</p>
+<p>Nhưng theo mình, nó đáng học không kém.</p>
+<p>Một mô hình ấn tượng trên notebook chưa chắc sống nổi trong production.</p>
+<p>Bởi vì model chỉ học từ những gì chúng ta đưa cho nó.</p>
+<p>Nếu bếp lúc tập dùng một công thức, lúc bán hàng lại nấu theo công thức khác, khách ăn trúng món lạ cũng không có gì bí ẩn.</p>
+<h1 id="điều-mình-tâm-đắc-đừng-cố-làm-model-thông-minh-trên-một-dòng-dữ-liệu-bị-lệch">Điều mình tâm đắc: Đừng cố làm model thông minh trên một dòng dữ liệu bị lệch<a class="anchor ms-1" href="#điều-mình-tâm-đắc-đừng-cố-làm-model-thông-minh-trên-một-dòng-dữ-liệu-bị-lệch"><i class="fas fa-link"></i></a></h1>
+<p>Nhiều đội machine learning gặp kết quả không tốt sẽ nghĩ ngay tới việc đổi model.</p>
+<p>Thêm layer.</p>
+<p>Tăng embedding.</p>
+<p>Dùng Transformer lớn hơn.</p>
+<p>Chuyển từ FP32 sang BF16.</p>
+<p>Tăng GPU.</p>
+<p>Thêm vài triệu parameter cho con số đẹp hơn.</p>
+<p>Nhưng nếu feature online và offline không giống nhau, chúng ta đang gắn động cơ phản lực lên một chiếc xe có hai bánh quay ngược hướng.</p>
+<p>Xe rung mạnh hơn.</p>
+<p>Tốn xăng hơn.</p>
+<p>Nhưng chưa chắc đi xa hơn.</p>
+<p>Điều đáng học từ Uber không chỉ là mô hình recommendation mới.</p>
+<p>Mà là cách họ xây một con đường để dữ liệu từ training tới serving đi qua cùng một logic.</p>
+<p>Model mạnh là quan trọng.</p>
+<p>Nhưng model được nuôi bằng cùng một loại thức ăn lúc học và lúc làm việc còn quan trọng hơn.</p>
+<h1 id="từ-pointwise-gọi-từng-quán-vào-phỏng-vấn">Từ pointwise: Gọi từng quán vào phỏng vấn<a class="anchor ms-1" href="#từ-pointwise-gọi-từng-quán-vào-phỏng-vấn"><i class="fas fa-link"></i></a></h1>
+<p>Sau kiến trúc hybrid, Uber tiếp tục hướng tới một hệ thống tập trung vào Transformer và Generative Recommendation.</p>
+<p>Một hạn chế của mô hình cũ là cách chấm điểm <strong>pointwise</strong>.</p>
+<p>Mỗi lần inference, hệ thống xét một cặp:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Người dùng A + Nhà hàng X
+</span></span></code></pre></div><p>Sau đó chạy tiếp:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Người dùng A + Nhà hàng Y
+</span></span></code></pre></div><p>Rồi:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Người dùng A + Nhà hàng Z
+</span></span></code></pre></div><p>Nếu có 100 nhà hàng ứng viên, có thể hình dung hệ thống đang gọi từng quán vào phòng để phỏng vấn riêng.</p>
+<blockquote>
+<p>Quán X, anh phù hợp với khách này bao nhiêu điểm?</p>
+</blockquote>
+<p>Xong.</p>
+<blockquote>
+<p>Quán Y, tới lượt chị.</p>
+</blockquote>
+<p>Xong.</p>
+<blockquote>
+<p>Quán Z, mời vào.</p>
+</blockquote>
+<p>Mỗi nhà hàng được đánh giá tương đối độc lập.</p>
+<p>Cách này có thể hoạt động tốt, nhưng khá tốn kém khi số ứng viên tăng lên.</p>
+<p>Quan trọng hơn, việc chấm từng quán riêng lẻ không tự nhiên nhìn thấy toàn bộ danh sách đang cạnh tranh với nhau.</p>
+<p>Một quán có điểm 0,8 nghe rất cao.</p>
+<p>Nhưng nếu 20 quán khác đều có điểm 0,95 thì nó không còn đặc biệt.</p>
+<p>Recommendation cuối cùng không đưa ra một con số.</p>
+<p>Nó đưa ra một danh sách.</p>
+<p>Vì vậy, học cách nhìn cả danh sách là bước đi khá tự nhiên.</p>
+<h1 id="listwise-xếp-tất-cả-lên-cùng-một-bàn">Listwise: Xếp tất cả lên cùng một bàn<a class="anchor ms-1" href="#listwise-xếp-tất-cả-lên-cùng-một-bàn"><i class="fas fa-link"></i></a></h1>
+<p>Trong kiến trúc mới, Uber chuyển dần từ pointwise sang listwise.</p>
+<p>Thay vì mỗi forward pass chỉ nhận một nhà hàng mục tiêu, mô hình nhận một mảng các nhà hàng ứng viên trong cùng phiên và tạo điểm cho cả danh sách trong một lần chạy.</p>
+<p>Theo Uber, cách làm này giúp cải thiện hiệu quả training và serving, giảm độ phức tạp tính trên mỗi nhà hàng xuống xấp xỉ $1/T$ so với kiến trúc cũ, với $T$ là số nhà hàng mục tiêu được xử lý cùng lúc. (<a href="https://www.uber.com/us/en/blog/next-gen-restaurant-recommendation/" title="Next-Gen Restaurant Recommendation with Generative Modeling and Real-Time Features" target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<p>Nếu pointwise giống gọi từng thí sinh vào phỏng vấn riêng, listwise giống xếp tất cả lên cùng sân khấu.</p>
+<p>Lúc này, hệ thống có thể nhìn:</p>
+<ul>
+<li>Quán nào giống nhau quá.</li>
+<li>Quán nào nổi bật hơn trong nhóm.</li>
+<li>Danh sách có toàn đồ ăn nhanh hay không.</li>
+<li>Lựa chọn nào phù hợp nhất trong bối cảnh hiện tại.</li>
+<li>Vị trí của từng nhà hàng so với các ứng viên còn lại.</li>
+</ul>
+<p>Ở mức đơn giản, ta có thể hình dung:</p>
+<h1 id="s_1-s_2-dots-s_t">$$
+[s_1, s_2, \dots, s_T]<a class="anchor ms-1" href="#s_1-s_2-dots-s_t"><i class="fas fa-link"></i></a></h1>
+<p>F(\text{user history}, [m_1, m_2, \dots, m_T])
+$$</p>
+<p>Thay vì chạy riêng:</p>
+<p>$$
+s_i = f(\text{user}, m_i)
+$$</p>
+<p>Mô hình không còn chỉ hỏi:</p>
+<blockquote>
+<p>Quán này có tốt không?</p>
+</blockquote>
+<p>Nó bắt đầu hỏi:</p>
+<blockquote>
+<p>Trong số những quán đang có mặt ở đây, quán nào nên đứng trước quán nào?</p>
+</blockquote>
+<p>Đó là một câu hỏi gần hơn với thứ feed thực sự cần trả lời.</p>
+<h1 id="generative-recommendation-không-phải-chatgpt-tự-bịa-ra-một-nhà-hàng">Generative Recommendation không phải ChatGPT tự bịa ra một nhà hàng<a class="anchor ms-1" href="#generative-recommendation-không-phải-chatgpt-tự-bịa-ra-một-nhà-hàng"><i class="fas fa-link"></i></a></h1>
+<p>Tên “Generative Recommendation” rất dễ gây hiểu nhầm.</p>
+<p>Nghe như thể hệ thống sẽ ngồi sinh ra một quán ăn chưa từng tồn tại:</p>
+<blockquote>
+<p>Hôm nay tôi xin đề xuất Nhà hàng Rồng Bay trên tầng mây, giao món bằng đại bàng trong 12 phút.</p>
+</blockquote>
+<p>Không phải vậy.</p>
+<p>Trong hướng Generative Recommender, lịch sử hành vi, item và ngữ cảnh được tổ chức giống các token trong một chuỗi.</p>
+<p>Mô hình học cấu trúc của chuỗi đó và hướng tới việc dự đoán hoặc tạo ra các lựa chọn tiếp theo theo cách thống nhất hơn, thay vì ghép nhiều khối feature và mô hình chuyên biệt rời rạc.</p>
+<p>Trong kiến trúc Uber mô tả, Transformer trở thành thân chính của mô hình.</p>
+<p>Các feature không phải chuỗi không còn đi qua một nhánh DLRM riêng biệt, mà được biến đổi rồi ghép với feature của target trước khi vào Transformer. Đây là bước chuyển từ kiến trúc lai sang kiến trúc lấy Transformer làm trung tâm, tạo nền móng cho hướng GenRec hoàn chỉnh hơn. (<a href="https://www.uber.com/us/en/blog/next-gen-restaurant-recommendation/" title="Next-Gen Restaurant Recommendation with Generative Modeling and Real-Time Features" target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<p>Có thể hình dung hệ thống cũ giống một công ty có nhiều phòng ban:</p>
+<ul>
+<li>Phòng thống kê tính số lần mua.</li>
+<li>Phòng xử lý hành vi đọc lịch sử.</li>
+<li>Phòng ranking ghép kết quả.</li>
+<li>Phòng score chấm từng nhà hàng.</li>
+</ul>
+<p>Mỗi nơi giữ một phần câu chuyện.</p>
+<p>Kiến trúc mới cố đưa nhiều phần hơn vào cùng một ngôn ngữ chung.</p>
+<p>Giống như thay vì mười người chuyền mười tờ giấy, cả nhóm cùng nhìn vào một tấm bản đồ.</p>
+<h1 id="từ-dlrm-sang-transformer-centered-không-có-nghĩa-vứt-bỏ-mọi-feature-cũ">Từ DLRM sang Transformer-centered không có nghĩa vứt bỏ mọi feature cũ<a class="anchor ms-1" href="#từ-dlrm-sang-transformer-centered-không-có-nghĩa-vứt-bỏ-mọi-feature-cũ"><i class="fas fa-link"></i></a></h1>
+<p>Đây là chỗ cần tránh đơn giản hóa quá mức.</p>
+<p>Thống kê truyền thống không vô dụng.</p>
+<p>Khoảng cách giao hàng vẫn quan trọng.</p>
+<p>Giá món vẫn quan trọng.</p>
+<p>Điểm đánh giá vẫn quan trọng.</p>
+<p>Khuyến mãi vẫn quan trọng.</p>
+<p>Thời gian giao dự kiến vẫn quan trọng.</p>
+<p>Transformer không làm vật lý biến mất.</p>
+<p>Nó không thể dùng attention để giao một tô phở từ Hà Nội vào TP.HCM trong hai mươi phút.</p>
+<p>Điểm thay đổi nằm ở cách các feature được xử lý.</p>
+<p>Thay vì để feature truyền thống chạy trong một con đường riêng rồi mới ghép với sequence embedding, Uber đang chuyển chúng thành biểu diễn gắn với target và đưa vào Transformer làm phần dữ liệu chung của sequence module. (<a href="https://www.uber.com/us/en/blog/next-gen-restaurant-recommendation/" title="Next-Gen Restaurant Recommendation with Generative Modeling and Real-Time Features" target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<p>Đây là một thay đổi kiến trúc.</p>
+<p>Không phải nghi lễ đốt bỏ quá khứ.</p>
+<p>Máy học tốt không phải lúc nào cũng chọn giữa “cũ” và “mới”.</p>
+<p>Nhiều khi nó chỉ tìm cách đặt chúng vào đúng chỗ.</p>
+<h1 id="model-lớn-hơn-kéo-theo-một-cái-bếp-lớn-hơn">Model lớn hơn kéo theo một cái bếp lớn hơn<a class="anchor ms-1" href="#model-lớn-hơn-kéo-theo-một-cái-bếp-lớn-hơn"><i class="fas fa-link"></i></a></h1>
+<p>Nói tới đây, mọi thứ có vẻ dễ.</p>
+<p>Thêm Transformer.</p>
+<p>Thêm sequence.</p>
+<p>Đổi sang listwise.</p>
+<p>Xong thuật toán, quá dễ.</p>
+<p>Nhưng production không quan tâm slide đẹp tới đâu.</p>
+<p>Nó hỏi những câu rất đời:</p>
+<ul>
+<li>Train bao lâu?</li>
+<li>GPU đủ không?</li>
+<li>Startup model mất bao nhiêu giây?</li>
+<li>Request đầu tiên có bị chậm không?</li>
+<li>CPU đang bận làm gì?</li>
+<li>GPU có thực sự chạy hay đang ngồi chờ feature?</li>
+<li>Model có deploy ổn trên nhiều loại phần cứng không?</li>
+</ul>
+<p>Một mô hình có metric tốt hơn 1% nhưng tốn gấp mười lần tài nguyên có thể không phải cải tiến.</p>
+<p>Nó chỉ là một con bò ăn khỏe.</p>
+<p>Vì vậy Uber phải thay đổi cả hệ sinh thái training và serving, không chỉ phần model.</p>
+<h1 id="chuyển-sang-pytorch-2-multi-hash-embedding-và-bf16">Chuyển sang PyTorch 2, multi-hash embedding và BF16<a class="anchor ms-1" href="#chuyển-sang-pytorch-2-multi-hash-embedding-và-bf16"><i class="fas fa-link"></i></a></h1>
+<p>Uber chuyển từ Keras/TensorFlow sang PyTorch 2 để có độ linh hoạt tốt hơn cho kiến trúc sequence nâng cao.</p>
+<p>Họ cũng áp dụng multi-hash embedding và training mixed precision bằng BF16 nhằm tăng throughput, qua đó có thể train mô hình lớn hơn mà vẫn giữ thời gian training gần với baseline trước đó. (<a href="https://www.uber.com/us/en/blog/next-gen-restaurant-recommendation/" title="Next-Gen Restaurant Recommendation with Generative Modeling and Real-Time Features" target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<p>Multi-hash embedding có thể hiểu nôm na như việc một item không chỉ được tra trong một cuốn sổ duy nhất.</p>
+<p>Nó được ánh xạ qua nhiều cách băm để giảm một số vấn đề khi không gian ID rất lớn và tăng hiệu quả xử lý.</p>
+<p>BF16 lại giống việc ghi số với ít chi tiết hơn ở một số phần, đổi lại máy tính xử lý nhanh hơn và dùng ít tài nguyên hơn, trong khi vẫn giữ được khoảng giá trị rộng phù hợp với nhiều bài toán deep learning.</p>
+<p>Tất nhiên, đây không phải công thức thần kỳ.</p>
+<p>Dùng precision thấp hơn cần kiểm tra độ ổn định số học.</p>
+<p>Hashing có thể sinh va chạm.</p>
+<p>Nhưng trong hệ thống quy mô lớn, những tối ưu tưởng như nhỏ có thể quyết định model chạy được ngoài đời hay chỉ đẹp trong notebook.</p>
+<h1 id="đừng-bắt-gpu-rửa-rau">Đừng bắt GPU rửa rau<a class="anchor ms-1" href="#đừng-bắt-gpu-rửa-rau"><i class="fas fa-link"></i></a></h1>
+<p>Một chi tiết khác mình rất thích là kiến trúc tách rời CPU và GPU.</p>
+<p>Trong pipeline inference, không phải mọi công việc đều cần GPU.</p>
+<p>Có những bước như:</p>
+<ul>
+<li>đọc dữ liệu,</li>
+<li>biến đổi feature,</li>
+<li>xử lý categorical value,</li>
+<li>chuẩn bị tensor,</li>
+<li>ghép sequence,</li>
+<li>tra cứu metadata.</li>
+</ul>
+<p>Đó là những việc CPU có thể làm tốt.</p>
+<p>Nếu để GPU vừa chạy model vừa chờ CPU-side preprocessing trong cùng một tiến trình chật chội, GPU đắt tiền có thể ngồi không.</p>
+<p>Uber tách phần preprocessing nặng về CPU sang tài nguyên CPU riêng, để GPU tập trung vào inference tốc độ cao.</p>
+<p>Theo bài viết, kiến trúc này mang lại mức cải thiện throughput hai chữ số trên mỗi node với độ trễ tăng thêm không đáng kể. (<a href="https://www.uber.com/us/en/blog/next-gen-restaurant-recommendation/" title="Next-Gen Restaurant Recommendation with Generative Modeling and Real-Time Features" target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<p>Nói theo kiểu nhà bếp:</p>
+<p>GPU là đầu bếp chính.</p>
+<p>Nhiệm vụ của đầu bếp là đứng trước chảo.</p>
+<p>Nếu bắt đầu bếp vừa chiên thức ăn, vừa rửa rau, bóc hành, chạy ra chợ mua thịt và lau sàn, căn bếp sẽ rất bận nhưng món ăn vẫn ra chậm.</p>
+<p>Tách CPU và GPU không phải để hệ thống trông phức tạp hơn.</p>
+<p>Mà để mỗi loại máy làm đúng việc nó giỏi.</p>
+<h1 id="tối-ưu-model-lúc-deploy-đừng-vừa-mở-cửa-hàng-vừa-lắp-bếp">Tối ưu model lúc deploy, đừng vừa mở cửa hàng vừa lắp bếp<a class="anchor ms-1" href="#tối-ưu-model-lúc-deploy-đừng-vừa-mở-cửa-hàng-vừa-lắp-bếp"><i class="fas fa-link"></i></a></h1>
+<p>Trước đây, Uber thực hiện một số bước chuyển đổi model ngay lúc khởi động.</p>
+<p>Việc chuyển từ ONNX sang TensorRT tại runtime có thể gây chậm khởi động từ 10 tới 60 giây và tạo ra cạnh tranh tài nguyên GPU.</p>
+<p>Họ chuyển sang pipeline tối ưu offline, thực hiện chuyển đổi trước và đóng gói model phù hợp với phần cứng.</p>
+<p>Cách làm này đưa cold-start latency xuống gần bằng không và giúp quá trình triển khai nhất quán hơn trên đội GPU đa dạng. (<a href="https://www.uber.com/us/en/blog/next-gen-restaurant-recommendation/" title="Next-Gen Restaurant Recommendation with Generative Modeling and Real-Time Features" target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<p>Hãy tưởng tượng một quán ăn chờ khách bước vào rồi mới bắt đầu:</p>
+<ul>
+<li>lắp bếp gas,</li>
+<li>nối đường điện,</li>
+<li>mài dao,</li>
+<li>kê bàn,</li>
+<li>thử nồi.</li>
+</ul>
+<p>Khách đầu tiên sẽ phải ngồi chờ rất lâu.</p>
+<p>Offline optimization giống việc chuẩn bị tất cả từ tối hôm trước.</p>
+<p>Sáng mở cửa.</p>
+<p>Bật bếp.</p>
+<p>Nấu.</p>
+<p>Production thích những thứ đã chuẩn bị xong.</p>
+<p>Không thích một hệ thống vừa nhận request vừa suy nghĩ xem mình nên biến đổi model như thế nào.</p>
+<h1 id="recommendation-nhà-hàng-không-sống-trong-thế-giới-ảo">Recommendation nhà hàng không sống trong thế giới ảo<a class="anchor ms-1" href="#recommendation-nhà-hàng-không-sống-trong-thế-giới-ảo"><i class="fas fa-link"></i></a></h1>
+<p>Phần khiến mình thấy bài viết này thú vị hơn recommendation phim hay nhạc nằm ở những ràng buộc vật lý.</p>
+<p>Một bộ phim có thể phát tới bất kỳ ai có Internet.</p>
+<p>Một bài hát có thể được nghe ở đầu bên kia thế giới gần như ngay lập tức.</p>
+<p>Nhưng một tô bún bò thì không.</p>
+<p>Nó có nhiệt độ.</p>
+<p>Khoảng cách.</p>
+<p>Thời gian nấu.</p>
+<p>Tài xế.</p>
+<p>Mưa.</p>
+<p>Kẹt xe.</p>
+<p>Giờ mở cửa.</p>
+<p>Tình trạng hết món.</p>
+<p>Một quán rất hợp khẩu vị nhưng đã đóng cửa thì điểm recommendation cao tới đâu cũng vô nghĩa.</p>
+<p>Một nhà hàng tuyệt vời cách người dùng hai mươi kilomet có thể không phải lựa chọn tốt hơn quán khá ổn cách hai kilomet.</p>
+<p>Uber nhấn mạnh rằng hướng Generative Recommendation trong thế giới thật phải tôn trọng các ràng buộc như bán kính giao hàng và vị trí địa lý.</p>
+<p>Hệ thống cũng phải cân bằng nhiều mục tiêu: người dùng thường muốn đặt lại món quen, nhưng nền tảng vẫn cần tạo cơ hội để họ khám phá quán mới. (<a href="https://www.uber.com/us/en/blog/next-gen-restaurant-recommendation/" title="Next-Gen Restaurant Recommendation with Generative Modeling and Real-Time Features" target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<p>Đây là điều mình tâm đắc nhất trong toàn bộ bài.</p>
+<blockquote>
+<p>Recommendation không chỉ là học sở thích. Nó là thương lượng giữa mong muốn của con người và giới hạn của vật chất.</p>
+</blockquote>
+<p>Bạn có thể thích một quán.</p>
+<p>Nhưng quán phải mở.</p>
+<p>Món phải còn.</p>
+<p>Tài xế phải đến được.</p>
+<p>Thời gian phải chấp nhận được.</p>
+<p>Giá phải hợp lý.</p>
+<p>Toàn bộ thế giới vật lý chen vào giữa một vector embedding và bữa tối.</p>
+<h1 id="bài-toán-đặt-lại-món-cũ-và-khám-phá-món-mới">Bài toán đặt lại món cũ và khám phá món mới<a class="anchor ms-1" href="#bài-toán-đặt-lại-món-cũ-và-khám-phá-món-mới"><i class="fas fa-link"></i></a></h1>
+<p>Nếu hệ thống chỉ tối ưu khả năng order ngay lập tức, nó có xu hướng đưa những thứ người dùng từng mua lên trước.</p>
+<p>Điều này an toàn.</p>
+<p>Người từng mua phở có khả năng mua lại phở.</p>
+<p>Nhưng nếu ngày nào feed cũng chỉ có những quán quen, trải nghiệm trở thành một con đường vòng tròn.</p>
+<p>Người dùng không khám phá được món mới.</p>
+<p>Nhà hàng mới khó tiếp cận khách hàng.</p>
+<p>Nền tảng dần củng cố chính những dữ liệu mà nó đã tạo ra.</p>
+<p>Đây là vòng lặp khá thú vị:</p>
+<ol>
+<li>Hệ thống đưa quán A lên đầu.</li>
+<li>Người dùng nhìn thấy quán A nhiều hơn.</li>
+<li>Quán A có nhiều click hơn.</li>
+<li>Dữ liệu nói rằng quán A phổ biến.</li>
+<li>Hệ thống tiếp tục đưa quán A lên đầu.</li>
+</ol>
+<p>Không hẳn vì A luôn tốt nhất.</p>
+<p>Mà vì A được nhìn thấy nhiều nhất.</p>
+<p>Recommendation mạnh không chỉ đoán đúng thứ người dùng sẽ bấm.</p>
+<p>Nó còn phải quyết định khi nào nên đưa một lựa chọn mới vào.</p>
+<p>Giống người bạn rủ đi ăn.</p>
+<p>Một người bạn quá an toàn sẽ nói:</p>
+<blockquote>
+<p>Ăn quán cũ đi.</p>
+</blockquote>
+<p>Một người bạn quá phiêu lưu lại dẫn bạn vào một quán không có bảng hiệu, không menu và có một con mèo đang ngủ trong nồi.</p>
+<p>Hệ thống tốt phải đứng ở giữa.</p>
+<p>Đủ quen để không gây khó chịu.</p>
+<p>Đủ mới để thế giới không trở nên nhàm chán.</p>
+<h1 id="sở-thích-nhất-thời-và-sở-thích-ăn-sâu">Sở thích nhất thời và sở thích ăn sâu<a class="anchor ms-1" href="#sở-thích-nhất-thời-và-sở-thích-ăn-sâu"><i class="fas fa-link"></i></a></h1>
+<p>Trong lộ trình tiếp theo, Uber muốn kéo dài chuỗi hành vi từ phạm vi gần và trung hạn tới lịch sử trong suốt vòng đời tài khoản.</p>
+<p>Mục tiêu là phân biệt được hai thứ:</p>
+<ul>
+<li>Ý định nhất thời.</li>
+<li>Sở thích đã hình thành trong nhiều tháng hoặc nhiều năm.</li>
+</ul>
+<p>Ví dụ, hôm nay bạn xem năm quán cháo.</p>
+<p>Có thể bạn thích cháo.</p>
+<p>Cũng có thể bạn đang bệnh.</p>
+<p>Nếu chỉ nhìn phiên hiện tại, hệ thống dễ kết luận rằng cháo là chân ái.</p>
+<p>Nếu chỉ nhìn lịch sử dài hạn, hệ thống lại bỏ qua việc hôm nay bạn đang cần một món nhẹ.</p>
+<p>Chuỗi dài giúp mô hình nhìn thấy nhiều tầng thời gian hơn:</p>
+<ul>
+<li>Vài phút gần đây.</li>
+<li>Vài ngày gần đây.</li>
+<li>Thói quen cuối tuần.</li>
+<li>Chu kỳ theo mùa.</li>
+<li>Sở thích lâu dài.</li>
+</ul>
+<p>Uber gọi hướng này là account life sequence learning, nhằm giúp mô hình phân biệt cơn thèm nhất thời với khẩu vị ăn sâu. (<a href="https://www.uber.com/us/en/blog/next-gen-restaurant-recommendation/" title="Next-Gen Restaurant Recommendation with Generative Modeling and Real-Time Features" target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<p>Con người vừa có ký ức, vừa có tâm trạng.</p>
+<p>Recommendation tốt phải hiểu cả hai.</p>
+<h1 id="feed-không-phải-một-hàng-dọc-nó-là-cả-một-gian-hàng">Feed không phải một hàng dọc, nó là cả một gian hàng<a class="anchor ms-1" href="#feed-không-phải-một-hàng-dọc-nó-là-cả-một-gian-hàng"><i class="fas fa-link"></i></a></h1>
+<p>Một hướng khác Uber đề cập là <strong>2-D whole page personalization</strong>.</p>
+<p>Nhiều hệ thống recommendation xem bài toán như một danh sách một chiều:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Quán A
+</span></span><span class="line"><span class="ln">2</span><span class="cl">Quán B
+</span></span><span class="line"><span class="ln">3</span><span class="cl">Quán C
+</span></span><span class="line"><span class="ln">4</span><span class="cl">Quán D
+</span></span></code></pre></div><p>Nhưng màn hình thực tế không chỉ có một cột nhà hàng.</p>
+<p>Nó có nhiều carousel:</p>
+<ul>
+<li>Gần bạn.</li>
+<li>Giao nhanh.</li>
+<li>Món Việt.</li>
+<li>Ưu đãi hôm nay.</li>
+<li>Đặt lại món quen.</li>
+<li>Thử món mới.</li>
+<li>Đồ ăn cho nhóm.</li>
+<li>Cửa hàng tiện lợi.</li>
+</ul>
+<p>Feed là một mặt phẳng hai chiều.</p>
+<p>Không chỉ cần chọn quán nào đứng trước.</p>
+<p>Còn phải quyết định:</p>
+<ul>
+<li>Carousel nào xuất hiện.</li>
+<li>Thứ tự các carousel.</li>
+<li>Quán nào nằm trong từng nhóm.</li>
+<li>Có lặp lại cùng một quán quá nhiều hay không.</li>
+<li>Toàn trang có đủ đa dạng không.</li>
+<li>Dòng đầu tiên và dòng cuối cùng phối hợp ra sao.</li>
+</ul>
+<p>Uber cho biết hướng tương lai là tối ưu toàn bộ bố cục hai chiều và sự đa dạng của trang, thay vì chỉ tính độ liên quan giữa người dùng với từng nhà hàng riêng lẻ. (<a href="https://www.uber.com/us/en/blog/next-gen-restaurant-recommendation/" title="Next-Gen Restaurant Recommendation with Generative Modeling and Real-Time Features" target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<p>Điều này giống sắp xếp một siêu thị.</p>
+<p>Không phải cứ đặt 100 sản phẩm bán chạy nhất ngay cửa ra vào là tốt.</p>
+<p>Nếu toàn bộ gian đầu đều là nước ngọt, khách muốn mua rau sẽ nghĩ siêu thị này có vấn đề.</p>
+<p>Một trang feed tốt không phải đống item có điểm cao nhất.</p>
+<p>Nó là một bố cục có chủ ý.</p>
+<h1 id="một-kiến-trúc-đơn-giản-để-hình-dung">Một kiến trúc đơn giản để hình dung<a class="anchor ms-1" href="#một-kiến-trúc-đơn-giản-để-hình-dung"><i class="fas fa-link"></i></a></h1>
+<p>Nếu lược bớt rất nhiều chi tiết production, ta có thể hình dung hệ thống theo dòng sau:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">Hành vi người dùng
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">(click, order, search...)
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">        │
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">        ▼
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">UserContext gần thời gian thực
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">        │
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">        ▼
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">FeatureExtractor
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">        │
+</span></span><span class="line"><span class="ln">10</span><span class="cl">        ├──────────────┐
+</span></span><span class="line"><span class="ln">11</span><span class="cl">        │              │
+</span></span><span class="line"><span class="ln">12</span><span class="cl">        ▼              ▼
+</span></span><span class="line"><span class="ln">13</span><span class="cl">Chuỗi hành vi      Feature truyền thống
+</span></span><span class="line"><span class="ln">14</span><span class="cl">        │              │
+</span></span><span class="line"><span class="ln">15</span><span class="cl">        └──────┬───────┘
+</span></span><span class="line"><span class="ln">16</span><span class="cl">               ▼
+</span></span><span class="line"><span class="ln">17</span><span class="cl">      Transformer-centered model
+</span></span><span class="line"><span class="ln">18</span><span class="cl">               │
+</span></span><span class="line"><span class="ln">19</span><span class="cl">               ▼
+</span></span><span class="line"><span class="ln">20</span><span class="cl">     Danh sách nhà hàng ứng viên
+</span></span><span class="line"><span class="ln">21</span><span class="cl">               │
+</span></span><span class="line"><span class="ln">22</span><span class="cl">               ▼
+</span></span><span class="line"><span class="ln">23</span><span class="cl">      Click / Order probabilities
+</span></span><span class="line"><span class="ln">24</span><span class="cl">               │
+</span></span><span class="line"><span class="ln">25</span><span class="cl">               ▼
+</span></span><span class="line"><span class="ln">26</span><span class="cl">        Ranking và Home Feed
+</span></span></code></pre></div><p>Phía sau sơ đồ ngắn này là một hệ thống khá lớn:</p>
+<ul>
+<li>Event ingestion.</li>
+<li>Feature Store.</li>
+<li>Event-sourced user context.</li>
+<li>Spark training pipeline.</li>
+<li>Online-offline consistency.</li>
+<li>GPU serving.</li>
+<li>Model optimization.</li>
+<li>Monitoring.</li>
+<li>Candidate generation.</li>
+<li>Business constraints.</li>
+<li>Experimentation.</li>
+</ul>
+<p>Sơ đồ kiến trúc luôn rất sạch.</p>
+<p>Production thì giống căn bếp sau giờ cao điểm.</p>
+<p>Dầu văng.</p>
+<p>Nồi nóng.</p>
+<p>Người chạy qua chạy lại.</p>
+<p>Và một request chậm hơn 100 mili giây cũng có thể khiến ai đó bắt đầu mở dashboard.</p>
+<h1 id="nếu-áp-dụng-vào-recommendation-bán-lẻ-tại-việt-nam">Nếu áp dụng vào recommendation bán lẻ tại Việt Nam<a class="anchor ms-1" href="#nếu-áp-dụng-vào-recommendation-bán-lẻ-tại-việt-nam"><i class="fas fa-link"></i></a></h1>
+<p>Bài toán này không chỉ dành cho đồ ăn.</p>
+<p>Một website bán lẻ cũng có thể gặp tình huống tương tự.</p>
+<p>Giả sử một khách hàng thường xem:</p>
+<ul>
+<li>Tivi.</li>
+<li>Tủ lạnh.</li>
+<li>Máy lạnh.</li>
+</ul>
+<p>Thống kê dài hạn nói họ quan tâm điện máy.</p>
+<p>Nhưng trong phiên hiện tại, người đó vừa:</p>
+<ul>
+<li>Tìm “iPhone 17”.</li>
+<li>Xem ba điện thoại dưới 20 triệu.</li>
+<li>So sánh camera.</li>
+<li>Kiểm tra trả góp.</li>
+<li>Bấm vào chương trình thu cũ đổi mới.</li>
+</ul>
+<p>Nếu feature cập nhật chậm một ngày, trang chủ vẫn tiếp tục gợi ý máy lạnh.</p>
+<p>Về mặt lịch sử, không sai.</p>
+<p>Về mặt khoảnh khắc, sai hoàn toàn.</p>
+<p>Trong bán lẻ, sequence còn có thể giúp hiểu quá trình ra quyết định:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Xem sản phẩm
+</span></span><span class="line"><span class="ln">2</span><span class="cl">→ đọc đánh giá
+</span></span><span class="line"><span class="ln">3</span><span class="cl">→ so sánh
+</span></span><span class="line"><span class="ln">4</span><span class="cl">→ kiểm tra tồn kho
+</span></span><span class="line"><span class="ln">5</span><span class="cl">→ xem trả góp
+</span></span><span class="line"><span class="ln">6</span><span class="cl">→ quay lại sản phẩm đầu tiên
+</span></span></code></pre></div><p>Chuỗi này nói lên ý định mạnh hơn nhiều so với con số “đã xem 6 trang”.</p>
+<p>Target-aware modeling cũng hữu ích.</p>
+<p>Cùng một lịch sử xem điện thoại, mức quan tâm tới một chiếc iPhone cao cấp khác với một tai nghe, một ốp lưng hay một gói bảo hành.</p>
+<p>Near real-time feature giúp recommendation phản ứng ngay khi nhu cầu đổi hướng.</p>
+<p>Listwise giúp xếp cả tập sản phẩm cùng lúc thay vì chấm điểm từng món trong chân không.</p>
+<p>Và các ràng buộc vật lý vẫn còn đó:</p>
+<ul>
+<li>Cửa hàng gần nhất còn hàng không?</li>
+<li>Có giao trong ngày không?</li>
+<li>Khu vực đó có áp dụng khuyến mãi không?</li>
+<li>Hạn mức trả góp đủ không?</li>
+<li>Sản phẩm có phù hợp với ngân sách hiện tại không?</li>
+</ul>
+<p>Recommendation bán lẻ cũng là cuộc thương lượng giữa ý định, tồn kho, giá, địa điểm và thời gian.</p>
+<p>Model chỉ là một người trong cuộc họp.</p>
+<h1 id="những-điều-không-nên-học-một-cách-máy-móc">Những điều không nên học một cách máy móc<a class="anchor ms-1" href="#những-điều-không-nên-học-một-cách-máy-móc"><i class="fas fa-link"></i></a></h1>
+<p>Uber có quy mô dữ liệu, hạ tầng và đội ngũ rất lớn.</p>
+<p>Không phải hệ thống recommendation nào cũng cần:</p>
+<ul>
+<li>Transformer khổng lồ.</li>
+<li>UserContext event-sourced toàn doanh nghiệp.</li>
+<li>GPU serving phân tách CPU/GPU.</li>
+<li>TensorRT.</li>
+<li>Sequence kéo dài cả vòng đời tài khoản.</li>
+<li>Whole-page 2-D ranking.</li>
+</ul>
+<p>Nếu một website chỉ có 10.000 sản phẩm và vài nghìn người dùng mỗi ngày, một mô hình đơn giản hơn có thể đã đủ tốt.</p>
+<p>Thậm chí recommendation theo luật:</p>
+<ul>
+<li>Sản phẩm cùng danh mục.</li>
+<li>Sản phẩm bán chạy.</li>
+<li>Sản phẩm đang giảm giá.</li>
+<li>Sản phẩm vừa xem.</li>
+</ul>
+<p>có thể tạo ra phần lớn giá trị ban đầu.</p>
+<p>Điều nên học không phải là sao chép toàn bộ stack.</p>
+<p>Mà là thứ tự giải bài toán:</p>
+<ol>
+<li>Xác định feature hiện tại đang thiếu điều gì.</li>
+<li>Bổ sung chuỗi hành vi nếu thứ tự có ý nghĩa.</li>
+<li>Giảm độ trễ nếu ý định thay đổi nhanh.</li>
+<li>Đảm bảo feature online và offline giống nhau.</li>
+<li>Chỉ tăng độ phức tạp model khi hạ tầng đủ sức phục vụ.</li>
+<li>Đo giá trị bằng metric online, không chỉ metric offline.</li>
+<li>Luôn giữ các ràng buộc vật lý và kinh doanh trong vòng quyết định.</li>
+</ol>
+<p>Đừng xây tàu vũ trụ để đi mua bánh mì đầu ngõ.</p>
+<p>Nhưng cũng đừng dùng chiếc xe đạp cũ rồi than rằng nó không bay được.</p>
+<h1 id="điều-mình-tâm-đắc-nhất-recommendation-là-mô-hình-của-thời-gian">Điều mình tâm đắc nhất: Recommendation là mô hình của thời gian<a class="anchor ms-1" href="#điều-mình-tâm-đắc-nhất-recommendation-là-mô-hình-của-thời-gian"><i class="fas fa-link"></i></a></h1>
+<p>Ban đầu, mình nghĩ bài viết này chủ yếu nói về Transformer.</p>
+<p>Đọc kỹ hơn, mình lại thấy nhân vật chính là <strong>thời gian</strong>.</p>
+<p>Thống kê cũ nén thời gian thành một con số.</p>
+<p>Chuỗi hành vi mở nó ra trở lại.</p>
+<p>Near real-time feature kéo mô hình tới gần hiện tại.</p>
+<p>Account life sequence kéo mô hình về quá khứ dài hạn.</p>
+<p>Target-aware attention hỏi phần nào của quá khứ có ý nghĩa với ứng viên đang xét.</p>
+<p>Listwise modeling nhìn nhiều lựa chọn trong cùng một khoảnh khắc.</p>
+<p>Toàn bộ kiến trúc thực chất đang cố trả lời một câu hỏi:</p>
+<blockquote>
+<p>Trong tất cả những gì người này từng làm, điều gì quan trọng nhất ngay lúc này?</p>
+</blockquote>
+<p>Đó là câu hỏi rất khó.</p>
+<p>Bởi vì con người không nhất quán.</p>
+<p>Hôm qua thích một thứ.</p>
+<p>Hôm nay muốn thứ khác.</p>
+<p>Ngày mai lại quay về cái cũ.</p>
+<p>Chúng ta không phải một vector cố định.</p>
+<p>Chúng ta là một dòng thời gian có trí nhớ, thói quen, bốc đồng và cơn đói.</p>
+<p>Hệ thống recommendation thế hệ mới không chỉ cần biết người dùng thích gì.</p>
+<p>Nó phải hiểu:</p>
+<blockquote>
+<p>Người dùng đang ở đoạn nào trong câu chuyện của chính họ?</p>
+</blockquote>
+<h1 id="tổng-kết">Tổng kết<a class="anchor ms-1" href="#tổng-kết"><i class="fas fa-link"></i></a></h1>
+<p>Điều đáng học từ hệ thống recommendation mới của Uber Eats không phải chỉ là việc họ đưa Transformer vào mô hình.</p>
+<p>Nếu chỉ nhìn ở mức đó, bài viết sẽ trở thành:</p>
+<blockquote>
+<p>Công ty lớn dùng model lớn.</p>
+</blockquote>
+<p>Không có gì quá bất ngờ.</p>
+<p>Điểm đáng giá nằm ở chuỗi thay đổi liên kết với nhau:</p>
+<ul>
+<li>Từ feature thống kê sang chuỗi hành vi.</li>
+<li>Từ dữ liệu chậm nhiều giờ hoặc nhiều ngày sang tín hiệu trong vài giây.</li>
+<li>Từ biểu diễn người dùng chung chung sang target-aware modeling.</li>
+<li>Từ chấm từng nhà hàng riêng lẻ sang xử lý cả danh sách.</li>
+<li>Từ kiến trúc lai sang mô hình lấy Transformer làm trung tâm.</li>
+<li>Từ tối ưu model đơn thuần sang tối ưu cả training, serving và phần cứng.</li>
+<li>Từ xếp hạng một chiều sang cá nhân hóa toàn bộ trang.</li>
+<li>Từ thế giới số thuần túy trở về với khoảng cách giao hàng, giờ mở cửa và những giới hạn vật lý rất thật.</li>
+</ul>
+<p>Một cú chạm nhỏ trên màn hình có thể kéo theo một chuỗi hoạt động khổng lồ.</p>
+<p>Sự kiện được ghi vào Kafka.</p>
+<p>UserContext được cập nhật.</p>
+<p>Feature được trích xuất.</p>
+<p>CPU chuẩn bị dữ liệu.</p>
+<p>GPU chạy inference.</p>
+<p>Hàng trăm nhà hàng được chấm điểm.</p>
+<p>Các ràng buộc địa lý loại bớt ứng viên.</p>
+<p>Feed được sắp xếp.</p>
+<p>Tất cả diễn ra trong thời gian ngắn tới mức người dùng chỉ nhìn thấy vài tấm ảnh món ăn trượt nhẹ trên màn hình.</p>
+<p>Chúng ta gọi đó là “gợi ý”.</p>
+<p>Nhưng phía sau nó là một cỗ máy đang cố hiểu một sinh vật rất khó hiểu: con người.</p>
+<p>Một sinh vật có thể ăn cơm gà ba ngày liên tiếp, rồi sáng hôm sau thức dậy và quyết định rằng hôm nay nhất định phải ăn lẩu.</p>
+<p>Hệ thống cũ sẽ nhìn ba ngày cơm gà.</p>
+<p>Hệ thống tốt hơn sẽ nhìn cú chuyển mình vừa xảy ra.</p>
+<p>Có lẽ đó mới là bản chất của recommendation hiện đại.</p>
+<p>Không phải tìm món người dùng yêu thích nhất trong mọi thời đại.</p>
+<p>Mà là tìm món hợp lý nhất với con người đang tồn tại trong khoảnh khắc này.</p>
+<h1 id="tham-khảo">Tham khảo<a class="anchor ms-1" href="#tham-khảo"><i class="fas fa-link"></i></a></h1>
+<ul>
+<li>Uber Engineering – <em>Next-Gen Restaurant Recommendation with Generative Modeling and Real-Time Features</em>, Yicheng Chen, Peng Chen, Nikat Patel và cộng sự. (<a href="https://www.uber.com/us/en/blog/next-gen-restaurant-recommendation/" title="Next-Gen Restaurant Recommendation with Generative Modeling and Real-Time Features" target="_blank" rel="noopener noreferrer">Uber</a>)</li>
+<li>Ruoxi Wang và cộng sự – <em>DCN V2: Improved Deep &amp; Cross Network and Practical Lessons for Web-scale Learning to Rank Systems</em>. (<a href="https://arxiv.org/abs/2008.13535?utm_source=chatgpt.com" title="[2008.13535] DCN V2: Improved Deep &amp; Cross Network ..." target="_blank" rel="noopener noreferrer">arXiv</a>)</li>
+<li>Guorui Zhou và cộng sự – <em>Deep Interest Network for Click-Through Rate Prediction</em>. (<a href="https://arxiv.org/abs/1706.06978?utm_source=chatgpt.com" title="Deep Interest Network for Click-Through Rate Prediction" target="_blank" rel="noopener noreferrer">arXiv</a>)</li>
+<li>Qiwei Chen và cộng sự – <em>Behavior Sequence Transformer for E-commerce Recommendation in Alibaba</em>. (<a href="https://arxiv.org/abs/1905.06874?utm_source=chatgpt.com" title="[1905.06874] Behavior Sequence Transformer for E- ..." target="_blank" rel="noopener noreferrer">arXiv</a>)</li>
+</ul>
+</div></div>
+  <div class="card-footer"><div class="post-navs d-flex justify-content-evenly"><div class="post-nav post-prev">
+    <i class="fas fa-fw fa-chevron-left"></i>
+    <a href="https://www.phamduytung.com/blog/2026-07-09-ai-prd-reviewer/">AI review PRD: Một yêu cầu sai có thể sinh ra hàng nghìn dòng code đúng
+</a>
+  </div><div class="post-nav post-next">
+    <a href="https://www.phamduytung.com/blog/2026-07-11-uber-delivery-search-platform/">Search ở quy mô Uber Eats: Máy không cần đọc đúng chữ, nó phải hiểu người đang đói muốn gì
+</a>
+    <i class="fas fa-fw fa-chevron-right"></i>
+  </div></div></div>
+</article><div class="card component row post-comments" id="post-comments">
+  <div class="card-header">
+    <h2 class="card-title">Bình luận</h2>
+  </div>
+  <div class="card-body"><script src="https://utteranc.es/client.js"
+  repo="AlexBlack2202/utterances"
+  issue-term="pathname"
+  label="comment"
+  theme="github-dark"
+  crossorigin="anonymous"
+  async>
+</script></div>
+</div></div>
+</div><aside class="col-lg-3 col-md-4 sidebar d-flex">
+  <div class="container d-flex flex-column">
+    
+    <a href="https://www.buymeacoffee.com/alexblack28"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=🍎&slug=alexblack28&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" /></a><div class="post-toc row mb-4 card component" id="postTOC">
+  <div class="card-header">
+    <h2 class="card-title">Mục lục</h2>
+  </div>
+  <div class="card-body">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#con-người-không-ăn-bằng-lịch-sử-họ-ăn-bằng-khoảnh-khắc">Con người không ăn bằng lịch sử, họ ăn bằng khoảnh khắc</a></li>
+    <li><a href="#recommendation-không-phải-đọc-suy-nghĩ">Recommendation không phải đọc suy nghĩ</a></li>
+    <li><a href="#cách-cũ-đếm-những-gì-người-dùng-từng-làm">Cách cũ: Đếm những gì người dùng từng làm</a></li>
+    <li><a href="#một-bảng-chấm-công-không-kể-được-cuộc-đời-của-nhân-viên">Một bảng chấm công không kể được cuộc đời của nhân viên</a></li>
+    <li><a href="#bước-chuyển-đầu-tiên-biến-hành-vi-thành-một-câu-chuyện">Bước chuyển đầu tiên: Biến hành vi thành một câu chuyện</a></li>
+    <li><a href="#transformer-trong-recommendation-không-phải-để-viết-thơ-về-bún-bò">Transformer trong recommendation không phải để viết thơ về bún bò</a></li>
+    <li><a href="#target-aware-cùng-một-quá-khứ-nhưng-hỏi-về-từng-quán-khác-nhau">Target-aware: Cùng một quá khứ, nhưng hỏi về từng quán khác nhau</a></li>
+    <li><a href="#dữ-liệu-của-hôm-qua-không-hiểu-được-cơn-đói-hôm-nay">Dữ liệu của hôm qua không hiểu được cơn đói hôm nay</a></li>
+    <li><a href="#near-real-time-feature-nghe-tiếng-bước-chân-khi-nó-vừa-chạm-đất">Near real-time feature: Nghe tiếng bước chân khi nó vừa chạm đất</a></li>
+    <li><a href="#cold-start-không-hẳn-là-người-không-có-lịch-sử">Cold start không hẳn là người không có lịch sử</a></li>
+    <li><a href="#cái-bẫy-đáng-sợ-lúc-học-ăn-một-món-lúc-thi-lại-được-đưa-món-khác">Cái bẫy đáng sợ: Lúc học ăn một món, lúc thi lại được đưa món khác</a></li>
+    <li><a href="#điều-mình-tâm-đắc-đừng-cố-làm-model-thông-minh-trên-một-dòng-dữ-liệu-bị-lệch">Điều mình tâm đắc: Đừng cố làm model thông minh trên một dòng dữ liệu bị lệch</a></li>
+    <li><a href="#từ-pointwise-gọi-từng-quán-vào-phỏng-vấn">Từ pointwise: Gọi từng quán vào phỏng vấn</a></li>
+    <li><a href="#listwise-xếp-tất-cả-lên-cùng-một-bàn">Listwise: Xếp tất cả lên cùng một bàn</a></li>
+    <li><a href="#s_1-s_2-dots-s_t">$$
+[s_1, s_2, \dots, s_T]</a></li>
+    <li><a href="#generative-recommendation-không-phải-chatgpt-tự-bịa-ra-một-nhà-hàng">Generative Recommendation không phải ChatGPT tự bịa ra một nhà hàng</a></li>
+    <li><a href="#từ-dlrm-sang-transformer-centered-không-có-nghĩa-vứt-bỏ-mọi-feature-cũ">Từ DLRM sang Transformer-centered không có nghĩa vứt bỏ mọi feature cũ</a></li>
+    <li><a href="#model-lớn-hơn-kéo-theo-một-cái-bếp-lớn-hơn">Model lớn hơn kéo theo một cái bếp lớn hơn</a></li>
+    <li><a href="#chuyển-sang-pytorch-2-multi-hash-embedding-và-bf16">Chuyển sang PyTorch 2, multi-hash embedding và BF16</a></li>
+    <li><a href="#đừng-bắt-gpu-rửa-rau">Đừng bắt GPU rửa rau</a></li>
+    <li><a href="#tối-ưu-model-lúc-deploy-đừng-vừa-mở-cửa-hàng-vừa-lắp-bếp">Tối ưu model lúc deploy, đừng vừa mở cửa hàng vừa lắp bếp</a></li>
+    <li><a href="#recommendation-nhà-hàng-không-sống-trong-thế-giới-ảo">Recommendation nhà hàng không sống trong thế giới ảo</a></li>
+    <li><a href="#bài-toán-đặt-lại-món-cũ-và-khám-phá-món-mới">Bài toán đặt lại món cũ và khám phá món mới</a></li>
+    <li><a href="#sở-thích-nhất-thời-và-sở-thích-ăn-sâu">Sở thích nhất thời và sở thích ăn sâu</a></li>
+    <li><a href="#feed-không-phải-một-hàng-dọc-nó-là-cả-một-gian-hàng">Feed không phải một hàng dọc, nó là cả một gian hàng</a></li>
+    <li><a href="#một-kiến-trúc-đơn-giản-để-hình-dung">Một kiến trúc đơn giản để hình dung</a></li>
+    <li><a href="#nếu-áp-dụng-vào-recommendation-bán-lẻ-tại-việt-nam">Nếu áp dụng vào recommendation bán lẻ tại Việt Nam</a></li>
+    <li><a href="#những-điều-không-nên-học-một-cách-máy-móc">Những điều không nên học một cách máy móc</a></li>
+    <li><a href="#điều-mình-tâm-đắc-nhất-recommendation-là-mô-hình-của-thời-gian">Điều mình tâm đắc nhất: Recommendation là mô hình của thời gian</a></li>
+    <li><a href="#tổng-kết">Tổng kết</a></li>
+    <li><a href="#tham-khảo">Tham khảo</a></li>
+  </ul>
+</nav>
+  </div>
+</div><section class="recent-posts row card component">
+  <div class="card-header">
+    <h2 class="card-title">Bài gần đây</h2>
+  </div>
+  <div class="card-body">
+    <ul class="post-list"><li>
+        <a href="https://www.phamduytung.com/blog/2026-07-11-ai-agent-identity-crisis/">AI Agent không thiếu trí thông minh, nó thiếu một tờ giấy khai sinh
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-07-11-uber-delivery-search-platform/">Search ở quy mô Uber Eats: Máy không cần đọc đúng chữ, nó phải hiểu người đang đói muốn gì
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-07-10-next-gen-restaurant-recommendation/">Hệ thống gợi ý nhà hàng thế hệ mới: Con người không ăn bằng hồ sơ, họ ăn bằng khoảnh khắc
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-07-09-ai-prd-reviewer/">AI review PRD: Một yêu cầu sai có thể sinh ra hàng nghìn dòng code đúng
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-07-08-ai-agent-identity-crisis/">AI Agent đang có một cuộc khủng hoảng danh tính
+</a>
+      </li></ul>
+  </div>
+</section><section class="series-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/series">series</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/series/kh%C3%B3a-h%E1%BB%8Dc-python-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học Python Căn Bản">
+            Khóa Học Python Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="https://www.phamduytung.com/series/kh%C3%B3a-h%E1%BB%8Dc-c&#43;&#43;-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học C&#43;&#43; Căn Bản">
+            Khóa Học C&#43;&#43; Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="https://www.phamduytung.com/series/machine-learning-dataset/" class="badge rounded post-taxonomy" title="Machine Learning Dataset">
+            Machine Learning Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a><a href="https://www.phamduytung.com/series/ch%E1%BB%A9ng-kho%C3%A1n-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Chứng Khoán Căn Bản">
+            Chứng Khoán Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">1</span></a></div>
+      </div>
+    </section><section class="tools-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/tools">tools</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/tools/tool-random/" class="badge rounded post-taxonomy" title="Tool Random">
+            Tool Random<span class="badge badge-sm text-white bg-accent ms-1">3</span></a></div>
+      </div>
+    </section><section class="categories-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/categories">categories</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/categories/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="https://www.phamduytung.com/categories/c&#43;&#43;/" class="badge rounded post-taxonomy" title="C&#43;&#43;">
+            C&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="https://www.phamduytung.com/categories/dataset/" class="badge rounded post-taxonomy" title="Dataset">
+            Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a></div>
+      </div>
+    </section><section class="tags-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/tags">tags</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/tags/machine-learning/" class="badge rounded post-taxonomy" title="Machine Learning">
+            Machine Learning<span class="badge badge-sm text-white bg-accent ms-1">26</span></a><a href="https://www.phamduytung.com/tags/deep-learning/" class="badge rounded post-taxonomy" title="Deep Learning">
+            Deep Learning<span class="badge badge-sm text-white bg-accent ms-1">23</span></a><a href="https://www.phamduytung.com/tags/computer-vision/" class="badge rounded post-taxonomy" title="Computer Vision">
+            Computer Vision<span class="badge badge-sm text-white bg-accent ms-1">16</span></a><a href="https://www.phamduytung.com/tags/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">14</span></a><a href="https://www.phamduytung.com/tags/llm/" class="badge rounded post-taxonomy" title="Llm">
+            Llm<span class="badge badge-sm text-white bg-accent ms-1">13</span></a><a href="https://www.phamduytung.com/tags/recommendation-system/" class="badge rounded post-taxonomy" title="Recommendation System">
+            Recommendation System<span class="badge badge-sm text-white bg-accent ms-1">7</span></a><a href="https://www.phamduytung.com/tags/system-design/" class="badge rounded post-taxonomy" title="System Design">
+            System Design<span class="badge badge-sm text-white bg-accent ms-1">6</span></a><a href="https://www.phamduytung.com/tags/time-series/" class="badge rounded post-taxonomy" title="Time Series">
+            Time Series<span class="badge badge-sm text-white bg-accent ms-1">6</span></a><a href="https://www.phamduytung.com/tags/uber-engineering/" class="badge rounded post-taxonomy" title="Uber Engineering">
+            Uber Engineering<span class="badge badge-sm text-white bg-accent ms-1">6</span></a><a href="https://www.phamduytung.com/tags/ai-agent/" class="badge rounded post-taxonomy" title="Ai Agent">
+            Ai Agent<span class="badge badge-sm text-white bg-accent ms-1">5</span></a></div>
+      </div>
+    </section>
+    
+  </div>
+</aside>
+</div>
+    </main><footer class="footer mt-auto py-3 text-center container"><ul class="nav justify-content-between footer-memu mb-3"><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Community
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-facebook"></i>Facebook Group
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://github.com/AlexBlack2202/alexblack2202.github.io" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-github"></i>GitHub
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/contact/"><i class="fas fa-fw fa-info-circle"></i>Contact Us
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/faq/"><i class="fas fa-fw fa-question-circle"></i>Câu hỏi thường gặp
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Docs
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="/team_of_services" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-users"></i>Điều khoản sử dụng
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/privacy" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-lock"></i>Chính sách bảo mật
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Features
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="/utils/gen_paswords/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-key"></i>Tạo password ngẫu nhiên
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Liên kết khác
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">Netlify
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">facebook
+</a>
+        </li></ul></li></ul>
+<div class="copyright mb-2">
+  Copyright © 2016-2026 Phạm Duy Tùng. All Rights Reserved.
+</div>
+<div class="powered-by mb-2">
+  Website chia sẻ kiến thức của Phạm Duy Tùng và Đặng Thị Hằng. Vui lòng liên hệ email alexblack2202@gmail.com nếu bạn có thông tin cần trao đổi.
+</div></footer>
+<script src="https://www.phamduytung.com/js/main.111d51a8c754010f8399ca010e552d803e2d5170b361f8886ad04ec6c21ca551.js" integrity="sha256-ER1RqMdUAQ&#43;DmcoBDlUtgD4tUXCzYfiIatBOxsIcpVE=" crossorigin="anonymous" defer></script><script src="https://www.phamduytung.com/js/icons.min.cb4c9958dbc49e29ac644e168e82db2d0de9a741a15751cc5bf2b0af21eb2845.js" integrity="sha256-y0yZWNvEnimsZE4WjoLbLQ3pp0GhV1HMW/KwryHrKEU=" crossorigin="anonymous" defer></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('https:\/\/www.phamduytung.com\/service-worker.js').then(function(reg) {
+      console.log('Successfully registered service worker', reg);
+    }).catch(function(err) {
+      console.warn('Error whilst registering service worker', err);
+    });
+  });
+}
+</script><script src="https://www.phamduytung.com/js/viewer.min.28bcf5233e406dae6715f46c8b9e8ca7c6cbf347e8678f5a2bebe5369c3270bb.js" integrity="sha256-KLz1Iz5Aba5nFfRsi56Mp8bL80foZ49aK&#43;vlNpwycLs=" crossorigin="anonymous" defer></script><script defer src="https://www.phamduytung.com/js/katex.min.8582b9feadf92a2a977ed303b97d7713cf2754ccf2b4eb60d8be7453a21042c2.js" integrity="sha256-hYK5/q35KiqXftMDuX13E88nVMzytOtg2L50U6IQQsI=" crossorigin="anonymous"></script>
+
+<script  data-ad-client="ca-pub-4644989745435991"  async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4644989745435991"
+     crossorigin="anonymous"></script><script data-cfasync="false" type="text/javascript" data-adel="atag" src="//acscdn.com/script/atg.js" czid="eul3gyjdmm"></script>
+  </body>
+</html>

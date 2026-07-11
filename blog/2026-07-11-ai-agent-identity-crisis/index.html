@@ -1,0 +1,1478 @@
+<!doctype html><html lang="vi" data-palette="brown"
+   data-mode="light">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>AI Agent không thiếu trí thông minh, nó thiếu một tờ giấy khai sinh - Phạm Duy Tùng Machine Learning Blog</title>
+    <meta name="a.validate.02" content="1QZXZ8oi7g57H-GxBrBPkTYBydwii-Ic9iJu" /><link rel="apple-touch-icon" href="https://www.phamduytung.com/images/icons/icon-180x180.png" sizes="180x180">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/icon-32x32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/icon-16x16.png" sizes="16x16" type="image/png">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/favicon.ico">
+<link rel="manifest" href="https://www.phamduytung.com/manifest.json">
+<meta name="keywords" content="" />
+<meta name="description" content="Khi AI chỉ trả lời câu hỏi, danh tính chưa phải vấn đề lớn. Nhưng khi Agent có thể đọc log, sửa cảnh báo, tạo Pull Request và gọi hệ thống nội bộ, doanh nghiệp phải biết chính xác AI nào đang hành động, thay mặt ai và vì sao nó có quyền làm việc đó." /><meta name="robots" content="index, follow" />
+	<meta itemprop="name" content="AI Agent không thiếu trí thông minh, nó thiếu một tờ giấy khai sinh">
+	<meta itemprop="description" content="Khi AI chỉ trả lời câu hỏi, danh tính chưa phải vấn đề lớn. Nhưng khi Agent có thể đọc log, sửa cảnh báo, tạo Pull Request và gọi hệ thống nội bộ, doanh nghiệp phải biết chính xác AI nào đang hành động, thay mặt ai và vì sao nó có quyền làm việc đó.">
+	<meta itemprop="datePublished" content="2026-07-11T10:00:00+03:00">
+	<meta itemprop="dateModified" content="2026-07-11T10:00:00+03:00">
+	<meta itemprop="wordCount" content="6803">
+	<meta itemprop="image" content="https://www.phamduytung.com/images/posts/2026-07-11-ai-agent-identity-crisis/cover.png">
+	<meta itemprop="keywords" content="Ai Agent,Identity,MCP,OAuth,SPIFFE,Zero Trust,Security,Uber Engineering"><meta property="og:url" content="https://www.phamduytung.com/blog/2026-07-11-ai-agent-identity-crisis/">
+	<meta property="og:site_name" content="Phạm Duy Tùng Machine Learning Blog">
+	<meta property="og:title" content="AI Agent không thiếu trí thông minh, nó thiếu một tờ giấy khai sinh">
+	<meta property="og:description" content="Khi AI chỉ trả lời câu hỏi, danh tính chưa phải vấn đề lớn. Nhưng khi Agent có thể đọc log, sửa cảnh báo, tạo Pull Request và gọi hệ thống nội bộ, doanh nghiệp phải biết chính xác AI nào đang hành động, thay mặt ai và vì sao nó có quyền làm việc đó.">
+	<meta property="og:locale" content="vi_VN">
+	<meta property="og:type" content="article">
+		<meta property="article:section" content="blog">
+		<meta property="article:published_time" content="2026-07-11T10:00:00+03:00">
+		<meta property="article:modified_time" content="2026-07-11T10:00:00+03:00">
+		<meta property="article:tag" content="Ai Agent">
+		<meta property="article:tag" content="Identity">
+		<meta property="article:tag" content="MCP">
+		<meta property="article:tag" content="OAuth">
+		<meta property="article:tag" content="SPIFFE">
+		<meta property="article:tag" content="Zero Trust">
+		<meta property="og:image" content="https://www.phamduytung.com/images/posts/2026-07-11-ai-agent-identity-crisis/cover.png">
+
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:image" content="https://www.phamduytung.com/images/posts/2026-07-11-ai-agent-identity-crisis/cover.png">
+	<meta name="twitter:title" content="AI Agent không thiếu trí thông minh, nó thiếu một tờ giấy khai sinh">
+	<meta name="twitter:description" content="Khi AI chỉ trả lời câu hỏi, danh tính chưa phải vấn đề lớn. Nhưng khi Agent có thể đọc log, sửa cảnh báo, tạo Pull Request và gọi hệ thống nội bộ, doanh nghiệp phải biết chính xác AI nào đang hành động, thay mặt ai và vì sao nó có quyền làm việc đó.">
+<link rel="stylesheet" href="https://www.phamduytung.com/css/main.min.0aa7373d751b40dcbe96232f76639e455436d25cf0e69da3d7427f45b6fcc905.css" integrity="sha256-Cqc3PXUbQNy&#43;liMvdmOeRVQ20lzw5p2j10J/Rbb8yQU=" crossorigin="anonymous"><link rel="stylesheet" href="https://www.phamduytung.com/css/katex.min.4d6aa053ca8a5675016fa2c9c48ee5359bfaafb8295184458af9d64abce84c47.css" integrity="sha256-TWqgU8qKVnUBb6LJxI7lNZv6r7gpUYRFivnWSrzoTEc=" crossorigin="anonymous">
+<link rel="stylesheet" href="https://www.phamduytung.com/css/viewer.min.e882eb3a023412b73bb741b4604a1222a9f13aa7783c828d26d066ab8642bd51.css" integrity="sha256-6ILrOgI0Erc7t0G0YEoSIqnxOqd4PIKNJtBmq4ZCvVE=" crossorigin="anonymous"><link rel="canonical" href="https://www.phamduytung.com/blog/2026-07-11-ai-agent-identity-crisis/"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Phạm Duy Tùng"},"dateModified":"2026-07-11T10:00:00+03:00","datePublished":"2026-07-11T10:00:00+03:00","description":"Khi AI chỉ trả lời câu hỏi, danh tính chưa phải vấn đề lớn. Nhưng khi Agent có thể đọc log, sửa cảnh báo, tạo Pull Request và gọi hệ thống nội bộ, doanh nghiệp phải biết chính xác AI nào đang hành động, thay mặt ai và vì sao nó có quyền làm việc đó.","headline":"AI Agent không thiếu trí thông minh, nó thiếu một tờ giấy khai sinh","image":["https://www.phamduytung.com/images/posts/2026-07-11-ai-agent-identity-crisis/cover.png"],"inLanguage":"vi","keywords":"AI Agent, Identity, MCP, OAuth, SPIFFE, Zero Trust, Security, Uber Engineering","mainEntityOfPage":{"@id":"https://www.phamduytung.com/blog/2026-07-11-ai-agent-identity-crisis/","@type":"WebPage"},"publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://www.phamduytung.com/images/logo.png"},"name":"Phạm Duy Tùng Machine Learning Blog"},"url":"https://www.phamduytung.com/blog/2026-07-11-ai-agent-identity-crisis/"}</script></head>
+  <body><script>const items=["mode","palette"];items.forEach(function(e){const t=localStorage.getItem("hbs-"+e);t&&document.body.parentElement.setAttribute("data-"+e,t)})</script><header><nav class="navbar top-app-bar top-app-bar-expand-lg fixed-top">
+  <div class="container">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <i class="fas fa-bars"></i>
+    </button><a class="navbar-brand flex-grow-1 flex-lg-grow-0 text-center text-lg-start mx-auto me-lg-3" href="https://www.phamduytung.com/"><img class="logo" alt="Logo" src="https://www.phamduytung.com/images/logo.webp" loading="lazy"  title="Logo"
+   width="32" height="32"
+   />
+Phạm Duy Tùng
+    </a>
+    <div class="offcanvas offcanvas-bottom surface" tabindex="-1" id="offcanvasSocialShare" aria-labelledby="offcanvasSocialShare">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Share</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body">
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Twitter Share Button"
+      target="_blank" href="https://twitter.com/intent/tweet?title=AI%20Agent%20kh%c3%b4ng%20thi%e1%ba%bfu%20tr%c3%ad%20th%c3%b4ng%20minh%2c%20n%c3%b3%20thi%e1%ba%bfu%20m%e1%bb%99t%20t%e1%bb%9d%20gi%e1%ba%a5y%20khai%20sinh&url=https%3a%2f%2fwww.phamduytung.com%2fblog%2f2026-07-11-ai-agent-identity-crisis%2f">
+      <i class="fab fa-fw fa-twitter"></i> Twitter
+    </a>
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Facebook Share Button"
+      target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.phamduytung.com%2fblog%2f2026-07-11-ai-agent-identity-crisis%2f">
+      <i class="fab fa-fw fa-facebook-f"></i> Facebook
+    </a>
+  </div>
+</div>
+    <button class="navbar-settings" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSettings"
+  aria-controls="offcanvasSettings" aria-label="Toggle settings">
+  <i class="fas fa-ellipsis-v"></i>
+</button>
+
+<div class="offcanvas offcanvas-end surface h-100" tabindex="-1" id="offcanvasSettings" aria-labelledby="offcanvasSettings">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Cài đặt</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body d-flex flex-column">
+
+
+
+<section class="setting">
+  <form class="font-size-switcher-form row">
+    <div class="col-auto">
+      <label for="fontSize" class="form-label"><i class="fas fa-fw fa-font"></i> Cỡ chữ</label>
+    </div>
+    <div class="col-auto ms-auto">
+      <input type="range" class="form-range" min="-2" max="2" id="fontSize">
+    </div>
+  </form>
+</section>
+
+
+
+<section class="setting actions d-flex justify-content-around mt-auto overflow-auto">
+  <a role="button" class="action action-go-back" href="javascript: window.history.back();">
+    <span class="action-icon"><i class="fas fa-2x fa-arrow-left"></i></span> Quay lại
+  </a>
+  <a role="button" class="action action-reload-page">
+    <span class="action-icon"><i class="fas fa-2x fa-redo-alt"></i></span> Tải lại
+  </a>
+  <a role="button" class="action action-copy-url">
+    <span class="action-icon"><i class="fas fa-2x fa-link"></i></span> Sao chép URL
+  </a><a class="action action-social-share" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSocialShare"
+    aria-controls="offcanvasSocialShare" aria-label="Toggle social share">
+    <span class="action-icon"><i class="fas fa-2x fa-share-alt"></i></span> Chia sẻ
+  </a></section>
+
+</div>
+</div>
+
+    <div class="collapse navbar-collapse" tabindex="-1" id="navbarSupportedContent" aria-labelledby="navbarSupportedContent">
+      <form class="search-bar my-1" action="https://www.phamduytung.com/search">
+  <div class="input-group input-group-sm">
+    <span class="btn btn-search disabled position-absolute left-0"><i class="fas fa-fw fa-search"></i></span>
+    <input class="form-control rounded-pill" name="q" type="search" aria-label="Search">
+  </div>
+</form>
+      <ul class="navbar-nav ms-auto"><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/series/">
+            <i class="fas fa-fw fa-columns"></i>Courses
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/tools/">
+            <i class="fas fa-fw fa-folder"></i>Tools
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/categories/">
+            <i class="fas fa-fw fa-folder"></i>Categories
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/archives/">
+            <i class="fas fa-fw fa-file-archive"></i>Archives
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/tags/">
+            <i class="fas fa-fw fa-tags"></i>Tags
+          </a>
+        </li><li class="nav-item dropdown">
+          <a class="nav-link" id="navbarDropdownSupport" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-fw fa-comments"></i>Community
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdownSupport"><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Facebook Group
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://github.com/AlexBlack2202/alexblack2202.github.io" target="_blank" rel="noopener noreferrer">
+                GitHub
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/contact/">
+                Contact
+              </a>
+            </li><li><hr class="dropdown-divider"></li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/faq/">
+                Câu hỏi thường gặp
+              </a>
+            </li></ul>
+        </li></ul>
+    </div>
+  </div>
+</nav>
+</header>
+<main role="main" class="container" style="line-height:1.7em">
+      <div class="row content">
+<div class="col-lg-9 col-md-8">
+  <div class="container"><nav class="row card component" aria-label="breadcrumb">
+  <div class="card-body">
+    <ol class="breadcrumb "><li class="breadcrumb-item"><a href="https://www.phamduytung.com/">Trang chủ</a></li><li class="breadcrumb-item"><a href="https://www.phamduytung.com/blog/">Blogs</a></li><li class="breadcrumb-item active">AI Agent không thiếu trí thông minh, nó thiếu một tờ giấy khai sinh</li></ol>
+  </div>
+</nav>
+<div class="post-panel-wrapper">
+  <div class="d-flex flex-column component rounded post-panel">
+    
+    <a class="action action-panel-toggler" role="button" title="Panel toggler">
+      <i class="fas fa-fw fa-chevron-circle-down"></i>
+    </a>
+    <a id="sidebarToggler" class="action d-none d-lg-block" role="button" title="Sidebar toggler">
+  <i class="fas fa-fw fa-expand-alt" data-fa-transform="rotate-45"></i>
+</a>
+
+    
+
+    
+    
+    <a class="action" href="#post-comments" role="button" aria-label="Comments" title="Comments">
+  <i class="fas fa-fw fa-comments"></i>
+</a>
+    <a class="action" href="#postTOC" aria-controls="Table of contents" role="button" title="Table of contents">
+  <i class="fas fa-fw fa-list-alt"></i>
+</a>
+    
+  </div>
+</div>
+<article class="row card component mb-4 post">
+  <div class="card-header "><div class="bgcover" style="background-image:url(https://www.phamduytung.com/images/posts/2026-07-11-ai-agent-identity-crisis/cover.png)" aria-label="AI Agent không thiếu trí thông minh, nó thiếu một tờ giấy khai sinh">
+      <div class="bgtrans">
+          <h1>AI Agent không thiếu trí thông minh, nó thiếu một tờ giấy khai sinh
+</h1>
+      </div>
+  </div>
+</div>
+  <div class="card-body"><div class="post-meta">
+  <span class="post-date" title="tạo ngày 2026-07-11 14:00:00 &#43;0700 &#43;07.">
+    11/07/2026
+  </span><span class="post-reading-time">
+    32 phút đọc
+  </span><span class="post-taxonomies"><a href="https://www.phamduytung.com/tags/ai-agent/" class="badge post-taxonomy">ai agent</a><a href="https://www.phamduytung.com/tags/identity/" class="badge post-taxonomy">Identity</a><a href="https://www.phamduytung.com/tags/mcp/" class="badge post-taxonomy">MCP</a><a href="https://www.phamduytung.com/tags/oauth/" class="badge post-taxonomy">OAuth</a><a href="https://www.phamduytung.com/tags/spiffe/" class="badge post-taxonomy">SPIFFE</a><a href="https://www.phamduytung.com/tags/zero-trust/" class="badge post-taxonomy">Zero Trust</a><a href="https://www.phamduytung.com/tags/security/" class="badge post-taxonomy">Security</a><a href="https://www.phamduytung.com/tags/uber-engineering/" class="badge post-taxonomy">Uber Engineering</a></span>
+</div>
+<div class="post-content mb-3"><hr>
+<div class="toc">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#trước-khi-giao-chìa-khóa-cho-ai-hãy-khai-sinh-cho-nó">Trước khi giao chìa khóa cho AI, hãy khai sinh cho nó</a></li>
+    <li><a href="#khi-ai-chỉ-nói-chuyện-danh-tính-chưa-đáng-sợ-lắm">Khi AI chỉ nói chuyện, danh tính chưa đáng sợ lắm</a></li>
+    <li><a href="#một-agent-sửa-đúng-lỗi-nhưng-không-ai-biết-ai-chịu-trách-nhiệm">Một Agent sửa đúng lỗi, nhưng không ai biết ai chịu trách nhiệm</a></li>
+    <li><a href="#một-chiếc-camera-chỉ-quay-được-cái-búa">Một chiếc camera chỉ quay được cái búa</a></li>
+    <li><a href="#danh-tính-xác-thực-và-phân-quyền-không-phải-một-thứ">Danh tính, xác thực và phân quyền không phải một thứ</a>
+      <ul>
+        <li><a href="#identity-bạn-là-ai">Identity: Bạn là ai?</a></li>
+        <li><a href="#authentication-bạn-chứng-minh-điều-đó-bằng-cách-nào">Authentication: Bạn chứng minh điều đó bằng cách nào?</a></li>
+        <li><a href="#authorization-bạn-được-phép-làm-gì">Authorization: Bạn được phép làm gì?</a></li>
+      </ul>
+    </li>
+    <li><a href="#agent-không-hoàn-toàn-giống-con-người-cũng-không-hoàn-toàn-giống-service">Agent không hoàn toàn giống con người, cũng không hoàn toàn giống service</a></li>
+    <li><a href="#api-key-dùng-chung-giống-chìa-khóa-tổng-của-cả-công-ty">API Key dùng chung giống chìa khóa tổng của cả công ty</a></li>
+    <li><a href="#không-nên-đưa-thẻ-căn-cước-của-người-dùng-cho-agent-giữ">Không nên đưa thẻ căn cước của người dùng cho Agent giữ</a></li>
+    <li><a href="#kiến-trúc-của-uber-một-phòng-cấp-giấy-tờ-cho-agent">Kiến trúc của Uber: Một phòng cấp giấy tờ cho Agent</a></li>
+    <li><a href="#agent-registry-sổ-hộ-khẩu-của-các-agent">Agent Registry: Sổ hộ khẩu của các Agent</a></li>
+    <li><a href="#spiffe-và-spire-căn-cước-của-workload">SPIFFE và SPIRE: Căn cước của workload</a></li>
+    <li><a href="#security-token-service-bác-bảo-vệ-không-phát-chìa-khóa-vĩnh-viễn">Security Token Service: Bác bảo vệ không phát chìa khóa vĩnh viễn</a></li>
+    <li><a href="#audience-vé-đi-đà-nẵng-không-dùng-để-lên-máy-bay-đi-hà-nội">Audience: Vé đi Đà Nẵng không dùng để lên máy bay đi Hà Nội</a></li>
+    <li><a href="#token-ngắn-hạn-chìa-khóa-tự-tan-sau-vài-phút">Token ngắn hạn: Chìa khóa tự tan sau vài phút</a></li>
+    <li><a href="#actor-chain-ghi-lại-cả-đoàn-người-không-chỉ-người-cuối-hàng">Actor chain: Ghi lại cả đoàn người, không chỉ người cuối hàng</a></li>
+    <li><a href="#vì-sao-không-ký-một-token-từ-đầu-rồi-dùng-tới-cuối">Vì sao không ký một token từ đầu rồi dùng tới cuối?</a></li>
+    <li><a href="#mcp-gateway-bác-bảo-vệ-đứng-trước-kho-công-cụ">MCP Gateway: Bác bảo vệ đứng trước kho công cụ</a></li>
+    <li><a href="#một-hành-động-cần-hai-danh-tính">Một hành động cần hai danh tính</a></li>
+    <li><a href="#permission_effective">$$
+Permission_{effective}</a></li>
+    <li><a href="#ý-định-cũng-có-thể-trở-thành-một-phần-của-quyền">Ý định cũng có thể trở thành một phần của quyền</a></li>
+    <li><a href="#ai-gateway-và-mcp-gateway-làm-hai-công-việc-khác-nhau">AI Gateway và MCP Gateway làm hai công việc khác nhau</a></li>
+    <li><a href="#con-đường-an-toàn-phải-là-con-đường-dễ-đi-nhất">Con đường an toàn phải là con đường dễ đi nhất</a></li>
+    <li><a href="#observability-xem-lại-cả-hành-trình-của-agent">Observability: Xem lại cả hành trình của Agent</a></li>
+    <li><a href="#bảo-mật-thêm-từng-bước-có-làm-agent-chậm-đi-không">Bảo mật thêm từng bước có làm Agent chậm đi không?</a></li>
+    <li><a href="#ba-tầng-bảo-mật-cho-thế-giới-agent">Ba tầng bảo mật cho thế giới Agent</a>
+      <ul>
+        <li><a href="#tầng-1-identity-and-trust-foundation">Tầng 1: Identity and Trust Foundation</a></li>
+        <li><a href="#tầng-2-dynamic-access-control">Tầng 2: Dynamic Access Control</a></li>
+        <li><a href="#tầng-3-unified-enforcement-plane">Tầng 3: Unified Enforcement Plane</a></li>
+      </ul>
+    </li>
+    <li><a href="#nếu-tự-xây-cho-doanh-nghiệp-mình-sẽ-bắt-đầu-như-thế-nào">Nếu tự xây cho doanh nghiệp, mình sẽ bắt đầu như thế nào?</a>
+      <ul>
+        <li><a href="#1-mỗi-agent-phải-có-một-agent-id-riêng">1. Mỗi Agent phải có một Agent ID riêng</a></li>
+        <li><a href="#2-gắn-agent-với-workload-đáng-tin-cậy">2. Gắn Agent với workload đáng tin cậy</a></li>
+        <li><a href="#3-dùng-token-ngắn-hạn-theo-audience">3. Dùng token ngắn hạn theo audience</a></li>
+        <li><a href="#4-giữ-cả-user-identity-lẫn-agent-identity">4. Giữ cả user identity lẫn agent identity</a></li>
+        <li><a href="#5-đặt-policy-ở-gateway">5. Đặt policy ở Gateway</a></li>
+        <li><a href="#6-chuẩn-hóa-sdk">6. Chuẩn hóa SDK</a></li>
+        <li><a href="#7-bắt-đầu-từ-tool-rủi-ro-cao">7. Bắt đầu từ tool rủi ro cao</a></li>
+      </ul>
+    </li>
+    <li><a href="#những-sai-lầm-rất-dễ-gặp">Những sai lầm rất dễ gặp</a>
+      <ul>
+        <li><a href="#dùng-chung-service-account-cho-mọi-agent">Dùng chung service account cho mọi Agent</a></li>
+        <li><a href="#tin-agent_id-do-client-tự-gửi">Tin <code>agent_id</code> do client tự gửi</a></li>
+        <li><a href="#truyền-token-người-dùng-xuyên-suốt-workflow">Truyền token người dùng xuyên suốt workflow</a></li>
+        <li><a href="#token-không-có-audience">Token không có audience</a></li>
+        <li><a href="#token-sống-quá-lâu">Token sống quá lâu</a></li>
+        <li><a href="#chỉ-log-agent-cuối-cùng">Chỉ log Agent cuối cùng</a></li>
+        <li><a href="#đưa-mọi-thứ-vào-jwt">Đưa mọi thứ vào JWT</a></li>
+        <li><a href="#gateway-chỉ-làm-reverse-proxy">Gateway chỉ làm reverse proxy</a></li>
+        <li><a href="#cấp-quyền-dựa-trên-danh-tính-nhưng-bỏ-qua-hành-động">Cấp quyền dựa trên danh tính nhưng bỏ qua hành động</a></li>
+        <li><a href="#không-có-human-in-the-loop">Không có human-in-the-loop</a></li>
+      </ul>
+    </li>
+    <li><a href="#điều-mình-tâm-đắc-nhất-danh-tính-thực-ra-là-ký-ức-của-trách-nhiệm">Điều mình tâm đắc nhất: Danh tính thực ra là ký ức của trách nhiệm</a></li>
+    <li><a href="#agent-càng-thông-minh-quyền-càng-phải-nhỏ-và-rõ">Agent càng thông minh, quyền càng phải nhỏ và rõ</a></li>
+    <li><a href="#tổng-kết">Tổng kết</a></li>
+    <li><a href="#tham-khảo">Tham khảo</a></li>
+  </ul>
+</nav>
+  </div>
+<h1 id="trước-khi-giao-chìa-khóa-cho-ai-hãy-khai-sinh-cho-nó">Trước khi giao chìa khóa cho AI, hãy khai sinh cho nó<a class="anchor ms-1" href="#trước-khi-giao-chìa-khóa-cho-ai-hãy-khai-sinh-cho-nó"><i class="fas fa-link"></i></a></h1>
+<p>Một đứa trẻ vừa sinh ra.</p>
+<p>Việc đầu tiên người lớn làm không phải dạy nó toán.</p>
+<p>Cũng không phải mở tài khoản ngân hàng.</p>
+<p>Càng không phải đưa cho nó chìa khóa kho hàng rồi bảo:</p>
+<blockquote>
+<p>Con cứ tự nhiên lấy những gì con thấy cần thiết.</p>
+</blockquote>
+<p>Việc đầu tiên là làm giấy khai sinh.</p>
+<p>Đứa trẻ cần có tên.</p>
+<p>Có ngày sinh.</p>
+<p>Có cha mẹ.</p>
+<p>Có một mã định danh để sau này người ta biết nó là ai.</p>
+<p>Sau đó mới tới chuyện đi học, đi làm, mở tài khoản, ký hợp đồng hay sở hữu tài sản.</p>
+<p>AI Agent cũng nên như vậy.</p>
+<p>Trước khi cho nó quyền đọc email, sửa dữ liệu, tạo đơn hàng, gọi hệ thống thanh toán hay deploy code lên production, ta cần trả lời một câu hỏi cực kỳ căn bản:</p>
+<blockquote>
+<p>Agent này là ai?</p>
+</blockquote>
+<p>Nghe thì có vẻ đơn giản.</p>
+<p>Ta đặt cho nó một cái tên.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">oncall-agent
+</span></span></code></pre></div><p>Xong.</p>
+<p>Nhưng cái tên chỉ là một dòng chữ.</p>
+<p>Bất kỳ chương trình nào cũng có thể tự xưng là <code>oncall-agent</code>.</p>
+<p>Giống như một người đi vào ngân hàng, đeo tờ giấy trước ngực ghi:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Tôi là giám đốc
+</span></span></code></pre></div><p>Rồi yêu cầu mở két sắt.</p>
+<p>Bác bảo vệ có thể rất quý sự tự tin.</p>
+<p>Nhưng chắc chắn vẫn phải hỏi giấy tờ.</p>
+<p>Đây là điều khiến mình tâm đắc khi đọc bài <strong>“Solving the Identity Crisis for AI Agents”</strong> của Uber Engineering.</p>
+<p>Uber không chỉ hỏi làm sao để Agent gọi được nhiều công cụ hơn.</p>
+<p>Họ hỏi một câu khó hơn:</p>
+<blockquote>
+<p>Khi một hành động đi qua nhiều Agent, nhiều hệ thống và nhiều bước suy luận, làm thế nào để biết chính xác ai đã khởi đầu nó, Agent nào đã tham gia và vì sao hành động cuối cùng được phép xảy ra?</p>
+</blockquote>
+<p>Uber gọi đây là cuộc khủng hoảng danh tính của AI Agent.</p>
+<p>Theo mình, cái tên này rất đúng.</p>
+<p>AI không thiếu một cái username.</p>
+<p>Nó thiếu cả một hệ thống để chứng minh mình là ai, đang thay mặt ai và đã đi qua con đường nào trước khi chạm vào dữ liệu thật.</p>
+<h1 id="khi-ai-chỉ-nói-chuyện-danh-tính-chưa-đáng-sợ-lắm">Khi AI chỉ nói chuyện, danh tính chưa đáng sợ lắm<a class="anchor ms-1" href="#khi-ai-chỉ-nói-chuyện-danh-tính-chưa-đáng-sợ-lắm"><i class="fas fa-link"></i></a></h1>
+<p>Ngày trước, một chatbot thường hoạt động như thế này:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Người dùng
+</span></span><span class="line"><span class="ln">2</span><span class="cl">    │
+</span></span><span class="line"><span class="ln">3</span><span class="cl">    ▼
+</span></span><span class="line"><span class="ln">4</span><span class="cl">   LLM
+</span></span><span class="line"><span class="ln">5</span><span class="cl">    │
+</span></span><span class="line"><span class="ln">6</span><span class="cl">    ▼
+</span></span><span class="line"><span class="ln">7</span><span class="cl">Câu trả lời
+</span></span></code></pre></div><p>Bạn hỏi:</p>
+<blockquote>
+<p>Viết giúp tôi một email xin nghỉ phép.</p>
+</blockquote>
+<p>AI viết.</p>
+<p>Bạn đọc lại.</p>
+<p>Bạn tự bấm gửi.</p>
+<p>Trong mô hình này, AI chỉ tạo nội dung.</p>
+<p>Nó chưa trực tiếp hành động lên hệ thống.</p>
+<p>Nếu câu trả lời sai, con người vẫn còn đứng ở giữa để kiểm tra.</p>
+<p>Nhưng Agent ngày nay có thể đi xa hơn:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">Người dùng
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">    │
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">    ▼
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">Agent lập kế hoạch
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">    │
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">    ├── Đọc tài liệu
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">    ├── Truy vấn database
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">    ├── Gọi Agent khác
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">    ├── Tạo Pull Request
+</span></span><span class="line"><span class="ln">10</span><span class="cl">    ├── Gửi email
+</span></span><span class="line"><span class="ln">11</span><span class="cl">    └── Thay đổi cấu hình
+</span></span></code></pre></div><p>AI không còn chỉ <strong>nói</strong>.</p>
+<p>Nó bắt đầu <strong>làm</strong>.</p>
+<p>Và ngay khi một chương trình có khả năng tác động lên thế giới bên ngoài, danh tính không còn là chi tiết kỹ thuật nằm phía sau màn hình đăng nhập.</p>
+<p>Nó trở thành nền móng của trách nhiệm.</p>
+<h1 id="một-agent-sửa-đúng-lỗi-nhưng-không-ai-biết-ai-chịu-trách-nhiệm">Một Agent sửa đúng lỗi, nhưng không ai biết ai chịu trách nhiệm<a class="anchor ms-1" href="#một-agent-sửa-đúng-lỗi-nhưng-không-ai-biết-ai-chịu-trách-nhiệm"><i class="fas fa-link"></i></a></h1>
+<p>Uber đưa ra một ví dụ rất thực tế.</p>
+<p>Một kỹ sư đang trực hệ thống nhận được cảnh báo.</p>
+<p>Người này giao nhiệm vụ cho một On-call Agent điều tra.</p>
+<p>On-call Agent gọi Investigation Agent để kiểm tra log và metric.</p>
+<p>Investigation Agent kết luận hệ thống vẫn hoạt động bình thường, nhưng ngưỡng cảnh báo đang được cấu hình sai.</p>
+<p>Sau đó, Monitoring Agent được gọi để thay đổi ngưỡng và tạo một Pull Request.</p>
+<p>Cuối cùng, trong lịch sử source code chỉ hiện:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Monitoring Agent đã tạo thay đổi.
+</span></span></code></pre></div><p>Nhưng ai đã khởi đầu công việc này?</p>
+<p>Kỹ sư nào yêu cầu?</p>
+<p>On-call Agent đã đưa ra quyết định gì?</p>
+<p>Investigation Agent dựa trên dữ liệu nào để kết luận cảnh báo bị sai?</p>
+<p>Monitoring Agent đang tự hành động hay đang làm thay một con người cụ thể?</p>
+<p>Nếu chỉ nhìn hệ thống cuối cùng, những thông tin đó đã biến mất.</p>
+<p>Downstream chỉ thấy:</p>
+<blockquote>
+<p>Có một service vừa gọi API.</p>
+</blockquote>
+<p>Uber cho biết họ gặp lại kiểu mất dấu này trong nhiều workflow: Agent hoàn thành công việc qua nhiều bước, nhưng mỗi hệ thống phía sau chỉ nhìn thấy một service identity chung chung, thay vì nhận được đầy đủ danh tính người khởi tạo và chuỗi Agent đã tham gia. (<a href="https://www.uber.com/us/en/blog/solving-the-agent-identity-crisis/" title="Solving the Identity Crisis for AI Agents" target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<p>Đây là một loại mất trí nhớ khá nguy hiểm.</p>
+<p>Cỗ máy vẫn nhớ việc gì đã xảy ra.</p>
+<p>Nhưng quên mất câu chuyện dẫn tới hành động đó.</p>
+<h1 id="một-chiếc-camera-chỉ-quay-được-cái-búa">Một chiếc camera chỉ quay được cái búa<a class="anchor ms-1" href="#một-chiếc-camera-chỉ-quay-được-cái-búa"><i class="fas fa-link"></i></a></h1>
+<p>Giả sử camera trong kho ghi lại cảnh một chiếc búa tự bay lên rồi đập vỡ cửa.</p>
+<p>Camera chỉ báo:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Công cụ được sử dụng: búa
+</span></span><span class="line"><span class="ln">2</span><span class="cl">Thời gian: 02:15
+</span></span><span class="line"><span class="ln">3</span><span class="cl">Hành động: phá cửa
+</span></span></code></pre></div><p>Nhưng camera không biết:</p>
+<ul>
+<li>Ai cầm búa?</li>
+<li>Người đó được ai sai đi?</li>
+<li>Họ định sửa ổ khóa hay muốn trộm đồ?</li>
+<li>Trước đó chuyện gì đã xảy ra?</li>
+<li>Ai đã cho phép mở cửa?</li>
+</ul>
+<p>Log của nhiều hệ thống Agent hiện nay cũng tương tự.</p>
+<p>Nó ghi lại Agent cuối cùng gọi API.</p>
+<p>Nhưng không giữ được <strong>provenance</strong>, tức nguồn gốc và con đường của hành động.</p>
+<p>Trong một workflow đơn giản, chuyện này đã khó chịu.</p>
+<p>Trong một hệ thống có hàng chục Agent gọi qua gọi lại, nó trở thành một mê cung.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">User
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">  ↓
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">Planning Agent
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">  ↓
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">On-call Agent
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">  ↓
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">Investigation Agent
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">  ↓
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">Monitoring Agent
+</span></span><span class="line"><span class="ln">10</span><span class="cl">  ↓
+</span></span><span class="line"><span class="ln">11</span><span class="cl">MCP Gateway
+</span></span><span class="line"><span class="ln">12</span><span class="cl">  ↓
+</span></span><span class="line"><span class="ln">13</span><span class="cl">Source Control
+</span></span></code></pre></div><p>Nếu Source Control chỉ biết Monitoring Agent, phần lớn câu chuyện đã bị bỏ lại ở những đoạn trước.</p>
+<p>Khi có sự cố, đội vận hành phải ghép log từ nhiều hệ thống lại như nhặt từng mảnh kính vỡ trên sàn.</p>
+<h1 id="danh-tính-xác-thực-và-phân-quyền-không-phải-một-thứ">Danh tính, xác thực và phân quyền không phải một thứ<a class="anchor ms-1" href="#danh-tính-xác-thực-và-phân-quyền-không-phải-một-thứ"><i class="fas fa-link"></i></a></h1>
+<p>Ba khái niệm này thường bị trộn chung với nhau.</p>
+<h2 id="identity-bạn-là-ai">Identity: Bạn là ai?<a class="anchor ms-1" href="#identity-bạn-là-ai"><i class="fas fa-link"></i></a></h2>
+<p>Ví dụ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Agent ID: monitoring-agent
+</span></span><span class="line"><span class="ln">2</span><span class="cl">Owner: Observability Team
+</span></span><span class="line"><span class="ln">3</span><span class="cl">Version: 2.3
+</span></span><span class="line"><span class="ln">4</span><span class="cl">Workload: monitoring-agent-prod
+</span></span></code></pre></div><p>Đây là thông tin mô tả một thực thể.</p>
+<h2 id="authentication-bạn-chứng-minh-điều-đó-bằng-cách-nào">Authentication: Bạn chứng minh điều đó bằng cách nào?<a class="anchor ms-1" href="#authentication-bạn-chứng-minh-điều-đó-bằng-cách-nào"><i class="fas fa-link"></i></a></h2>
+<p>Agent không thể chỉ tự khai:</p>
+<blockquote>
+<p>Tôi là Monitoring Agent.</p>
+</blockquote>
+<p>Nó cần một bằng chứng có thể kiểm tra bằng mật mã.</p>
+<p>Chẳng hạn một chứng thư hoặc token được ký bởi hệ thống đáng tin cậy.</p>
+<h2 id="authorization-bạn-được-phép-làm-gì">Authorization: Bạn được phép làm gì?<a class="anchor ms-1" href="#authorization-bạn-được-phép-làm-gì"><i class="fas fa-link"></i></a></h2>
+<p>Ngay cả khi đúng là Monitoring Agent, nó chưa chắc được phép:</p>
+<ul>
+<li>Xóa toàn bộ alert.</li>
+<li>Truy cập dữ liệu nhân sự.</li>
+<li>Sửa source code của hệ thống thanh toán.</li>
+<li>Tự phê duyệt Pull Request của chính mình.</li>
+</ul>
+<p>Authentication chứng minh danh tính.</p>
+<p>Authorization giới hạn quyền lực.</p>
+<p>Một người có căn cước công dân thật không có nghĩa họ được quyền đi vào kho tiền của ngân hàng.</p>
+<h1 id="agent-không-hoàn-toàn-giống-con-người-cũng-không-hoàn-toàn-giống-service">Agent không hoàn toàn giống con người, cũng không hoàn toàn giống service<a class="anchor ms-1" href="#agent-không-hoàn-toàn-giống-con-người-cũng-không-hoàn-toàn-giống-service"><i class="fas fa-link"></i></a></h1>
+<p>Hệ thống IAM truyền thống thường quen với hai nhóm danh tính.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Con người
+</span></span></code></pre></div><p>và:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Workload / Service
+</span></span></code></pre></div><p>Con người đăng nhập bằng tài khoản cá nhân.</p>
+<p>Service chạy bằng service account, certificate hoặc API key.</p>
+<p>Nhưng Agent đứng ở giữa hai thế giới này.</p>
+<p>Nó chạy bên trong một workload giống service.</p>
+<p>Nhưng nó thường hành động thay mặt con người.</p>
+<p>Nó có thể tự lập kế hoạch.</p>
+<p>Có thể gọi Agent khác.</p>
+<p>Có thể thay đổi hướng đi dựa trên kết quả trung gian.</p>
+<p>Có thể sử dụng nhiều công cụ trong cùng một phiên.</p>
+<p>Uber tóm tắt ba đặc điểm làm Agent khác automation truyền thống:</p>
+<ul>
+<li>Agent mặc định hoạt động theo cơ chế ủy quyền.</li>
+<li>Workflow có tính kết hợp, Agent có thể gọi Agent và công cụ khác.</li>
+<li>Kế hoạch có thể thay đổi động trong quá trình thực thi. (<a href="https://www.uber.com/us/en/blog/solving-the-agent-identity-crisis/" title="Solving the Identity Crisis for AI Agents" target="_blank" rel="noopener noreferrer">Uber</a>)</li>
+</ul>
+<p>Một cron job thường biết trước mình sẽ làm gì.</p>
+<p>Ba giờ sáng chạy query.</p>
+<p>Xuất báo cáo.</p>
+<p>Gửi email.</p>
+<p>Xong.</p>
+<p>Một Agent thì có thể bắt đầu bằng nhiệm vụ:</p>
+<blockquote>
+<p>Tìm nguyên nhân hệ thống chậm và đề xuất cách khắc phục.</p>
+</blockquote>
+<p>Nó chưa biết trước sẽ gọi log, metric, source code hay ticket.</p>
+<p>Con đường được hình thành trong lúc nó làm việc.</p>
+<p>Bởi vậy, chỉ gắn danh tính vào tiến trình đang chạy là chưa đủ.</p>
+<p>Ta còn phải giữ được chuỗi ủy quyền xuyên suốt hành trình.</p>
+<h1 id="api-key-dùng-chung-giống-chìa-khóa-tổng-của-cả-công-ty">API Key dùng chung giống chìa khóa tổng của cả công ty<a class="anchor ms-1" href="#api-key-dùng-chung-giống-chìa-khóa-tổng-của-cả-công-ty"><i class="fas fa-link"></i></a></h1>
+<p>Cách nhanh nhất để một Agent gọi công cụ là đưa cho nó API key.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Agent
+</span></span><span class="line"><span class="ln">2</span><span class="cl">  │
+</span></span><span class="line"><span class="ln">3</span><span class="cl">  │ API_KEY=abc123
+</span></span><span class="line"><span class="ln">4</span><span class="cl">  ▼
+</span></span><span class="line"><span class="ln">5</span><span class="cl">Internal API
+</span></span></code></pre></div><p>Demo chạy được.</p>
+<p>Mọi người vui.</p>
+<p>Sau đó Agent thứ hai xuất hiện.</p>
+<p>Rồi Agent thứ ba.</p>
+<p>Vì một lý do nào đó mà tác giả chưa nghĩ ra, cả ba tiếp tục dùng chung chiếc khóa <code>abc123</code>.</p>
+<p>Một năm sau, công ty có một trăm Agent.</p>
+<p>Ai cũng cầm cùng một chìa khóa.</p>
+<p>Chìa đó mở được:</p>
+<ul>
+<li>Kho hàng.</li>
+<li>Phòng kế toán.</li>
+<li>Phòng giám đốc.</li>
+<li>Tủ điện.</li>
+<li>Cửa sau.</li>
+<li>Và có thể cả két sắt.</li>
+</ul>
+<p>Đến lúc xảy ra sự cố, log chỉ ghi:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">API key abc123 đã thực hiện hành động.
+</span></span></code></pre></div><p>Không biết Agent nào.</p>
+<p>Không biết người nào.</p>
+<p>Không biết phiên làm việc nào.</p>
+<p>Không biết mục đích gì.</p>
+<p>API key dài hạn còn có một đặc điểm đáng yêu khác: nếu bị lộ, nó có thể tiếp tục sống lâu hơn cả người tạo ra nó.</p>
+<p>Một Agent production không nên được xây trên niềm tin rằng bí mật sẽ không bao giờ rơi khỏi túi.</p>
+<h1 id="không-nên-đưa-thẻ-căn-cước-của-người-dùng-cho-agent-giữ">Không nên đưa thẻ căn cước của người dùng cho Agent giữ<a class="anchor ms-1" href="#không-nên-đưa-thẻ-căn-cước-của-người-dùng-cho-agent-giữ"><i class="fas fa-link"></i></a></h1>
+<p>Một cách khác là cho Agent dùng trực tiếp token của người dùng.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">User Token
+</span></span><span class="line"><span class="ln">2</span><span class="cl">    │
+</span></span><span class="line"><span class="ln">3</span><span class="cl">    ▼
+</span></span><span class="line"><span class="ln">4</span><span class="cl">Agent
+</span></span><span class="line"><span class="ln">5</span><span class="cl">    │
+</span></span><span class="line"><span class="ln">6</span><span class="cl">    ▼
+</span></span><span class="line"><span class="ln">7</span><span class="cl">Downstream System
+</span></span></code></pre></div><p>Cách này giúp hệ thống phía sau thấy danh tính con người.</p>
+<p>Nhưng lại nảy sinh nhiều vấn đề.</p>
+<p>Agent có thể mang token đi xa hơn phạm vi ban đầu.</p>
+<p>Token có thể được tái sử dụng cho hệ thống khác.</p>
+<p>Downstream chỉ thấy con người, không thấy Agent nào đang hành động.</p>
+<p>Nếu nhiều Agent chuyền nhau cùng một credential, toàn bộ hành động trông như do người dùng trực tiếp thực hiện.</p>
+<p>Giống bạn đưa căn cước và chữ ký cho một nhân viên rồi bảo:</p>
+<blockquote>
+<p>Em cứ thay anh làm việc.</p>
+</blockquote>
+<p>Nhân viên đó tiếp tục photocopy giấy tờ rồi đưa cho ba người khác.</p>
+<p>Cuối ngày, mọi hợp đồng đều mang tên bạn.</p>
+<p>Nhưng bạn không biết ai đã viết từng dòng.</p>
+<p>Trong kiến trúc của Uber, Agent không tái sử dụng credential thô của người dùng để gọi hệ thống phía sau. Mỗi bước sẽ xin một token mới, dành riêng cho bước tiếp theo, trong khi vẫn giữ lại thông tin về người khởi tạo. (<a href="https://www.uber.com/us/en/blog/solving-the-agent-identity-crisis/" title="Solving the Identity Crisis for AI Agents" target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<p>Đây là khác biệt giữa <strong>giả danh</strong> và <strong>được ủy quyền</strong>.</p>
+<p>Agent không trở thành người dùng.</p>
+<p>Agent vẫn là chính nó.</p>
+<p>Nhưng hệ thống biết nó đang hành động thay mặt ai.</p>
+<h1 id="kiến-trúc-của-uber-một-phòng-cấp-giấy-tờ-cho-agent">Kiến trúc của Uber: Một phòng cấp giấy tờ cho Agent<a class="anchor ms-1" href="#kiến-trúc-của-uber-một-phòng-cấp-giấy-tờ-cho-agent"><i class="fas fa-link"></i></a></h1>
+<p>Uber mở rộng kiến trúc Zero Trust hiện có để hỗ trợ Agent.</p>
+<p>Thay vì tin một Agent chỉ vì nó đang chạy trong mạng nội bộ, mỗi Agent phải có danh tính có thể kiểm chứng, xin token đúng mục đích và đi qua các điểm thực thi chính sách trước khi gọi hệ thống phía sau. (<a href="https://www.uber.com/us/en/blog/solving-the-agent-identity-crisis/" title="Solving the Identity Crisis for AI Agents" target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<p>Kiến trúc có thể hình dung như sau:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">                    CONTROL PLANE
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">            ┌────────────────────┐
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">            │   Agent Registry   │
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">            └─────────┬──────────┘
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">                      │ xác minh đăng ký
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">                      ▼
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">            ┌────────────────────┐
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">            │ Security Token     │
+</span></span><span class="line"><span class="ln">10</span><span class="cl">            │ Service - STS      │
+</span></span><span class="line"><span class="ln">11</span><span class="cl">            └─────────┬──────────┘
+</span></span><span class="line"><span class="ln">12</span><span class="cl">                      │ phát JWT ngắn hạn
+</span></span><span class="line"><span class="ln">13</span><span class="cl">                      ▼
+</span></span><span class="line"><span class="ln">14</span><span class="cl">
+</span></span><span class="line"><span class="ln">15</span><span class="cl">                     DATA PLANE
+</span></span><span class="line"><span class="ln">16</span><span class="cl">
+</span></span><span class="line"><span class="ln">17</span><span class="cl">User → Agent A → Agent B → MCP Gateway → Downstream
+</span></span><span class="line"><span class="ln">18</span><span class="cl">          │          │          │
+</span></span><span class="line"><span class="ln">19</span><span class="cl">          └──── JWT theo từng bước ────┘
+</span></span></code></pre></div><p>Các thành phần chính gồm:</p>
+<ul>
+<li>Agent Registry</li>
+<li>AI Agent Mesh</li>
+<li>Security Token Service</li>
+<li>MCP Gateway</li>
+<li>AI Gateway</li>
+<li>Downstream Systems</li>
+</ul>
+<p>Mỗi thành phần giống một bộ phận trong tòa nhà.</p>
+<h1 id="agent-registry-sổ-hộ-khẩu-của-các-agent">Agent Registry: Sổ hộ khẩu của các Agent<a class="anchor ms-1" href="#agent-registry-sổ-hộ-khẩu-của-các-agent"><i class="fas fa-link"></i></a></h1>
+<p>Agent Registry là nguồn thông tin trung tâm cho biết:</p>
+<ul>
+<li>Agent nào tồn tại.</li>
+<li>Agent ID là gì.</li>
+<li>Agent được phép chạy trên workload nào.</li>
+<li>Ai sở hữu Agent.</li>
+<li>Cấu hình nào gắn với Agent.</li>
+<li>Trạng thái hiện tại ra sao.</li>
+</ul>
+<p>Tại Uber, Agent thường được triển khai như workload trên Kubernetes. Nền tảng Michelangelo liên kết Agent với workload, sau đó lưu mối quan hệ này trong Agent Registry để Security Token Service có thể kiểm tra khi Agent xin danh tính. (<a href="https://www.uber.com/us/en/blog/solving-the-agent-identity-crisis/" title="Solving the Identity Crisis for AI Agents" target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<p>Điều này giải quyết một lỗ hổng rất cơ bản.</p>
+<p>Giả sử workload của Weather Agent gửi yêu cầu:</p>
+<blockquote>
+<p>Tôi là Payment Agent. Hãy cấp token cho tôi chuyển tiền.</p>
+</blockquote>
+<p>STS sẽ hỏi Registry:</p>
+<blockquote>
+<p>Workload này có thực sự được đăng ký để chạy Payment Agent không?</p>
+</blockquote>
+<p>Nếu không, yêu cầu bị từ chối.</p>
+<p>Chỉ biết <code>agent_id</code> chưa đủ.</p>
+<p>Ta phải chứng minh Agent đó đang chạy đúng trên môi trường được phép chứa nó.</p>
+<p>Giống một bác sĩ có bằng thật nhưng đang dùng thẻ bệnh viện của người khác.</p>
+<p>Danh tính phải gắn với nơi thực thể đang hoạt động.</p>
+<h1 id="spiffe-và-spire-căn-cước-của-workload">SPIFFE và SPIRE: Căn cước của workload<a class="anchor ms-1" href="#spiffe-và-spire-căn-cước-của-workload"><i class="fas fa-link"></i></a></h1>
+<p>Trước khi chứng minh Agent, Uber cần xác minh workload đang chạy Agent đó.</p>
+<p>Mỗi workload lấy một SPIFFE Verifiable Identity Document, thường gọi là SVID, được ký bằng mật mã bởi SPIRE.</p>
+<p>SPIFFE và SPIRE được thiết kế để cung cấp danh tính mật mã đã được kiểm chứng cho workload trong các môi trường phân tán. (<a href="https://spiffe.io/?utm_source=chatgpt.com" title="SPIFFE | Secure Production Identity Framework for Everyone" target="_blank" rel="noopener noreferrer">Spiffe</a>)</p>
+<p>Có thể hình dung:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Workload:
+</span></span><span class="line"><span class="ln">2</span><span class="cl">“Tôi đang chạy trong Kubernetes cluster production,
+</span></span><span class="line"><span class="ln">3</span><span class="cl">thuộc namespace này,
+</span></span><span class="line"><span class="ln">4</span><span class="cl">service account này,
+</span></span><span class="line"><span class="ln">5</span><span class="cl">và đây là giấy tờ được hệ thống hạ tầng ký.”
+</span></span></code></pre></div><p>SVID chứng minh chiếc máy hoặc workload đứng trước cửa là hợp lệ.</p>
+<p>Nhưng nó chưa tự động chứng minh Agent cụ thể đang chạy bên trong.</p>
+<p>Đó là lý do còn cần Agent Registry.</p>
+<p>Quy trình được ghép lại như sau:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">Workload identity
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">        +
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">Agent registration
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">        +
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">Inbound user context
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">        +
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">Destination
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">        ↓
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">Security Token Service
+</span></span><span class="line"><span class="ln">10</span><span class="cl">        ↓
+</span></span><span class="line"><span class="ln">11</span><span class="cl">JWT cho Agent
+</span></span></code></pre></div><p>Uber mô tả bốn bước chính:</p>
+<ol>
+<li>Workload lấy SVID được ký bởi SPIRE.</li>
+<li>Agent SDK dùng SVID cùng metadata của Agent, token đầu vào và hệ thống đích để xin JWT từ STS.</li>
+<li>STS hỏi Agent Registry xem Agent có được phép chạy trên workload đó hay không.</li>
+<li>Nếu hợp lệ, STS phát JWT cho bước gọi tiếp theo. (<a href="https://www.uber.com/us/en/blog/solving-the-agent-identity-crisis/" title="Solving the Identity Crisis for AI Agents" target="_blank" rel="noopener noreferrer">Uber</a>)</li>
+</ol>
+<p>Không phải một tờ giấy.</p>
+<p>Mà là nhiều lớp giấy tờ kiểm tra lẫn nhau.</p>
+<p>Nghe hơi rắc rối.</p>
+<p>Nhưng nếu Agent có quyền sửa production, sự rắc rối này khá rẻ so với việc họp khẩn lúc hai giờ sáng.</p>
+<h1 id="security-token-service-bác-bảo-vệ-không-phát-chìa-khóa-vĩnh-viễn">Security Token Service: Bác bảo vệ không phát chìa khóa vĩnh viễn<a class="anchor ms-1" href="#security-token-service-bác-bảo-vệ-không-phát-chìa-khóa-vĩnh-viễn"><i class="fas fa-link"></i></a></h1>
+<p>STS là nơi phát token cho Agent.</p>
+<p>Điểm quan trọng là Uber không dùng credential rộng và sống lâu.</p>
+<p>STS phát token:</p>
+<ul>
+<li>Chỉ dùng cho một bước gọi.</li>
+<li>Có thời gian sống ngắn, thường tính bằng phút.</li>
+<li>Có <code>audience</code> cụ thể.</li>
+<li>Có thông tin về Agent.</li>
+<li>Có chuỗi thực thể đã tham gia.</li>
+</ul>
+<p>Cơ chế này có ý tưởng gần với OAuth 2.0 Token Exchange trong RFC 8693, tiêu chuẩn cho phép đổi một token hiện có lấy token mới phù hợp với một ngữ cảnh, đối tượng nhận hoặc hình thức ủy quyền khác. Uber cho biết họ tùy biến cách trao đổi này để phù hợp với yêu cầu audit và hiệu năng nội bộ. (<a href="https://www.rfc-editor.org/info/rfc8693/?utm_source=chatgpt.com" title="RFC 8693: OAuth 2.0 Token Exchange" target="_blank" rel="noopener noreferrer">RFC Editor</a>)</p>
+<p>Nói theo cách dễ hiểu hơn:</p>
+<p>Một người cầm giấy giới thiệu tới cổng tòa nhà.</p>
+<p>Bác bảo vệ không đưa chìa khóa tổng.</p>
+<p>Bác phát một thẻ tạm:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Chỉ được vào phòng Monitoring.
+</span></span><span class="line"><span class="ln">2</span><span class="cl">Có hiệu lực trong 5 phút.
+</span></span><span class="line"><span class="ln">3</span><span class="cl">Không mở được phòng Database.
+</span></span><span class="line"><span class="ln">4</span><span class="cl">Không dùng lại vào ngày mai.
+</span></span></code></pre></div><p>Khi cần sang phòng khác, người đó quay lại xin thẻ mới.</p>
+<p>Hơi mất công.</p>
+<p>Nhưng một chiếc thẻ bị rơi cũng không mở được cả tòa nhà.</p>
+<h1 id="audience-vé-đi-đà-nẵng-không-dùng-để-lên-máy-bay-đi-hà-nội">Audience: Vé đi Đà Nẵng không dùng để lên máy bay đi Hà Nội<a class="anchor ms-1" href="#audience-vé-đi-đà-nẵng-không-dùng-để-lên-máy-bay-đi-hà-nội"><i class="fas fa-link"></i></a></h1>
+<p>Trong JWT, <code>audience</code> xác định token được phát cho hệ thống nào.</p>
+<p>Ví dụ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="ln">1</span><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl">  <span class="nt">&#34;aud&#34;</span><span class="p">:</span> <span class="s2">&#34;investigation-agent&#34;</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>Token này chỉ hợp lệ khi gọi Investigation Agent.</p>
+<p>Không được đem nó tới MCP Gateway.</p>
+<p>Không được dùng để gọi database.</p>
+<p>Không được trình cho hệ thống thanh toán.</p>
+<p>Uber phát token theo từng bước với <code>audience</code> riêng, vì vậy token bị lấy cắp ở một bước không thể dễ dàng được phát lại cho một đích khác. (<a href="https://www.uber.com/us/en/blog/solving-the-agent-identity-crisis/" title="Solving the Identity Crisis for AI Agents" target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<p>Đây là nguyên tắc rất quan trọng.</p>
+<p>Nhiều hệ thống tạo một token kiểu:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Đã đăng nhập.
+</span></span></code></pre></div><p>Sau đó token đó được chấp nhận ở mọi nơi.</p>
+<p>Nó giống một tấm vé chỉ ghi:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Được phép đi đâu đó.
+</span></span></code></pre></div><p>Không hãng hàng không nào vận hành như vậy.</p>
+<p>Vé cần ghi chuyến bay, ngày giờ và hành khách.</p>
+<p>Token cũng cần ghi rõ nó được sinh ra để làm gì và được trình cho ai.</p>
+<h1 id="token-ngắn-hạn-chìa-khóa-tự-tan-sau-vài-phút">Token ngắn hạn: Chìa khóa tự tan sau vài phút<a class="anchor ms-1" href="#token-ngắn-hạn-chìa-khóa-tự-tan-sau-vài-phút"><i class="fas fa-link"></i></a></h1>
+<p>Credential sống càng lâu, hậu quả khi bị lộ càng lớn.</p>
+<p>Một API key có tuổi thọ hai năm có thể bị sao chép vào:</p>
+<ul>
+<li>Source code.</li>
+<li>File cấu hình.</li>
+<li>Log.</li>
+<li>Ticket.</li>
+<li>Email.</li>
+<li>Laptop cũ.</li>
+<li>Một server đã quên tắt.</li>
+</ul>
+<p>Token vài phút không làm rủi ro biến mất.</p>
+<p>Nhưng nó thu nhỏ cửa sổ tấn công.</p>
+<p>Giống một chìa khóa bằng nước đá.</p>
+<p>Nó vẫn có thể mở cửa.</p>
+<p>Nhưng nếu rơi ngoài đường, vài phút sau nó không còn dùng được.</p>
+<p>Uber sử dụng JWT ngắn hạn theo từng hop và để STS là thành phần duy nhất được phép cấp Agent token, từ đó tập trung việc kiểm tra, audit và thu hồi niềm tin. (<a href="https://www.uber.com/us/en/blog/solving-the-agent-identity-crisis/" title="Solving the Identity Crisis for AI Agents" target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<h1 id="actor-chain-ghi-lại-cả-đoàn-người-không-chỉ-người-cuối-hàng">Actor chain: Ghi lại cả đoàn người, không chỉ người cuối hàng<a class="anchor ms-1" href="#actor-chain-ghi-lại-cả-đoàn-người-không-chỉ-người-cuối-hàng"><i class="fas fa-link"></i></a></h1>
+<p>Phần mình thích nhất trong kiến trúc là <code>actor chain</code>.</p>
+<p>Giả sử workflow:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Tùng
+</span></span><span class="line"><span class="ln">2</span><span class="cl">  ↓
+</span></span><span class="line"><span class="ln">3</span><span class="cl">On-call Agent
+</span></span><span class="line"><span class="ln">4</span><span class="cl">  ↓
+</span></span><span class="line"><span class="ln">5</span><span class="cl">Investigation Agent
+</span></span><span class="line"><span class="ln">6</span><span class="cl">  ↓
+</span></span><span class="line"><span class="ln">7</span><span class="cl">MCP Gateway
+</span></span></code></pre></div><p>Khi Investigation Agent gọi MCP Gateway, token không chỉ ghi:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Caller: Investigation Agent
+</span></span></code></pre></div><p>Nó giữ lại chuỗi:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Tùng
+</span></span><span class="line"><span class="ln">2</span><span class="cl">→ On-call Agent
+</span></span><span class="line"><span class="ln">3</span><span class="cl">→ Investigation Agent
+</span></span></code></pre></div><p>Một payload minh họa có thể trông như sau:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">  <span class="nt">&#34;iss&#34;</span><span class="p">:</span> <span class="s2">&#34;security-token-service&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">  <span class="nt">&#34;sub&#34;</span><span class="p">:</span> <span class="s2">&#34;investigation-agent&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">  <span class="nt">&#34;aud&#34;</span><span class="p">:</span> <span class="s2">&#34;mcp-gateway&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">  <span class="nt">&#34;exp&#34;</span><span class="p">:</span> <span class="mi">1780000300</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">  <span class="nt">&#34;agent_id&#34;</span><span class="p">:</span> <span class="s2">&#34;investigation-agent&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">  <span class="nt">&#34;actor_chain&#34;</span><span class="p">:</span> <span class="p">[</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">      <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;human&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">      <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;phamduytung&#34;</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl">    <span class="p">},</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl">      <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;agent&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">14</span><span class="cl">      <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;oncall-agent&#34;</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl">    <span class="p">},</span>
+</span></span><span class="line"><span class="ln">16</span><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="ln">17</span><span class="cl">      <span class="nt">&#34;type&#34;</span><span class="p">:</span> <span class="s2">&#34;agent&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">18</span><span class="cl">      <span class="nt">&#34;id&#34;</span><span class="p">:</span> <span class="s2">&#34;investigation-agent&#34;</span>
+</span></span><span class="line"><span class="ln">19</span><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="ln">20</span><span class="cl">  <span class="p">]</span>
+</span></span><span class="line"><span class="ln">21</span><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>Đây chỉ là ví dụ đơn giản hóa, không phải payload chính xác của Uber.</p>
+<p>Ý tưởng quan trọng là downstream nhìn được cả dòng họ của request.</p>
+<p>Uber cho biết STS thực hiện token exchange ở mỗi bước và đưa chuỗi actor đã được xác thực vào token, nhờ đó Gateway hoặc hệ thống cuối có thể thấy người khởi tạo cùng các Agent trung gian, thay vì chỉ nhìn thấy caller gần nhất. (<a href="https://www.uber.com/us/en/blog/solving-the-agent-identity-crisis/" title="Solving the Identity Crisis for AI Agents" target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<p>Điều này biến log từ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">investigation-agent gọi read_logs
+</span></span></code></pre></div><p>thành:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">phamduytung
+</span></span><span class="line"><span class="ln">2</span><span class="cl">ủy quyền cho oncall-agent
+</span></span><span class="line"><span class="ln">3</span><span class="cl">oncall-agent gọi investigation-agent
+</span></span><span class="line"><span class="ln">4</span><span class="cl">investigation-agent gọi read_logs
+</span></span><span class="line"><span class="ln">5</span><span class="cl">trong session X
+</span></span><span class="line"><span class="ln">6</span><span class="cl">để điều tra alert Y
+</span></span></code></pre></div><p>Bỗng nhiên, log không chỉ là biên lai.</p>
+<p>Nó trở thành một câu chuyện.</p>
+<h1 id="vì-sao-không-ký-một-token-từ-đầu-rồi-dùng-tới-cuối">Vì sao không ký một token từ đầu rồi dùng tới cuối?<a class="anchor ms-1" href="#vì-sao-không-ký-một-token-từ-đầu-rồi-dùng-tới-cuối"><i class="fas fa-link"></i></a></h1>
+<p>Có thể đặt câu hỏi:</p>
+<blockquote>
+<p>Tại sao không tạo một token chứa toàn bộ quyền ngay từ đầu, rồi truyền qua tất cả Agent?</p>
+</blockquote>
+<p>Vấn đề là tại thời điểm bắt đầu, workflow có thể chưa biết mình sẽ đi đâu.</p>
+<p>Agent lập kế hoạch động.</p>
+<p>Kết quả của bước trước quyết định bước sau.</p>
+<p>Nếu phát một token quá rộng từ đầu, ta phải đoán và cấp sẵn nhiều quyền hơn mức cần thiết.</p>
+<p>Token exchange theo từng hop cho phép quyền được thu hẹp theo con đường thực tế.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">User → On-call Agent
+</span></span></code></pre></div><p>Token đầu chỉ dành cho On-call Agent.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">On-call Agent → Investigation Agent
+</span></span></code></pre></div><p>Token tiếp theo chỉ dành cho Investigation Agent.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Investigation Agent → MCP Gateway
+</span></span></code></pre></div><p>Token mới chỉ dành cho MCP Gateway.</p>
+<p>Mỗi bước là một lần hệ thống hỏi lại:</p>
+<blockquote>
+<p>Anh là ai?</p>
+</blockquote>
+<blockquote>
+<p>Anh đang thay mặt ai?</p>
+</blockquote>
+<blockquote>
+<p>Anh muốn đi đâu?</p>
+</blockquote>
+<blockquote>
+<p>Anh có được phép đi không?</p>
+</blockquote>
+<p>Đây chính là tinh thần Zero Trust.</p>
+<p>Không có vùng “đã ở trong mạng nội bộ thì cứ tự nhiên”.</p>
+<h1 id="mcp-gateway-bác-bảo-vệ-đứng-trước-kho-công-cụ">MCP Gateway: Bác bảo vệ đứng trước kho công cụ<a class="anchor ms-1" href="#mcp-gateway-bác-bảo-vệ-đứng-trước-kho-công-cụ"><i class="fas fa-link"></i></a></h1>
+<p>MCP giúp Agent kết nối tới công cụ và tài nguyên thông qua một giao thức chung.</p>
+<p>Điều đó làm Agent mạnh hơn.</p>
+<p>Cũng làm hậu quả của việc cấp quyền sai lớn hơn.</p>
+<p>Nếu một Agent có thể gọi:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">read_customer
+</span></span><span class="line"><span class="ln">2</span><span class="cl">create_order
+</span></span><span class="line"><span class="ln">3</span><span class="cl">refund_payment
+</span></span><span class="line"><span class="ln">4</span><span class="cl">delete_alert
+</span></span><span class="line"><span class="ln">5</span><span class="cl">merge_pull_request
+</span></span></code></pre></div><p>thì MCP Gateway không nên chỉ là người chuyển tiếp request.</p>
+<p>Nó phải là điểm thực thi chính sách.</p>
+<p>Uber sử dụng MCP Gateway để:</p>
+<ul>
+<li>Xác thực token.</li>
+<li>Kiểm tra quyền truy cập tool.</li>
+<li>Áp dụng policy dựa trên mức rủi ro.</li>
+<li>Redact dữ liệu nhạy cảm khi cần.</li>
+<li>Proxy request tới downstream system. (<a href="https://www.uber.com/us/en/blog/solving-the-agent-identity-crisis/" title="Solving the Identity Crisis for AI Agents" target="_blank" rel="noopener noreferrer">Uber</a>)</li>
+</ul>
+<p>Có thể hình dung MCP Gateway là bác thủ kho.</p>
+<p>Agent tới và nói:</p>
+<blockquote>
+<p>Cho tôi mượn máy khoan.</p>
+</blockquote>
+<p>Bác không chỉ kiểm tra thẻ nhân viên.</p>
+<p>Bác còn hỏi:</p>
+<blockquote>
+<p>Anh thuộc đội nào?</p>
+</blockquote>
+<blockquote>
+<p>Ai cử anh tới?</p>
+</blockquote>
+<blockquote>
+<p>Đang sửa khu vực nào?</p>
+</blockquote>
+<blockquote>
+<p>Có được phép dùng máy khoan công suất lớn không?</p>
+</blockquote>
+<blockquote>
+<p>Có cần che thông tin nhạy cảm trước khi đưa tài liệu không?</p>
+</blockquote>
+<p>Một Gateway chỉ kiểm tra “đã đăng nhập” là chưa đủ.</p>
+<p>Nó phải hiểu cả người khởi tạo lẫn Agent đang hành động.</p>
+<h1 id="một-hành-động-cần-hai-danh-tính">Một hành động cần hai danh tính<a class="anchor ms-1" href="#một-hành-động-cần-hai-danh-tính"><i class="fas fa-link"></i></a></h1>
+<p>Trong workflow Agent, authorization có thể phải đánh giá đồng thời:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Danh tính con người
+</span></span><span class="line"><span class="ln">2</span><span class="cl">        +
+</span></span><span class="line"><span class="ln">3</span><span class="cl">Danh tính Agent
+</span></span></code></pre></div><p>Ví dụ:</p>
+<ul>
+<li>Người dùng có quyền xem dữ liệu tài chính.</li>
+<li>Agent được phép tổng hợp báo cáo tài chính.</li>
+<li>Nhưng Agent không được phép chuyển tiền.</li>
+</ul>
+<p>Hoặc:</p>
+<ul>
+<li>Monitoring Agent được phép sửa alert.</li>
+<li>Người dùng hiện tại chỉ là nhân viên đọc dashboard.</li>
+<li>Vì vậy yêu cầu sửa alert vẫn phải bị từ chối.</li>
+</ul>
+<p>Ta không thể chỉ nhìn con người.</p>
+<p>Cũng không thể chỉ nhìn Agent.</p>
+<p>Quyền cuối cùng phụ thuộc vào sự giao nhau:</p>
+<h1 id="permission_effective">$$
+Permission_{effective}<a class="anchor ms-1" href="#permission_effective"><i class="fas fa-link"></i></a></h1>
+<p>Permission_{user}
+\cap
+Permission_{agent}
+\cap
+Policy_{context}
+$$</p>
+<p>Đây là công thức trực giác, không phải công thức Uber công bố.</p>
+<p>Ý nghĩa của nó là quyền thực tế không nên lớn hơn quyền của bất kỳ mắt xích nào.</p>
+<p>Người có quyền cao không được biến mọi Agent thành quản trị viên.</p>
+<p>Agent có quyền mạnh cũng không được nâng quyền cho người không đủ thẩm quyền.</p>
+<p>Một quản lý có chìa khóa két sắt không có nghĩa robot hút bụi của ông ấy cũng được mở két.</p>
+<h1 id="ý-định-cũng-có-thể-trở-thành-một-phần-của-quyền">Ý định cũng có thể trở thành một phần của quyền<a class="anchor ms-1" href="#ý-định-cũng-có-thể-trở-thành-một-phần-của-quyền"><i class="fas fa-link"></i></a></h1>
+<p>Danh tính trả lời:</p>
+<blockquote>
+<p>Ai?</p>
+</blockquote>
+<p>Nhưng Agent còn tạo ra một câu hỏi khác:</p>
+<blockquote>
+<p>Để làm gì?</p>
+</blockquote>
+<p>Cùng một tool <code>read_logs</code>, nhưng mục đích có thể khác nhau.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Điều tra alert đang xảy ra
+</span></span></code></pre></div><p>khác với:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Thu thập toàn bộ log khách hàng để lưu vào file cá nhân
+</span></span></code></pre></div><p>Uber thiết kế JWT theo hướng có thể mở rộng thêm các claim như session ID và request intent, để chính sách trong tương lai có thể đánh giá không chỉ caller cuối cùng mà cả ngữ cảnh đã được xác thực của workflow. (<a href="https://www.uber.com/us/en/blog/solving-the-agent-identity-crisis/" title="Solving the Identity Crisis for AI Agents" target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<p>Đây là bước chuyển từ phân quyền tĩnh sang phân quyền theo ngữ cảnh.</p>
+<p>Ngày xưa policy có thể là:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Agent A được gọi Tool B.
+</span></span></code></pre></div><p>Ngày mai policy có thể trở thành:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Agent A được gọi Tool B
+</span></span><span class="line"><span class="ln">2</span><span class="cl">khi đang thay mặt người thuộc đội On-call,
+</span></span><span class="line"><span class="ln">3</span><span class="cl">trong một incident đang mở,
+</span></span><span class="line"><span class="ln">4</span><span class="cl">chỉ để đọc log của service liên quan,
+</span></span><span class="line"><span class="ln">5</span><span class="cl">và phải yêu cầu con người xác nhận trước khi sửa cấu hình.
+</span></span></code></pre></div><p>Policy dài hơn.</p>
+<p>Nhưng cuộc đời vốn không đơn giản như bảng RBAC ba cột.</p>
+<h1 id="ai-gateway-và-mcp-gateway-làm-hai-công-việc-khác-nhau">AI Gateway và MCP Gateway làm hai công việc khác nhau<a class="anchor ms-1" href="#ai-gateway-và-mcp-gateway-làm-hai-công-việc-khác-nhau"><i class="fas fa-link"></i></a></h1>
+<p>Trong kiến trúc Uber, AI Gateway đứng giữa Agent và các mô hình AI bên ngoài hoặc nội bộ.</p>
+<p>MCP Gateway đứng giữa Agent và công cụ nghiệp vụ.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Agent
+</span></span><span class="line"><span class="ln">2</span><span class="cl">  ├── AI Gateway  → LLM
+</span></span><span class="line"><span class="ln">3</span><span class="cl">  └── MCP Gateway → Tools / Services / Datastores
+</span></span></code></pre></div><p>AI Gateway có thể xử lý:</p>
+<ul>
+<li>Prompt injection.</li>
+<li>Jailbreak.</li>
+<li>Content safety.</li>
+<li>PII redaction.</li>
+<li>Kiểm soát nhà cung cấp model.</li>
+</ul>
+<p>MCP Gateway tập trung vào:</p>
+<ul>
+<li>Tool authorization.</li>
+<li>Data access.</li>
+<li>Policy enforcement.</li>
+<li>Downstream proxy.</li>
+<li>Audit hành động.</li>
+</ul>
+<p>Uber mô tả AI Gateway là điểm tích hợp trung tâm cho các lời gọi tới model, kết hợp với AI Guard để phát hiện prompt injection, jailbreak, nội dung không an toàn và xử lý dữ liệu định danh cá nhân. (<a href="https://www.uber.com/us/en/blog/solving-the-agent-identity-crisis/" title="Solving the Identity Crisis for AI Agents" target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<p>Hai Gateway đều quan trọng.</p>
+<p>Một bên bảo vệ thứ Agent <strong>nghĩ và đọc</strong>.</p>
+<p>Một bên bảo vệ thứ Agent <strong>làm</strong>.</p>
+<h1 id="con-đường-an-toàn-phải-là-con-đường-dễ-đi-nhất">Con đường an toàn phải là con đường dễ đi nhất<a class="anchor ms-1" href="#con-đường-an-toàn-phải-là-con-đường-dễ-đi-nhất"><i class="fas fa-link"></i></a></h1>
+<p>Một kiến trúc bảo mật có thể rất đẹp trên PowerPoint.</p>
+<p>Nhưng nếu mỗi lập trình viên phải tự:</p>
+<ul>
+<li>Gọi STS.</li>
+<li>Kiểm tra token.</li>
+<li>Truyền actor chain.</li>
+<li>Chọn audience.</li>
+<li>Refresh credential.</li>
+<li>Ghi audit.</li>
+<li>Xử lý retry.</li>
+<li>Kiểm tra expiry.</li>
+</ul>
+<p>thì sớm muộn cũng có người bỏ qua vài bước.</p>
+<p>Không hẳn vì họ xấu.</p>
+<p>Có thể chỉ vì deadline vào chiều thứ Sáu.</p>
+<p>Uber gọi hướng giải quyết là xây <strong>paved path</strong>, tức con đường đã được lát sẵn.</p>
+<p>Họ phát triển A2A client chuẩn trên giao thức Agent-to-Agent, tự động thực hiện STS token exchange và truyền actor chain, để cách triển khai an toàn cũng trở thành cách triển khai dễ nhất. Các Agent cũ được chuyển đổi dần sang client chuẩn này. (<a href="https://www.uber.com/us/en/blog/solving-the-agent-identity-crisis/" title="Solving the Identity Crisis for AI Agents" target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<p>A2A là giao thức mở cho phép các Agent độc lập khám phá khả năng, giao nhiệm vụ và phối hợp với nhau; nó bổ sung cho MCP, vốn tập trung nhiều hơn vào kết nối Agent với công cụ. (<a href="https://a2a-protocol.org/latest/?utm_source=chatgpt.com" title="A2A Protocol" target="_blank" rel="noopener noreferrer">A2A Protocol</a>)</p>
+<p>Đây là một bài học bảo mật rất thực tế:</p>
+<blockquote>
+<p>Đừng chỉ viết quy định yêu cầu mọi người đi đúng đường. Hãy lát đường đúng rộng hơn, sáng hơn và dễ đi hơn đường tắt.</p>
+</blockquote>
+<p>Nếu đường an toàn cần 50 dòng code, còn đường không an toàn chỉ cần một <code>requests.post()</code>, ta đang kỳ vọng đạo đức chiến thắng sự lười biếng mỗi ngày.</p>
+<p>Đó là một chiến lược khá lạc quan.</p>
+<h1 id="observability-xem-lại-cả-hành-trình-của-agent">Observability: Xem lại cả hành trình của Agent<a class="anchor ms-1" href="#observability-xem-lại-cả-hành-trình-của-agent"><i class="fas fa-link"></i></a></h1>
+<p>Khi đã giữ được actor chain, hệ thống observability có thể hiển thị cả workflow:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">User: phamduytung
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">  │
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">  ├── On-call Agent
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">  │      └── đọc alert
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">  │
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">  ├── Investigation Agent
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">  │      ├── đọc log
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">  │      └── đọc metric
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">  │
+</span></span><span class="line"><span class="ln">10</span><span class="cl">  └── Monitoring Agent
+</span></span><span class="line"><span class="ln">11</span><span class="cl">         └── tạo Pull Request
+</span></span></code></pre></div><p>Mỗi bước có thể đi kèm:</p>
+<ul>
+<li>Thời gian.</li>
+<li>Agent identity.</li>
+<li>User identity.</li>
+<li>Tool được gọi.</li>
+<li>Policy decision.</li>
+<li>Kết quả <code>ALLOWED</code> hoặc <code>DENIED</code>.</li>
+<li>Security context.</li>
+<li>Session.</li>
+<li>Request intent.</li>
+</ul>
+<p>Uber xây hệ thống observability để theo dõi actor chain từ người khởi tạo qua nhiều Agent đến các tool invocation, giúp quy trách nhiệm và xem lại quyết định authorization theo thời gian thực. (<a href="https://www.uber.com/us/en/blog/solving-the-agent-identity-crisis/" title="Solving the Identity Crisis for AI Agents" target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<p>Đây là điểm rất quan trọng khi xử lý sự cố.</p>
+<p>Không chỉ hỏi:</p>
+<blockquote>
+<p>API nào bị gọi?</p>
+</blockquote>
+<p>Mà còn:</p>
+<blockquote>
+<p>Chuỗi suy luận và ủy quyền nào đưa request tới đó?</p>
+</blockquote>
+<p>Khi Agent tự lập kế hoạch, trace không còn chỉ là công cụ đo latency.</p>
+<p>Nó trở thành bản ghi trách nhiệm.</p>
+<h1 id="bảo-mật-thêm-từng-bước-có-làm-agent-chậm-đi-không">Bảo mật thêm từng bước có làm Agent chậm đi không?<a class="anchor ms-1" href="#bảo-mật-thêm-từng-bước-có-làm-agent-chậm-đi-không"><i class="fas fa-link"></i></a></h1>
+<p>Có.</p>
+<p>Mỗi lần token exchange đều cần:</p>
+<ul>
+<li>Gọi STS.</li>
+<li>Xác thực workload.</li>
+<li>Kiểm tra Agent Registry.</li>
+<li>Ký token.</li>
+<li>Trả token.</li>
+<li>Xác minh token ở bên nhận.</li>
+</ul>
+<p>Nếu một workflow có hàng chục Agent và tool call, vài mili giây ở mỗi bước có thể cộng lại.</p>
+<p>Uber cho biết kiến trúc đã được hàng nghìn Agent nội bộ sử dụng, và P99 latency của API token exchange trong số liệu họ công bố duy trì dưới 40 mili giây ở mức tải hiện tại. (<a href="https://www.uber.com/us/en/blog/solving-the-agent-identity-crisis/" title="Solving the Identity Crisis for AI Agents" target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<p>Con số này không nên được xem là lời hứa cho mọi hệ thống.</p>
+<p>Hạ tầng, topology mạng, thuật toán ký, cache và mức tải của mỗi doanh nghiệp khác nhau.</p>
+<p>Điều đáng học là Uber đo chi phí bảo mật như một phần của sản phẩm.</p>
+<p>Bảo mật không miễn phí.</p>
+<p>Nhưng thiếu bảo mật cũng không miễn phí.</p>
+<p>Một hệ thống tốt không giả vờ trade-off không tồn tại.</p>
+<p>Nó đo và quản lý trade-off đó.</p>
+<h1 id="ba-tầng-bảo-mật-cho-thế-giới-agent">Ba tầng bảo mật cho thế giới Agent<a class="anchor ms-1" href="#ba-tầng-bảo-mật-cho-thế-giới-agent"><i class="fas fa-link"></i></a></h1>
+<p>Uber định hướng hệ thống Agent IAM theo ba tầng.</p>
+<h2 id="tầng-1-identity-and-trust-foundation">Tầng 1: Identity and Trust Foundation<a class="anchor ms-1" href="#tầng-1-identity-and-trust-foundation"><i class="fas fa-link"></i></a></h2>
+<p>Tạo danh tính mật mã cho mỗi Agent.</p>
+<p>Giữ chuỗi ủy quyền từ con người tới Agent và tool.</p>
+<p>Đây là móng nhà.</p>
+<p>Chưa biết ai đang hành động thì chưa thể viết policy tốt.</p>
+<h2 id="tầng-2-dynamic-access-control">Tầng 2: Dynamic Access Control<a class="anchor ms-1" href="#tầng-2-dynamic-access-control"><i class="fas fa-link"></i></a></h2>
+<p>Quyền truy cập thay đổi theo:</p>
+<ul>
+<li>Người khởi tạo.</li>
+<li>Agent.</li>
+<li>Tool.</li>
+<li>Session.</li>
+<li>Mức rủi ro.</li>
+<li>Ý định.</li>
+<li>Kết quả trung gian.</li>
+<li>Human-in-the-loop.</li>
+</ul>
+<p>Thay vì cấp một quyền cố định rồi để đó ba năm.</p>
+<h2 id="tầng-3-unified-enforcement-plane">Tầng 3: Unified Enforcement Plane<a class="anchor ms-1" href="#tầng-3-unified-enforcement-plane"><i class="fas fa-link"></i></a></h2>
+<p>Một mặt phẳng chính sách thống nhất cho:</p>
+<ul>
+<li>Quan sát.</li>
+<li>Audit.</li>
+<li>Governance.</li>
+<li>Policy decision.</li>
+<li>Tool enforcement.</li>
+<li>Nhiều giao thức và workflow.</li>
+</ul>
+<p>Uber cho rằng mô hình permission tĩnh do con người quản lý và các điểm thực thi rời rạc sẽ khó mở rộng trong một thế giới có nhiều Agent hoạt động với tốc độ máy. (<a href="https://www.uber.com/us/en/blog/solving-the-agent-identity-crisis/" title="Solving the Identity Crisis for AI Agents" target="_blank" rel="noopener noreferrer">Uber</a>)</p>
+<p>Theo mình, cách chia này rất hợp lý.</p>
+<p>Không thể bắt đầu bằng policy AI cực kỳ thông minh khi Agent còn chưa có giấy tờ.</p>
+<p>Đầu tiên phải biết ai.</p>
+<p>Sau đó mới quyết định được làm gì.</p>
+<p>Cuối cùng mới thống nhất cách giám sát và thực thi trên toàn hệ thống.</p>
+<h1 id="nếu-tự-xây-cho-doanh-nghiệp-mình-sẽ-bắt-đầu-như-thế-nào">Nếu tự xây cho doanh nghiệp, mình sẽ bắt đầu như thế nào?<a class="anchor ms-1" href="#nếu-tự-xây-cho-doanh-nghiệp-mình-sẽ-bắt-đầu-như-thế-nào"><i class="fas fa-link"></i></a></h1>
+<p>Không cần ngày đầu tiên xây một hệ thống phức tạp ngang Uber.</p>
+<p>Nhưng có thể bắt đầu bằng các lớp rõ ràng.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">Human Identity Provider
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">          │
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">          ▼
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">     Agent Platform
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">          │
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">          ├── Agent Registry
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">          ├── Workload Identity
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">          ├── STS / Token Exchange
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">          └── Session Context
+</span></span><span class="line"><span class="ln">10</span><span class="cl">          │
+</span></span><span class="line"><span class="ln">11</span><span class="cl">          ▼
+</span></span><span class="line"><span class="ln">12</span><span class="cl">      Agent Runtime
+</span></span><span class="line"><span class="ln">13</span><span class="cl">          │
+</span></span><span class="line"><span class="ln">14</span><span class="cl">          ├── A2A Client
+</span></span><span class="line"><span class="ln">15</span><span class="cl">          ├── AI Gateway
+</span></span><span class="line"><span class="ln">16</span><span class="cl">          └── MCP Gateway
+</span></span><span class="line"><span class="ln">17</span><span class="cl">          │
+</span></span><span class="line"><span class="ln">18</span><span class="cl">          ▼
+</span></span><span class="line"><span class="ln">19</span><span class="cl">   Internal Services / Data
+</span></span></code></pre></div><h2 id="1-mỗi-agent-phải-có-một-agent-id-riêng">1. Mỗi Agent phải có một Agent ID riêng<a class="anchor ms-1" href="#1-mỗi-agent-phải-có-một-agent-id-riêng"><i class="fas fa-link"></i></a></h2>
+<p>Không dùng tên workload thay Agent ID.</p>
+<p>Một workload có thể chạy nhiều Agent.</p>
+<p>Một Agent cũng có thể được triển khai trên nhiều instance.</p>
+<p>Cần phân biệt:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">workload_id
+</span></span><span class="line"><span class="ln">2</span><span class="cl">agent_id
+</span></span><span class="line"><span class="ln">3</span><span class="cl">agent_version
+</span></span><span class="line"><span class="ln">4</span><span class="cl">owner
+</span></span><span class="line"><span class="ln">5</span><span class="cl">environment
+</span></span></code></pre></div><h2 id="2-gắn-agent-với-workload-đáng-tin-cậy">2. Gắn Agent với workload đáng tin cậy<a class="anchor ms-1" href="#2-gắn-agent-với-workload-đáng-tin-cậy"><i class="fas fa-link"></i></a></h2>
+<p>Agent không được tự khai nơi mình đang chạy.</p>
+<p>Có thể dùng workload identity như SPIFFE/SPIRE hoặc cơ chế tương đương của nền tảng cloud.</p>
+<p>Mục tiêu là loại bỏ credential được hardcode càng nhiều càng tốt.</p>
+<h2 id="3-dùng-token-ngắn-hạn-theo-audience">3. Dùng token ngắn hạn theo audience<a class="anchor ms-1" href="#3-dùng-token-ngắn-hạn-theo-audience"><i class="fas fa-link"></i></a></h2>
+<p>Không phát một token mở được mọi service.</p>
+<p>Mỗi request quan trọng nên nhận token phù hợp với đích và scope cụ thể.</p>
+<h2 id="4-giữ-cả-user-identity-lẫn-agent-identity">4. Giữ cả user identity lẫn agent identity<a class="anchor ms-1" href="#4-giữ-cả-user-identity-lẫn-agent-identity"><i class="fas fa-link"></i></a></h2>
+<p>Log tối thiểu nên trả lời được:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Human: ai khởi tạo?
+</span></span><span class="line"><span class="ln">2</span><span class="cl">Agent: logic nào hành động?
+</span></span><span class="line"><span class="ln">3</span><span class="cl">Workload: chạy ở đâu?
+</span></span><span class="line"><span class="ln">4</span><span class="cl">Tool: gọi cái gì?
+</span></span><span class="line"><span class="ln">5</span><span class="cl">Session: thuộc công việc nào?
+</span></span><span class="line"><span class="ln">6</span><span class="cl">Decision: vì sao được phép?
+</span></span></code></pre></div><h2 id="5-đặt-policy-ở-gateway">5. Đặt policy ở Gateway<a class="anchor ms-1" href="#5-đặt-policy-ở-gateway"><i class="fas fa-link"></i></a></h2>
+<p>MCP Gateway không chỉ route request.</p>
+<p>Nó cần:</p>
+<ul>
+<li>Authenticate.</li>
+<li>Authorize.</li>
+<li>Redact.</li>
+<li>Rate limit.</li>
+<li>Audit.</li>
+<li>Yêu cầu approval khi cần.</li>
+</ul>
+<h2 id="6-chuẩn-hóa-sdk">6. Chuẩn hóa SDK<a class="anchor ms-1" href="#6-chuẩn-hóa-sdk"><i class="fas fa-link"></i></a></h2>
+<p>Không bắt từng đội tự phát minh cơ chế truyền token.</p>
+<p>Đưa token exchange, trace và actor chain vào thư viện mặc định.</p>
+<h2 id="7-bắt-đầu-từ-tool-rủi-ro-cao">7. Bắt đầu từ tool rủi ro cao<a class="anchor ms-1" href="#7-bắt-đầu-từ-tool-rủi-ro-cao"><i class="fas fa-link"></i></a></h2>
+<p>Không cần bảo vệ mọi tool bằng cùng một quy trình từ ngày đầu.</p>
+<p>Ưu tiên:</p>
+<ul>
+<li>Write database.</li>
+<li>Payment.</li>
+<li>Source control.</li>
+<li>Production configuration.</li>
+<li>Customer data.</li>
+<li>Email hàng loạt.</li>
+<li>Quyền quản trị.</li>
+</ul>
+<p>Những tool chỉ đọc tài liệu công khai có thể dùng policy nhẹ hơn.</p>
+<h1 id="những-sai-lầm-rất-dễ-gặp">Những sai lầm rất dễ gặp<a class="anchor ms-1" href="#những-sai-lầm-rất-dễ-gặp"><i class="fas fa-link"></i></a></h1>
+<h2 id="dùng-chung-service-account-cho-mọi-agent">Dùng chung service account cho mọi Agent<a class="anchor ms-1" href="#dùng-chung-service-account-cho-mọi-agent"><i class="fas fa-link"></i></a></h2>
+<p>Log không còn ý nghĩa.</p>
+<p>Thu hồi quyền một Agent cũng kéo theo tất cả Agent khác.</p>
+<h2 id="tin-agent_id-do-client-tự-gửi">Tin agent_id do client tự gửi<a class="anchor ms-1" href="#tin-agent_id-do-client-tự-gửi"><i class="fas fa-link"></i></a></h2>
+<p>Một header:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">X-Agent-ID: payment-agent
+</span></span></code></pre></div><p>không phải bằng chứng danh tính.</p>
+<p>Nó chỉ là một câu tự giới thiệu.</p>
+<h2 id="truyền-token-người-dùng-xuyên-suốt-workflow">Truyền token người dùng xuyên suốt workflow<a class="anchor ms-1" href="#truyền-token-người-dùng-xuyên-suốt-workflow"><i class="fas fa-link"></i></a></h2>
+<p>Downstream không phân biệt được người dùng trực tiếp hành động hay Agent đang đại diện.</p>
+<p>Phạm vi credential cũng dễ bị mở rộng ngoài dự kiến.</p>
+<h2 id="token-không-có-audience">Token không có audience<a class="anchor ms-1" href="#token-không-có-audience"><i class="fas fa-link"></i></a></h2>
+<p>Token bị lấy ở Agent A có thể được phát lại cho service B.</p>
+<h2 id="token-sống-quá-lâu">Token sống quá lâu<a class="anchor ms-1" href="#token-sống-quá-lâu"><i class="fas fa-link"></i></a></h2>
+<p>Sự cố nhỏ biến thành cửa hậu dài hạn.</p>
+<h2 id="chỉ-log-agent-cuối-cùng">Chỉ log Agent cuối cùng<a class="anchor ms-1" href="#chỉ-log-agent-cuối-cùng"><i class="fas fa-link"></i></a></h2>
+<p>Khi cần điều tra, toàn bộ provenance trước đó biến mất.</p>
+<h2 id="đưa-mọi-thứ-vào-jwt">Đưa mọi thứ vào JWT<a class="anchor ms-1" href="#đưa-mọi-thứ-vào-jwt"><i class="fas fa-link"></i></a></h2>
+<p>JWT không nên trở thành vali chứa toàn bộ prompt, dữ liệu khách hàng và lịch sử suy luận.</p>
+<p>Token cần đủ ngữ cảnh cho policy, nhưng không nên phình thành kho dữ liệu nhạy cảm di động.</p>
+<h2 id="gateway-chỉ-làm-reverse-proxy">Gateway chỉ làm reverse proxy<a class="anchor ms-1" href="#gateway-chỉ-làm-reverse-proxy"><i class="fas fa-link"></i></a></h2>
+<p>Đổi tên Nginx thành MCP Gateway không tự tạo ra bảo mật Agent.</p>
+<h2 id="cấp-quyền-dựa-trên-danh-tính-nhưng-bỏ-qua-hành-động">Cấp quyền dựa trên danh tính nhưng bỏ qua hành động<a class="anchor ms-1" href="#cấp-quyền-dựa-trên-danh-tính-nhưng-bỏ-qua-hành-động"><i class="fas fa-link"></i></a></h2>
+<p>Agent được phép gọi một tool không có nghĩa mọi tham số truyền vào tool đều an toàn.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">read_file(&#34;/public/manual.pdf&#34;)
+</span></span></code></pre></div><p>khác rất xa:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">read_file(&#34;/payroll/salary.xlsx&#34;)
+</span></span></code></pre></div><p>Authorization cần nhìn tới resource và action cụ thể.</p>
+<h2 id="không-có-human-in-the-loop">Không có human-in-the-loop<a class="anchor ms-1" href="#không-có-human-in-the-loop"><i class="fas fa-link"></i></a></h2>
+<p>Một số hành động nên dừng trước cửa cuối cùng để con người xác nhận:</p>
+<ul>
+<li>Chuyển tiền.</li>
+<li>Xóa dữ liệu.</li>
+<li>Gửi email hàng loạt.</li>
+<li>Merge code quan trọng.</li>
+<li>Thay đổi production.</li>
+<li>Thu hồi quyền người dùng.</li>
+</ul>
+<p>AI có thể chuẩn bị.</p>
+<p>Không nhất thiết phải tự bấm nút.</p>
+<h1 id="điều-mình-tâm-đắc-nhất-danh-tính-thực-ra-là-ký-ức-của-trách-nhiệm">Điều mình tâm đắc nhất: Danh tính thực ra là ký ức của trách nhiệm<a class="anchor ms-1" href="#điều-mình-tâm-đắc-nhất-danh-tính-thực-ra-là-ký-ức-của-trách-nhiệm"><i class="fas fa-link"></i></a></h1>
+<p>Ban đầu, mình nghĩ bài viết này nói về JWT.</p>
+<p>SPIFFE.</p>
+<p>STS.</p>
+<p>MCP Gateway.</p>
+<p>Token Exchange.</p>
+<p>Nhưng đọc kỹ hơn, mình thấy nhân vật chính không phải một giao thức nào.</p>
+<p>Nó là <strong>ký ức</strong>.</p>
+<p>Một hệ thống có trách nhiệm phải nhớ:</p>
+<ul>
+<li>Ai đã bắt đầu?</li>
+<li>Ai được giao việc?</li>
+<li>Công việc đã đi qua những Agent nào?</li>
+<li>Mỗi Agent quyết định gì?</li>
+<li>Tool nào được gọi?</li>
+<li>Policy nào cho phép?</li>
+<li>Hành động cuối cùng phục vụ mục đích gì?</li>
+</ul>
+<p>Nếu những thông tin đó bị rơi rụng sau mỗi bước, hệ thống càng tự động hóa thì càng mất trí nhớ.</p>
+<p>Và một cỗ máy có quyền lực nhưng không có ký ức là thứ khá đáng sợ.</p>
+<p>Nó có thể làm đúng 999 lần.</p>
+<p>Đến lần thứ 1.000 làm sai, không ai biết phải bắt đầu điều tra từ đâu.</p>
+<p>Identity không chỉ là cách đăng nhập.</p>
+<p>Nó là sợi chỉ buộc các hành động lại thành một câu chuyện có người chịu trách nhiệm.</p>
+<h1 id="agent-càng-thông-minh-quyền-càng-phải-nhỏ-và-rõ">Agent càng thông minh, quyền càng phải nhỏ và rõ<a class="anchor ms-1" href="#agent-càng-thông-minh-quyền-càng-phải-nhỏ-và-rõ"><i class="fas fa-link"></i></a></h1>
+<p>Có một nghịch lý.</p>
+<p>Khi Agent còn ngu, ta ít dám giao quyền.</p>
+<p>Khi Agent thông minh hơn, ta bắt đầu giao thêm:</p>
+<ul>
+<li>Email.</li>
+<li>Source code.</li>
+<li>Database.</li>
+<li>CRM.</li>
+<li>ERP.</li>
+<li>Payment.</li>
+<li>Production.</li>
+</ul>
+<p>Nhưng khả năng reasoning tốt hơn không tự động làm hệ thống an toàn hơn.</p>
+<p>Một Agent thông minh có thể thực hiện sai lầm phức tạp hơn.</p>
+<p>Một prompt injection thành công có thể khiến nó sử dụng đúng công cụ, đúng API và đúng credential để làm một việc hoàn toàn sai mục đích.</p>
+<p>Vì vậy, Agent càng mạnh thì identity, scope, policy và audit càng phải rõ.</p>
+<p>Không phải vì không tin AI.</p>
+<p>Mà vì chúng ta không giao quyền vô hạn cho bất kỳ thực thể nào.</p>
+<p>Kể cả con người.</p>
+<h1 id="tổng-kết">Tổng kết<a class="anchor ms-1" href="#tổng-kết"><i class="fas fa-link"></i></a></h1>
+<p>Một người dùng gõ một câu.</p>
+<p>Một Agent đọc câu đó.</p>
+<p>Nó lập kế hoạch.</p>
+<p>Gọi một Agent khác.</p>
+<p>Agent thứ hai đọc log.</p>
+<p>Gọi Agent thứ ba.</p>
+<p>Agent thứ ba sửa cấu hình.</p>
+<p>MCP Gateway kiểm tra quyền.</p>
+<p>Source Control nhận Pull Request.</p>
+<p>CI chạy test.</p>
+<p>Tất cả diễn ra trong vài giây.</p>
+<p>Trên màn hình, người dùng chỉ thấy:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Đã xử lý xong.
+</span></span></code></pre></div><p>Nhưng phía sau bốn chữ đó là một chuỗi hành động thật.</p>
+<p>CPU đã chạy.</p>
+<p>Token đã được ký.</p>
+<p>Policy đã được đánh giá.</p>
+<p>Dữ liệu đã được đọc.</p>
+<p>Một file đã bị thay đổi.</p>
+<p>Có thể cả hệ thống production vừa chuyển sang một trạng thái mới.</p>
+<p>Không có gì là hoàn toàn ảo.</p>
+<p>Và cũng không có hành động số nào nên hoàn toàn vô danh.</p>
+<p>Điều đáng học từ Uber không phải là mọi doanh nghiệp phải sao chép nguyên kiến trúc của họ.</p>
+<p>Điều đáng học là một nguyên tắc đơn giản:</p>
+<blockquote>
+<p>Mỗi Agent cần có danh tính riêng, mỗi lần ủy quyền cần để lại dấu vết, và mỗi hành động quan trọng phải trả lời được ai đang làm, thay mặt ai, với quyền nào và vì mục đích gì.</p>
+</blockquote>
+<p>Trước khi AI được phép bước vào kho dữ liệu, hãy cấp cho nó giấy khai sinh.</p>
+<p>Trước khi giao chìa khóa, hãy ghi rõ chìa đó mở cửa nào.</p>
+<p>Trước khi cho nó gọi một Agent khác, hãy giữ lại tên người đã bắt đầu câu chuyện.</p>
+<p>Bởi vì trong tương lai, điều đáng sợ nhất có thể không phải là một AI làm sai.</p>
+<p>Mà là một AI làm sai trong một hệ thống nơi mọi log đều nói:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Một service nào đó đã thực hiện hành động.
+</span></span></code></pre></div><p>Không ai biết nó là ai.</p>
+<p>Không ai nhớ ai đã giao việc.</p>
+<p>Và chiếc chìa khóa vẫn còn nằm trong tay nó.</p>
+<h1 id="tham-khảo">Tham khảo<a class="anchor ms-1" href="#tham-khảo"><i class="fas fa-link"></i></a></h1>
+<ul>
+<li>Uber Engineering – <em>Solving the Identity Crisis for AI Agents</em>, Matt Mathew, Prasad Borole, Meng Huang và cộng sự, ngày 21/05/2026. (<a href="https://www.uber.com/us/en/blog/solving-the-agent-identity-crisis/" title="Solving the Identity Crisis for AI Agents" target="_blank" rel="noopener noreferrer">Uber</a>)</li>
+<li>IETF – <em>RFC 8693: OAuth 2.0 Token Exchange</em>. (<a href="https://www.rfc-editor.org/info/rfc8693/?utm_source=chatgpt.com" title="RFC 8693: OAuth 2.0 Token Exchange" target="_blank" rel="noopener noreferrer">RFC Editor</a>)</li>
+<li>SPIFFE – <em>Secure Production Identity Framework for Everyone</em>. (<a href="https://spiffe.io/?utm_source=chatgpt.com" title="SPIFFE | Secure Production Identity Framework for Everyone" target="_blank" rel="noopener noreferrer">Spiffe</a>)</li>
+<li>IETF WIMSE – <em>Workload Identity in Multi-System Environments</em>. (<a href="https://datatracker.ietf.org/doc/draft-ietf-wimse-arch/?utm_source=chatgpt.com" title="draft-ietf-wimse-arch-08 - Workload Identity in a Multi ..." target="_blank" rel="noopener noreferrer">datatracker.ietf.org</a>)</li>
+<li>Agent2Agent Project – <em>A2A Protocol</em>. (<a href="https://github.com/a2aproject/A2A?utm_source=chatgpt.com" title="a2aproject/A2A: Agent2Agent (A2A) is an open protocol ..." target="_blank" rel="noopener noreferrer">github.com</a>)</li>
+</ul>
+</div></div>
+  <div class="card-footer"><div class="post-navs d-flex justify-content-evenly"><div class="post-nav post-prev">
+    <i class="fas fa-fw fa-chevron-left"></i>
+    <a href="https://www.phamduytung.com/blog/2026-07-11-uber-delivery-search-platform/">Search ở quy mô Uber Eats: Máy không cần đọc đúng chữ, nó phải hiểu người đang đói muốn gì
+</a>
+  </div></div></div>
+</article><div class="card component row post-comments" id="post-comments">
+  <div class="card-header">
+    <h2 class="card-title">Bình luận</h2>
+  </div>
+  <div class="card-body"><script src="https://utteranc.es/client.js"
+  repo="AlexBlack2202/utterances"
+  issue-term="pathname"
+  label="comment"
+  theme="github-dark"
+  crossorigin="anonymous"
+  async>
+</script></div>
+</div></div>
+</div><aside class="col-lg-3 col-md-4 sidebar d-flex">
+  <div class="container d-flex flex-column">
+    
+    <a href="https://www.buymeacoffee.com/alexblack28"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=🍎&slug=alexblack28&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" /></a><div class="post-toc row mb-4 card component" id="postTOC">
+  <div class="card-header">
+    <h2 class="card-title">Mục lục</h2>
+  </div>
+  <div class="card-body">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#trước-khi-giao-chìa-khóa-cho-ai-hãy-khai-sinh-cho-nó">Trước khi giao chìa khóa cho AI, hãy khai sinh cho nó</a></li>
+    <li><a href="#khi-ai-chỉ-nói-chuyện-danh-tính-chưa-đáng-sợ-lắm">Khi AI chỉ nói chuyện, danh tính chưa đáng sợ lắm</a></li>
+    <li><a href="#một-agent-sửa-đúng-lỗi-nhưng-không-ai-biết-ai-chịu-trách-nhiệm">Một Agent sửa đúng lỗi, nhưng không ai biết ai chịu trách nhiệm</a></li>
+    <li><a href="#một-chiếc-camera-chỉ-quay-được-cái-búa">Một chiếc camera chỉ quay được cái búa</a></li>
+    <li><a href="#danh-tính-xác-thực-và-phân-quyền-không-phải-một-thứ">Danh tính, xác thực và phân quyền không phải một thứ</a>
+      <ul>
+        <li><a href="#identity-bạn-là-ai">Identity: Bạn là ai?</a></li>
+        <li><a href="#authentication-bạn-chứng-minh-điều-đó-bằng-cách-nào">Authentication: Bạn chứng minh điều đó bằng cách nào?</a></li>
+        <li><a href="#authorization-bạn-được-phép-làm-gì">Authorization: Bạn được phép làm gì?</a></li>
+      </ul>
+    </li>
+    <li><a href="#agent-không-hoàn-toàn-giống-con-người-cũng-không-hoàn-toàn-giống-service">Agent không hoàn toàn giống con người, cũng không hoàn toàn giống service</a></li>
+    <li><a href="#api-key-dùng-chung-giống-chìa-khóa-tổng-của-cả-công-ty">API Key dùng chung giống chìa khóa tổng của cả công ty</a></li>
+    <li><a href="#không-nên-đưa-thẻ-căn-cước-của-người-dùng-cho-agent-giữ">Không nên đưa thẻ căn cước của người dùng cho Agent giữ</a></li>
+    <li><a href="#kiến-trúc-của-uber-một-phòng-cấp-giấy-tờ-cho-agent">Kiến trúc của Uber: Một phòng cấp giấy tờ cho Agent</a></li>
+    <li><a href="#agent-registry-sổ-hộ-khẩu-của-các-agent">Agent Registry: Sổ hộ khẩu của các Agent</a></li>
+    <li><a href="#spiffe-và-spire-căn-cước-của-workload">SPIFFE và SPIRE: Căn cước của workload</a></li>
+    <li><a href="#security-token-service-bác-bảo-vệ-không-phát-chìa-khóa-vĩnh-viễn">Security Token Service: Bác bảo vệ không phát chìa khóa vĩnh viễn</a></li>
+    <li><a href="#audience-vé-đi-đà-nẵng-không-dùng-để-lên-máy-bay-đi-hà-nội">Audience: Vé đi Đà Nẵng không dùng để lên máy bay đi Hà Nội</a></li>
+    <li><a href="#token-ngắn-hạn-chìa-khóa-tự-tan-sau-vài-phút">Token ngắn hạn: Chìa khóa tự tan sau vài phút</a></li>
+    <li><a href="#actor-chain-ghi-lại-cả-đoàn-người-không-chỉ-người-cuối-hàng">Actor chain: Ghi lại cả đoàn người, không chỉ người cuối hàng</a></li>
+    <li><a href="#vì-sao-không-ký-một-token-từ-đầu-rồi-dùng-tới-cuối">Vì sao không ký một token từ đầu rồi dùng tới cuối?</a></li>
+    <li><a href="#mcp-gateway-bác-bảo-vệ-đứng-trước-kho-công-cụ">MCP Gateway: Bác bảo vệ đứng trước kho công cụ</a></li>
+    <li><a href="#một-hành-động-cần-hai-danh-tính">Một hành động cần hai danh tính</a></li>
+    <li><a href="#permission_effective">$$
+Permission_{effective}</a></li>
+    <li><a href="#ý-định-cũng-có-thể-trở-thành-một-phần-của-quyền">Ý định cũng có thể trở thành một phần của quyền</a></li>
+    <li><a href="#ai-gateway-và-mcp-gateway-làm-hai-công-việc-khác-nhau">AI Gateway và MCP Gateway làm hai công việc khác nhau</a></li>
+    <li><a href="#con-đường-an-toàn-phải-là-con-đường-dễ-đi-nhất">Con đường an toàn phải là con đường dễ đi nhất</a></li>
+    <li><a href="#observability-xem-lại-cả-hành-trình-của-agent">Observability: Xem lại cả hành trình của Agent</a></li>
+    <li><a href="#bảo-mật-thêm-từng-bước-có-làm-agent-chậm-đi-không">Bảo mật thêm từng bước có làm Agent chậm đi không?</a></li>
+    <li><a href="#ba-tầng-bảo-mật-cho-thế-giới-agent">Ba tầng bảo mật cho thế giới Agent</a>
+      <ul>
+        <li><a href="#tầng-1-identity-and-trust-foundation">Tầng 1: Identity and Trust Foundation</a></li>
+        <li><a href="#tầng-2-dynamic-access-control">Tầng 2: Dynamic Access Control</a></li>
+        <li><a href="#tầng-3-unified-enforcement-plane">Tầng 3: Unified Enforcement Plane</a></li>
+      </ul>
+    </li>
+    <li><a href="#nếu-tự-xây-cho-doanh-nghiệp-mình-sẽ-bắt-đầu-như-thế-nào">Nếu tự xây cho doanh nghiệp, mình sẽ bắt đầu như thế nào?</a>
+      <ul>
+        <li><a href="#1-mỗi-agent-phải-có-một-agent-id-riêng">1. Mỗi Agent phải có một Agent ID riêng</a></li>
+        <li><a href="#2-gắn-agent-với-workload-đáng-tin-cậy">2. Gắn Agent với workload đáng tin cậy</a></li>
+        <li><a href="#3-dùng-token-ngắn-hạn-theo-audience">3. Dùng token ngắn hạn theo audience</a></li>
+        <li><a href="#4-giữ-cả-user-identity-lẫn-agent-identity">4. Giữ cả user identity lẫn agent identity</a></li>
+        <li><a href="#5-đặt-policy-ở-gateway">5. Đặt policy ở Gateway</a></li>
+        <li><a href="#6-chuẩn-hóa-sdk">6. Chuẩn hóa SDK</a></li>
+        <li><a href="#7-bắt-đầu-từ-tool-rủi-ro-cao">7. Bắt đầu từ tool rủi ro cao</a></li>
+      </ul>
+    </li>
+    <li><a href="#những-sai-lầm-rất-dễ-gặp">Những sai lầm rất dễ gặp</a>
+      <ul>
+        <li><a href="#dùng-chung-service-account-cho-mọi-agent">Dùng chung service account cho mọi Agent</a></li>
+        <li><a href="#tin-agent_id-do-client-tự-gửi">Tin <code>agent_id</code> do client tự gửi</a></li>
+        <li><a href="#truyền-token-người-dùng-xuyên-suốt-workflow">Truyền token người dùng xuyên suốt workflow</a></li>
+        <li><a href="#token-không-có-audience">Token không có audience</a></li>
+        <li><a href="#token-sống-quá-lâu">Token sống quá lâu</a></li>
+        <li><a href="#chỉ-log-agent-cuối-cùng">Chỉ log Agent cuối cùng</a></li>
+        <li><a href="#đưa-mọi-thứ-vào-jwt">Đưa mọi thứ vào JWT</a></li>
+        <li><a href="#gateway-chỉ-làm-reverse-proxy">Gateway chỉ làm reverse proxy</a></li>
+        <li><a href="#cấp-quyền-dựa-trên-danh-tính-nhưng-bỏ-qua-hành-động">Cấp quyền dựa trên danh tính nhưng bỏ qua hành động</a></li>
+        <li><a href="#không-có-human-in-the-loop">Không có human-in-the-loop</a></li>
+      </ul>
+    </li>
+    <li><a href="#điều-mình-tâm-đắc-nhất-danh-tính-thực-ra-là-ký-ức-của-trách-nhiệm">Điều mình tâm đắc nhất: Danh tính thực ra là ký ức của trách nhiệm</a></li>
+    <li><a href="#agent-càng-thông-minh-quyền-càng-phải-nhỏ-và-rõ">Agent càng thông minh, quyền càng phải nhỏ và rõ</a></li>
+    <li><a href="#tổng-kết">Tổng kết</a></li>
+    <li><a href="#tham-khảo">Tham khảo</a></li>
+  </ul>
+</nav>
+  </div>
+</div><section class="recent-posts row card component">
+  <div class="card-header">
+    <h2 class="card-title">Bài gần đây</h2>
+  </div>
+  <div class="card-body">
+    <ul class="post-list"><li>
+        <a href="https://www.phamduytung.com/blog/2026-07-11-ai-agent-identity-crisis/">AI Agent không thiếu trí thông minh, nó thiếu một tờ giấy khai sinh
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-07-11-uber-delivery-search-platform/">Search ở quy mô Uber Eats: Máy không cần đọc đúng chữ, nó phải hiểu người đang đói muốn gì
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-07-10-next-gen-restaurant-recommendation/">Hệ thống gợi ý nhà hàng thế hệ mới: Con người không ăn bằng hồ sơ, họ ăn bằng khoảnh khắc
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-07-09-ai-prd-reviewer/">AI review PRD: Một yêu cầu sai có thể sinh ra hàng nghìn dòng code đúng
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-07-08-ai-agent-identity-crisis/">AI Agent đang có một cuộc khủng hoảng danh tính
+</a>
+      </li></ul>
+  </div>
+</section><section class="series-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/series">series</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/series/kh%C3%B3a-h%E1%BB%8Dc-python-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học Python Căn Bản">
+            Khóa Học Python Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="https://www.phamduytung.com/series/kh%C3%B3a-h%E1%BB%8Dc-c&#43;&#43;-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học C&#43;&#43; Căn Bản">
+            Khóa Học C&#43;&#43; Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="https://www.phamduytung.com/series/machine-learning-dataset/" class="badge rounded post-taxonomy" title="Machine Learning Dataset">
+            Machine Learning Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a><a href="https://www.phamduytung.com/series/ch%E1%BB%A9ng-kho%C3%A1n-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Chứng Khoán Căn Bản">
+            Chứng Khoán Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">1</span></a></div>
+      </div>
+    </section><section class="tools-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/tools">tools</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/tools/tool-random/" class="badge rounded post-taxonomy" title="Tool Random">
+            Tool Random<span class="badge badge-sm text-white bg-accent ms-1">3</span></a></div>
+      </div>
+    </section><section class="categories-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/categories">categories</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/categories/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="https://www.phamduytung.com/categories/c&#43;&#43;/" class="badge rounded post-taxonomy" title="C&#43;&#43;">
+            C&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="https://www.phamduytung.com/categories/dataset/" class="badge rounded post-taxonomy" title="Dataset">
+            Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a></div>
+      </div>
+    </section><section class="tags-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/tags">tags</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/tags/machine-learning/" class="badge rounded post-taxonomy" title="Machine Learning">
+            Machine Learning<span class="badge badge-sm text-white bg-accent ms-1">26</span></a><a href="https://www.phamduytung.com/tags/deep-learning/" class="badge rounded post-taxonomy" title="Deep Learning">
+            Deep Learning<span class="badge badge-sm text-white bg-accent ms-1">23</span></a><a href="https://www.phamduytung.com/tags/computer-vision/" class="badge rounded post-taxonomy" title="Computer Vision">
+            Computer Vision<span class="badge badge-sm text-white bg-accent ms-1">16</span></a><a href="https://www.phamduytung.com/tags/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">14</span></a><a href="https://www.phamduytung.com/tags/llm/" class="badge rounded post-taxonomy" title="Llm">
+            Llm<span class="badge badge-sm text-white bg-accent ms-1">13</span></a><a href="https://www.phamduytung.com/tags/recommendation-system/" class="badge rounded post-taxonomy" title="Recommendation System">
+            Recommendation System<span class="badge badge-sm text-white bg-accent ms-1">7</span></a><a href="https://www.phamduytung.com/tags/system-design/" class="badge rounded post-taxonomy" title="System Design">
+            System Design<span class="badge badge-sm text-white bg-accent ms-1">6</span></a><a href="https://www.phamduytung.com/tags/time-series/" class="badge rounded post-taxonomy" title="Time Series">
+            Time Series<span class="badge badge-sm text-white bg-accent ms-1">6</span></a><a href="https://www.phamduytung.com/tags/uber-engineering/" class="badge rounded post-taxonomy" title="Uber Engineering">
+            Uber Engineering<span class="badge badge-sm text-white bg-accent ms-1">6</span></a><a href="https://www.phamduytung.com/tags/ai-agent/" class="badge rounded post-taxonomy" title="Ai Agent">
+            Ai Agent<span class="badge badge-sm text-white bg-accent ms-1">5</span></a></div>
+      </div>
+    </section>
+    
+  </div>
+</aside>
+</div>
+    </main><footer class="footer mt-auto py-3 text-center container"><ul class="nav justify-content-between footer-memu mb-3"><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Community
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-facebook"></i>Facebook Group
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://github.com/AlexBlack2202/alexblack2202.github.io" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-github"></i>GitHub
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/contact/"><i class="fas fa-fw fa-info-circle"></i>Contact Us
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/faq/"><i class="fas fa-fw fa-question-circle"></i>Câu hỏi thường gặp
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Docs
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="/team_of_services" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-users"></i>Điều khoản sử dụng
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/privacy" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-lock"></i>Chính sách bảo mật
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Features
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="/utils/gen_paswords/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-key"></i>Tạo password ngẫu nhiên
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Liên kết khác
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">Netlify
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">facebook
+</a>
+        </li></ul></li></ul>
+<div class="copyright mb-2">
+  Copyright © 2016-2026 Phạm Duy Tùng. All Rights Reserved.
+</div>
+<div class="powered-by mb-2">
+  Website chia sẻ kiến thức của Phạm Duy Tùng và Đặng Thị Hằng. Vui lòng liên hệ email alexblack2202@gmail.com nếu bạn có thông tin cần trao đổi.
+</div></footer>
+<script src="https://www.phamduytung.com/js/main.111d51a8c754010f8399ca010e552d803e2d5170b361f8886ad04ec6c21ca551.js" integrity="sha256-ER1RqMdUAQ&#43;DmcoBDlUtgD4tUXCzYfiIatBOxsIcpVE=" crossorigin="anonymous" defer></script><script src="https://www.phamduytung.com/js/icons.min.cb4c9958dbc49e29ac644e168e82db2d0de9a741a15751cc5bf2b0af21eb2845.js" integrity="sha256-y0yZWNvEnimsZE4WjoLbLQ3pp0GhV1HMW/KwryHrKEU=" crossorigin="anonymous" defer></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('https:\/\/www.phamduytung.com\/service-worker.js').then(function(reg) {
+      console.log('Successfully registered service worker', reg);
+    }).catch(function(err) {
+      console.warn('Error whilst registering service worker', err);
+    });
+  });
+}
+</script><script src="https://www.phamduytung.com/js/viewer.min.28bcf5233e406dae6715f46c8b9e8ca7c6cbf347e8678f5a2bebe5369c3270bb.js" integrity="sha256-KLz1Iz5Aba5nFfRsi56Mp8bL80foZ49aK&#43;vlNpwycLs=" crossorigin="anonymous" defer></script><script defer src="https://www.phamduytung.com/js/katex.min.8582b9feadf92a2a977ed303b97d7713cf2754ccf2b4eb60d8be7453a21042c2.js" integrity="sha256-hYK5/q35KiqXftMDuX13E88nVMzytOtg2L50U6IQQsI=" crossorigin="anonymous"></script>
+
+<script  data-ad-client="ca-pub-4644989745435991"  async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4644989745435991"
+     crossorigin="anonymous"></script><script data-cfasync="false" type="text/javascript" data-adel="atag" src="//acscdn.com/script/atg.js" czid="eul3gyjdmm"></script>
+  </body>
+</html>
