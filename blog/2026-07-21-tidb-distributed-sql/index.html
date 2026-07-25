@@ -1,0 +1,1584 @@
+<!doctype html><html lang="vi" data-palette="brown"
+   data-mode="light">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>TiDB: Khi một database phải học cách sống như cả một thành phố - Phạm Duy Tùng Machine Learning Blog</title>
+    <meta name="a.validate.02" content="1QZXZ8oi7g57H-GxBrBPkTYBydwii-Ic9iJu" /><link rel="apple-touch-icon" href="https://www.phamduytung.com/images/icons/icon-180x180.png" sizes="180x180">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/icon-32x32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/icon-16x16.png" sizes="16x16" type="image/png">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/favicon.ico">
+<link rel="manifest" href="https://www.phamduytung.com/manifest.json">
+<meta name="keywords" content="" />
+<meta name="description" content="Đi sâu vào bản chất của TiDB, kiến trúc TiDB Server, PD, TiKV, TiFlash, giao dịch phân tán, HTAP và những trường hợp nên hoặc không nên sử dụng cơ sở dữ liệu mã nguồn mở do PingCAP khởi tạo." /><meta name="robots" content="index, follow" />
+	<meta itemprop="name" content="TiDB: Khi một database phải học cách sống như cả một thành phố">
+	<meta itemprop="description" content="Đi sâu vào bản chất của TiDB, kiến trúc TiDB Server, PD, TiKV, TiFlash, giao dịch phân tán, HTAP và những trường hợp nên hoặc không nên sử dụng cơ sở dữ liệu mã nguồn mở do PingCAP khởi tạo.">
+	<meta itemprop="datePublished" content="2026-07-21T00:00:00+03:00">
+	<meta itemprop="dateModified" content="2026-07-21T00:00:00+03:00">
+	<meta itemprop="wordCount" content="7303">
+	<meta itemprop="image" content="https://www.phamduytung.com/images/posts/2026-07-21-tidb-distributed-sql/cover.png">
+	<meta itemprop="keywords" content="Tidb,Distributed Sql,Database,Tikv,Htap"><meta property="og:url" content="https://www.phamduytung.com/blog/2026-07-21-tidb-distributed-sql/">
+	<meta property="og:site_name" content="Phạm Duy Tùng Machine Learning Blog">
+	<meta property="og:title" content="TiDB: Khi một database phải học cách sống như cả một thành phố">
+	<meta property="og:description" content="Đi sâu vào bản chất của TiDB, kiến trúc TiDB Server, PD, TiKV, TiFlash, giao dịch phân tán, HTAP và những trường hợp nên hoặc không nên sử dụng cơ sở dữ liệu mã nguồn mở do PingCAP khởi tạo.">
+	<meta property="og:locale" content="vi_VN">
+	<meta property="og:type" content="article">
+		<meta property="article:section" content="blog">
+		<meta property="article:published_time" content="2026-07-21T00:00:00+03:00">
+		<meta property="article:modified_time" content="2026-07-21T00:00:00+03:00">
+		<meta property="article:tag" content="Tidb">
+		<meta property="article:tag" content="Distributed Sql">
+		<meta property="article:tag" content="Database">
+		<meta property="article:tag" content="Tikv">
+		<meta property="article:tag" content="Htap">
+		<meta property="og:image" content="https://www.phamduytung.com/images/posts/2026-07-21-tidb-distributed-sql/cover.png">
+
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:image" content="https://www.phamduytung.com/images/posts/2026-07-21-tidb-distributed-sql/cover.png">
+	<meta name="twitter:title" content="TiDB: Khi một database phải học cách sống như cả một thành phố">
+	<meta name="twitter:description" content="Đi sâu vào bản chất của TiDB, kiến trúc TiDB Server, PD, TiKV, TiFlash, giao dịch phân tán, HTAP và những trường hợp nên hoặc không nên sử dụng cơ sở dữ liệu mã nguồn mở do PingCAP khởi tạo.">
+<link rel="stylesheet" href="https://www.phamduytung.com/css/main.min.7dd8c8ad44fe5c0f292dd635ae28981312b940a5894df3049d2a6e2fa2f43327.css" integrity="sha256-fdjIrUT&#43;XA8pLdY1riiYExK5QKWJTfMEnSpuL6L0Myc=" crossorigin="anonymous"><link rel="stylesheet" href="https://www.phamduytung.com/css/katex.min.4d6aa053ca8a5675016fa2c9c48ee5359bfaafb8295184458af9d64abce84c47.css" integrity="sha256-TWqgU8qKVnUBb6LJxI7lNZv6r7gpUYRFivnWSrzoTEc=" crossorigin="anonymous">
+<link rel="stylesheet" href="https://www.phamduytung.com/css/viewer.min.e882eb3a023412b73bb741b4604a1222a9f13aa7783c828d26d066ab8642bd51.css" integrity="sha256-6ILrOgI0Erc7t0G0YEoSIqnxOqd4PIKNJtBmq4ZCvVE=" crossorigin="anonymous"><link rel="canonical" href="https://www.phamduytung.com/blog/2026-07-21-tidb-distributed-sql/"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Phạm Duy Tùng"},"dateModified":"2026-07-21T00:00:00+03:00","datePublished":"2026-07-21T00:00:00+03:00","description":"Đi sâu vào bản chất của TiDB, kiến trúc TiDB Server, PD, TiKV, TiFlash, giao dịch phân tán, HTAP và những trường hợp nên hoặc không nên sử dụng cơ sở dữ liệu mã nguồn mở do PingCAP khởi tạo.","headline":"TiDB: Khi một database phải học cách sống như cả một thành phố","image":["https://www.phamduytung.com/images/posts/2026-07-21-tidb-distributed-sql/cover.png"],"inLanguage":"vi","keywords":"tidb, distributed sql, database, tikv, htap","mainEntityOfPage":{"@id":"https://www.phamduytung.com/blog/2026-07-21-tidb-distributed-sql/","@type":"WebPage"},"publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://www.phamduytung.com/images/logo.png"},"name":"Phạm Duy Tùng Machine Learning Blog"},"url":"https://www.phamduytung.com/blog/2026-07-21-tidb-distributed-sql/"}</script></head>
+  <body><script>const items=["mode","palette"];items.forEach(function(e){const t=localStorage.getItem("hbs-"+e);t&&document.body.parentElement.setAttribute("data-"+e,t)})</script><header><nav class="navbar top-app-bar top-app-bar-expand-lg fixed-top">
+  <div class="container">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <i class="fas fa-bars"></i>
+    </button><a class="navbar-brand flex-grow-1 flex-lg-grow-0 text-center text-lg-start mx-auto me-lg-3" href="https://www.phamduytung.com/"><img class="logo" alt="Logo" src="https://www.phamduytung.com/images/logo.webp" loading="lazy"  title="Logo"
+   width="32" height="32"
+   />
+Phạm Duy Tùng
+    </a>
+    <div class="offcanvas offcanvas-bottom surface" tabindex="-1" id="offcanvasSocialShare" aria-labelledby="offcanvasSocialShare">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Share</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body">
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Twitter Share Button"
+      target="_blank" href="https://twitter.com/intent/tweet?title=TiDB%3a%20Khi%20m%e1%bb%99t%20database%20ph%e1%ba%a3i%20h%e1%bb%8dc%20c%c3%a1ch%20s%e1%bb%91ng%20nh%c6%b0%20c%e1%ba%a3%20m%e1%bb%99t%20th%c3%a0nh%20ph%e1%bb%91&url=https%3a%2f%2fwww.phamduytung.com%2fblog%2f2026-07-21-tidb-distributed-sql%2f">
+      <i class="fab fa-fw fa-twitter"></i> Twitter
+    </a>
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Facebook Share Button"
+      target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.phamduytung.com%2fblog%2f2026-07-21-tidb-distributed-sql%2f">
+      <i class="fab fa-fw fa-facebook-f"></i> Facebook
+    </a>
+  </div>
+</div>
+    <button class="navbar-settings" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSettings"
+  aria-controls="offcanvasSettings" aria-label="Toggle settings">
+  <i class="fas fa-ellipsis-v"></i>
+</button>
+
+<div class="offcanvas offcanvas-end surface h-100" tabindex="-1" id="offcanvasSettings" aria-labelledby="offcanvasSettings">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Cài đặt</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body d-flex flex-column">
+
+
+
+<section class="setting">
+  <form class="font-size-switcher-form row">
+    <div class="col-auto">
+      <label for="fontSize" class="form-label"><i class="fas fa-fw fa-font"></i> Cỡ chữ</label>
+    </div>
+    <div class="col-auto ms-auto">
+      <input type="range" class="form-range" min="-2" max="2" id="fontSize">
+    </div>
+  </form>
+</section>
+
+
+
+<section class="setting actions d-flex justify-content-around mt-auto overflow-auto">
+  <a role="button" class="action action-go-back" href="javascript: window.history.back();">
+    <span class="action-icon"><i class="fas fa-2x fa-arrow-left"></i></span> Quay lại
+  </a>
+  <a role="button" class="action action-reload-page">
+    <span class="action-icon"><i class="fas fa-2x fa-redo-alt"></i></span> Tải lại
+  </a>
+  <a role="button" class="action action-copy-url">
+    <span class="action-icon"><i class="fas fa-2x fa-link"></i></span> Sao chép URL
+  </a><a class="action action-social-share" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSocialShare"
+    aria-controls="offcanvasSocialShare" aria-label="Toggle social share">
+    <span class="action-icon"><i class="fas fa-2x fa-share-alt"></i></span> Chia sẻ
+  </a></section>
+
+</div>
+</div>
+
+    <div class="collapse navbar-collapse" tabindex="-1" id="navbarSupportedContent" aria-labelledby="navbarSupportedContent">
+      <form class="search-bar my-1" action="https://www.phamduytung.com/search">
+  <div class="input-group input-group-sm">
+    <span class="btn btn-search disabled position-absolute left-0"><i class="fas fa-fw fa-search"></i></span>
+    <input class="form-control rounded-pill" name="q" type="search" aria-label="Search">
+  </div>
+</form>
+      <ul class="navbar-nav ms-auto"><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/series/">
+            <i class="fas fa-fw fa-columns"></i>Courses
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/tools/">
+            <i class="fas fa-fw fa-folder"></i>Tools
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/categories/">
+            <i class="fas fa-fw fa-folder"></i>Categories
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/archives/">
+            <i class="fas fa-fw fa-file-archive"></i>Archives
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/tags/">
+            <i class="fas fa-fw fa-tags"></i>Tags
+          </a>
+        </li><li class="nav-item dropdown">
+          <a class="nav-link" id="navbarDropdownSupport" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-fw fa-comments"></i>Community
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdownSupport"><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Facebook Group
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://github.com/AlexBlack2202/alexblack2202.github.io" target="_blank" rel="noopener noreferrer">
+                GitHub
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/contact/">
+                Contact
+              </a>
+            </li><li><hr class="dropdown-divider"></li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/faq/">
+                Câu hỏi thường gặp
+              </a>
+            </li></ul>
+        </li></ul>
+    </div>
+  </div>
+</nav>
+</header>
+<main role="main" class="container" style="line-height:1.7em">
+      <div class="row content">
+<div class="col-lg-9 col-md-8">
+  <div class="container"><nav class="row card component" aria-label="breadcrumb">
+  <div class="card-body">
+    <ol class="breadcrumb "><li class="breadcrumb-item"><a href="https://www.phamduytung.com/">Trang chủ</a></li><li class="breadcrumb-item"><a href="https://www.phamduytung.com/blog/">Blogs</a></li><li class="breadcrumb-item active">TiDB: Khi một database phải học cách sống như cả một thành phố</li></ol>
+  </div>
+</nav>
+<div class="post-panel-wrapper">
+  <div class="d-flex flex-column component rounded post-panel">
+    
+    <a class="action action-panel-toggler" role="button" title="Panel toggler">
+      <i class="fas fa-fw fa-chevron-circle-down"></i>
+    </a>
+    <a id="sidebarToggler" class="action d-none d-lg-block" role="button" title="Sidebar toggler">
+  <i class="fas fa-fw fa-expand-alt" data-fa-transform="rotate-45"></i>
+</a>
+
+    
+
+    
+    
+    <a class="action" href="#post-comments" role="button" aria-label="Comments" title="Comments">
+  <i class="fas fa-fw fa-comments"></i>
+</a>
+    <a class="action" href="#postTOC" aria-controls="Table of contents" role="button" title="Table of contents">
+  <i class="fas fa-fw fa-list-alt"></i>
+</a>
+    
+  </div>
+</div>
+<article class="row card component mb-4 post">
+  <div class="card-header "><div class="bgcover" style="background-image:url(https://www.phamduytung.com/images/posts/2026-07-21-tidb-distributed-sql/cover.png)" aria-label="TiDB: Khi một database phải học cách sống như cả một thành phố">
+      <div class="bgtrans">
+          <h1>TiDB: Khi một database phải học cách sống như cả một thành phố
+</h1>
+      </div>
+  </div>
+</div>
+  <div class="card-body"><div class="post-meta">
+  <span class="post-date" title="tạo ngày 2026-07-21 04:00:00 &#43;0700 &#43;07.">
+    21/07/2026
+  </span><span class="post-reading-time">
+    35 phút đọc
+  </span><span class="post-taxonomies"><a href="https://www.phamduytung.com/tags/tidb/" class="badge post-taxonomy">tidb</a><a href="https://www.phamduytung.com/tags/distributed-sql/" class="badge post-taxonomy">distributed sql</a><a href="https://www.phamduytung.com/tags/database/" class="badge post-taxonomy">database</a><a href="https://www.phamduytung.com/tags/tikv/" class="badge post-taxonomy">tikv</a><a href="https://www.phamduytung.com/tags/htap/" class="badge post-taxonomy">htap</a></span>
+</div>
+<div class="post-content mb-3"><hr>
+<div class="toc">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#một-cái-máy-không-thể-béo-lên-mãi">Một cái máy không thể béo lên mãi</a></li>
+    <li><a href="#tidb-là-gì">TiDB là gì?</a></li>
+    <li><a href="#vì-sao-một-phần-mềm-trung-quốc-như-tidb-đáng-chú-ý">Vì sao một phần mềm Trung Quốc như TiDB đáng chú ý?</a></li>
+    <li><a href="#bản-chất-của-tidb">Bản chất của TiDB</a></li>
+    <li><a href="#bốn-thành-phần-chính-của-tidb">Bốn thành phần chính của TiDB</a></li>
+    <li><a href="#tidb-server-người-tiếp-nhận-câu-sql">TiDB Server: người tiếp nhận câu SQL</a></li>
+    <li><a href="#pd-bộ-não-điều-phối-của-cụm">PD: bộ não điều phối của cụm</a></li>
+    <li><a href="#tikv-nơi-dữ-liệu-thực-sự-nằm-xuống">TiKV: nơi dữ liệu thực sự nằm xuống</a></li>
+    <li><a href="#raft-một-dữ-liệu-nhiều-bản-sao">Raft: một dữ liệu, nhiều bản sao</a></li>
+    <li><a href="#tiflash-cùng-dữ-liệu-một-cách-xếp-khác">TiFlash: cùng dữ liệu, một cách xếp khác</a></li>
+    <li><a href="#một-câu-sql-đi-qua-tidb-như-thế-nào">Một câu SQL đi qua TiDB như thế nào?</a>
+      <ul>
+        <li><a href="#bước-1-phân-tích-sql">Bước 1: Phân tích SQL</a></li>
+        <li><a href="#bước-2-tạo-execution-plan">Bước 2: Tạo execution plan</a></li>
+        <li><a href="#bước-3-tìm-region">Bước 3: Tìm Region</a></li>
+        <li><a href="#bước-4-đẩy-công-việc-xuống-storage">Bước 4: Đẩy công việc xuống storage</a></li>
+        <li><a href="#bước-5-gom-kết-quả">Bước 5: Gom kết quả</a></li>
+      </ul>
+    </li>
+    <li><a href="#transaction-phân-tán-hoạt-động-như-thế-nào">Transaction phân tán hoạt động như thế nào?</a></li>
+    <li><a href="#tidb-giải-quyết-bài-toán-sharding-như-thế-nào">TiDB giải quyết bài toán sharding như thế nào?</a></li>
+    <li><a href="#hotspot-có-nhiều-đường-nhưng-mọi-người-cùng-chen-vào-một-cổng">Hotspot: có nhiều đường nhưng mọi người cùng chen vào một cổng</a></li>
+    <li><a href="#htap-có-thật-sự-thay-thế-data-warehouse-không">HTAP có thật sự thay thế Data Warehouse không?</a></li>
+    <li><a href="#hệ-sinh-thái-xung-quanh-tidb">Hệ sinh thái xung quanh TiDB</a></li>
+    <li><a href="#tiup">TiUP</a></li>
+    <li><a href="#tidb-data-migration">TiDB Data Migration</a></li>
+    <li><a href="#tidb-lightning">TiDB Lightning</a></li>
+    <li><a href="#ticdc">TiCDC</a></li>
+    <li><a href="#backup--restore">Backup &amp; Restore</a></li>
+    <li><a href="#tidb-dashboard">TiDB Dashboard</a></li>
+    <li><a href="#ví-dụ-tidb-trong-hệ-thống-bán-lẻ">Ví dụ TiDB trong hệ thống bán lẻ</a>
+      <ul>
+        <li><a href="#tikv-phục-vụ">TiKV phục vụ</a></li>
+        <li><a href="#tiflash-phục-vụ">TiFlash phục vụ</a></li>
+        <li><a href="#lakehouse-phục-vụ">Lakehouse phục vụ</a></li>
+      </ul>
+    </li>
+    <li><a href="#khi-nào-nên-dùng-tidb">Khi nào nên dùng TiDB?</a></li>
+    <li><a href="#khi-database-đơn-máy-đã-chạm-giới-hạn">Khi database đơn máy đã chạm giới hạn</a></li>
+    <li><a href="#khi-doanh-nghiệp-đang-đau-vì-sharding">Khi doanh nghiệp đang đau vì sharding</a></li>
+    <li><a href="#khi-cần-tính-nhất-quán-mạnh">Khi cần tính nhất quán mạnh</a></li>
+    <li><a href="#khi-đội-ngũ-đã-quen-mysql">Khi đội ngũ đã quen MySQL</a></li>
+    <li><a href="#khi-cần-transaction-và-phân-tích-gần-thời-gian-thực">Khi cần transaction và phân tích gần thời gian thực</a></li>
+    <li><a href="#khi-có-đội-vận-hành-đủ-trưởng-thành">Khi có đội vận hành đủ trưởng thành</a></li>
+    <li><a href="#khi-nào-không-nên-dùng-tidb">Khi nào không nên dùng TiDB?</a></li>
+    <li><a href="#khi-database-chỉ-có-vài-chục-gb">Khi database chỉ có vài chục GB</a></li>
+    <li><a href="#khi-cần-latency-cực-thấp-trên-một-máy">Khi cần latency cực thấp trên một máy</a></li>
+    <li><a href="#khi-ứng-dụng-phụ-thuộc-sâu-vào-tính-năng-riêng-của-mysql">Khi ứng dụng phụ thuộc sâu vào tính năng riêng của MySQL</a></li>
+    <li><a href="#khi-workload-chủ-yếu-là-phân-tích-lịch-sử-khổng-lồ">Khi workload chủ yếu là phân tích lịch sử khổng lồ</a></li>
+    <li><a href="#khi-đội-ngũ-chưa-muốn-học-distributed-system">Khi đội ngũ chưa muốn học distributed system</a></li>
+    <li><a href="#những-việc-cần-làm-khi-triển-khai-tidb">Những việc cần làm khi triển khai TiDB</a></li>
+    <li><a href="#kiểm-kê-mức-độ-tương-thích-mysql">Kiểm kê mức độ tương thích MySQL</a></li>
+    <li><a href="#benchmark-bằng-workload-thật">Benchmark bằng workload thật</a></li>
+    <li><a href="#thiết-kế-primary-key-để-tránh-hotspot">Thiết kế primary key để tránh hotspot</a></li>
+    <li><a href="#giữ-transaction-ngắn">Giữ transaction ngắn</a></li>
+    <li><a href="#tối-ưu-sql-và-index-như-database-bình-thường">Tối ưu SQL và index như database bình thường</a></li>
+    <li><a href="#thiết-kế-failure-domain">Thiết kế failure domain</a></li>
+    <li><a href="#thử-restore-định-kỳ">Thử restore định kỳ</a></li>
+    <li><a href="#chỉ-tạo-tiflash-replica-cho-bảng-cần-thiết">Chỉ tạo TiFlash replica cho bảng cần thiết</a></li>
+    <li><a href="#những-điều-không-nên-làm">Những điều không nên làm</a></li>
+    <li><a href="#không-nghĩ-tidb-miễn-phí-vì-là-mã-nguồn-mở">Không nghĩ TiDB miễn phí vì là mã nguồn mở</a></li>
+    <li><a href="#không-triển-khai-tất-cả-component-trên-một-máy">Không triển khai tất cả component trên một máy</a></li>
+    <li><a href="#không-dùng-thêm-node-để-che-sql-xấu">Không dùng thêm node để che SQL xấu</a></li>
+    <li><a href="#không-tạo-transaction-khổng-lồ">Không tạo transaction khổng lồ</a></li>
+    <li><a href="#không-xem-htap-là-bữa-trưa-miễn-phí">Không xem HTAP là bữa trưa miễn phí</a></li>
+    <li><a href="#không-bỏ-qua-network">Không bỏ qua network</a></li>
+    <li><a href="#không-dùng-tidb-để-thay-mọi-hệ-thống-dữ-liệu">Không dùng TiDB để thay mọi hệ thống dữ liệu</a></li>
+    <li><a href="#tổng-kết">Tổng kết</a></li>
+    <li><a href="#tham-khảo">Tham khảo</a></li>
+  </ul>
+</nav>
+  </div>
+<h1 id="một-cái-máy-không-thể-béo-lên-mãi">Một cái máy không thể béo lên mãi<a class="anchor ms-1" href="#một-cái-máy-không-thể-béo-lên-mãi"><i class="fas fa-link"></i></a></h1>
+<p>Giả sử công ty bán lẻ có một database MySQL.</p>
+<p>Ngày đầu tiên, database chứa 10.000 đơn hàng.</p>
+<p>Nó chạy trên một máy chủ bình thường, có CPU, RAM và hai ổ SSD đang sống một cuộc đời tương đối yên bình.</p>
+<p>Một năm sau, công ty có 100 cửa hàng.</p>
+<p>Ba năm sau, có thêm website, ứng dụng, chương trình thành viên, giao hàng trong hai giờ và một đội marketing có khả năng tạo ra năm chương trình khuyến mãi trong cùng một buổi chiều.</p>
+<p>Database bắt đầu chứa:</p>
+<ul>
+<li>Đơn hàng.</li>
+<li>Chi tiết đơn hàng.</li>
+<li>Thanh toán.</li>
+<li>Tồn kho.</li>
+<li>Giá bán.</li>
+<li>Khuyến mãi.</li>
+<li>Lịch sử khách hàng.</li>
+<li>Trạng thái giao hàng.</li>
+<li>Điểm thành viên.</li>
+<li>Hàng đổi trả.</li>
+</ul>
+<p>Mỗi ngày có một triệu đơn hàng mới.</p>
+<p>Mỗi đơn có năm sản phẩm.</p>
+<p>Một triệu đơn hàng khi đi xuống tầng vật lý không còn là một triệu dòng dữ liệu.</p>
+<p>Nó là hàng triệu lần ghi vào bảng chính, bảng chi tiết, index, log giao dịch, replica và các cấu trúc dữ liệu bên dưới.</p>
+<p>Hàng tỷ electron bắt đầu chạy qua CPU.</p>
+<p>Ổ đĩa quay hoặc các cell flash liên tục nhận điện tích.</p>
+<p>Quạt máy chủ gầm lên.</p>
+<p>Kỹ sư nhìn biểu đồ CPU rồi đưa ra giải pháp truyền thống:</p>
+<blockquote>
+<p>Nâng máy lên.</p>
+</blockquote>
+<p>CPU tăng từ 16 core lên 32 core.</p>
+<p>RAM tăng từ 64 GB lên 256 GB.</p>
+<p>Ổ cứng nhanh hơn.</p>
+<p>Máy chạy khỏe trở lại.</p>
+<p>Nhưng một chiếc máy tính không thể béo lên mãi.</p>
+<p>Đến một lúc nào đó, doanh nghiệp đứng trước một con quái vật có 2 TB RAM, hàng chục ổ NVMe, một hóa đơn phần cứng rất đẹp và một nỗi sợ rất thật:</p>
+<blockquote>
+<p>Nếu cái máy này chết thì sao?</p>
+</blockquote>
+<p>Lúc đó, người ta bắt đầu chia database.</p>
+<p>Khách hàng từ 1 đến 1 triệu nằm ở shard A.</p>
+<p>Khách hàng từ 1 triệu đến 2 triệu nằm ở shard B.</p>
+<p>Đơn hàng miền Nam nằm máy này.</p>
+<p>Đơn hàng miền Bắc nằm máy kia.</p>
+<p>Nghe thì có vẻ đơn giản.</p>
+<p>Cho đến khi một khách hàng chuyển địa chỉ.</p>
+<p>Một báo cáo phải tổng hợp toàn quốc.</p>
+<p>Một chương trình khuyến mãi áp dụng trên mọi cửa hàng.</p>
+<p>Một đơn hàng được tạo ở TP.HCM nhưng giao từ kho Bình Dương.</p>
+<p>Một giao dịch cần cập nhật ba shard cùng lúc.</p>
+<p>Khi đó, database không còn chỉ là nơi chứa dữ liệu.</p>
+<p>Nó trở thành một tấm bản đồ hành chính mà mỗi câu SQL phải xin visa trước khi đi qua biên giới.</p>
+<p>TiDB sinh ra để giải quyết lớp vấn đề đó.</p>
+<h1 id="tidb-là-gì">TiDB là gì?<a class="anchor ms-1" href="#tidb-là-gì"><i class="fas fa-link"></i></a></h1>
+<p>TiDB là một cơ sở dữ liệu SQL phân tán mã nguồn mở do PingCAP phát triển. Dự án được khởi tạo từ năm 2015 bởi ba kỹ sư hạ tầng muốn xây một hệ quản trị cơ sở dữ liệu có thể mở rộng theo chiều ngang, duy trì tính nhất quán mạnh và vẫn cho lập trình viên sử dụng giao thức cũng như phần lớn cú pháp quen thuộc của MySQL. Mã nguồn TiDB được phát hành theo giấy phép Apache 2.0; lớp lưu trữ TiKV của nó đã trở thành một dự án tốt nghiệp của Cloud Native Computing Foundation. (<a href="https://www.pingcap.com/about-us/?utm_source=chatgpt.com" title="About PingCAP | TiDB" target="_blank" rel="noopener noreferrer">TiDB</a>)</p>
+<p>TiDB được đọc gần giống “Tai-Đi-Bi”. Chữ “Ti” là viết tắt của Titanium, tức titan.</p>
+<p>Cái tên khá đúng tinh thần.</p>
+<p>Mục tiêu của nó không phải trở thành một database nhỏ nhắn, dễ thương, chạy trong góc máy tính cá nhân.</p>
+<p>Nó muốn trở thành một khối kim loại đủ cứng để giữ dữ liệu khi hệ thống đã lớn đến mức một máy không còn gánh nổi.</p>
+<p>Nhưng cần làm rõ một điều:</p>
+<blockquote>
+<p>TiDB không phải MySQL được cài thêm vài plugin để chạy trên nhiều máy.</p>
+</blockquote>
+<p>TiDB hỗ trợ giao thức MySQL, nhiều cú pháp và công cụ trong hệ sinh thái MySQL, nhưng phần mềm được xây mới với kiến trúc phân tán riêng. Chính tài liệu của TiDB cũng nhấn mạnh rằng nó không được xây trên mã nguồn MySQL. (<a href="https://docs.pingcap.com/tidb/stable/tidb-faq/?utm_source=chatgpt.com" title="TiDB Architecture FAQs" target="_blank" rel="noopener noreferrer">PingCAP Docs</a>)</p>
+<p>Ứng dụng có thể vẫn dùng:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">MySQL Driver
+</span></span><span class="line"><span class="ln">2</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln">3</span><span class="cl">MySQL Protocol
+</span></span><span class="line"><span class="ln">4</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln">5</span><span class="cl">TiDB
+</span></span></code></pre></div><p>Nhưng phía sau cánh cửa quen thuộc đó không còn là một tiến trình <code>mysqld</code> giữ toàn bộ dữ liệu trên một máy.</p>
+<p>Nó là cả một thành phố.</p>
+<h1 id="vì-sao-một-phần-mềm-trung-quốc-như-tidb-đáng-chú-ý">Vì sao một phần mềm Trung Quốc như TiDB đáng chú ý?<a class="anchor ms-1" href="#vì-sao-một-phần-mềm-trung-quốc-như-tidb-đáng-chú-ý"><i class="fas fa-link"></i></a></h1>
+<p>Khi nhắc đến phần mềm công nghệ Trung Quốc, phần lớn mọi người nghĩ đến:</p>
+<ul>
+<li>Ứng dụng mua sắm.</li>
+<li>Mạng xã hội.</li>
+<li>Video ngắn.</li>
+<li>Thanh toán điện tử.</li>
+<li>Giao đồ ăn.</li>
+</ul>
+<p>Nhưng phía sau những ứng dụng đó là một bài toán hạ tầng dữ liệu rất dữ dội.</p>
+<p>Hàng trăm triệu người dùng.</p>
+<p>Lượng giao dịch khổng lồ.</p>
+<p>Những ngày siêu khuyến mãi có thể làm lưu lượng tăng đột ngột.</p>
+<p>Dữ liệu phải được phân phối qua nhiều máy, nhiều trung tâm dữ liệu và nhiều vùng địa lý.</p>
+<p>Những hệ thống như TiDB không sinh ra từ nhu cầu làm một website giới thiệu công ty có 20 người truy cập mỗi ngày.</p>
+<p>Nó sinh ra từ nỗi đau của việc vận hành những hệ thống đã vượt khỏi giới hạn của database đơn máy.</p>
+<p>Điều đáng chú ý không phải chỉ vì TiDB được khởi tạo trong hệ sinh thái công nghệ Trung Quốc.</p>
+<p>Điều đáng chú ý là nó được đưa ra dưới dạng mã nguồn mở.</p>
+<p>Người dùng có thể:</p>
+<ul>
+<li>Đọc mã nguồn.</li>
+<li>Tự triển khai.</li>
+<li>Kiểm tra cách transaction hoạt động.</li>
+<li>Theo dõi issue.</li>
+<li>Đóng góp code.</li>
+<li>Chạy trên hạ tầng của mình.</li>
+<li>Không bắt buộc phải mua dịch vụ cloud của PingCAP.</li>
+</ul>
+<p>Một sản phẩm thương mại có thể nói:</p>
+<blockquote>
+<p>Hãy tin chúng tôi.</p>
+</blockquote>
+<p>Một dự án mã nguồn mở tốt phải đặt phần ruột của mình lên bàn và nói:</p>
+<blockquote>
+<p>Đây, kiểm tra đi.</p>
+</blockquote>
+<h1 id="bản-chất-của-tidb">Bản chất của TiDB<a class="anchor ms-1" href="#bản-chất-của-tidb"><i class="fas fa-link"></i></a></h1>
+<p>Nếu phải mô tả TiDB bằng một câu, mình sẽ viết:</p>
+<blockquote>
+<p>TiDB là một hệ thống biến nhiều máy tính thành một database SQL duy nhất.</p>
+</blockquote>
+<p>Ứng dụng nhìn thấy:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">mysql://database.company.local:4000
+</span></span></code></pre></div><p>Nhưng bên dưới có thể là:</p>
+<ul>
+<li>Nhiều TiDB Server xử lý SQL.</li>
+<li>Một cụm PD quản lý metadata và điều phối dữ liệu.</li>
+<li>Nhiều TiKV lưu dữ liệu dạng hàng.</li>
+<li>Nhiều TiFlash lưu bản sao dạng cột.</li>
+<li>Load balancer.</li>
+<li>Hệ thống giám sát.</li>
+<li>Công cụ backup.</li>
+<li>Công cụ replication.</li>
+<li>Hàng nghìn nhóm Raft đang liên tục trao đổi log với nhau.</li>
+</ul>
+<p>Người lập trình vẫn viết:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="k">BEGIN</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="ln"> 3</span><span class="cl"><span class="k">UPDATE</span><span class="w"> </span><span class="n">accounts</span><span class="w">
+</span></span></span><span class="line"><span class="ln"> 4</span><span class="cl"><span class="k">SET</span><span class="w"> </span><span class="n">balance</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">balance</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1000000</span><span class="w">
+</span></span></span><span class="line"><span class="ln"> 5</span><span class="cl"><span class="k">WHERE</span><span class="w"> </span><span class="n">account_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1001</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="ln"> 6</span><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="ln"> 7</span><span class="cl"><span class="k">UPDATE</span><span class="w"> </span><span class="n">accounts</span><span class="w">
+</span></span></span><span class="line"><span class="ln"> 8</span><span class="cl"><span class="k">SET</span><span class="w"> </span><span class="n">balance</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">balance</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1000000</span><span class="w">
+</span></span></span><span class="line"><span class="ln"> 9</span><span class="cl"><span class="k">WHERE</span><span class="w"> </span><span class="n">account_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2002</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="ln">10</span><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="ln">11</span><span class="cl"><span class="k">COMMIT</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><p>TiDB phải biến câu lệnh tưởng như đơn giản đó thành một giao dịch phân tán an toàn, ngay cả khi hai tài khoản nằm ở hai Region khác nhau, trên hai TiKV khác nhau, mỗi Region lại có nhiều bản sao.</p>
+<p>Đó mới là bản chất của TiDB.</p>
+<p>Nó không chỉ chia dữ liệu.</p>
+<p>Nó che giấu phần lớn sự chia cắt đó khỏi ứng dụng.</p>
+<h1 id="bốn-thành-phần-chính-của-tidb">Bốn thành phần chính của TiDB<a class="anchor ms-1" href="#bốn-thành-phần-chính-của-tidb"><i class="fas fa-link"></i></a></h1>
+<p>Một cụm TiDB cơ bản có thể hình dung như sau:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">                         ┌────────────────────┐
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">                         │    Application     │
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">                         │ MySQL Driver / ORM │
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">                         └─────────┬──────────┘
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">                                   │
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">                             Load Balancer
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">                                   │
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">                 ┌─────────────────┴─────────────────┐
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">                 │                                   │
+</span></span><span class="line"><span class="ln">10</span><span class="cl">           TiDB Server 1                       TiDB Server 2
+</span></span><span class="line"><span class="ln">11</span><span class="cl">                 │                                   │
+</span></span><span class="line"><span class="ln">12</span><span class="cl">                 └─────────────────┬─────────────────┘
+</span></span><span class="line"><span class="ln">13</span><span class="cl">                                   │
+</span></span><span class="line"><span class="ln">14</span><span class="cl">                              PD Cluster
+</span></span><span class="line"><span class="ln">15</span><span class="cl">                                   │
+</span></span><span class="line"><span class="ln">16</span><span class="cl">                 ┌─────────────────┴─────────────────┐
+</span></span><span class="line"><span class="ln">17</span><span class="cl">                 │                                   │
+</span></span><span class="line"><span class="ln">18</span><span class="cl">              TiKV Cluster                     TiFlash Cluster
+</span></span><span class="line"><span class="ln">19</span><span class="cl">            Row-based storage                 Columnar storage
+</span></span></code></pre></div><p>Bốn phần quan trọng nhất là:</p>
+<ul>
+<li>TiDB Server.</li>
+<li>Placement Driver.</li>
+<li>TiKV.</li>
+<li>TiFlash.</li>
+</ul>
+<h1 id="tidb-server-người-tiếp-nhận-câu-sql">TiDB Server: người tiếp nhận câu SQL<a class="anchor ms-1" href="#tidb-server-người-tiếp-nhận-câu-sql"><i class="fas fa-link"></i></a></h1>
+<p>TiDB Server là lớp SQL.</p>
+<p>Nó nhận kết nối qua giao thức MySQL, sau đó:</p>
+<ul>
+<li>Phân tích cú pháp.</li>
+<li>Kiểm tra quyền.</li>
+<li>Tối ưu câu truy vấn.</li>
+<li>Tạo execution plan.</li>
+<li>Gửi công việc xuống TiKV hoặc TiFlash.</li>
+<li>Tổng hợp kết quả.</li>
+<li>Trả dữ liệu về ứng dụng.</li>
+</ul>
+<p>TiDB Server không giữ dữ liệu nghiệp vụ trên ổ đĩa của chính nó. Vì lớp này gần như stateless, doanh nghiệp có thể đặt nhiều TiDB Server phía sau load balancer và tăng số lượng node khi cần phục vụ thêm kết nối hoặc thêm năng lực tính toán SQL. (<a href="https://docs.pingcap.com/tidb/stable/tidb-architecture/" title="TiDB Architecture | TiDB Docs" target="_blank" rel="noopener noreferrer">PingCAP Docs</a>)</p>
+<p>Ta có thể tưởng tượng TiDB Server là những nhân viên tiếp nhận hồ sơ ở một trung tâm hành chính.</p>
+<p>Người dân không cần biết giấy tờ đang nằm ở kho nào.</p>
+<p>Họ chỉ đưa yêu cầu:</p>
+<blockquote>
+<p>Tìm cho tôi tất cả đơn hàng chưa giao của khách hàng 123.</p>
+</blockquote>
+<p>TiDB Server phân tích câu hỏi, tìm xem dữ liệu nằm ở đâu, chia công việc cho các kho rồi gom kết quả lại.</p>
+<p>Nếu một nhân viên tiếp nhận quá tải, ta mở thêm quầy.</p>
+<p>Vì quầy không giữ hồ sơ gốc, việc thêm quầy dễ hơn rất nhiều so với việc chia đôi một database đơn máy.</p>
+<h1 id="pd-bộ-não-điều-phối-của-cụm">PD: bộ não điều phối của cụm<a class="anchor ms-1" href="#pd-bộ-não-điều-phối-của-cụm"><i class="fas fa-link"></i></a></h1>
+<p>PD là viết tắt của <strong>Placement Driver</strong>.</p>
+<p>Tài liệu TiDB gọi PD là “bộ não” của toàn bộ cụm.</p>
+<p>PD giữ:</p>
+<ul>
+<li>Topology của cluster.</li>
+<li>Metadata phân bố dữ liệu.</li>
+<li>Region nào đang nằm ở TiKV nào.</li>
+<li>Replica nào đang là leader.</li>
+<li>Tình trạng tải của các node.</li>
+<li>Quy tắc đặt bản sao.</li>
+<li>Timestamp cho giao dịch phân tán.</li>
+<li>Lệnh điều chuyển dữ liệu giữa các node.</li>
+</ul>
+<p>PD thường được triển khai thành một cụm có số node lẻ, ít nhất ba node, để duy trì tính sẵn sàng cao. (<a href="https://docs.pingcap.com/tidb/stable/tidb-architecture/" title="TiDB Architecture | TiDB Docs" target="_blank" rel="noopener noreferrer">PingCAP Docs</a>)</p>
+<p>Giả sử vừa thêm một TiKV mới vào cluster.</p>
+<p>Ổ đĩa của nó đang trống.</p>
+<p>Các TiKV cũ thì đầy và nóng như bếp lẩu.</p>
+<p>PD quan sát trạng thái rồi từ từ điều chuyển các Region sang node mới.</p>
+<p>Nó không bê nguyên database từ máy này sang máy kia trong một lần.</p>
+<p>Nó chuyển từng mảnh nhỏ, cân bằng dần tải đọc, tải ghi và dung lượng.</p>
+<p>PD cũng cấp timestamp cho transaction.</p>
+<p>Trong một hệ thống phân tán, thời gian không chỉ là con số hiển thị ở góc màn hình.</p>
+<p>Nó là trật tự của thế giới.</p>
+<p>Transaction nào bắt đầu trước?</p>
+<p>Transaction nào commit sau?</p>
+<p>Một câu truy vấn được phép nhìn thấy phiên bản dữ liệu nào?</p>
+<p>Nếu nhiều máy tự nhìn đồng hồ riêng rồi tranh luận với nhau, hệ thống sẽ nhanh chóng biến thành một gia đình có năm chiếc đồng hồ treo tường, mỗi cái chỉ một giờ khác nhau và ai cũng tin mình đúng.</p>
+<p>PD cung cấp một trục thời gian logic để toàn cluster thống nhất về thứ tự giao dịch.</p>
+<h1 id="tikv-nơi-dữ-liệu-thực-sự-nằm-xuống">TiKV: nơi dữ liệu thực sự nằm xuống<a class="anchor ms-1" href="#tikv-nơi-dữ-liệu-thực-sự-nằm-xuống"><i class="fas fa-link"></i></a></h1>
+<p>TiKV là lớp lưu trữ dạng key-value phân tán.</p>
+<p>TiDB Server hiểu bảng, cột, index và SQL.</p>
+<p>TiKV chủ yếu hiểu:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Key → Value
+</span></span></code></pre></div><p>Một dòng SQL như:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">order_id = 1001
+</span></span><span class="line"><span class="ln">2</span><span class="cl">customer_id = 88
+</span></span><span class="line"><span class="ln">3</span><span class="cl">total_amount = 12.000.000
+</span></span></code></pre></div><p>khi đi xuống TiKV sẽ được mã hóa thành các key-value có thứ tự.</p>
+<p>Có thể hình dung đơn giản:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">table/orders/row/1001
+</span></span><span class="line"><span class="ln">2</span><span class="cl">    → {customer_id: 88, total_amount: 12000000}
+</span></span></code></pre></div><p>Index cũng trở thành những key riêng:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">table/orders/index/customer_id/88/1001
+</span></span><span class="line"><span class="ln">2</span><span class="cl">    → empty
+</span></span></code></pre></div><p>Cách mã hóa thực tế phức tạp hơn, nhưng ý chính là:</p>
+<blockquote>
+<p>Một dòng trong bảng không còn là một cục duy nhất nằm yên trên đĩa.</p>
+</blockquote>
+<p>Nó có thể tạo ra nhiều entry:</p>
+<ul>
+<li>Dữ liệu của dòng.</li>
+<li>Primary key.</li>
+<li>Secondary index.</li>
+<li>Thông tin phiên bản.</li>
+<li>Lock tạm thời của transaction.</li>
+</ul>
+<p>Không gian key-value của TiKV được chia thành những khoảng liên tục gọi là <strong>Region</strong>.</p>
+<p>Mỗi Region giữ một đoạn key:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">[StartKey, EndKey)
+</span></span></code></pre></div><p>Khi Region lớn lên đến một ngưỡng nhất định, nó có thể được tách thành những Region nhỏ hơn. Những Region này được phân phối trên nhiều TiKV để hệ thống mở rộng dung lượng và tải xử lý theo chiều ngang. (<a href="https://docs.pingcap.com/tidb/stable/tidb-architecture/" title="TiDB Architecture | TiDB Docs" target="_blank" rel="noopener noreferrer">PingCAP Docs</a>)</p>
+<p>Nếu database là một đất nước, Region giống các tỉnh.</p>
+<p>Mỗi tỉnh quản lý một dải địa chỉ nhất định.</p>
+<p>PD biết tỉnh nào đang nằm trên máy nào.</p>
+<p>TiDB Server biết phải gửi câu hỏi đến đâu.</p>
+<h1 id="raft-một-dữ-liệu-nhiều-bản-sao">Raft: một dữ liệu, nhiều bản sao<a class="anchor ms-1" href="#raft-một-dữ-liệu-nhiều-bản-sao"><i class="fas fa-link"></i></a></h1>
+<p>Dữ liệu quan trọng không nên chỉ có một bản.</p>
+<p>Một ổ SSD có thể chết.</p>
+<p>Một máy chủ có thể mất nguồn.</p>
+<p>Một rack có thể mất mạng.</p>
+<p>Một trung tâm dữ liệu có thể gặp sự cố.</p>
+<p>TiKV thường giữ nhiều replica cho mỗi Region; cấu hình phổ biến mặc định là ba replica. Các replica của cùng một Region tạo thành một nhóm Raft. Mọi thay đổi được ghi thành Raft log và được sao chép sang các thành viên khác; một lần ghi chỉ được xem là thành công sau khi đạt sự đồng thuận của đa số replica. (<a href="https://github.com/pingcap/tidb" title="GitHub - pingcap/tidb: TiDB is built for agentic workloads that grow unpredictably, with ACID guarantees and native support for transactions, analytics, and vector search. No data silos. No noisy neighbors. No infrastructure ceiling. · GitHub" target="_blank" rel="noopener noreferrer">GitHub</a>)</p>
+<p>Ví dụ một Region có ba replica:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">TiKV A: Leader
+</span></span><span class="line"><span class="ln">2</span><span class="cl">TiKV B: Follower
+</span></span><span class="line"><span class="ln">3</span><span class="cl">TiKV C: Follower
+</span></span></code></pre></div><p>Khi có dữ liệu mới:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Ứng dụng
+</span></span><span class="line"><span class="ln">2</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln">3</span><span class="cl">TiDB Server
+</span></span><span class="line"><span class="ln">4</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln">5</span><span class="cl">Region Leader trên TiKV A
+</span></span><span class="line"><span class="ln">6</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln">7</span><span class="cl">Raft Log
+</span></span><span class="line"><span class="ln">8</span><span class="cl">    ├── TiKV B
+</span></span><span class="line"><span class="ln">9</span><span class="cl">    └── TiKV C
+</span></span></code></pre></div><p>Nếu A và B đã ghi thành công, nhóm có đa số hai trên ba.</p>
+<p>Transaction có thể tiếp tục.</p>
+<p>Nếu TiKV A chết, Raft có thể bầu một leader mới từ các replica còn sống.</p>
+<p>Cả quá trình này không miễn phí.</p>
+<p>Một dòng dữ liệu được ứng dụng ghi một lần có thể phải:</p>
+<ul>
+<li>Đi qua mạng.</li>
+<li>Ghi log.</li>
+<li>Nhân ra nhiều bản.</li>
+<li>Chờ đa số xác nhận.</li>
+<li>Đồng bộ trạng thái transaction.</li>
+</ul>
+<p>Đó là cái giá vật lý của tính nhất quán và khả năng chịu lỗi.</p>
+<p>Không có chữ “high availability” nào hoàn toàn ảo.</p>
+<p>Phía sau nó luôn là thêm máy, thêm ổ đĩa, thêm dây mạng, thêm điện và thêm những gói tin đang chạy trong bóng tối.</p>
+<h1 id="tiflash-cùng-dữ-liệu-một-cách-xếp-khác">TiFlash: cùng dữ liệu, một cách xếp khác<a class="anchor ms-1" href="#tiflash-cùng-dữ-liệu-một-cách-xếp-khác"><i class="fas fa-link"></i></a></h1>
+<p>TiKV lưu dữ liệu theo hướng phù hợp với transaction.</p>
+<p>Ví dụ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="ln">1</span><span class="cl"><span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w">
+</span></span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="k">FROM</span><span class="w"> </span><span class="n">orders</span><span class="w">
+</span></span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="k">WHERE</span><span class="w"> </span><span class="n">order_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1001</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><p>Ta cần lấy một số ít dòng bằng primary key hoặc index.</p>
+<p>Đây là thế giới OLTP:</p>
+<ul>
+<li>Nhiều giao dịch nhỏ.</li>
+<li>Đọc ít dòng.</li>
+<li>Ghi thường xuyên.</li>
+<li>Phản hồi nhanh.</li>
+<li>Cần nhất quán.</li>
+</ul>
+<p>Nhưng một báo cáo có thể hỏi:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="ln">1</span><span class="cl"><span class="k">SELECT</span><span class="w">
+</span></span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="w">    </span><span class="n">province</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="w">    </span><span class="k">SUM</span><span class="p">(</span><span class="n">total_amount</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="ln">4</span><span class="cl"><span class="k">FROM</span><span class="w"> </span><span class="n">orders</span><span class="w">
+</span></span></span><span class="line"><span class="ln">5</span><span class="cl"><span class="k">WHERE</span><span class="w"> </span><span class="n">order_date</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="s1">&#39;2026-07-01&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="ln">6</span><span class="cl"><span class="k">GROUP</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">province</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><p>Câu truy vấn này có thể phải đọc hàng trăm triệu dòng nhưng chỉ cần vài cột.</p>
+<p>Đây là thế giới phân tích.</p>
+<p>Nếu đọc toàn bộ dữ liệu dạng hàng, máy phải kéo qua nhiều cột không cần thiết.</p>
+<p>TiFlash giải quyết vấn đề bằng cách giữ bản sao dữ liệu dạng cột.</p>
+<p>Thay vì xếp:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Đơn 1: ngày, tỉnh, khách hàng, doanh thu
+</span></span><span class="line"><span class="ln">2</span><span class="cl">Đơn 2: ngày, tỉnh, khách hàng, doanh thu
+</span></span><span class="line"><span class="ln">3</span><span class="cl">Đơn 3: ngày, tỉnh, khách hàng, doanh thu
+</span></span></code></pre></div><p>TiFlash có thể tổ chức gần với:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Cột ngày:       ngày 1, ngày 2, ngày 3
+</span></span><span class="line"><span class="ln">2</span><span class="cl">Cột tỉnh:       tỉnh 1, tỉnh 2, tỉnh 3
+</span></span><span class="line"><span class="ln">3</span><span class="cl">Cột doanh thu:  tiền 1, tiền 2, tiền 3
+</span></span></code></pre></div><p>Khi báo cáo chỉ cần tỉnh và doanh thu, hệ thống không phải đọc mọi cột khác.</p>
+<p>TiFlash là thành phần giúp TiDB phục vụ mô hình <strong>HTAP</strong> — Hybrid Transactional and Analytical Processing. Dữ liệu được ghi vào TiKV rồi sao chép sang TiFlash dưới vai trò Raft Learner. Việc sao chép diễn ra bất đồng bộ, nhưng khi đọc, TiFlash kiểm tra tiến độ Raft và MVCC để cung cấp snapshot nhất quán. Ứng dụng không ghi trực tiếp vào TiFlash. (<a href="https://docs.pingcap.com/tidb/stable/tiflash-overview/" title="TiFlash Overview | TiDB Docs" target="_blank" rel="noopener noreferrer">PingCAP Docs</a>)</p>
+<p>Ta có thể hình dung:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">                     ┌── TiKV ───── OLTP
+</span></span><span class="line"><span class="ln">2</span><span class="cl">Ứng dụng → TiDB ─────┤
+</span></span><span class="line"><span class="ln">3</span><span class="cl">                     └── TiFlash ── OLAP
+</span></span></code></pre></div><p>Cùng một cánh cửa SQL.</p>
+<p>Nhưng phía sau có hai cách sắp xếp dữ liệu cho hai loại công việc.</p>
+<h1 id="một-câu-sql-đi-qua-tidb-như-thế-nào">Một câu SQL đi qua TiDB như thế nào?<a class="anchor ms-1" href="#một-câu-sql-đi-qua-tidb-như-thế-nào"><i class="fas fa-link"></i></a></h1>
+<p>Giả sử ứng dụng gửi:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="ln">1</span><span class="cl"><span class="k">SELECT</span><span class="w"> </span><span class="n">order_id</span><span class="p">,</span><span class="w"> </span><span class="n">total_amount</span><span class="w">
+</span></span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="k">FROM</span><span class="w"> </span><span class="n">orders</span><span class="w">
+</span></span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="k">WHERE</span><span class="w"> </span><span class="n">customer_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">88</span><span class="w">
+</span></span></span><span class="line"><span class="ln">4</span><span class="cl"><span class="w">  </span><span class="k">AND</span><span class="w"> </span><span class="n">order_date</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="s1">&#39;2026-07-01&#39;</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><p>TiDB Server thực hiện một chuỗi công việc.</p>
+<h2 id="bước-1-phân-tích-sql">Bước 1: Phân tích SQL<a class="anchor ms-1" href="#bước-1-phân-tích-sql"><i class="fas fa-link"></i></a></h2>
+<p>TiDB xác định:</p>
+<ul>
+<li>Bảng nào được truy vấn.</li>
+<li>Cột nào được lấy.</li>
+<li>Điều kiện nào được sử dụng.</li>
+<li>Có index phù hợp không.</li>
+<li>Người dùng có quyền không.</li>
+</ul>
+<h2 id="bước-2-tạo-execution-plan">Bước 2: Tạo execution plan<a class="anchor ms-1" href="#bước-2-tạo-execution-plan"><i class="fas fa-link"></i></a></h2>
+<p>Optimizer cân nhắc:</p>
+<ul>
+<li>Full table scan.</li>
+<li>Index scan.</li>
+<li>Đọc TiKV.</li>
+<li>Đọc TiFlash.</li>
+<li>Thứ tự join.</li>
+<li>Phần xử lý nào có thể đẩy xuống storage.</li>
+</ul>
+<p>Nếu thống kê sai hoặc thiếu index, optimizer có thể chọn một con đường rất dài để đến một căn nhà ngay đầu hẻm.</p>
+<p>Distributed database không chữa khỏi SQL tệ.</p>
+<p>Nó chỉ cho câu SQL tệ thêm nhiều máy để chạy.</p>
+<p>Tài liệu TiDB vẫn xem full table scan, thiếu index và schema tạo ra contention hoặc hotspot là những nguyên nhân phổ biến của hiệu năng kém. (<a href="https://docs.pingcap.com/tidb/stable/dev-guide-optimize-sql/?utm_source=chatgpt.com" title="SQL Performance Tuning | TiDB Docs" target="_blank" rel="noopener noreferrer">PingCAP Docs</a>)</p>
+<h2 id="bước-3-tìm-region">Bước 3: Tìm Region<a class="anchor ms-1" href="#bước-3-tìm-region"><i class="fas fa-link"></i></a></h2>
+<p>TiDB lấy thông tin từ PD hoặc cache cục bộ để biết những Region nào chứa key cần đọc.</p>
+<h2 id="bước-4-đẩy-công-việc-xuống-storage">Bước 4: Đẩy công việc xuống storage<a class="anchor ms-1" href="#bước-4-đẩy-công-việc-xuống-storage"><i class="fas fa-link"></i></a></h2>
+<p>Thay vì kéo toàn bộ dữ liệu về TiDB Server rồi mới lọc, một phần filter và aggregation có thể được đẩy xuống TiKV hoặc TiFlash.</p>
+<p>Ví dụ, TiKV chỉ trả những dòng có <code>customer_id = 88</code>.</p>
+<p>TiFlash có thể tính một phần <code>SUM()</code> ngay gần nơi dữ liệu đang nằm.</p>
+<p>Đây được gọi là đẩy tính toán xuống gần dữ liệu.</p>
+<p>Bởi di chuyển vài con số tổng hợp thường rẻ hơn kéo hàng triệu dòng qua mạng.</p>
+<h2 id="bước-5-gom-kết-quả">Bước 5: Gom kết quả<a class="anchor ms-1" href="#bước-5-gom-kết-quả"><i class="fas fa-link"></i></a></h2>
+<p>TiDB Server nhận kết quả từ nhiều Region, merge, sort hoặc aggregate thêm rồi trả về ứng dụng.</p>
+<p>Một câu SQL ngắn có thể khiến hàng chục máy cùng làm việc.</p>
+<p>Nhưng người viết ứng dụng vẫn chỉ nhìn thấy một kết nối database.</p>
+<h1 id="transaction-phân-tán-hoạt-động-như-thế-nào">Transaction phân tán hoạt động như thế nào?<a class="anchor ms-1" href="#transaction-phân-tán-hoạt-động-như-thế-nào"><i class="fas fa-link"></i></a></h1>
+<p>Giả sử khách hàng đặt một đơn hàng.</p>
+<p>Hệ thống cần:</p>
+<ul>
+<li>Tạo đơn.</li>
+<li>Trừ tồn kho.</li>
+<li>Ghi thanh toán.</li>
+<li>Cộng điểm thành viên.</li>
+</ul>
+<p>Nếu một bước thất bại, toàn bộ giao dịch cần được hủy.</p>
+<p>Trên một database đơn máy, engine có thể điều phối bằng log và lock bên trong một tiến trình.</p>
+<p>Trong TiDB, các key liên quan có thể nằm trên nhiều Region.</p>
+<p>TiDB hỗ trợ cả transaction lạc quan và transaction bi quan; chế độ bi quan được sử dụng mặc định trong các phiên bản hiện đại. Các giao dịch phân tán dựa trên MVCC và quy trình commit nhiều giai đoạn, trong đó transaction phải phối hợp các key nằm trên nhiều TiKV. (<a href="https://docs.pingcap.com/tidb/stable/transaction-overview/?utm_source=chatgpt.com" title="Transactions | TiDB Docs" target="_blank" rel="noopener noreferrer">PingCAP Docs</a>)</p>
+<p>Một luồng đơn giản có thể hình dung:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">BEGIN
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">  ↓
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">Lấy start timestamp
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">  ↓
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">Đọc snapshot tương ứng
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">  ↓
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">Thực hiện thay đổi
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">  ↓
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">Prewrite các key
+</span></span><span class="line"><span class="ln">10</span><span class="cl">  ↓
+</span></span><span class="line"><span class="ln">11</span><span class="cl">Kiểm tra conflict
+</span></span><span class="line"><span class="ln">12</span><span class="cl">  ↓
+</span></span><span class="line"><span class="ln">13</span><span class="cl">Commit primary
+</span></span><span class="line"><span class="ln">14</span><span class="cl">  ↓
+</span></span><span class="line"><span class="ln">15</span><span class="cl">Commit các key còn lại
+</span></span><span class="line"><span class="ln">16</span><span class="cl">  ↓
+</span></span><span class="line"><span class="ln">17</span><span class="cl">COMMIT
+</span></span></code></pre></div><p>Trong transaction bi quan, hệ thống có thể đặt lock sớm để ngăn các giao dịch khác cùng sửa một tài nguyên.</p>
+<p>Trong transaction lạc quan, hệ thống giả định xung đột ít xảy ra, sau đó kiểm tra conflict lúc chuẩn bị commit.</p>
+<p>Nếu hai nhân viên cùng sửa số lượng tồn kho của một sản phẩm, TiKV là nơi phát hiện xung đột vì các TiDB Server phía trên là stateless và không giữ trạng thái chung về mọi transaction đang chạy. (<a href="https://docs.pingcap.com/tidb/stable/optimistic-transaction/" title="TiDB Optimistic Transaction Model | TiDB Docs" target="_blank" rel="noopener noreferrer">PingCAP Docs</a>)</p>
+<p>Điều này giải thích một nguyên tắc rất quan trọng:</p>
+<blockquote>
+<p>Transaction phân tán càng dài và càng chạm nhiều dữ liệu thì càng đắt.</p>
+</blockquote>
+<p>Một transaction lớn phải giữ nhiều thay đổi, nhiều lock, nhiều phiên bản và thực hiện nhiều lần trao đổi qua mạng. Tài liệu TiDB cũng đặt giới hạn và khuyến cáo riêng cho kích thước transaction vì memory của TiDB Server có thể tăng lên nhiều lần so với dữ liệu transaction thực tế. (<a href="https://docs.pingcap.com/tidb/stable/tidb-limitations?utm_source=chatgpt.com" title="TiDB Limitations | TiDB Docs" target="_blank" rel="noopener noreferrer">PingCAP Docs</a>)</p>
+<p>Đừng lấy một triệu dòng rồi nhét vào một transaction chỉ vì câu lệnh SQL cho phép viết như vậy.</p>
+<p>Cái database có thể làm được và cái database nên bị bắt làm là hai chuyện khác nhau.</p>
+<h1 id="tidb-giải-quyết-bài-toán-sharding-như-thế-nào">TiDB giải quyết bài toán sharding như thế nào?<a class="anchor ms-1" href="#tidb-giải-quyết-bài-toán-sharding-như-thế-nào"><i class="fas fa-link"></i></a></h1>
+<p>Trong mô hình sharding thủ công, ứng dụng thường phải biết:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">customer_id % 16 = shard
+</span></span></code></pre></div><p>Điều này kéo theo:</p>
+<ul>
+<li>Routing logic trong code.</li>
+<li>Không dễ thay đổi số shard.</li>
+<li>Join xuyên shard phức tạp.</li>
+<li>Transaction xuyên shard khó.</li>
+<li>Rebalance dữ liệu đau đầu.</li>
+<li>Global index khó quản lý.</li>
+<li>Backup phải ghép nhiều nơi.</li>
+<li>Schema migration phải chạy trên mọi shard.</li>
+</ul>
+<p>TiDB đẩy phần lớn việc phân mảnh xuống lớp storage.</p>
+<p>Ứng dụng gửi SQL tới TiDB Server.</p>
+<p>TiDB tìm Region.</p>
+<p>PD điều phối Region.</p>
+<p>TiKV lưu và sao chép dữ liệu.</p>
+<p>Khi thêm TiKV, các Region có thể được di chuyển để sử dụng dung lượng mới.</p>
+<p>Ứng dụng không cần tính:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln">1</span><span class="cl"><span class="n">shard_id</span> <span class="o">=</span> <span class="n">customer_id</span> <span class="o">%</span> <span class="mi">16</span>
+</span></span></code></pre></div><p>Nhưng “không cần sharding thủ công” không có nghĩa “không cần hiểu dữ liệu phân bố”.</p>
+<p>Nếu thiết kế key khiến toàn bộ lượt ghi dồn vào một Region, cluster có 100 máy vẫn có thể bị nghẽn tại một điểm.</p>
+<h1 id="hotspot-có-nhiều-đường-nhưng-mọi-người-cùng-chen-vào-một-cổng">Hotspot: có nhiều đường nhưng mọi người cùng chen vào một cổng<a class="anchor ms-1" href="#hotspot-có-nhiều-đường-nhưng-mọi-người-cùng-chen-vào-một-cổng"><i class="fas fa-link"></i></a></h1>
+<p>Giả sử bảng dùng primary key tự tăng:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="ln">1</span><span class="cl"><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">orders</span><span class="w"> </span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="w">    </span><span class="n">id</span><span class="w"> </span><span class="nb">BIGINT</span><span class="w"> </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="n">AUTO_INCREMENT</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="w">    </span><span class="p">...</span><span class="w">
+</span></span></span><span class="line"><span class="ln">4</span><span class="cl"><span class="p">);</span><span class="w">
+</span></span></span></code></pre></div><p>Các giá trị mới lần lượt là:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">1001
+</span></span><span class="line"><span class="ln">2</span><span class="cl">1002
+</span></span><span class="line"><span class="ln">3</span><span class="cl">1003
+</span></span><span class="line"><span class="ln">4</span><span class="cl">1004
+</span></span></code></pre></div><p>Vì key tăng liên tục, dữ liệu mới thường được ghi vào phần cuối của dải key.</p>
+<p>Trong một thời điểm, phần cuối đó thuộc về một Region.</p>
+<p>Hàng nghìn lượt ghi cùng lao vào Region này.</p>
+<p>Những Region khác ngồi chơi.</p>
+<p>Đây là write hotspot.</p>
+<p>TiDB có cơ chế cân bằng tải, nhưng một access pattern dồn mọi lượt ghi vào một key range vẫn có thể tạo ra điểm nóng. Tài liệu TiDB khuyến nghị xem xét <code>AUTO_RANDOM</code>, <code>SHARD_ROW_ID_BITS</code> hoặc thiết kế partition phù hợp cho những bảng ghi đồng thời cao. (<a href="https://docs.pingcap.com/tidb/stable/troubleshoot-hot-spot-issues/?utm_source=chatgpt.com" title="Troubleshoot Hotspot Issues | TiDB Docs" target="_blank" rel="noopener noreferrer">PingCAP Docs</a>)</p>
+<p>Ví dụ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="ln">1</span><span class="cl"><span class="k">CREATE</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">orders</span><span class="w"> </span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="w">    </span><span class="n">id</span><span class="w"> </span><span class="nb">BIGINT</span><span class="w"> </span><span class="k">PRIMARY</span><span class="w"> </span><span class="k">KEY</span><span class="w"> </span><span class="n">AUTO_RANDOM</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="w">    </span><span class="n">customer_id</span><span class="w"> </span><span class="nb">BIGINT</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="ln">4</span><span class="cl"><span class="w">    </span><span class="n">total_amount</span><span class="w"> </span><span class="nb">DECIMAL</span><span class="p">(</span><span class="mi">18</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="k">NOT</span><span class="w"> </span><span class="k">NULL</span><span class="w">
+</span></span></span><span class="line"><span class="ln">5</span><span class="cl"><span class="p">);</span><span class="w">
+</span></span></span></code></pre></div><p>Nhưng <code>AUTO_RANDOM</code> không phải thần dược.</p>
+<p>Nó làm key khó đoán và không còn tăng tuần tự đẹp đẽ như số thứ tự xếp hàng.</p>
+<p>Nếu ứng dụng phụ thuộc vào ID tăng dần để phân trang hoặc thể hiện thứ tự thời gian, cần thiết kế lại.</p>
+<p>Trong distributed system, rất nhiều thứ có hai mặt.</p>
+<p>Ta rải dữ liệu ra để ghi nhanh hơn.</p>
+<p>Đổi lại, ta mất sự tuần tự đơn giản.</p>
+<h1 id="htap-có-thật-sự-thay-thế-data-warehouse-không">HTAP có thật sự thay thế Data Warehouse không?<a class="anchor ms-1" href="#htap-có-thật-sự-thay-thế-data-warehouse-không"><i class="fas fa-link"></i></a></h1>
+<p>TiDB có thể cho ứng dụng giao dịch trên TiKV và chạy phân tích gần thời gian thực trên TiFlash.</p>
+<p>Điều này rất hữu ích trong các bài toán như:</p>
+<ul>
+<li>Dashboard đơn hàng trong ngày.</li>
+<li>Theo dõi tồn kho gần thời gian thực.</li>
+<li>Phát hiện gian lận.</li>
+<li>Quan sát hiệu quả chương trình khuyến mãi.</li>
+<li>Phân tích hành vi ngay sau khi phát sinh.</li>
+<li>Tra cứu lịch sử khách hàng trong lúc tư vấn.</li>
+</ul>
+<p>Nhưng HTAP không đồng nghĩa với việc mọi Data Warehouse và Lakehouse nên bị xóa.</p>
+<p>Một hệ thống phân tích vẫn có thể cần:</p>
+<ul>
+<li>Lưu lịch sử nhiều năm với chi phí thấp.</li>
+<li>Kết hợp hàng chục nguồn dữ liệu.</li>
+<li>Chạy ETL rất lớn.</li>
+<li>Lưu file, ảnh, log và dữ liệu phi cấu trúc.</li>
+<li>Huấn luyện machine learning.</li>
+<li>Quản trị dữ liệu Bronze, Silver, Gold.</li>
+<li>Truy vấn hàng petabyte trên object storage.</li>
+</ul>
+<p>TiDB là database phân tán phục vụ dữ liệu đang sống và thay đổi.</p>
+<p>Apache Iceberg là table format quản lý các file phân tích trong Data Lake.</p>
+<p>Hai hệ thống đứng ở hai tầng khác nhau.</p>
+<p>Một kiến trúc thực tế có thể là:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Ứng dụng nghiệp vụ
+</span></span><span class="line"><span class="ln">2</span><span class="cl">        ↓
+</span></span><span class="line"><span class="ln">3</span><span class="cl">       TiDB
+</span></span><span class="line"><span class="ln">4</span><span class="cl">        ↓
+</span></span><span class="line"><span class="ln">5</span><span class="cl">      TiCDC
+</span></span><span class="line"><span class="ln">6</span><span class="cl">        ↓
+</span></span><span class="line"><span class="ln">7</span><span class="cl"> Kafka / Object Storage
+</span></span><span class="line"><span class="ln">8</span><span class="cl">        ↓
+</span></span><span class="line"><span class="ln">9</span><span class="cl">Apache Iceberg Lakehouse
+</span></span></code></pre></div><p>TiDB giữ sự thật vận hành hiện tại.</p>
+<p>Lakehouse giữ lịch sử dài hạn và phục vụ những phân tích rộng hơn.</p>
+<p>Đừng bắt một công cụ làm mọi việc chỉ vì brochure của nó có nhiều mũi tên.</p>
+<h1 id="hệ-sinh-thái-xung-quanh-tidb">Hệ sinh thái xung quanh TiDB<a class="anchor ms-1" href="#hệ-sinh-thái-xung-quanh-tidb"><i class="fas fa-link"></i></a></h1>
+<p>TiDB không chỉ có bốn tiến trình chính.</p>
+<p>PingCAP xây thêm nhiều công cụ để giải quyết những việc xảy ra trước, trong và sau khi database chạy.</p>
+<h1 id="tiup">TiUP<a class="anchor ms-1" href="#tiup"><i class="fas fa-link"></i></a></h1>
+<p>TiUP là công cụ quản lý package và cluster trong hệ sinh thái TiDB.</p>
+<p>Nó có thể hỗ trợ:</p>
+<ul>
+<li>Cài các component.</li>
+<li>Triển khai cluster.</li>
+<li>Scale node.</li>
+<li>Upgrade.</li>
+<li>Kiểm tra trạng thái.</li>
+<li>Chạy môi trường thử nghiệm.</li>
+</ul>
+<p>TiUP được đưa vào hệ sinh thái từ TiDB 4.0 để đơn giản hóa việc quản lý các thành phần TiDB, PD, TiKV và những công cụ liên quan. (<a href="https://docs.pingcap.com/tidb/stable/tiup-overview/?utm_source=chatgpt.com" title="TiUP Overview | TiDB Docs" target="_blank" rel="noopener noreferrer">PingCAP Docs</a>)</p>
+<p>TiUP không khiến distributed database trở nên đơn giản như SQLite.</p>
+<p>Nó chỉ giúp con quái vật có dây cương.</p>
+<h1 id="tidb-data-migration">TiDB Data Migration<a class="anchor ms-1" href="#tidb-data-migration"><i class="fas fa-link"></i></a></h1>
+<p>TiDB Data Migration, thường gọi là DM, được dùng để chuyển dữ liệu từ những database tương thích MySQL như MySQL, MariaDB hoặc Aurora MySQL sang TiDB.</p>
+<p>DM hỗ trợ:</p>
+<ul>
+<li>Full migration.</li>
+<li>Incremental replication.</li>
+<li>Đọc MySQL binlog.</li>
+<li>Di chuyển DML và DDL.</li>
+<li>Gom dữ liệu từ nhiều shard MySQL vào một TiDB.</li>
+</ul>
+<p>Khả năng gom nhiều shard là một use case đáng chú ý.</p>
+<p>Một công ty từng chia MySQL thành 32 shard có thể dùng DM để hợp nhất chúng vào một logical database TiDB, thay vì tiếp tục duy trì routing logic trong ứng dụng. (<a href="https://docs.pingcap.com/tidb/stable/migration-tools/?utm_source=chatgpt.com" title="TiDB Migration Tools Overview | TiDB Docs" target="_blank" rel="noopener noreferrer">PingCAP Docs</a>)</p>
+<h1 id="tidb-lightning">TiDB Lightning<a class="anchor ms-1" href="#tidb-lightning"><i class="fas fa-link"></i></a></h1>
+<p>TiDB Lightning phục vụ việc import khối lượng dữ liệu lớn.</p>
+<p>Nếu DM giống xe tải chạy đều đặn mang dữ liệu từ MySQL sang TiDB, Lightning giống một đoàn tàu hàng được dùng trong đợt chuyển kho lớn.</p>
+<p>Nó thường được dùng khi cần:</p>
+<ul>
+<li>Nạp dữ liệu lịch sử.</li>
+<li>Khởi tạo cluster mới.</li>
+<li>Di chuyển lượng dữ liệu lớn.</li>
+<li>Khôi phục dữ liệu từ file dump.</li>
+</ul>
+<h1 id="ticdc">TiCDC<a class="anchor ms-1" href="#ticdc"><i class="fas fa-link"></i></a></h1>
+<p>TiCDC đọc các thay đổi từ TiKV, sắp xếp và hợp nhất chúng rồi gửi sang hệ thống downstream thông qua các changefeed.</p>
+<p>Downstream có thể là:</p>
+<ul>
+<li>Kafka.</li>
+<li>Một TiDB khác.</li>
+<li>Một hệ thống tương thích MySQL.</li>
+<li>Pipeline dữ liệu khác.</li>
+</ul>
+<p>TiCDC là cây cầu để dữ liệu đang thay đổi trong TiDB chảy sang các hệ thống phía sau. (<a href="https://docs.pingcap.com/tidb/stable/ticdc-overview/" title="TiCDC Overview | TiDB Docs" target="_blank" rel="noopener noreferrer">PingCAP Docs</a>)</p>
+<p>Ví dụ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">TiDB chính
+</span></span><span class="line"><span class="ln">2</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln">3</span><span class="cl">TiCDC
+</span></span><span class="line"><span class="ln">4</span><span class="cl">    ├── Kafka
+</span></span><span class="line"><span class="ln">5</span><span class="cl">    ├── Lakehouse
+</span></span><span class="line"><span class="ln">6</span><span class="cl">    ├── Search engine
+</span></span><span class="line"><span class="ln">7</span><span class="cl">    └── TiDB dự phòng
+</span></span></code></pre></div><h1 id="backup--restore">Backup & Restore<a class="anchor ms-1" href="#backup--restore"><i class="fas fa-link"></i></a></h1>
+<p>BR là công cụ backup và restore phân tán của TiDB.</p>
+<p>Nó hỗ trợ:</p>
+<ul>
+<li>Snapshot backup.</li>
+<li>Log backup.</li>
+<li>Full restore.</li>
+<li>Khôi phục đến một thời điểm cụ thể.</li>
+</ul>
+<p>Một hệ thống có ba replica vẫn cần backup.</p>
+<p>Replica bảo vệ khỏi hỏng máy.</p>
+<p>Nó không luôn bảo vệ khỏi:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="ln">1</span><span class="cl"><span class="k">DELETE</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">orders</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><p>Nếu câu lệnh xóa được commit hợp lệ, Raft sẽ rất tận tâm sao chép sai lầm đó sang các replica còn lại.</p>
+<p>High availability giữ cho hệ thống tiếp tục hoạt động.</p>
+<p>Backup giúp quay lại trước khi con người làm điều ngu ngốc.</p>
+<p>BR hỗ trợ cả snapshot và Point-in-Time Recovery, nhưng tài liệu khuyến nghị sử dụng phiên bản BR tương thích với phiên bản cluster và phải xây quy trình phục hồi rõ ràng. (<a href="https://docs.pingcap.com/tidb/stable/backup-and-restore-overview/?utm_source=chatgpt.com" title="TiDB Backup &amp; Restore Overview | TiDB Docs" target="_blank" rel="noopener noreferrer">PingCAP Docs</a>)</p>
+<h1 id="tidb-dashboard">TiDB Dashboard<a class="anchor ms-1" href="#tidb-dashboard"><i class="fas fa-link"></i></a></h1>
+<p>TiDB Dashboard giúp quan sát:</p>
+<ul>
+<li>Slow query.</li>
+<li>Top SQL.</li>
+<li>Cluster topology.</li>
+<li>Region.</li>
+<li>Hotspot.</li>
+<li>Node health.</li>
+<li>Query plan.</li>
+<li>CPU và latency.</li>
+</ul>
+<p>Top SQL có thể chỉ ra những nhóm câu lệnh đang ăn nhiều CPU nhất trên TiDB và TiKV. (<a href="https://docs.pingcap.com/tidb/stable/top-sql?utm_source=chatgpt.com" title="TiDB Dashboard Top SQL page | TiDB Docs" target="_blank" rel="noopener noreferrer">PingCAP Docs</a>)</p>
+<p>Một database phân tán không được giám sát giống một đàn voi chạy trong sương mù.</p>
+<p>Chúng rất mạnh.</p>
+<p>Nhưng ta không biết con nào sắp đạp lên hàng rào.</p>
+<h1 id="ví-dụ-tidb-trong-hệ-thống-bán-lẻ">Ví dụ TiDB trong hệ thống bán lẻ<a class="anchor ms-1" href="#ví-dụ-tidb-trong-hệ-thống-bán-lẻ"><i class="fas fa-link"></i></a></h1>
+<p>Giả sử doanh nghiệp có:</p>
+<ul>
+<li>3.000 cửa hàng.</li>
+<li>Một triệu đơn mỗi ngày.</li>
+<li>Hàng chục triệu thay đổi tồn kho.</li>
+<li>Website và ứng dụng.</li>
+<li>Nhiều chương trình khuyến mãi.</li>
+<li>Nhu cầu báo cáo gần thời gian thực.</li>
+</ul>
+<p>Một kiến trúc có thể như sau:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">Website / Mobile / POS
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">          ↓
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">     Load Balancer
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">          ↓
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">     TiDB Servers
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">          ↓
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">   ┌──────┴──────┐
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">   │             │
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl"> TiKV          TiFlash
+</span></span><span class="line"><span class="ln">10</span><span class="cl"> OLTP           OLAP
+</span></span><span class="line"><span class="ln">11</span><span class="cl">   │             │
+</span></span><span class="line"><span class="ln">12</span><span class="cl">   └──────┬──────┘
+</span></span><span class="line"><span class="ln">13</span><span class="cl">          │
+</span></span><span class="line"><span class="ln">14</span><span class="cl">        TiCDC
+</span></span><span class="line"><span class="ln">15</span><span class="cl">          │
+</span></span><span class="line"><span class="ln">16</span><span class="cl">   Kafka / Lakehouse
+</span></span></code></pre></div><h2 id="tikv-phục-vụ">TiKV phục vụ<a class="anchor ms-1" href="#tikv-phục-vụ"><i class="fas fa-link"></i></a></h2>
+<ul>
+<li>Tạo đơn hàng.</li>
+<li>Cập nhật trạng thái thanh toán.</li>
+<li>Trừ tồn kho.</li>
+<li>Ghi lịch sử giao nhận.</li>
+<li>Tra cứu khách hàng.</li>
+<li>Kiểm tra mã khuyến mãi.</li>
+</ul>
+<h2 id="tiflash-phục-vụ">TiFlash phục vụ<a class="anchor ms-1" href="#tiflash-phục-vụ"><i class="fas fa-link"></i></a></h2>
+<ul>
+<li>Doanh thu theo tỉnh.</li>
+<li>Tỷ lệ hết hàng.</li>
+<li>Hiệu quả khuyến mãi.</li>
+<li>Sản phẩm bán nhanh trong một giờ.</li>
+<li>Số đơn đang trễ.</li>
+<li>Tồn kho theo vùng.</li>
+</ul>
+<h2 id="lakehouse-phục-vụ">Lakehouse phục vụ<a class="anchor ms-1" href="#lakehouse-phục-vụ"><i class="fas fa-link"></i></a></h2>
+<ul>
+<li>Lịch sử nhiều năm.</li>
+<li>Phân tích tài chính.</li>
+<li>Dữ liệu từ nhiều công ty.</li>
+<li>Machine learning.</li>
+<li>Forecast.</li>
+<li>Recommendation.</li>
+<li>Báo cáo quản trị lớn.</li>
+</ul>
+<p>Không có một database duy nhất nuốt cả công ty.</p>
+<p>Có một dòng chảy dữ liệu, trong đó mỗi hệ thống chịu trách nhiệm cho một loại sự thật.</p>
+<h1 id="khi-nào-nên-dùng-tidb">Khi nào nên dùng TiDB?<a class="anchor ms-1" href="#khi-nào-nên-dùng-tidb"><i class="fas fa-link"></i></a></h1>
+<h1 id="khi-database-đơn-máy-đã-chạm-giới-hạn">Khi database đơn máy đã chạm giới hạn<a class="anchor ms-1" href="#khi-database-đơn-máy-đã-chạm-giới-hạn"><i class="fas fa-link"></i></a></h1>
+<p>Dữ liệu hoặc lưu lượng đã vượt khỏi khả năng mở rộng kinh tế của một máy.</p>
+<p>Mỗi lần tăng trưởng lại phải mua máy lớn hơn.</p>
+<p>Thời gian bảo trì và failover ngày càng đáng sợ.</p>
+<h1 id="khi-doanh-nghiệp-đang-đau-vì-sharding">Khi doanh nghiệp đang đau vì sharding<a class="anchor ms-1" href="#khi-doanh-nghiệp-đang-đau-vì-sharding"><i class="fas fa-link"></i></a></h1>
+<p>Ứng dụng có quá nhiều logic:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Nếu khách miền Nam → shard A
+</span></span><span class="line"><span class="ln">2</span><span class="cl">Nếu khách miền Bắc → shard B
+</span></span><span class="line"><span class="ln">3</span><span class="cl">Nếu khách VIP → shard C
+</span></span></code></pre></div><p>Cross-shard query, transaction và schema migration đã trở thành một ngành nghề riêng trong công ty.</p>
+<h1 id="khi-cần-tính-nhất-quán-mạnh">Khi cần tính nhất quán mạnh<a class="anchor ms-1" href="#khi-cần-tính-nhất-quán-mạnh"><i class="fas fa-link"></i></a></h1>
+<p>Các bài toán như:</p>
+<ul>
+<li>Thanh toán.</li>
+<li>Tồn kho.</li>
+<li>Điểm thành viên.</li>
+<li>Đặt hàng.</li>
+<li>Giao dịch tài chính.</li>
+</ul>
+<p>không thể chấp nhận việc hai bản sao cùng tin vào hai số dư khác nhau.</p>
+<p>TiDB hỗ trợ ACID transaction xuyên các node và dùng Raft để sao chép dữ liệu theo đa số. (<a href="https://github.com/pingcap/tidb" title="GitHub - pingcap/tidb: TiDB is built for agentic workloads that grow unpredictably, with ACID guarantees and native support for transactions, analytics, and vector search. No data silos. No noisy neighbors. No infrastructure ceiling. · GitHub" target="_blank" rel="noopener noreferrer">GitHub</a>)</p>
+<h1 id="khi-đội-ngũ-đã-quen-mysql">Khi đội ngũ đã quen MySQL<a class="anchor ms-1" href="#khi-đội-ngũ-đã-quen-mysql"><i class="fas fa-link"></i></a></h1>
+<p>Ứng dụng dùng MySQL driver, ORM và cú pháp phổ biến.</p>
+<p>TiDB có thể giảm lượng code phải thay đổi so với việc chuyển sang một hệ thống có protocol hoàn toàn khác.</p>
+<p>Nhưng vẫn phải kiểm tra compatibility, không được tin bằng cảm xúc.</p>
+<h1 id="khi-cần-transaction-và-phân-tích-gần-thời-gian-thực">Khi cần transaction và phân tích gần thời gian thực<a class="anchor ms-1" href="#khi-cần-transaction-và-phân-tích-gần-thời-gian-thực"><i class="fas fa-link"></i></a></h1>
+<p>Doanh nghiệp không muốn chờ pipeline ETL vài giờ mới nhìn thấy dữ liệu mới.</p>
+<p>TiKV và TiFlash cho phép phục vụ hai kiểu workload trên cùng hệ thống logic.</p>
+<h1 id="khi-có-đội-vận-hành-đủ-trưởng-thành">Khi có đội vận hành đủ trưởng thành<a class="anchor ms-1" href="#khi-có-đội-vận-hành-đủ-trưởng-thành"><i class="fas fa-link"></i></a></h1>
+<p>TiDB giảm khó khăn của sharding thủ công.</p>
+<p>Nó không xóa sự phức tạp.</p>
+<p>Nó chuyển sự phức tạp vào:</p>
+<ul>
+<li>Raft.</li>
+<li>Region.</li>
+<li>PD.</li>
+<li>TiKV.</li>
+<li>Network.</li>
+<li>Transaction phân tán.</li>
+<li>Capacity planning.</li>
+<li>Observability.</li>
+<li>Backup.</li>
+<li>Upgrade.</li>
+</ul>
+<p>Công ty cần người hiểu những thứ đó.</p>
+<h1 id="khi-nào-không-nên-dùng-tidb">Khi nào không nên dùng TiDB?<a class="anchor ms-1" href="#khi-nào-không-nên-dùng-tidb"><i class="fas fa-link"></i></a></h1>
+<h1 id="khi-database-chỉ-có-vài-chục-gb">Khi database chỉ có vài chục GB<a class="anchor ms-1" href="#khi-database-chỉ-có-vài-chục-gb"><i class="fas fa-link"></i></a></h1>
+<p>Một ứng dụng nhỏ, tải thấp và có một PostgreSQL hoặc MySQL đang chạy tốt chưa chắc cần một cluster phân tán.</p>
+<p>Ba PD, ba TiKV, nhiều TiDB Server, monitoring và backup có thể là một đội quân quá lớn chỉ để bảo vệ một cửa hàng bán ba tô phở mỗi ngày.</p>
+<h1 id="khi-cần-latency-cực-thấp-trên-một-máy">Khi cần latency cực thấp trên một máy<a class="anchor ms-1" href="#khi-cần-latency-cực-thấp-trên-một-máy"><i class="fas fa-link"></i></a></h1>
+<p>Một database đơn máy có thể hoàn thành transaction mà không cần trao đổi qua mạng giữa nhiều node.</p>
+<p>TiDB phải trả giá cho:</p>
+<ul>
+<li>Network hop.</li>
+<li>Timestamp.</li>
+<li>Lock.</li>
+<li>Replication.</li>
+<li>Raft majority.</li>
+<li>Distributed commit.</li>
+</ul>
+<p>Không thể vừa yêu cầu dữ liệu có ba bản trên ba máy, vừa tức giận vì nó không nhanh như một lần ghi vào RAM cục bộ.</p>
+<h1 id="khi-ứng-dụng-phụ-thuộc-sâu-vào-tính-năng-riêng-của-mysql">Khi ứng dụng phụ thuộc sâu vào tính năng riêng của MySQL<a class="anchor ms-1" href="#khi-ứng-dụng-phụ-thuộc-sâu-vào-tính-năng-riêng-của-mysql"><i class="fas fa-link"></i></a></h1>
+<p>TiDB tương thích cao với giao thức và nhiều cú pháp MySQL, nhưng không tương thích hoàn toàn. Một số tính năng như stored procedure, stored function, trigger, event và một số dạng full-text search không được hỗ trợ trong nhiều mô hình triển khai. TiDB cũng không dùng giao thức replication MySQL truyền thống mà cung cấp các công cụ riêng. (<a href="https://docs.pingcap.com/tidb/stable/mysql-compatibility/?utm_source=chatgpt.com" title="MySQL Compatibility | TiDB Docs" target="_blank" rel="noopener noreferrer">PingCAP Docs</a>)</p>
+<p>Nếu toàn bộ nghiệp vụ đang nằm trong 600 stored procedure và 200 trigger, việc di chuyển sẽ không phải là:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Đổi connection string rồi đi ăn trưa.
+</span></span></code></pre></div><h1 id="khi-workload-chủ-yếu-là-phân-tích-lịch-sử-khổng-lồ">Khi workload chủ yếu là phân tích lịch sử khổng lồ<a class="anchor ms-1" href="#khi-workload-chủ-yếu-là-phân-tích-lịch-sử-khổng-lồ"><i class="fas fa-link"></i></a></h1>
+<p>Nếu dữ liệu hầu như chỉ được ghi theo batch, ít cập nhật và chủ yếu được scan trên object storage, một Lakehouse hoặc Data Warehouse chuyên dụng có thể kinh tế hơn.</p>
+<p>TiDB không nên được dùng như một ổ cứng đắt tiền để chứa mọi log từ năm 2007.</p>
+<h1 id="khi-đội-ngũ-chưa-muốn-học-distributed-system">Khi đội ngũ chưa muốn học distributed system<a class="anchor ms-1" href="#khi-đội-ngũ-chưa-muốn-học-distributed-system"><i class="fas fa-link"></i></a></h1>
+<p>Một database phân tán không biến mất chỉ vì giao diện bên ngoài trông giống MySQL.</p>
+<p>Nếu không muốn hiểu failure domain, quorum, hotspot, network latency và backup phân tán, tốt hơn hết chưa nên đặt dữ liệu quan trọng nhất của công ty vào đó.</p>
+<h1 id="những-việc-cần-làm-khi-triển-khai-tidb">Những việc cần làm khi triển khai TiDB<a class="anchor ms-1" href="#những-việc-cần-làm-khi-triển-khai-tidb"><i class="fas fa-link"></i></a></h1>
+<h1 id="kiểm-kê-mức-độ-tương-thích-mysql">Kiểm kê mức độ tương thích MySQL<a class="anchor ms-1" href="#kiểm-kê-mức-độ-tương-thích-mysql"><i class="fas fa-link"></i></a></h1>
+<p>Trước khi di chuyển, cần kiểm tra:</p>
+<ul>
+<li>Kiểu dữ liệu.</li>
+<li>Stored procedure.</li>
+<li>Trigger.</li>
+<li>Event.</li>
+<li>Full-text index.</li>
+<li>SQL mode.</li>
+<li>Collation.</li>
+<li>Transaction isolation.</li>
+<li>Auto increment.</li>
+<li>Cách sử dụng DDL.</li>
+<li>Công cụ backup.</li>
+<li>Cơ chế replication.</li>
+<li>ORM và driver.</li>
+</ul>
+<p>“Mysql-compatible” là một dải phổ.</p>
+<p>Không phải dấu bằng.</p>
+<h1 id="benchmark-bằng-workload-thật">Benchmark bằng workload thật<a class="anchor ms-1" href="#benchmark-bằng-workload-thật"><i class="fas fa-link"></i></a></h1>
+<p>Đừng chỉ chạy một bài benchmark có ba câu SQL rất đẹp.</p>
+<p>Hãy lấy:</p>
+<ul>
+<li>Top SQL production.</li>
+<li>Tỷ lệ đọc và ghi.</li>
+<li>Kích thước transaction.</li>
+<li>Số kết nối.</li>
+<li>Query join lớn.</li>
+<li>Batch job.</li>
+<li>Tình huống lock conflict.</li>
+<li>Dữ liệu lệch phân bố.</li>
+<li>Ngày khuyến mãi.</li>
+<li>Thời điểm cuối tháng.</li>
+</ul>
+<p>Sau đó kiểm tra:</p>
+<ul>
+<li>P50.</li>
+<li>P95.</li>
+<li>P99.</li>
+<li>QPS.</li>
+<li>CPU.</li>
+<li>Network.</li>
+<li>Disk latency.</li>
+<li>Hot Region.</li>
+<li>Thời gian failover.</li>
+<li>Thời gian phục hồi.</li>
+</ul>
+<p>Database thường chạy tốt trong demo.</p>
+<p>Production là nơi khách hàng, dữ liệu bẩn và định luật Murphy cùng đăng nhập.</p>
+<h1 id="thiết-kế-primary-key-để-tránh-hotspot">Thiết kế primary key để tránh hotspot<a class="anchor ms-1" href="#thiết-kế-primary-key-để-tránh-hotspot"><i class="fas fa-link"></i></a></h1>
+<p>Không nên bê nguyên mọi bảng có <code>AUTO_INCREMENT</code> từ MySQL sang mà không kiểm tra access pattern.</p>
+<p>Với bảng có lượng ghi lớn, cần cân nhắc:</p>
+<ul>
+<li><code>AUTO_RANDOM</code>.</li>
+<li>UUID được thiết kế phù hợp.</li>
+<li>Hash partition.</li>
+<li>Sharding implicit RowID.</li>
+<li>Phân bố khóa theo nghiệp vụ.</li>
+</ul>
+<p>Nhưng cũng không nên ngẫu nhiên hóa mọi key một cách vô thức, vì điều đó ảnh hưởng đến locality và cách truy vấn.</p>
+<h1 id="giữ-transaction-ngắn">Giữ transaction ngắn<a class="anchor ms-1" href="#giữ-transaction-ngắn"><i class="fas fa-link"></i></a></h1>
+<p>Nên:</p>
+<ul>
+<li>Commit sớm.</li>
+<li>Chia batch hợp lý.</li>
+<li>Tránh giữ transaction lúc chờ người dùng.</li>
+<li>Không gọi API bên ngoài giữa <code>BEGIN</code> và <code>COMMIT</code>.</li>
+<li>Tránh cập nhật hàng triệu dòng trong một transaction bình thường.</li>
+<li>Theo dõi lock conflict.</li>
+</ul>
+<p>Ví dụ xấu:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">BEGIN
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">Đọc database
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">Gọi API thanh toán mất 30 giây
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">Chờ hệ thống kho
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">Gửi email
+</span></span><span class="line"><span class="ln">10</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln">11</span><span class="cl">UPDATE
+</span></span><span class="line"><span class="ln">12</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln">13</span><span class="cl">COMMIT
+</span></span></code></pre></div><p>Transaction không phải căn nhà nghỉ.</p>
+<p>Đừng để nó thuê phòng quá lâu.</p>
+<h1 id="tối-ưu-sql-và-index-như-database-bình-thường">Tối ưu SQL và index như database bình thường<a class="anchor ms-1" href="#tối-ưu-sql-và-index-như-database-bình-thường"><i class="fas fa-link"></i></a></h1>
+<p>Thêm node không sửa được:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="ln">1</span><span class="cl"><span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w">
+</span></span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="k">FROM</span><span class="w"> </span><span class="n">orders</span><span class="w">
+</span></span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="k">WHERE</span><span class="w"> </span><span class="n">customer_phone</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;090...&#39;</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><p>nếu <code>customer_phone</code> không có index và bảng có vài tỷ dòng.</p>
+<p>Vẫn phải:</p>
+<ul>
+<li>Đọc execution plan.</li>
+<li>Tạo index đúng.</li>
+<li>Cập nhật statistics.</li>
+<li>Giảm số dòng scan.</li>
+<li>Chọn kiểu join phù hợp.</li>
+<li>Tránh lấy tất cả cột.</li>
+<li>Quan sát Top SQL.</li>
+</ul>
+<p>Distributed SQL vẫn là SQL.</p>
+<h1 id="thiết-kế-failure-domain">Thiết kế failure domain<a class="anchor ms-1" href="#thiết-kế-failure-domain"><i class="fas fa-link"></i></a></h1>
+<p>Ba replica đặt trên cùng một máy chủ không tạo ra high availability.</p>
+<p>Ba máy chủ cùng nằm trên một rack vẫn có thể cùng chết khi rack mất điện.</p>
+<p>Cần tính:</p>
+<ul>
+<li>Host.</li>
+<li>Rack.</li>
+<li>Availability Zone.</li>
+<li>Data center.</li>
+<li>Network.</li>
+<li>Placement rule.</li>
+<li>Số replica.</li>
+<li>Vị trí leader.</li>
+</ul>
+<p>Raft không thể cứu ba máy cùng bị rút một ổ điện.</p>
+<h1 id="thử-restore-định-kỳ">Thử restore định kỳ<a class="anchor ms-1" href="#thử-restore-định-kỳ"><i class="fas fa-link"></i></a></h1>
+<p>Backup thành công không đồng nghĩa restore thành công.</p>
+<p>Cần thực hành:</p>
+<ul>
+<li>Khôi phục toàn cluster.</li>
+<li>Khôi phục một database.</li>
+<li>Khôi phục một bảng.</li>
+<li>Point-in-Time Recovery.</li>
+<li>Đo Recovery Time Objective.</li>
+<li>Kiểm tra dữ liệu sau phục hồi.</li>
+<li>Xác nhận ứng dụng kết nối được.</li>
+</ul>
+<p>File backup chưa từng được restore chỉ là một niềm tin được nén lại.</p>
+<h1 id="chỉ-tạo-tiflash-replica-cho-bảng-cần-thiết">Chỉ tạo TiFlash replica cho bảng cần thiết<a class="anchor ms-1" href="#chỉ-tạo-tiflash-replica-cho-bảng-cần-thiết"><i class="fas fa-link"></i></a></h1>
+<p>Không phải bảng nào cũng cần một bản sao dạng cột.</p>
+<p>TiFlash làm tăng:</p>
+<ul>
+<li>Dung lượng.</li>
+<li>Network replication.</li>
+<li>Chi phí máy.</li>
+<li>Công việc vận hành.</li>
+</ul>
+<p>Nên chọn các bảng:</p>
+<ul>
+<li>Lớn.</li>
+<li>Hay scan.</li>
+<li>Có aggregation.</li>
+<li>Cần báo cáo gần thời gian thực.</li>
+<li>Cần cách ly OLAP khỏi OLTP.</li>
+</ul>
+<h1 id="những-điều-không-nên-làm">Những điều không nên làm<a class="anchor ms-1" href="#những-điều-không-nên-làm"><i class="fas fa-link"></i></a></h1>
+<h1 id="không-nghĩ-tidb-miễn-phí-vì-là-mã-nguồn-mở">Không nghĩ TiDB miễn phí vì là mã nguồn mở<a class="anchor ms-1" href="#không-nghĩ-tidb-miễn-phí-vì-là-mã-nguồn-mở"><i class="fas fa-link"></i></a></h1>
+<p>Mã nguồn có thể tải miễn phí.</p>
+<p>Nhưng production cần:</p>
+<ul>
+<li>Máy chủ.</li>
+<li>Ổ đĩa.</li>
+<li>Network.</li>
+<li>Backup storage.</li>
+<li>Monitoring.</li>
+<li>Nhân sự.</li>
+<li>On-call.</li>
+<li>Nâng cấp.</li>
+<li>Kiểm thử.</li>
+<li>Xử lý sự cố.</li>
+</ul>
+<p>Open source xóa chi phí giấy phép trong một số trường hợp.</p>
+<p>Nó không xóa định luật kinh tế.</p>
+<h1 id="không-triển-khai-tất-cả-component-trên-một-máy">Không triển khai tất cả component trên một máy<a class="anchor ms-1" href="#không-triển-khai-tất-cả-component-trên-một-máy"><i class="fas fa-link"></i></a></h1>
+<p>Một máy chạy:</p>
+<ul>
+<li>PD.</li>
+<li>TiDB.</li>
+<li>TiKV.</li>
+<li>TiFlash.</li>
+<li>Prometheus.</li>
+<li>Grafana.</li>
+</ul>
+<p>có thể phù hợp để học.</p>
+<p>Nó không chứng minh khả năng chịu lỗi.</p>
+<p>Nếu máy đó chết, cả “cluster phân tán” biến mất cùng lúc, giống một gia đình bốn người cùng ngồi trên một chiếc xe máy rồi tuyên bố đã phân tán rủi ro giao thông.</p>
+<h1 id="không-dùng-thêm-node-để-che-sql-xấu">Không dùng thêm node để che SQL xấu<a class="anchor ms-1" href="#không-dùng-thêm-node-để-che-sql-xấu"><i class="fas fa-link"></i></a></h1>
+<p>Một full table scan trên một tỷ dòng có thể được chia cho nhiều máy.</p>
+<p>Nhưng một tỷ dòng vẫn phải được đọc ở đâu đó.</p>
+<p>Thêm máy đôi khi chỉ biến một sai lầm nhỏ thành một sai lầm chạy song song.</p>
+<h1 id="không-tạo-transaction-khổng-lồ">Không tạo transaction khổng lồ<a class="anchor ms-1" href="#không-tạo-transaction-khổng-lồ"><i class="fas fa-link"></i></a></h1>
+<p>Một transaction quá lớn có thể:</p>
+<ul>
+<li>Ăn nhiều memory.</li>
+<li>Giữ lock lâu.</li>
+<li>Tăng thời gian commit.</li>
+<li>Tăng chi phí retry.</li>
+<li>Ảnh hưởng replication.</li>
+<li>Làm hệ thống khó phục hồi khi thất bại.</li>
+</ul>
+<p>Hãy chia công việc thành những đơn vị có thể kiểm soát và chạy lại.</p>
+<h1 id="không-xem-htap-là-bữa-trưa-miễn-phí">Không xem HTAP là bữa trưa miễn phí<a class="anchor ms-1" href="#không-xem-htap-là-bữa-trưa-miễn-phí"><i class="fas fa-link"></i></a></h1>
+<p>OLTP và OLAP vẫn cạnh tranh:</p>
+<ul>
+<li>CPU.</li>
+<li>Network.</li>
+<li>Storage.</li>
+<li>Cache.</li>
+<li>Băng thông.</li>
+<li>Lịch điều phối.</li>
+</ul>
+<p>TiFlash giúp cách ly workload tốt hơn.</p>
+<p>Nhưng nếu đặt TiKV và TiFlash trên cùng một máy rồi chạy báo cáo toàn quốc giữa giờ cao điểm, các electron vẫn phải chen nhau qua cùng CPU và bus memory.</p>
+<h1 id="không-bỏ-qua-network">Không bỏ qua network<a class="anchor ms-1" href="#không-bỏ-qua-network"><i class="fas fa-link"></i></a></h1>
+<p>Trong database đơn máy, gọi một function có thể chỉ đi qua memory.</p>
+<p>Trong database phân tán, một transaction có thể đi:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">Application
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">Load Balancer
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">TiDB Server
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">PD
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">TiKV Leader
+</span></span><span class="line"><span class="ln">10</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln">11</span><span class="cl">TiKV Followers
+</span></span></code></pre></div><p>Mỗi mũi tên là:</p>
+<ul>
+<li>Một socket.</li>
+<li>Một packet.</li>
+<li>Một lần chờ.</li>
+<li>Một khả năng timeout.</li>
+<li>Một điểm có thể mất kết nối.</li>
+</ul>
+<p>Khi triển khai TiDB, network không còn là sợi dây cắm phía sau máy.</p>
+<p>Nó là một phần của database.</p>
+<h1 id="không-dùng-tidb-để-thay-mọi-hệ-thống-dữ-liệu">Không dùng TiDB để thay mọi hệ thống dữ liệu<a class="anchor ms-1" href="#không-dùng-tidb-để-thay-mọi-hệ-thống-dữ-liệu"><i class="fas fa-link"></i></a></h1>
+<p>TiDB không tự động thay thế:</p>
+<ul>
+<li>Redis.</li>
+<li>Kafka.</li>
+<li>Elasticsearch.</li>
+<li>Data Lake.</li>
+<li>Apache Iceberg.</li>
+<li>Data Warehouse.</li>
+<li>Object Storage.</li>
+<li>Time-series database.</li>
+</ul>
+<p>Nó có thể làm giảm số hệ thống trong một số kiến trúc.</p>
+<p>Nhưng mỗi workload vẫn cần được xem xét bằng dữ liệu thật.</p>
+<p>Một chiếc búa titan vẫn không phải dụng cụ tốt nhất để cắt tóc.</p>
+<h1 id="tổng-kết">Tổng kết<a class="anchor ms-1" href="#tổng-kết"><i class="fas fa-link"></i></a></h1>
+<p>TiDB là một dự án cơ sở dữ liệu mã nguồn mở đáng chú ý được PingCAP khởi tạo trong hệ sinh thái công nghệ Trung Quốc và phát triển cùng cộng đồng toàn cầu.</p>
+<p>Nó không phải MySQL được kéo giãn.</p>
+<p>Nó là một database SQL phân tán được xây lại từ phần móng:</p>
+<ul>
+<li>TiDB Server nhận và tối ưu SQL.</li>
+<li>PD giữ metadata, timestamp và điều phối cluster.</li>
+<li>TiKV lưu dữ liệu dạng key-value theo Region.</li>
+<li>Raft sao chép mỗi Region thành nhiều replica.</li>
+<li>TiFlash giữ bản sao dạng cột cho phân tích.</li>
+<li>TiUP quản lý cluster.</li>
+<li>DM hỗ trợ migration từ MySQL.</li>
+<li>TiCDC đưa thay đổi ra downstream.</li>
+<li>BR backup và phục hồi dữ liệu.</li>
+</ul>
+<p>Điều TiDB bán không phải chỉ là khả năng chứa nhiều terabyte hay petabyte.</p>
+<p>Nó bán một ảo giác có ích:</p>
+<blockquote>
+<p>Rất nhiều máy tính, nhưng ứng dụng được phép nhìn chúng như một database.</p>
+</blockquote>
+<p>Phía sau ảo giác đó là một thế giới vật lý phức tạp.</p>
+<p>Dữ liệu bị bẻ thành key-value.</p>
+<p>Key-value được chia thành Region.</p>
+<p>Region được nhân thành replica.</p>
+<p>Replica trao đổi Raft log.</p>
+<p>Transaction lấy timestamp, giữ lock, kiểm tra conflict rồi commit qua nhiều máy.</p>
+<p>Một câu SQL ngắn có thể làm hàng chục CPU thức giấc.</p>
+<p>Một lần ghi đơn hàng có thể chạy qua nhiều card mạng, nhiều ổ SSD và nhiều trung tâm dữ liệu trước khi ứng dụng nhận được chữ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">COMMIT OK
+</span></span></code></pre></div><p>TiDB che giấu nhiều sự phức tạp.</p>
+<p>Nhưng nó không xóa sự phức tạp khỏi thế giới.</p>
+<p>Nó đóng gói sự phức tạp thành một hệ thống có quy tắc, có metadata, có consensus và có những công cụ đủ tốt để con người vận hành.</p>
+<p>Bởi vậy, đừng dùng TiDB chỉ vì nó là distributed, cloud-native, HTAP hay mã nguồn mở.</p>
+<p>Hãy dùng nó khi bài toán thật sự cần:</p>
+<ul>
+<li>Mở rộng theo chiều ngang.</li>
+<li>Giao dịch phân tán.</li>
+<li>Tính nhất quán mạnh.</li>
+<li>Khả năng chịu lỗi.</li>
+<li>Giảm gánh nặng sharding thủ công.</li>
+<li>Phân tích gần thời gian thực.</li>
+</ul>
+<p>Còn nếu một máy MySQL vẫn đang chạy khỏe, backup tốt, tải thấp và chưa ai phải thức lúc hai giờ sáng để di chuyển shard, có lẽ chưa cần gọi cả một thành phố đến để làm công việc của một căn nhà.</p>
+<p>Cảm ơn các bạn đã quan tâm và theo dõi bài viết, hẹn gặp lại ở các bài viết tiếp theo.</p>
+<h1 id="tham-khảo">Tham khảo<a class="anchor ms-1" href="#tham-khảo"><i class="fas fa-link"></i></a></h1>
+<ul>
+<li><a href="https://docs.pingcap.com/tidb/stable/" target="_blank" rel="noopener noreferrer">TiDB Documentation</a></li>
+<li><a href="https://docs.pingcap.com/tidb/stable/tidb-architecture/" target="_blank" rel="noopener noreferrer">TiDB Architecture</a></li>
+<li><a href="https://docs.pingcap.com/tidb/stable/tidb-storage/" target="_blank" rel="noopener noreferrer">TiDB Storage</a></li>
+<li><a href="https://docs.pingcap.com/tidb/stable/transaction-overview/" target="_blank" rel="noopener noreferrer">TiDB Transactions</a></li>
+<li><a href="https://docs.pingcap.com/tidb/stable/tiflash-overview/" target="_blank" rel="noopener noreferrer">TiFlash Overview</a></li>
+<li><a href="https://docs.pingcap.com/tidb/stable/ticdc-overview/" target="_blank" rel="noopener noreferrer">TiCDC Overview</a></li>
+<li><a href="https://docs.pingcap.com/tidb/stable/mysql-compatibility/" target="_blank" rel="noopener noreferrer">MySQL Compatibility</a></li>
+<li><a href="https://docs.pingcap.com/tidb/stable/troubleshoot-hot-spot-issues/" target="_blank" rel="noopener noreferrer">TiDB Hotspot Troubleshooting</a></li>
+<li><a href="https://docs.pingcap.com/tidb/stable/dev-guide-optimize-sql-overview/" target="_blank" rel="noopener noreferrer">TiDB SQL Performance Tuning</a></li>
+<li><a href="https://docs.pingcap.com/tidb/stable/tiup-overview/" target="_blank" rel="noopener noreferrer">TiUP Overview</a></li>
+<li><a href="https://docs.pingcap.com/tidb/stable/dm-overview/" target="_blank" rel="noopener noreferrer">TiDB Data Migration</a></li>
+<li><a href="https://docs.pingcap.com/tidb/stable/backup-and-restore-overview/" target="_blank" rel="noopener noreferrer">TiDB Backup &amp; Restore</a></li>
+<li><a href="https://github.com/pingcap/tidb" target="_blank" rel="noopener noreferrer">TiDB GitHub Repository</a></li>
+<li><a href="https://www.pingcap.com/about-us/" target="_blank" rel="noopener noreferrer">PingCAP</a></li>
+<li><a href="https://tikv.org/" target="_blank" rel="noopener noreferrer">TiKV</a></li>
+</ul>
+</div></div>
+  <div class="card-footer"><div class="post-navs d-flex justify-content-evenly"><div class="post-nav post-prev">
+    <i class="fas fa-fw fa-chevron-left"></i>
+    <a href="https://www.phamduytung.com/blog/2026-07-12-mon-dang-ho-doi/">Nghị luận xã hội - Môn đăng hộ đối, không phải chuyện hai cái ví bằng nhau
+</a>
+  </div><div class="post-nav post-next">
+    <a href="https://www.phamduytung.com/blog/2026-07-22-apache-iceberg/">Apache Iceberg: Tấm sổ đỏ biến Data Lake thành Lakehouse
+</a>
+    <i class="fas fa-fw fa-chevron-right"></i>
+  </div></div></div>
+</article><div class="card component row post-comments" id="post-comments">
+  <div class="card-header">
+    <h2 class="card-title">Bình luận</h2>
+  </div>
+  <div class="card-body"><script src="https://utteranc.es/client.js"
+  repo="AlexBlack2202/utterances"
+  issue-term="pathname"
+  label="comment"
+  theme="github-dark"
+  crossorigin="anonymous"
+  async>
+</script></div>
+</div></div>
+</div><aside class="col-lg-3 col-md-4 sidebar d-flex">
+  <div class="container d-flex flex-column">
+    
+    <a href="https://www.buymeacoffee.com/alexblack28"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=🍎&slug=alexblack28&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" /></a><div class="post-toc row mb-4 card component" id="postTOC">
+  <div class="card-header">
+    <h2 class="card-title">Mục lục</h2>
+  </div>
+  <div class="card-body">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#một-cái-máy-không-thể-béo-lên-mãi">Một cái máy không thể béo lên mãi</a></li>
+    <li><a href="#tidb-là-gì">TiDB là gì?</a></li>
+    <li><a href="#vì-sao-một-phần-mềm-trung-quốc-như-tidb-đáng-chú-ý">Vì sao một phần mềm Trung Quốc như TiDB đáng chú ý?</a></li>
+    <li><a href="#bản-chất-của-tidb">Bản chất của TiDB</a></li>
+    <li><a href="#bốn-thành-phần-chính-của-tidb">Bốn thành phần chính của TiDB</a></li>
+    <li><a href="#tidb-server-người-tiếp-nhận-câu-sql">TiDB Server: người tiếp nhận câu SQL</a></li>
+    <li><a href="#pd-bộ-não-điều-phối-của-cụm">PD: bộ não điều phối của cụm</a></li>
+    <li><a href="#tikv-nơi-dữ-liệu-thực-sự-nằm-xuống">TiKV: nơi dữ liệu thực sự nằm xuống</a></li>
+    <li><a href="#raft-một-dữ-liệu-nhiều-bản-sao">Raft: một dữ liệu, nhiều bản sao</a></li>
+    <li><a href="#tiflash-cùng-dữ-liệu-một-cách-xếp-khác">TiFlash: cùng dữ liệu, một cách xếp khác</a></li>
+    <li><a href="#một-câu-sql-đi-qua-tidb-như-thế-nào">Một câu SQL đi qua TiDB như thế nào?</a>
+      <ul>
+        <li><a href="#bước-1-phân-tích-sql">Bước 1: Phân tích SQL</a></li>
+        <li><a href="#bước-2-tạo-execution-plan">Bước 2: Tạo execution plan</a></li>
+        <li><a href="#bước-3-tìm-region">Bước 3: Tìm Region</a></li>
+        <li><a href="#bước-4-đẩy-công-việc-xuống-storage">Bước 4: Đẩy công việc xuống storage</a></li>
+        <li><a href="#bước-5-gom-kết-quả">Bước 5: Gom kết quả</a></li>
+      </ul>
+    </li>
+    <li><a href="#transaction-phân-tán-hoạt-động-như-thế-nào">Transaction phân tán hoạt động như thế nào?</a></li>
+    <li><a href="#tidb-giải-quyết-bài-toán-sharding-như-thế-nào">TiDB giải quyết bài toán sharding như thế nào?</a></li>
+    <li><a href="#hotspot-có-nhiều-đường-nhưng-mọi-người-cùng-chen-vào-một-cổng">Hotspot: có nhiều đường nhưng mọi người cùng chen vào một cổng</a></li>
+    <li><a href="#htap-có-thật-sự-thay-thế-data-warehouse-không">HTAP có thật sự thay thế Data Warehouse không?</a></li>
+    <li><a href="#hệ-sinh-thái-xung-quanh-tidb">Hệ sinh thái xung quanh TiDB</a></li>
+    <li><a href="#tiup">TiUP</a></li>
+    <li><a href="#tidb-data-migration">TiDB Data Migration</a></li>
+    <li><a href="#tidb-lightning">TiDB Lightning</a></li>
+    <li><a href="#ticdc">TiCDC</a></li>
+    <li><a href="#backup--restore">Backup &amp; Restore</a></li>
+    <li><a href="#tidb-dashboard">TiDB Dashboard</a></li>
+    <li><a href="#ví-dụ-tidb-trong-hệ-thống-bán-lẻ">Ví dụ TiDB trong hệ thống bán lẻ</a>
+      <ul>
+        <li><a href="#tikv-phục-vụ">TiKV phục vụ</a></li>
+        <li><a href="#tiflash-phục-vụ">TiFlash phục vụ</a></li>
+        <li><a href="#lakehouse-phục-vụ">Lakehouse phục vụ</a></li>
+      </ul>
+    </li>
+    <li><a href="#khi-nào-nên-dùng-tidb">Khi nào nên dùng TiDB?</a></li>
+    <li><a href="#khi-database-đơn-máy-đã-chạm-giới-hạn">Khi database đơn máy đã chạm giới hạn</a></li>
+    <li><a href="#khi-doanh-nghiệp-đang-đau-vì-sharding">Khi doanh nghiệp đang đau vì sharding</a></li>
+    <li><a href="#khi-cần-tính-nhất-quán-mạnh">Khi cần tính nhất quán mạnh</a></li>
+    <li><a href="#khi-đội-ngũ-đã-quen-mysql">Khi đội ngũ đã quen MySQL</a></li>
+    <li><a href="#khi-cần-transaction-và-phân-tích-gần-thời-gian-thực">Khi cần transaction và phân tích gần thời gian thực</a></li>
+    <li><a href="#khi-có-đội-vận-hành-đủ-trưởng-thành">Khi có đội vận hành đủ trưởng thành</a></li>
+    <li><a href="#khi-nào-không-nên-dùng-tidb">Khi nào không nên dùng TiDB?</a></li>
+    <li><a href="#khi-database-chỉ-có-vài-chục-gb">Khi database chỉ có vài chục GB</a></li>
+    <li><a href="#khi-cần-latency-cực-thấp-trên-một-máy">Khi cần latency cực thấp trên một máy</a></li>
+    <li><a href="#khi-ứng-dụng-phụ-thuộc-sâu-vào-tính-năng-riêng-của-mysql">Khi ứng dụng phụ thuộc sâu vào tính năng riêng của MySQL</a></li>
+    <li><a href="#khi-workload-chủ-yếu-là-phân-tích-lịch-sử-khổng-lồ">Khi workload chủ yếu là phân tích lịch sử khổng lồ</a></li>
+    <li><a href="#khi-đội-ngũ-chưa-muốn-học-distributed-system">Khi đội ngũ chưa muốn học distributed system</a></li>
+    <li><a href="#những-việc-cần-làm-khi-triển-khai-tidb">Những việc cần làm khi triển khai TiDB</a></li>
+    <li><a href="#kiểm-kê-mức-độ-tương-thích-mysql">Kiểm kê mức độ tương thích MySQL</a></li>
+    <li><a href="#benchmark-bằng-workload-thật">Benchmark bằng workload thật</a></li>
+    <li><a href="#thiết-kế-primary-key-để-tránh-hotspot">Thiết kế primary key để tránh hotspot</a></li>
+    <li><a href="#giữ-transaction-ngắn">Giữ transaction ngắn</a></li>
+    <li><a href="#tối-ưu-sql-và-index-như-database-bình-thường">Tối ưu SQL và index như database bình thường</a></li>
+    <li><a href="#thiết-kế-failure-domain">Thiết kế failure domain</a></li>
+    <li><a href="#thử-restore-định-kỳ">Thử restore định kỳ</a></li>
+    <li><a href="#chỉ-tạo-tiflash-replica-cho-bảng-cần-thiết">Chỉ tạo TiFlash replica cho bảng cần thiết</a></li>
+    <li><a href="#những-điều-không-nên-làm">Những điều không nên làm</a></li>
+    <li><a href="#không-nghĩ-tidb-miễn-phí-vì-là-mã-nguồn-mở">Không nghĩ TiDB miễn phí vì là mã nguồn mở</a></li>
+    <li><a href="#không-triển-khai-tất-cả-component-trên-một-máy">Không triển khai tất cả component trên một máy</a></li>
+    <li><a href="#không-dùng-thêm-node-để-che-sql-xấu">Không dùng thêm node để che SQL xấu</a></li>
+    <li><a href="#không-tạo-transaction-khổng-lồ">Không tạo transaction khổng lồ</a></li>
+    <li><a href="#không-xem-htap-là-bữa-trưa-miễn-phí">Không xem HTAP là bữa trưa miễn phí</a></li>
+    <li><a href="#không-bỏ-qua-network">Không bỏ qua network</a></li>
+    <li><a href="#không-dùng-tidb-để-thay-mọi-hệ-thống-dữ-liệu">Không dùng TiDB để thay mọi hệ thống dữ liệu</a></li>
+    <li><a href="#tổng-kết">Tổng kết</a></li>
+    <li><a href="#tham-khảo">Tham khảo</a></li>
+  </ul>
+</nav>
+  </div>
+</div><section class="recent-posts row card component">
+  <div class="card-header">
+    <h2 class="card-title">Bài gần đây</h2>
+  </div>
+  <div class="card-body">
+    <ul class="post-list"><li>
+        <a href="https://www.phamduytung.com/blog/2026-07-13-2-brain/">Second Brain được xây từ những gì?
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-07-24-lakehouse-v2/">Lakehouse 2.0: Khi căn nhà trên hồ bị tháo thành những mảnh Lego
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-07-23-lakehouse-v1/">Lakehouse 1.0: Từ hồ dữ liệu hỗn loạn đến Bronze, Silver và Gold
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-07-22-apache-iceberg/">Apache Iceberg: Tấm sổ đỏ biến Data Lake thành Lakehouse
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-07-21-tidb-distributed-sql/">TiDB: Khi một database phải học cách sống như cả một thành phố
+</a>
+      </li></ul>
+  </div>
+</section><section class="series-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/series">series</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/series/kh%C3%B3a-h%E1%BB%8Dc-python-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học Python Căn Bản">
+            Khóa Học Python Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="https://www.phamduytung.com/series/kh%C3%B3a-h%E1%BB%8Dc-c&#43;&#43;-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học C&#43;&#43; Căn Bản">
+            Khóa Học C&#43;&#43; Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="https://www.phamduytung.com/series/machine-learning-dataset/" class="badge rounded post-taxonomy" title="Machine Learning Dataset">
+            Machine Learning Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a><a href="https://www.phamduytung.com/series/ch%E1%BB%A9ng-kho%C3%A1n-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Chứng Khoán Căn Bản">
+            Chứng Khoán Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">1</span></a></div>
+      </div>
+    </section><section class="tools-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/tools">tools</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/tools/tool-random/" class="badge rounded post-taxonomy" title="Tool Random">
+            Tool Random<span class="badge badge-sm text-white bg-accent ms-1">3</span></a></div>
+      </div>
+    </section><section class="categories-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/categories">categories</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/categories/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="https://www.phamduytung.com/categories/c&#43;&#43;/" class="badge rounded post-taxonomy" title="C&#43;&#43;">
+            C&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="https://www.phamduytung.com/categories/dataset/" class="badge rounded post-taxonomy" title="Dataset">
+            Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a></div>
+      </div>
+    </section><section class="tags-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/tags">tags</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/tags/machine-learning/" class="badge rounded post-taxonomy" title="Machine Learning">
+            Machine Learning<span class="badge badge-sm text-white bg-accent ms-1">26</span></a><a href="https://www.phamduytung.com/tags/deep-learning/" class="badge rounded post-taxonomy" title="Deep Learning">
+            Deep Learning<span class="badge badge-sm text-white bg-accent ms-1">23</span></a><a href="https://www.phamduytung.com/tags/computer-vision/" class="badge rounded post-taxonomy" title="Computer Vision">
+            Computer Vision<span class="badge badge-sm text-white bg-accent ms-1">16</span></a><a href="https://www.phamduytung.com/tags/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">14</span></a><a href="https://www.phamduytung.com/tags/llm/" class="badge rounded post-taxonomy" title="LLM">
+            LLM<span class="badge badge-sm text-white bg-accent ms-1">13</span></a><a href="https://www.phamduytung.com/tags/recommendation-system/" class="badge rounded post-taxonomy" title="Recommendation System">
+            Recommendation System<span class="badge badge-sm text-white bg-accent ms-1">7</span></a><a href="https://www.phamduytung.com/tags/system-design/" class="badge rounded post-taxonomy" title="System Design">
+            System Design<span class="badge badge-sm text-white bg-accent ms-1">7</span></a><a href="https://www.phamduytung.com/tags/ai-agent/" class="badge rounded post-taxonomy" title="Ai Agent">
+            Ai Agent<span class="badge badge-sm text-white bg-accent ms-1">6</span></a><a href="https://www.phamduytung.com/tags/time-series/" class="badge rounded post-taxonomy" title="Time Series">
+            Time Series<span class="badge badge-sm text-white bg-accent ms-1">6</span></a><a href="https://www.phamduytung.com/tags/uber-engineering/" class="badge rounded post-taxonomy" title="Uber Engineering">
+            Uber Engineering<span class="badge badge-sm text-white bg-accent ms-1">6</span></a></div>
+      </div>
+    </section>
+    
+  </div>
+</aside>
+</div>
+    </main><footer class="footer mt-auto py-3 text-center container"><ul class="nav justify-content-between footer-memu mb-3"><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Community
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-facebook"></i>Facebook Group
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://github.com/AlexBlack2202/alexblack2202.github.io" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-github"></i>GitHub
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/contact/"><i class="fas fa-fw fa-info-circle"></i>Contact Us
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/faq/"><i class="fas fa-fw fa-question-circle"></i>Câu hỏi thường gặp
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Docs
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="/team_of_services" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-users"></i>Điều khoản sử dụng
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/privacy" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-lock"></i>Chính sách bảo mật
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Features
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="/utils/gen_paswords/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-key"></i>Tạo password ngẫu nhiên
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Liên kết khác
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">Netlify
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">facebook
+</a>
+        </li></ul></li></ul>
+<div class="copyright mb-2">
+  Copyright © 2016-2026 Phạm Duy Tùng. All Rights Reserved.
+</div>
+<div class="powered-by mb-2">
+  Website chia sẻ kiến thức của Phạm Duy Tùng và Đặng Thị Hằng. Vui lòng liên hệ email alexblack2202@gmail.com nếu bạn có thông tin cần trao đổi.
+</div></footer>
+<script src="https://www.phamduytung.com/js/main.111d51a8c754010f8399ca010e552d803e2d5170b361f8886ad04ec6c21ca551.js" integrity="sha256-ER1RqMdUAQ&#43;DmcoBDlUtgD4tUXCzYfiIatBOxsIcpVE=" crossorigin="anonymous" defer></script><script src="https://www.phamduytung.com/js/icons.min.cb4c9958dbc49e29ac644e168e82db2d0de9a741a15751cc5bf2b0af21eb2845.js" integrity="sha256-y0yZWNvEnimsZE4WjoLbLQ3pp0GhV1HMW/KwryHrKEU=" crossorigin="anonymous" defer></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('https:\/\/www.phamduytung.com\/service-worker.js').then(function(reg) {
+      console.log('Successfully registered service worker', reg);
+    }).catch(function(err) {
+      console.warn('Error whilst registering service worker', err);
+    });
+  });
+}
+</script><script src="https://www.phamduytung.com/js/viewer.min.28bcf5233e406dae6715f46c8b9e8ca7c6cbf347e8678f5a2bebe5369c3270bb.js" integrity="sha256-KLz1Iz5Aba5nFfRsi56Mp8bL80foZ49aK&#43;vlNpwycLs=" crossorigin="anonymous" defer></script><script defer src="https://www.phamduytung.com/js/katex.min.8582b9feadf92a2a977ed303b97d7713cf2754ccf2b4eb60d8be7453a21042c2.js" integrity="sha256-hYK5/q35KiqXftMDuX13E88nVMzytOtg2L50U6IQQsI=" crossorigin="anonymous"></script>
+
+<script  data-ad-client="ca-pub-4644989745435991"  async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4644989745435991"
+     crossorigin="anonymous"></script><script data-cfasync="false" type="text/javascript" data-adel="atag" src="//acscdn.com/script/atg.js" czid="eul3gyjdmm"></script>
+  </body>
+</html>

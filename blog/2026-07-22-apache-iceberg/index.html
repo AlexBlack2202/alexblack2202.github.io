@@ -1,0 +1,1617 @@
+<!doctype html><html lang="vi" data-palette="brown"
+   data-mode="light">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Apache Iceberg: Tấm sổ đỏ biến Data Lake thành Lakehouse - Phạm Duy Tùng Machine Learning Blog</title>
+    <meta name="a.validate.02" content="1QZXZ8oi7g57H-GxBrBPkTYBydwii-Ic9iJu" /><link rel="apple-touch-icon" href="https://www.phamduytung.com/images/icons/icon-180x180.png" sizes="180x180">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/icon-32x32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/icon-16x16.png" sizes="16x16" type="image/png">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/favicon.ico">
+<link rel="manifest" href="https://www.phamduytung.com/manifest.json">
+<meta name="keywords" content="" />
+<meta name="description" content="Giải thích Apache Iceberg từ bản chất: nó đứng ở đâu trong Data Lake, quản lý file như thế nào, phối hợp với Spark, Trino, Flink, Hive Metastore, Kafka và Airflow ra sao để hình thành Lakehouse thế hệ đầu." /><meta name="robots" content="index, follow" />
+	<meta itemprop="name" content="Apache Iceberg: Tấm sổ đỏ biến Data Lake thành Lakehouse">
+	<meta itemprop="description" content="Giải thích Apache Iceberg từ bản chất: nó đứng ở đâu trong Data Lake, quản lý file như thế nào, phối hợp với Spark, Trino, Flink, Hive Metastore, Kafka và Airflow ra sao để hình thành Lakehouse thế hệ đầu.">
+	<meta itemprop="datePublished" content="2026-07-22T00:00:00+03:00">
+	<meta itemprop="dateModified" content="2026-07-22T00:00:00+03:00">
+	<meta itemprop="wordCount" content="6685">
+	<meta itemprop="image" content="https://www.phamduytung.com/images/posts/2026-07-22-apache-iceberg/cover.png">
+	<meta itemprop="keywords" content="Apache Iceberg,Data Lake,Lakehouse,Apache Spark,Trino"><meta property="og:url" content="https://www.phamduytung.com/blog/2026-07-22-apache-iceberg/">
+	<meta property="og:site_name" content="Phạm Duy Tùng Machine Learning Blog">
+	<meta property="og:title" content="Apache Iceberg: Tấm sổ đỏ biến Data Lake thành Lakehouse">
+	<meta property="og:description" content="Giải thích Apache Iceberg từ bản chất: nó đứng ở đâu trong Data Lake, quản lý file như thế nào, phối hợp với Spark, Trino, Flink, Hive Metastore, Kafka và Airflow ra sao để hình thành Lakehouse thế hệ đầu.">
+	<meta property="og:locale" content="vi_VN">
+	<meta property="og:type" content="article">
+		<meta property="article:section" content="blog">
+		<meta property="article:published_time" content="2026-07-22T00:00:00+03:00">
+		<meta property="article:modified_time" content="2026-07-22T00:00:00+03:00">
+		<meta property="article:tag" content="Apache Iceberg">
+		<meta property="article:tag" content="Data Lake">
+		<meta property="article:tag" content="Lakehouse">
+		<meta property="article:tag" content="Apache Spark">
+		<meta property="article:tag" content="Trino">
+		<meta property="og:image" content="https://www.phamduytung.com/images/posts/2026-07-22-apache-iceberg/cover.png">
+
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:image" content="https://www.phamduytung.com/images/posts/2026-07-22-apache-iceberg/cover.png">
+	<meta name="twitter:title" content="Apache Iceberg: Tấm sổ đỏ biến Data Lake thành Lakehouse">
+	<meta name="twitter:description" content="Giải thích Apache Iceberg từ bản chất: nó đứng ở đâu trong Data Lake, quản lý file như thế nào, phối hợp với Spark, Trino, Flink, Hive Metastore, Kafka và Airflow ra sao để hình thành Lakehouse thế hệ đầu.">
+<link rel="stylesheet" href="https://www.phamduytung.com/css/main.min.7dd8c8ad44fe5c0f292dd635ae28981312b940a5894df3049d2a6e2fa2f43327.css" integrity="sha256-fdjIrUT&#43;XA8pLdY1riiYExK5QKWJTfMEnSpuL6L0Myc=" crossorigin="anonymous"><link rel="stylesheet" href="https://www.phamduytung.com/css/katex.min.4d6aa053ca8a5675016fa2c9c48ee5359bfaafb8295184458af9d64abce84c47.css" integrity="sha256-TWqgU8qKVnUBb6LJxI7lNZv6r7gpUYRFivnWSrzoTEc=" crossorigin="anonymous">
+<link rel="stylesheet" href="https://www.phamduytung.com/css/viewer.min.e882eb3a023412b73bb741b4604a1222a9f13aa7783c828d26d066ab8642bd51.css" integrity="sha256-6ILrOgI0Erc7t0G0YEoSIqnxOqd4PIKNJtBmq4ZCvVE=" crossorigin="anonymous"><link rel="canonical" href="https://www.phamduytung.com/blog/2026-07-22-apache-iceberg/"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Phạm Duy Tùng"},"dateModified":"2026-07-22T00:00:00+03:00","datePublished":"2026-07-22T00:00:00+03:00","description":"Giải thích Apache Iceberg từ bản chất: nó đứng ở đâu trong Data Lake, quản lý file như thế nào, phối hợp với Spark, Trino, Flink, Hive Metastore, Kafka và Airflow ra sao để hình thành Lakehouse thế hệ đầu.","headline":"Apache Iceberg: Tấm sổ đỏ biến Data Lake thành Lakehouse","image":["https://www.phamduytung.com/images/posts/2026-07-22-apache-iceberg/cover.png"],"inLanguage":"vi","keywords":"apache iceberg, data lake, lakehouse, apache spark, trino","mainEntityOfPage":{"@id":"https://www.phamduytung.com/blog/2026-07-22-apache-iceberg/","@type":"WebPage"},"publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://www.phamduytung.com/images/logo.png"},"name":"Phạm Duy Tùng Machine Learning Blog"},"url":"https://www.phamduytung.com/blog/2026-07-22-apache-iceberg/"}</script></head>
+  <body><script>const items=["mode","palette"];items.forEach(function(e){const t=localStorage.getItem("hbs-"+e);t&&document.body.parentElement.setAttribute("data-"+e,t)})</script><header><nav class="navbar top-app-bar top-app-bar-expand-lg fixed-top">
+  <div class="container">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <i class="fas fa-bars"></i>
+    </button><a class="navbar-brand flex-grow-1 flex-lg-grow-0 text-center text-lg-start mx-auto me-lg-3" href="https://www.phamduytung.com/"><img class="logo" alt="Logo" src="https://www.phamduytung.com/images/logo.webp" loading="lazy"  title="Logo"
+   width="32" height="32"
+   />
+Phạm Duy Tùng
+    </a>
+    <div class="offcanvas offcanvas-bottom surface" tabindex="-1" id="offcanvasSocialShare" aria-labelledby="offcanvasSocialShare">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Share</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body">
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Twitter Share Button"
+      target="_blank" href="https://twitter.com/intent/tweet?title=Apache%20Iceberg%3a%20T%e1%ba%a5m%20s%e1%bb%95%20%c4%91%e1%bb%8f%20bi%e1%ba%bfn%20Data%20Lake%20th%c3%a0nh%20Lakehouse&url=https%3a%2f%2fwww.phamduytung.com%2fblog%2f2026-07-22-apache-iceberg%2f">
+      <i class="fab fa-fw fa-twitter"></i> Twitter
+    </a>
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Facebook Share Button"
+      target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.phamduytung.com%2fblog%2f2026-07-22-apache-iceberg%2f">
+      <i class="fab fa-fw fa-facebook-f"></i> Facebook
+    </a>
+  </div>
+</div>
+    <button class="navbar-settings" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSettings"
+  aria-controls="offcanvasSettings" aria-label="Toggle settings">
+  <i class="fas fa-ellipsis-v"></i>
+</button>
+
+<div class="offcanvas offcanvas-end surface h-100" tabindex="-1" id="offcanvasSettings" aria-labelledby="offcanvasSettings">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Cài đặt</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body d-flex flex-column">
+
+
+
+<section class="setting">
+  <form class="font-size-switcher-form row">
+    <div class="col-auto">
+      <label for="fontSize" class="form-label"><i class="fas fa-fw fa-font"></i> Cỡ chữ</label>
+    </div>
+    <div class="col-auto ms-auto">
+      <input type="range" class="form-range" min="-2" max="2" id="fontSize">
+    </div>
+  </form>
+</section>
+
+
+
+<section class="setting actions d-flex justify-content-around mt-auto overflow-auto">
+  <a role="button" class="action action-go-back" href="javascript: window.history.back();">
+    <span class="action-icon"><i class="fas fa-2x fa-arrow-left"></i></span> Quay lại
+  </a>
+  <a role="button" class="action action-reload-page">
+    <span class="action-icon"><i class="fas fa-2x fa-redo-alt"></i></span> Tải lại
+  </a>
+  <a role="button" class="action action-copy-url">
+    <span class="action-icon"><i class="fas fa-2x fa-link"></i></span> Sao chép URL
+  </a><a class="action action-social-share" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSocialShare"
+    aria-controls="offcanvasSocialShare" aria-label="Toggle social share">
+    <span class="action-icon"><i class="fas fa-2x fa-share-alt"></i></span> Chia sẻ
+  </a></section>
+
+</div>
+</div>
+
+    <div class="collapse navbar-collapse" tabindex="-1" id="navbarSupportedContent" aria-labelledby="navbarSupportedContent">
+      <form class="search-bar my-1" action="https://www.phamduytung.com/search">
+  <div class="input-group input-group-sm">
+    <span class="btn btn-search disabled position-absolute left-0"><i class="fas fa-fw fa-search"></i></span>
+    <input class="form-control rounded-pill" name="q" type="search" aria-label="Search">
+  </div>
+</form>
+      <ul class="navbar-nav ms-auto"><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/series/">
+            <i class="fas fa-fw fa-columns"></i>Courses
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/tools/">
+            <i class="fas fa-fw fa-folder"></i>Tools
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/categories/">
+            <i class="fas fa-fw fa-folder"></i>Categories
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/archives/">
+            <i class="fas fa-fw fa-file-archive"></i>Archives
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/tags/">
+            <i class="fas fa-fw fa-tags"></i>Tags
+          </a>
+        </li><li class="nav-item dropdown">
+          <a class="nav-link" id="navbarDropdownSupport" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-fw fa-comments"></i>Community
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdownSupport"><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Facebook Group
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://github.com/AlexBlack2202/alexblack2202.github.io" target="_blank" rel="noopener noreferrer">
+                GitHub
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/contact/">
+                Contact
+              </a>
+            </li><li><hr class="dropdown-divider"></li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/faq/">
+                Câu hỏi thường gặp
+              </a>
+            </li></ul>
+        </li></ul>
+    </div>
+  </div>
+</nav>
+</header>
+<main role="main" class="container" style="line-height:1.7em">
+      <div class="row content">
+<div class="col-lg-9 col-md-8">
+  <div class="container"><nav class="row card component" aria-label="breadcrumb">
+  <div class="card-body">
+    <ol class="breadcrumb "><li class="breadcrumb-item"><a href="https://www.phamduytung.com/">Trang chủ</a></li><li class="breadcrumb-item"><a href="https://www.phamduytung.com/blog/">Blogs</a></li><li class="breadcrumb-item active">Apache Iceberg: Tấm sổ đỏ biến Data Lake thành Lakehouse</li></ol>
+  </div>
+</nav>
+<div class="post-panel-wrapper">
+  <div class="d-flex flex-column component rounded post-panel">
+    
+    <a class="action action-panel-toggler" role="button" title="Panel toggler">
+      <i class="fas fa-fw fa-chevron-circle-down"></i>
+    </a>
+    <a id="sidebarToggler" class="action d-none d-lg-block" role="button" title="Sidebar toggler">
+  <i class="fas fa-fw fa-expand-alt" data-fa-transform="rotate-45"></i>
+</a>
+
+    
+
+    
+    
+    <a class="action" href="#post-comments" role="button" aria-label="Comments" title="Comments">
+  <i class="fas fa-fw fa-comments"></i>
+</a>
+    <a class="action" href="#postTOC" aria-controls="Table of contents" role="button" title="Table of contents">
+  <i class="fas fa-fw fa-list-alt"></i>
+</a>
+    
+  </div>
+</div>
+<article class="row card component mb-4 post">
+  <div class="card-header "><div class="bgcover" style="background-image:url(https://www.phamduytung.com/images/posts/2026-07-22-apache-iceberg/cover.png)" aria-label="Apache Iceberg: Tấm sổ đỏ biến Data Lake thành Lakehouse">
+      <div class="bgtrans">
+          <h1>Apache Iceberg: Tấm sổ đỏ biến Data Lake thành Lakehouse
+</h1>
+      </div>
+  </div>
+</div>
+  <div class="card-body"><div class="post-meta">
+  <span class="post-date" title="tạo ngày 2026-07-22 04:00:00 &#43;0700 &#43;07.">
+    22/07/2026
+  </span><span class="post-reading-time">
+    32 phút đọc
+  </span><span class="post-taxonomies"><a href="https://www.phamduytung.com/tags/apache-iceberg/" class="badge post-taxonomy">apache iceberg</a><a href="https://www.phamduytung.com/tags/data-lake/" class="badge post-taxonomy">data lake</a><a href="https://www.phamduytung.com/tags/lakehouse/" class="badge post-taxonomy">lakehouse</a><a href="https://www.phamduytung.com/tags/apache-spark/" class="badge post-taxonomy">apache spark</a><a href="https://www.phamduytung.com/tags/trino/" class="badge post-taxonomy">trino</a></span>
+</div>
+<div class="post-content mb-3"><hr>
+<div class="toc">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#một-nhà-kho-chứa-một-tỷ-thùng-hàng">Một nhà kho chứa một tỷ thùng hàng</a></li>
+    <li><a href="#data-lake-10-là-gì">Data Lake 1.0 là gì?</a></li>
+    <li><a href="#data-lake-đời-đầu-được-tạo-từ-những-lớp-nào">Data Lake đời đầu được tạo từ những lớp nào?</a></li>
+    <li><a href="#lớp-lưu-trữ-hdfs-s3-adls-và-gcs">Lớp lưu trữ: HDFS, S3, ADLS và GCS</a></li>
+    <li><a href="#lớp-định-dạng-file-parquet-orc-và-avro">Lớp định dạng file: Parquet, ORC và Avro</a>
+      <ul>
+        <li><a href="#parquet">Parquet</a></li>
+        <li><a href="#orc">ORC</a></li>
+        <li><a href="#avro">Avro</a></li>
+      </ul>
+    </li>
+    <li><a href="#lớp-catalog-hive-metastore">Lớp catalog: Hive Metastore</a></li>
+    <li><a href="#lớp-xử-lý-spark-và-flink">Lớp xử lý: Spark và Flink</a>
+      <ul>
+        <li><a href="#apache-spark">Apache Spark</a></li>
+        <li><a href="#apache-flink">Apache Flink</a></li>
+      </ul>
+    </li>
+    <li><a href="#lớp-truy-vấn-hive-presto-và-trino">Lớp truy vấn: Hive, Presto và Trino</a></li>
+    <li><a href="#lớp-thu-thập-dữ-liệu-kafka-và-debezium">Lớp thu thập dữ liệu: Kafka và Debezium</a></li>
+    <li><a href="#lớp-điều-phối-apache-airflow">Lớp điều phối: Apache Airflow</a></li>
+    <li><a href="#vấn-đề-bắt-đầu-xuất-hiện">Vấn đề bắt đầu xuất hiện</a></li>
+    <li><a href="#ghi-nửa-chừng">Ghi nửa chừng</a></li>
+    <li><a href="#hai-người-cùng-ghi">Hai người cùng ghi</a></li>
+    <li><a href="#schema-thay-đổi-nguy-hiểm">Schema thay đổi nguy hiểm</a></li>
+    <li><a href="#partition-bị-lộ-vào-câu-truy-vấn">Partition bị lộ vào câu truy vấn</a></li>
+    <li><a href="#liệt-kê-quá-nhiều-file">Liệt kê quá nhiều file</a></li>
+    <li><a href="#xóa-và-cập-nhật-rất-đắt">Xóa và cập nhật rất đắt</a></li>
+    <li><a href="#apache-iceberg-thật-sự-là-gì">Apache Iceberg thật sự là gì?</a></li>
+    <li><a href="#những-thành-phần-nhỏ-nhất-của-một-bảng-iceberg">Những thành phần nhỏ nhất của một bảng Iceberg</a></li>
+    <li><a href="#catalog">Catalog</a></li>
+    <li><a href="#metadata-file">Metadata file</a></li>
+    <li><a href="#snapshot">Snapshot</a></li>
+    <li><a href="#manifest-list">Manifest list</a></li>
+    <li><a href="#manifest-file">Manifest file</a></li>
+    <li><a href="#data-file">Data file</a></li>
+    <li><a href="#một-lần-ghi-dữ-liệu-diễn-ra-như-thế-nào">Một lần ghi dữ liệu diễn ra như thế nào?</a>
+      <ul>
+        <li><a href="#bước-1-đọc-trạng-thái-hiện-tại">Bước 1: Đọc trạng thái hiện tại</a></li>
+        <li><a href="#bước-2-ghi-data-file-mới">Bước 2: Ghi data file mới</a></li>
+        <li><a href="#bước-3-tạo-manifest-và-snapshot-mới">Bước 3: Tạo manifest và snapshot mới</a></li>
+        <li><a href="#bước-4-công-bố-phiên-bản-mới">Bước 4: Công bố phiên bản mới</a></li>
+      </ul>
+    </li>
+    <li><a href="#hidden-partitioning-đừng-bắt-người-dùng-nhớ-cách-xếp-kho">Hidden partitioning: đừng bắt người dùng nhớ cách xếp kho</a></li>
+    <li><a href="#schema-evolution-đổi-nhà-nhưng-không-đổi-căn-cước">Schema evolution: đổi nhà nhưng không đổi căn cước</a></li>
+    <li><a href="#time-travel-nhìn-lại-căn-phòng-trước-khi-bị-sửa">Time travel: nhìn lại căn phòng trước khi bị sửa</a></li>
+    <li><a href="#bronze-silver-và-gold-nằm-ở-đâu">Bronze, Silver và Gold nằm ở đâu?</a></li>
+    <li><a href="#bronze-giữ-lại-dấu-vết-ban-đầu">Bronze: giữ lại dấu vết ban đầu</a></li>
+    <li><a href="#silver-dữ-liệu-đã-được-làm-sạch">Silver: dữ liệu đã được làm sạch</a></li>
+    <li><a href="#gold-dữ-liệu-phục-vụ-quyết-định">Gold: dữ liệu phục vụ quyết định</a></li>
+    <li><a href="#một-kiến-trúc-lakehouse-10-dùng-apache-iceberg">Một kiến trúc Lakehouse 1.0 dùng Apache Iceberg</a></li>
+    <li><a href="#iceberg-hudi-và-delta-lake-khác-nhau-thế-nào">Iceberg, Hudi và Delta Lake khác nhau thế nào?</a></li>
+    <li><a href="#những-việc-nên-làm-khi-triển-khai-iceberg">Những việc nên làm khi triển khai Iceberg</a></li>
+    <li><a href="#bắt-đầu-từ-một-bảng-có-vấn-đề-thật">Bắt đầu từ một bảng có vấn đề thật</a></li>
+    <li><a href="#chọn-catalog-rõ-ràng">Chọn catalog rõ ràng</a></li>
+    <li><a href="#thiết-kế-partition-theo-truy-vấn">Thiết kế partition theo truy vấn</a></li>
+    <li><a href="#kiểm-soát-kích-thước-file">Kiểm soát kích thước file</a></li>
+    <li><a href="#lập-lịch-bảo-trì">Lập lịch bảo trì</a></li>
+    <li><a href="#tách-rõ-bronze-silver-và-gold">Tách rõ Bronze, Silver và Gold</a></li>
+    <li><a href="#những-điều-không-nên-làm">Những điều không nên làm</a></li>
+    <li><a href="#không-xem-iceberg-là-database-giao-dịch">Không xem Iceberg là database giao dịch</a></li>
+    <li><a href="#không-cho-nhiều-job-tự-sửa-file-bên-dưới">Không cho nhiều job tự sửa file bên dưới</a></li>
+    <li><a href="#không-đưa-mọi-thứ-vào-một-bảng-khổng-lồ">Không đưa mọi thứ vào một bảng khổng lồ</a></li>
+    <li><a href="#không-bỏ-qua-data-quality">Không bỏ qua data quality</a></li>
+    <li><a href="#không-triển-khai-quá-nhiều-phần-mềm-cùng-lúc">Không triển khai quá nhiều phần mềm cùng lúc</a></li>
+    <li><a href="#apache-iceberg-không-giải-quyết-những-gì">Apache Iceberg không giải quyết những gì?</a></li>
+    <li><a href="#tổng-kết">Tổng kết</a></li>
+    <li><a href="#tham-khảo">Tham khảo</a></li>
+  </ul>
+</nav>
+  </div>
+<h1 id="một-nhà-kho-chứa-một-tỷ-thùng-hàng">Một nhà kho chứa một tỷ thùng hàng<a class="anchor ms-1" href="#một-nhà-kho-chứa-một-tỷ-thùng-hàng"><i class="fas fa-link"></i></a></h1>
+<p>Giả sử công ty có một nhà kho rất lớn.</p>
+<p>Mỗi ngày, hàng triệu thùng hàng được đưa vào.</p>
+<p>Thùng màu xanh chứa đơn bán hàng.</p>
+<p>Thùng màu đỏ chứa tồn kho.</p>
+<p>Thùng màu vàng chứa thông tin khách hàng.</p>
+<p>Thùng màu tím chứa log từ website.</p>
+<p>Ban đầu, số lượng hàng còn ít. Nhân viên chỉ cần ghi bên ngoài:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">/kho/don-hang/2026/07/25/
+</span></span></code></pre></div><p>Muốn tìm đơn hàng ngày 25 tháng 7 thì đi vào đúng căn phòng đó.</p>
+<p>Xong thuật toán, quá dễ.</p>
+<p>Nhưng vài năm sau, nhà kho có hàng tỷ thùng.</p>
+<p>Có thùng được đưa vào trễ.</p>
+<p>Có thùng ghi nhầm ngày.</p>
+<p>Có thùng cần sửa.</p>
+<p>Có thùng cần xóa vì khách hàng yêu cầu.</p>
+<p>Có hai đội cùng lúc mang hàng vào một khu vực.</p>
+<p>Có một đội đang đọc số liệu thì đội khác thay toàn bộ hàng trên kệ.</p>
+<p>Lúc này, vấn đề không còn là thiếu chỗ chứa.</p>
+<p>Vấn đề là không ai biết chính xác:</p>
+<ul>
+<li>Thùng nào đang thuộc bảng nào.</li>
+<li>Phiên bản hiện tại gồm những thùng nào.</li>
+<li>Thùng nào đã bị thay thế.</li>
+<li>Thùng nào chỉ mới được ghi một nửa.</li>
+<li>Cấu trúc dữ liệu đã thay đổi từ lúc nào.</li>
+<li>Một câu truy vấn cần mở những thùng nào.</li>
+<li>Làm sao quay lại trạng thái của ngày hôm qua.</li>
+</ul>
+<p>Đây chính là câu chuyện của <strong>Data Lake thế hệ đầu</strong>.</p>
+<p>Chúng ta xây được một cái hồ rất lớn.</p>
+<p>Nhưng hồ chỉ biết chứa nước.</p>
+<p>Nó không biết đâu là chai nước đang được bán, đâu là chai đã hết hạn, đâu là chai vừa bị một người khác đổ thêm nước vào.</p>
+<p>Apache Iceberg xuất hiện để giải quyết phần còn thiếu đó.</p>
+<p>Nó không thay cái hồ.</p>
+<p>Nó đặt lên trên cái hồ một hệ thống quản lý bảng đủ nghiêm túc để các công cụ xử lý dữ liệu có thể cùng đọc, cùng ghi mà không phải nhìn vào hàng triệu file rồi cầu nguyện.</p>
+<h1 id="data-lake-10-là-gì">Data Lake 1.0 là gì?<a class="anchor ms-1" href="#data-lake-10-là-gì"><i class="fas fa-link"></i></a></h1>
+<p>“Data Lake 1.0” không phải tên phiên bản chính thức của một sản phẩm.</p>
+<p>Trong bài viết này, mình dùng nó để chỉ thế hệ Data Lake đầu tiên, nơi dữ liệu được đưa từ nhiều hệ thống về một vùng lưu trữ tập trung, thường là HDFS hoặc object storage, sau đó được xử lý bằng những công cụ như Hive, Spark và Presto.</p>
+<p>Kiến trúc cơ bản có dạng:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">ERP / CRM / Website / App / Log
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">                ↓
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">        Công cụ thu thập dữ liệu
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">                ↓
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">          HDFS hoặc Object Storage
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">                ↓
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">       Parquet / ORC / Avro / JSON
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">                ↓
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">          Hive Metastore
+</span></span><span class="line"><span class="ln">10</span><span class="cl">                ↓
+</span></span><span class="line"><span class="ln">11</span><span class="cl">       Spark / Hive / Presto / Trino
+</span></span><span class="line"><span class="ln">12</span><span class="cl">                ↓
+</span></span><span class="line"><span class="ln">13</span><span class="cl">            Báo cáo và BI
+</span></span></code></pre></div><p>HDFS là một hệ thống file phân tán, được thiết kế để lưu dữ liệu lớn trên nhiều máy phổ thông. Nó chia file thành các block, phân phối chúng qua nhiều DataNode và dùng NameNode để quản lý không gian tên của hệ thống file.</p>
+<p>Khi điện toán đám mây trở nên phổ biến, S3, Azure Data Lake Storage và Google Cloud Storage dần đảm nhiệm vai trò cái hồ. Thay vì ổ đĩa nằm trong cụm Hadoop, dữ liệu nằm trên object storage và các hệ thống xử lý thuê tài nguyên khi cần.</p>
+<p>Đây là một ý tưởng rất mạnh:</p>
+<blockquote>
+<p>Tách nơi chứa dữ liệu khỏi nơi xử lý dữ liệu.</p>
+</blockquote>
+<p>Dữ liệu có thể nằm yên trong kho.</p>
+<p>Spark đến xử lý rồi rời đi.</p>
+<p>Trino đến đọc rồi rời đi.</p>
+<p>Flink đến ghi dữ liệu rồi tiếp tục chạy.</p>
+<p>Không cần mỗi hệ thống phải giữ một bản sao riêng.</p>
+<p>Nhưng tách storage khỏi compute cũng tạo ra một khoảng trống lớn.</p>
+<p>Object storage chỉ nhìn thấy:</p>
+<ul>
+<li>Bucket.</li>
+<li>Folder.</li>
+<li>Object.</li>
+<li>Tên file.</li>
+<li>Kích thước file.</li>
+<li>Thời gian cập nhật.</li>
+</ul>
+<p>Nó không thực sự hiểu:</p>
+<ul>
+<li>Bảng.</li>
+<li>Giao dịch.</li>
+<li>Khóa chính.</li>
+<li>Phiên bản.</li>
+<li>Snapshot.</li>
+<li>Schema.</li>
+<li>Partition.</li>
+<li>File nào đã bị loại khỏi bảng.</li>
+</ul>
+<p>Nó giống một bãi container ở cảng.</p>
+<p>Container được xếp rất ngay ngắn.</p>
+<p>Nhưng nếu không có hệ thống vận đơn, con người chỉ đang đứng trước hàng triệu chiếc hộp kim loại giống nhau.</p>
+<h1 id="data-lake-đời-đầu-được-tạo-từ-những-lớp-nào">Data Lake đời đầu được tạo từ những lớp nào?<a class="anchor ms-1" href="#data-lake-đời-đầu-được-tạo-từ-những-lớp-nào"><i class="fas fa-link"></i></a></h1>
+<p>Một Data Lake không phải một phần mềm duy nhất.</p>
+<p>Nó là nhiều lớp được ghép lại.</p>
+<h1 id="lớp-lưu-trữ-hdfs-s3-adls-và-gcs">Lớp lưu trữ: HDFS, S3, ADLS và GCS<a class="anchor ms-1" href="#lớp-lưu-trữ-hdfs-s3-adls-và-gcs"><i class="fas fa-link"></i></a></h1>
+<p>Đây là nền đất.</p>
+<p>Nó chịu trách nhiệm giữ các file dữ liệu.</p>
+<p>Trong hệ thống tự vận hành tại trung tâm dữ liệu, HDFS từng là lựa chọn phổ biến. Trong môi trường cloud, object storage thường được chọn vì dung lượng lớn, độ bền cao và khả năng tách biệt khỏi cụm tính toán.</p>
+<p>Storage không nên chịu trách nhiệm hiểu toàn bộ logic của bảng.</p>
+<p>Nó chỉ cần giữ file một cách đáng tin cậy.</p>
+<h1 id="lớp-định-dạng-file-parquet-orc-và-avro">Lớp định dạng file: Parquet, ORC và Avro<a class="anchor ms-1" href="#lớp-định-dạng-file-parquet-orc-và-avro"><i class="fas fa-link"></i></a></h1>
+<p>Nếu object storage là nhà kho, file format là cách hàng hóa được đóng thùng.</p>
+<h2 id="parquet">Parquet<a class="anchor ms-1" href="#parquet"><i class="fas fa-link"></i></a></h2>
+<p>Parquet là định dạng dạng cột, được thiết kế cho việc lưu trữ và đọc dữ liệu phân tích hiệu quả. Các giá trị của cùng một cột được đặt gần nhau, giúp hệ thống chỉ đọc những cột thật sự cần và nén dữ liệu tốt hơn.</p>
+<p>Ví dụ bảng bán hàng có 100 cột, nhưng báo cáo chỉ cần:</p>
+<ul>
+<li>Ngày bán.</li>
+<li>Mã cửa hàng.</li>
+<li>Doanh thu.</li>
+</ul>
+<p>Với CSV, hệ thống thường phải kéo qua cả dòng dữ liệu.</p>
+<p>Với Parquet, nó có thể tập trung vào ba cột cần thiết.</p>
+<p>Parquet trả lời câu hỏi:</p>
+<blockquote>
+<p>Dữ liệu bên trong một file được sắp xếp như thế nào?</p>
+</blockquote>
+<p>Nó không trả lời:</p>
+<blockquote>
+<p>Những file Parquet nào đang thuộc phiên bản hiện tại của bảng?</p>
+</blockquote>
+<p>Đây là một điểm cực kỳ quan trọng.</p>
+<p><strong>Parquet là file format. Iceberg là table format.</strong></p>
+<p>Một cái quản lý nội thất bên trong từng căn nhà.</p>
+<p>Một cái quản lý cả khu dân cư, sổ nhà đất, địa chỉ và lịch sử thay đổi.</p>
+<h2 id="orc">ORC<a class="anchor ms-1" href="#orc"><i class="fas fa-link"></i></a></h2>
+<p>ORC cũng là một định dạng dạng cột, được sử dụng nhiều trong hệ sinh thái Hive.</p>
+<p>Nó cùng nhóm bài toán với Parquet: lưu dữ liệu phân tích sao cho đọc nhanh, nén tốt và hỗ trợ bỏ qua những vùng dữ liệu không cần thiết.</p>
+<h2 id="avro">Avro<a class="anchor ms-1" href="#avro"><i class="fas fa-link"></i></a></h2>
+<p>Avro thường phù hợp với dữ liệu dạng dòng hoặc dữ liệu sự kiện, nơi schema đi cùng dữ liệu và việc tuần tự hóa từng record quan trọng hơn truy vấn phân tích dạng cột.</p>
+<p>Trong một pipeline thực tế, Kafka có thể nhận sự kiện dạng Avro hoặc JSON, sau đó Spark hoặc Flink chuyển chúng thành Parquet để phục vụ phân tích.</p>
+<h1 id="lớp-catalog-hive-metastore">Lớp catalog: Hive Metastore<a class="anchor ms-1" href="#lớp-catalog-hive-metastore"><i class="fas fa-link"></i></a></h1>
+<p>File đã có.</p>
+<p>Nhưng hệ thống vẫn cần biết:</p>
+<ul>
+<li>Bảng tên gì.</li>
+<li>Có những cột nào.</li>
+<li>Dữ liệu nằm ở đường dẫn nào.</li>
+<li>Bảng được chia partition ra sao.</li>
+<li>Dùng file format nào.</li>
+</ul>
+<p>Hive Metastore được dùng để giữ các metadata này. Tài liệu Hive mô tả metadata của bảng và partition được truy cập thông qua Metastore, còn thông tin đó thường được lưu trong một cơ sở dữ liệu quan hệ phía sau.</p>
+<p>Ví dụ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="k">CREATE</span><span class="w"> </span><span class="k">EXTERNAL</span><span class="w"> </span><span class="k">TABLE</span><span class="w"> </span><span class="n">sales</span><span class="w"> </span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="w">    </span><span class="n">order_id</span><span class="w"> </span><span class="nb">BIGINT</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="ln"> 3</span><span class="cl"><span class="w">    </span><span class="n">store_id</span><span class="w"> </span><span class="nb">INT</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="ln"> 4</span><span class="cl"><span class="w">    </span><span class="n">revenue</span><span class="w"> </span><span class="nb">DECIMAL</span><span class="p">(</span><span class="mi">18</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="ln"> 5</span><span class="cl"><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="ln"> 6</span><span class="cl"><span class="n">PARTITIONED</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="ln"> 7</span><span class="cl"><span class="w">    </span><span class="n">sale_date</span><span class="w"> </span><span class="n">STRING</span><span class="w">
+</span></span></span><span class="line"><span class="ln"> 8</span><span class="cl"><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="ln"> 9</span><span class="cl"><span class="n">STORED</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">PARQUET</span><span class="w">
+</span></span></span><span class="line"><span class="ln">10</span><span class="cl"><span class="k">LOCATION</span><span class="w"> </span><span class="s1">&#39;s3://company-lake/sales/&#39;</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><p>Hive Metastore biết bảng <code>sales</code> nằm ở đâu và được chia theo <code>sale_date</code>.</p>
+<p>Nhưng với mô hình bảng Hive truyền thống, partition thường được biểu diễn trực tiếp bằng cấu trúc thư mục:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">sales/
+</span></span><span class="line"><span class="ln">2</span><span class="cl">├── sale_date=2026-07-23/
+</span></span><span class="line"><span class="ln">3</span><span class="cl">├── sale_date=2026-07-24/
+</span></span><span class="line"><span class="ln">4</span><span class="cl">└── sale_date=2026-07-25/
+</span></span></code></pre></div><p>Một ngày có thể ổn.</p>
+<p>Một tháng có thể ổn.</p>
+<p>Nhưng nếu chia theo:</p>
+<ul>
+<li>Ngày.</li>
+<li>Giờ.</li>
+<li>Cửa hàng.</li>
+<li>Công ty.</li>
+<li>Khu vực.</li>
+</ul>
+<p>Số lượng partition có thể phình ra khủng khiếp.</p>
+<p>Mỗi partition lại trở thành một đối tượng cần được Metastore quản lý.</p>
+<p>Cái hồ bắt đầu có quá nhiều biển chỉ đường.</p>
+<p>Đọc biển đôi khi còn lâu hơn đi lấy hàng.</p>
+<h1 id="lớp-xử-lý-spark-và-flink">Lớp xử lý: Spark và Flink<a class="anchor ms-1" href="#lớp-xử-lý-spark-và-flink"><i class="fas fa-link"></i></a></h1>
+<h2 id="apache-spark">Apache Spark<a class="anchor ms-1" href="#apache-spark"><i class="fas fa-link"></i></a></h2>
+<p>Spark đọc dữ liệu từ storage, biến đổi nó rồi ghi kết quả trở lại.</p>
+<p>Spark SQL hỗ trợ nhiều nguồn dữ liệu và có thể trực tiếp đọc, ghi Parquet bằng DataFrame hoặc SQL.</p>
+<p>Spark thường làm những việc như:</p>
+<ul>
+<li>ETL theo batch.</li>
+<li>Join dữ liệu lớn.</li>
+<li>Làm sạch dữ liệu.</li>
+<li>Tổng hợp.</li>
+<li>Xây feature cho machine learning.</li>
+<li>Ghi các bảng Bronze, Silver và Gold.</li>
+</ul>
+<h2 id="apache-flink">Apache Flink<a class="anchor ms-1" href="#apache-flink"><i class="fas fa-link"></i></a></h2>
+<p>Flink mạnh ở xử lý luồng dữ liệu liên tục, đồng thời cũng hỗ trợ dữ liệu hữu hạn theo mô hình batch.</p>
+<p>Ví dụ:</p>
+<ul>
+<li>Đơn hàng phát sinh liên tục.</li>
+<li>Tồn kho thay đổi liên tục.</li>
+<li>Giá sản phẩm thay đổi liên tục.</li>
+</ul>
+<p>Kafka đưa sự kiện vào.</p>
+<p>Flink xử lý rồi ghi những thay đổi xuống Data Lake.</p>
+<p>Spark giống đoàn xe tải đến kho theo chuyến.</p>
+<p>Flink giống băng chuyền không ngừng chạy.</p>
+<h1 id="lớp-truy-vấn-hive-presto-và-trino">Lớp truy vấn: Hive, Presto và Trino<a class="anchor ms-1" href="#lớp-truy-vấn-hive-presto-và-trino"><i class="fas fa-link"></i></a></h1>
+<p>Spark xử lý dữ liệu rất tốt, nhưng không phải lúc nào người dùng cũng muốn chờ một job Spark khởi động.</p>
+<p>Các công cụ SQL phân tán như Presto và Trino được dùng để truy vấn trực tiếp dữ liệu trong hồ.</p>
+<p>Trino là một distributed SQL query engine, được thiết kế để truy vấn những tập dữ liệu lớn nằm trên một hoặc nhiều nguồn dữ liệu khác nhau. Nó sử dụng coordinator để lập kế hoạch và các worker để xử lý dữ liệu song song.</p>
+<p>Người dùng có thể viết:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="ln">1</span><span class="cl"><span class="k">SELECT</span><span class="w">
+</span></span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="w">    </span><span class="n">province</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="w">    </span><span class="k">SUM</span><span class="p">(</span><span class="n">revenue</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">total_revenue</span><span class="w">
+</span></span></span><span class="line"><span class="ln">4</span><span class="cl"><span class="k">FROM</span><span class="w"> </span><span class="n">lakehouse</span><span class="p">.</span><span class="n">gold_daily_sales</span><span class="w">
+</span></span></span><span class="line"><span class="ln">5</span><span class="cl"><span class="k">WHERE</span><span class="w"> </span><span class="n">sale_date</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="nb">DATE</span><span class="w"> </span><span class="s1">&#39;2026-07-01&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="ln">6</span><span class="cl"><span class="k">GROUP</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">province</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><p>Trino tìm các file cần đọc, chia công việc cho worker, xử lý song song rồi trả kết quả.</p>
+<h1 id="lớp-thu-thập-dữ-liệu-kafka-và-debezium">Lớp thu thập dữ liệu: Kafka và Debezium<a class="anchor ms-1" href="#lớp-thu-thập-dữ-liệu-kafka-và-debezium"><i class="fas fa-link"></i></a></h1>
+<p>Kafka là nền tảng event streaming phân tán, cho phép đọc, ghi, lưu và xử lý các sự kiện trên nhiều máy.</p>
+<p>Trong bán lẻ, Kafka có thể vận chuyển:</p>
+<ul>
+<li>Đơn hàng mới.</li>
+<li>Thay đổi tồn kho.</li>
+<li>Thay đổi giá.</li>
+<li>Hành vi click.</li>
+<li>Log ứng dụng.</li>
+<li>Trạng thái giao hàng.</li>
+</ul>
+<p>Nếu cần lấy thay đổi từ database nghiệp vụ, Debezium thường được đặt cạnh Kafka để thực hiện Change Data Capture.</p>
+<p>Ví dụ một đơn hàng trong PostgreSQL được cập nhật:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">status: CREATED → PAID
+</span></span></code></pre></div><p>Thay vì mỗi đêm đọc lại toàn bộ bảng đơn hàng, CDC phát ra một sự kiện mô tả phần đã thay đổi.</p>
+<p>Tuy nhiên, Kafka chỉ mang sự kiện đến hồ.</p>
+<p>Nó không tự biến những sự kiện đó thành một bảng nhất quán.</p>
+<p>Ai đó vẫn phải giải quyết:</p>
+<ul>
+<li>Sự kiện đến trùng.</li>
+<li>Sự kiện đến sai thứ tự.</li>
+<li>Dữ liệu đến trễ.</li>
+<li>Bản ghi bị cập nhật.</li>
+<li>Bản ghi bị xóa.</li>
+<li>Hai job cùng ghi một bảng.</li>
+</ul>
+<p>Đây là nơi table format bắt đầu trở nên quan trọng.</p>
+<h1 id="lớp-điều-phối-apache-airflow">Lớp điều phối: Apache Airflow<a class="anchor ms-1" href="#lớp-điều-phối-apache-airflow"><i class="fas fa-link"></i></a></h1>
+<p>Một pipeline thường không chỉ có một bước.</p>
+<p>Ví dụ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">Lấy dữ liệu ERP
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">Kiểm tra dữ liệu
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">Ghi Bronze
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">Chuyển sang Silver
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">Tổng hợp Gold
+</span></span><span class="line"><span class="ln">10</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln">11</span><span class="cl">Cập nhật dashboard
+</span></span></code></pre></div><p>Airflow cho phép mô tả workflow dưới dạng DAG, trong đó mỗi task là một đơn vị công việc và các mối phụ thuộc xác định thứ tự thực thi.</p>
+<p>Airflow không xử lý hàng tỷ dòng thay Spark.</p>
+<p>Nó giống người quản đốc.</p>
+<p>Nó gọi đúng đội vào đúng giờ, kiểm tra bước nào thất bại và quyết định có chạy lại hay không.</p>
+<h1 id="vấn-đề-bắt-đầu-xuất-hiện">Vấn đề bắt đầu xuất hiện<a class="anchor ms-1" href="#vấn-đề-bắt-đầu-xuất-hiện"><i class="fas fa-link"></i></a></h1>
+<p>Kiến trúc Data Lake đời đầu hoạt động khá tốt khi:</p>
+<ul>
+<li>Chủ yếu ghi thêm dữ liệu.</li>
+<li>Ít cập nhật.</li>
+<li>Ít engine cùng ghi.</li>
+<li>Số lượng partition chưa quá lớn.</li>
+<li>Mỗi pipeline biết rõ mình sở hữu thư mục nào.</li>
+</ul>
+<p>Nhưng khi hệ thống lớn lên, nhiều vết nứt xuất hiện.</p>
+<h1 id="ghi-nửa-chừng">Ghi nửa chừng<a class="anchor ms-1" href="#ghi-nửa-chừng"><i class="fas fa-link"></i></a></h1>
+<p>Giả sử một Spark job cần ghi 1.000 file.</p>
+<p>Nó ghi được 800 file thì chết.</p>
+<p>Lúc này, người đọc nhìn thấy gì?</p>
+<ul>
+<li>800 file mới?</li>
+<li>Bộ dữ liệu cũ?</li>
+<li>Một hỗn hợp giữa cũ và mới?</li>
+</ul>
+<p>Nếu không có cơ chế commit ở cấp bảng, người đọc có thể thấy một trạng thái chưa hoàn chỉnh.</p>
+<p>Nó giống siêu thị thay bảng giá giữa giờ.</p>
+<p>Một nửa sản phẩm đã có giá mới.</p>
+<p>Một nửa vẫn dùng giá cũ.</p>
+<p>Khách hàng đứng ở giữa và bắt đầu suy nghĩ về luật bảo vệ người tiêu dùng.</p>
+<h1 id="hai-người-cùng-ghi">Hai người cùng ghi<a class="anchor ms-1" href="#hai-người-cùng-ghi"><i class="fas fa-link"></i></a></h1>
+<p>Job A đang thêm đơn hàng ngày hôm nay.</p>
+<p>Job B đang sửa dữ liệu ngày hôm qua.</p>
+<p>Nếu cả hai chỉ thao tác trực tiếp trên folder, mỗi job có thể không biết job kia đang làm gì.</p>
+<p>Trong trường hợp xấu, một job ghi đè kết quả của job còn lại.</p>
+<h1 id="schema-thay-đổi-nguy-hiểm">Schema thay đổi nguy hiểm<a class="anchor ms-1" href="#schema-thay-đổi-nguy-hiểm"><i class="fas fa-link"></i></a></h1>
+<p>Hôm nay bảng có:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">customer_id
+</span></span><span class="line"><span class="ln">2</span><span class="cl">customer_name
+</span></span><span class="line"><span class="ln">3</span><span class="cl">province
+</span></span></code></pre></div><p>Ngày mai đội dữ liệu đổi tên <code>province</code> thành <code>city</code>.</p>
+<p>Nếu hệ thống nhận diện cột chỉ bằng tên hoặc vị trí, thay đổi schema có thể làm dữ liệu cũ bị đọc nhầm.</p>
+<p>Iceberg gán định danh riêng cho từng field, giúp thao tác thêm, xóa, đổi tên và sắp xếp lại cột an toàn hơn mà không phải lập tức ghi lại toàn bộ dữ liệu.</p>
+<h1 id="partition-bị-lộ-vào-câu-truy-vấn">Partition bị lộ vào câu truy vấn<a class="anchor ms-1" href="#partition-bị-lộ-vào-câu-truy-vấn"><i class="fas fa-link"></i></a></h1>
+<p>Giả sử dữ liệu được chia theo:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">year=2026/month=07/day=25
+</span></span></code></pre></div><p>Người dùng phải hiểu cấu trúc vật lý đó để viết truy vấn đúng.</p>
+<p>Nếu sau này muốn đổi từ partition theo ngày sang partition theo giờ, rất nhiều pipeline và câu SQL có thể bị ảnh hưởng.</p>
+<p>Người hỏi chỉ muốn:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="ln">1</span><span class="cl"><span class="k">WHERE</span><span class="w"> </span><span class="n">event_time</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="k">TIMESTAMP</span><span class="w"> </span><span class="s1">&#39;2026-07-25 10:00:00&#39;</span><span class="w">
+</span></span></span></code></pre></div><p>Họ không nên cần biết dữ liệu được cất theo ngày, giờ hay bucket.</p>
+<h1 id="liệt-kê-quá-nhiều-file">Liệt kê quá nhiều file<a class="anchor ms-1" href="#liệt-kê-quá-nhiều-file"><i class="fas fa-link"></i></a></h1>
+<p>Một bảng lớn có thể chứa hàng triệu file.</p>
+<p>Muốn chạy truy vấn, engine phải biết file nào cần đọc.</p>
+<p>Nếu phải gọi object storage để liệt kê từng folder và từng object, thời gian lập kế hoạch có thể trở thành nút thắt trước khi việc đọc dữ liệu thật sự bắt đầu.</p>
+<h1 id="xóa-và-cập-nhật-rất-đắt">Xóa và cập nhật rất đắt<a class="anchor ms-1" href="#xóa-và-cập-nhật-rất-đắt"><i class="fas fa-link"></i></a></h1>
+<p>File Parquet không hoạt động như một trang trong database quan hệ.</p>
+<p>Không thể đơn giản đi đến dòng số 7.521 rồi sửa một ô.</p>
+<p>Thông thường, hệ thống phải:</p>
+<ul>
+<li>Đọc file cũ.</li>
+<li>Tạo file mới.</li>
+<li>Loại file cũ khỏi bảng.</li>
+<li>Đảm bảo người đọc không nhìn thấy trạng thái ở giữa.</li>
+</ul>
+<p>Data Lake đời đầu rất giỏi chứa file lớn bất biến.</p>
+<p>Nó không tự nhiên giỏi thay đổi dữ liệu như database.</p>
+<h1 id="apache-iceberg-thật-sự-là-gì">Apache Iceberg thật sự là gì?<a class="anchor ms-1" href="#apache-iceberg-thật-sự-là-gì"><i class="fas fa-link"></i></a></h1>
+<p>Apache Iceberg là một <strong>open table format</strong> dành cho những bảng dữ liệu phân tích rất lớn. Nó được phát triển ban đầu tại Netflix để giải quyết các vấn đề dữ liệu quy mô lớn, sau đó được đóng góp vào Apache Software Foundation năm 2018.</p>
+<p>Iceberg không phải:</p>
+<ul>
+<li>Một database.</li>
+<li>Một data warehouse.</li>
+<li>Một query engine.</li>
+<li>Một hệ thống lưu trữ.</li>
+<li>Một định dạng file thay thế Parquet.</li>
+<li>Một công cụ ETL.</li>
+</ul>
+<p>Iceberg là một bộ quy tắc và cấu trúc metadata mô tả:</p>
+<ul>
+<li>Bảng đang gồm những file nào.</li>
+<li>Schema hiện tại là gì.</li>
+<li>Partition được tổ chức ra sao.</li>
+<li>Trạng thái hiện tại là snapshot nào.</li>
+<li>Những snapshot cũ nào còn tồn tại.</li>
+<li>File nào có thể chứa dữ liệu phù hợp với câu truy vấn.</li>
+<li>Một thay đổi được công bố cho người đọc như thế nào.</li>
+</ul>
+<p>Ta có thể hình dung:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Spark / Flink / Trino
+</span></span><span class="line"><span class="ln">2</span><span class="cl">          ↓
+</span></span><span class="line"><span class="ln">3</span><span class="cl">       Iceberg
+</span></span><span class="line"><span class="ln">4</span><span class="cl">          ↓
+</span></span><span class="line"><span class="ln">5</span><span class="cl">Parquet / ORC / Avro
+</span></span><span class="line"><span class="ln">6</span><span class="cl">          ↓
+</span></span><span class="line"><span class="ln">7</span><span class="cl"> HDFS / S3 / ADLS / GCS
+</span></span></code></pre></div><p>Iceberg đứng giữa compute engine và file.</p>
+<p>Nó không chở hàng.</p>
+<p>Nó cũng không xây nhà kho.</p>
+<p>Nó giữ cuốn sổ chính xác mô tả hàng nào đang nằm trong bảng.</p>
+<h1 id="những-thành-phần-nhỏ-nhất-của-một-bảng-iceberg">Những thành phần nhỏ nhất của một bảng Iceberg<a class="anchor ms-1" href="#những-thành-phần-nhỏ-nhất-của-một-bảng-iceberg"><i class="fas fa-link"></i></a></h1>
+<p>Một bảng Iceberg thường được tạo nên từ nhiều tầng metadata.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">Catalog
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">   ↓
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">Metadata JSON
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">   ↓
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">Snapshot
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">   ↓
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">Manifest List
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">   ↓
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">Manifest Files
+</span></span><span class="line"><span class="ln">10</span><span class="cl">   ↓
+</span></span><span class="line"><span class="ln">11</span><span class="cl">Data Files
+</span></span></code></pre></div><h1 id="catalog">Catalog<a class="anchor ms-1" href="#catalog"><i class="fas fa-link"></i></a></h1>
+<p>Catalog là điểm bắt đầu để tìm bảng.</p>
+<p>Nó giữ tên bảng và vị trí metadata hiện tại.</p>
+<p>Ví dụ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">catalog: lakehouse
+</span></span><span class="line"><span class="ln">2</span><span class="cl">namespace: sales
+</span></span><span class="line"><span class="ln">3</span><span class="cl">table: orders
+</span></span></code></pre></div><p>Khi một engine hỏi bảng <code>lakehouse.sales.orders</code>, catalog giúp nó tìm file metadata đang đại diện cho trạng thái hiện tại.</p>
+<p>Iceberg có thể làm việc với nhiều loại catalog. Trong kiến trúc đời đầu, Hive Metastore thường được sử dụng vì nó đã tồn tại sẵn trong hệ sinh thái Hadoop.</p>
+<p>Trino mô tả catalog của Iceberg là nơi giữ một lượng metadata nhỏ, trong khi phần lớn metadata của bảng nằm trong các file trên object storage.</p>
+<h1 id="metadata-file">Metadata file<a class="anchor ms-1" href="#metadata-file"><i class="fas fa-link"></i></a></h1>
+<p>Metadata file thường ở dạng JSON.</p>
+<p>Nó chứa:</p>
+<ul>
+<li>Schema.</li>
+<li>Partition specification.</li>
+<li>Thuộc tính bảng.</li>
+<li>Danh sách snapshot.</li>
+<li>Snapshot hiện tại.</li>
+<li>Lịch sử metadata trước đó.</li>
+</ul>
+<p>Mỗi lần bảng thay đổi, Iceberg tạo một metadata file mới thay vì sửa trực tiếp file cũ.</p>
+<p>Điều này giống việc không tẩy xóa sổ cái cũ.</p>
+<p>Ta viết một trang sổ cái mới rồi chuyển dấu đánh dấu “trang hiện tại” sang trang mới.</p>
+<h1 id="snapshot">Snapshot<a class="anchor ms-1" href="#snapshot"><i class="fas fa-link"></i></a></h1>
+<p>Snapshot đại diện cho một trạng thái hoàn chỉnh của bảng tại một thời điểm.</p>
+<p>Ví dụ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Snapshot 101: dữ liệu đến 08:00
+</span></span><span class="line"><span class="ln">2</span><span class="cl">Snapshot 102: thêm đơn hàng đến 09:00
+</span></span><span class="line"><span class="ln">3</span><span class="cl">Snapshot 103: sửa dữ liệu trả hàng
+</span></span></code></pre></div><p>Người đọc đang dùng snapshot 102 có thể tiếp tục đọc ổn định, ngay cả khi snapshot 103 vừa được tạo ra.</p>
+<p>Snapshot không nhất thiết sao chép toàn bộ dữ liệu.</p>
+<p>Nó chủ yếu mô tả bộ file nào thuộc trạng thái đó.</p>
+<p>Nhiều snapshot có thể cùng tham chiếu đến một số file giống nhau.</p>
+<h1 id="manifest-list">Manifest list<a class="anchor ms-1" href="#manifest-list"><i class="fas fa-link"></i></a></h1>
+<p>Một bảng rất lớn có thể có hàng nghìn manifest.</p>
+<p>Manifest list là danh sách các manifest thuộc một snapshot.</p>
+<p>Nó còn chứa thông tin tóm tắt để engine loại bỏ những manifest chắc chắn không liên quan.</p>
+<h1 id="manifest-file">Manifest file<a class="anchor ms-1" href="#manifest-file"><i class="fas fa-link"></i></a></h1>
+<p>Manifest chứa danh sách data file và metadata của từng file, chẳng hạn:</p>
+<ul>
+<li>Đường dẫn.</li>
+<li>Partition.</li>
+<li>Số lượng record.</li>
+<li>Kích thước.</li>
+<li>Giá trị nhỏ nhất và lớn nhất của một số cột.</li>
+<li>File được thêm hoặc loại ở snapshot nào.</li>
+</ul>
+<p>Ví dụ một file có thống kê:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">sale_date:
+</span></span><span class="line"><span class="ln">2</span><span class="cl">    min = 2026-07-01
+</span></span><span class="line"><span class="ln">3</span><span class="cl">    max = 2026-07-03
+</span></span><span class="line"><span class="ln">4</span><span class="cl">
+</span></span><span class="line"><span class="ln">5</span><span class="cl">store_id:
+</span></span><span class="line"><span class="ln">6</span><span class="cl">    min = 1
+</span></span><span class="line"><span class="ln">7</span><span class="cl">    max = 50
+</span></span></code></pre></div><p>Nếu truy vấn hỏi cửa hàng 200 trong ngày 25 tháng 7, engine biết file này không thể chứa kết quả và bỏ qua nó.</p>
+<p>Iceberg sử dụng metadata để loại các metadata file không cần thiết, sau đó tiếp tục loại những data file không thể chứa dữ liệu phù hợp.</p>
+<h1 id="data-file">Data file<a class="anchor ms-1" href="#data-file"><i class="fas fa-link"></i></a></h1>
+<p>Đây mới là nơi chứa dữ liệu thật.</p>
+<p>Thông thường là:</p>
+<ul>
+<li>Parquet.</li>
+<li>ORC.</li>
+<li>Avro.</li>
+</ul>
+<p>Iceberg không nhét toàn bộ dữ liệu vào metadata.</p>
+<p>Nó quản lý tập hợp các file dữ liệu.</p>
+<p>Nếu Parquet là những chiếc thùng, manifest là danh sách hàng trong một khu vực, snapshot là biên bản chốt kho, còn catalog là quầy tra cứu địa chỉ kho.</p>
+<h1 id="một-lần-ghi-dữ-liệu-diễn-ra-như-thế-nào">Một lần ghi dữ liệu diễn ra như thế nào?<a class="anchor ms-1" href="#một-lần-ghi-dữ-liệu-diễn-ra-như-thế-nào"><i class="fas fa-link"></i></a></h1>
+<p>Giả sử Spark muốn thêm dữ liệu đơn hàng.</p>
+<h2 id="bước-1-đọc-trạng-thái-hiện-tại">Bước 1: Đọc trạng thái hiện tại<a class="anchor ms-1" href="#bước-1-đọc-trạng-thái-hiện-tại"><i class="fas fa-link"></i></a></h2>
+<p>Spark lấy metadata hiện tại từ catalog.</p>
+<p>Ví dụ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Current metadata: v105.metadata.json
+</span></span><span class="line"><span class="ln">2</span><span class="cl">Current snapshot: 105
+</span></span></code></pre></div><h2 id="bước-2-ghi-data-file-mới">Bước 2: Ghi data file mới<a class="anchor ms-1" href="#bước-2-ghi-data-file-mới"><i class="fas fa-link"></i></a></h2>
+<p>Spark ghi các file Parquet mới xuống object storage.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">data/order-0001.parquet
+</span></span><span class="line"><span class="ln">2</span><span class="cl">data/order-0002.parquet
+</span></span><span class="line"><span class="ln">3</span><span class="cl">data/order-0003.parquet
+</span></span></code></pre></div><p>Ở thời điểm này, file đã tồn tại nhưng chưa nhất thiết được xem là một phần của bảng.</p>
+<p>Người đọc vẫn đang nhìn snapshot cũ.</p>
+<h2 id="bước-3-tạo-manifest-và-snapshot-mới">Bước 3: Tạo manifest và snapshot mới<a class="anchor ms-1" href="#bước-3-tạo-manifest-và-snapshot-mới"><i class="fas fa-link"></i></a></h2>
+<p>Spark tạo:</p>
+<ul>
+<li>Manifest mới.</li>
+<li>Manifest list mới.</li>
+<li>Snapshot mới.</li>
+<li>Metadata JSON mới.</li>
+</ul>
+<p>Ví dụ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">v106.metadata.json
+</span></span></code></pre></div><h2 id="bước-4-công-bố-phiên-bản-mới">Bước 4: Công bố phiên bản mới<a class="anchor ms-1" href="#bước-4-công-bố-phiên-bản-mới"><i class="fas fa-link"></i></a></h2>
+<p>Cuối cùng, catalog đổi con trỏ từ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">v105.metadata.json
+</span></span></code></pre></div><p>sang:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">v106.metadata.json
+</span></span></code></pre></div><p>Việc đổi con trỏ hiện tại được thực hiện như một thao tác tất-cả-hoặc-không-gì. Người đọc hoặc thấy metadata cũ, hoặc thấy metadata mới; họ không phải đọc một bảng đang được cập nhật dở dang. Đây là nền tảng giúp Iceberg cung cấp khả năng cô lập giao dịch ở cấp bảng.</p>
+<p>Nếu một writer khác đã cập nhật bảng trước đó, writer hiện tại phát hiện xung đột và phải kiểm tra lại thay vì âm thầm ghi đè.</p>
+<p>Đây là điểm khác biệt rất lớn so với việc hai job tự do sửa cùng một folder.</p>
+<h1 id="hidden-partitioning-đừng-bắt-người-dùng-nhớ-cách-xếp-kho">Hidden partitioning: đừng bắt người dùng nhớ cách xếp kho<a class="anchor ms-1" href="#hidden-partitioning-đừng-bắt-người-dùng-nhớ-cách-xếp-kho"><i class="fas fa-link"></i></a></h1>
+<p>Trong Hive truyền thống, partition thường được lộ ra như một cột vật lý:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="ln">1</span><span class="cl"><span class="k">WHERE</span><span class="w"> </span><span class="n">sale_year</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2026</span><span class="w">
+</span></span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="w">  </span><span class="k">AND</span><span class="w"> </span><span class="n">sale_month</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">7</span><span class="w">
+</span></span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="w">  </span><span class="k">AND</span><span class="w"> </span><span class="n">sale_day</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">25</span><span class="w">
+</span></span></span></code></pre></div><p>Trong Iceberg, người dùng có thể viết theo dữ liệu gốc:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="ln">1</span><span class="cl"><span class="k">WHERE</span><span class="w"> </span><span class="n">sale_time</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="k">TIMESTAMP</span><span class="w"> </span><span class="s1">&#39;2026-07-25 00:00:00&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="w">  </span><span class="k">AND</span><span class="w"> </span><span class="n">sale_time</span><span class="w"> </span><span class="o">&lt;</span><span class="w">  </span><span class="k">TIMESTAMP</span><span class="w"> </span><span class="s1">&#39;2026-07-26 00:00:00&#39;</span><span class="w">
+</span></span></span></code></pre></div><p>Iceberg biết <code>sale_time</code> đang được partition theo ngày và tự chuyển điều kiện truy vấn thành kế hoạch đọc phù hợp.</p>
+<p>Tài liệu Iceberg gọi đây là hidden partitioning: câu truy vấn không cần được viết theo một layout partition cụ thể để đạt hiệu quả.</p>
+<p>Nhờ vậy, cách chia partition có thể thay đổi theo thời gian mà không bắt buộc phải ghi lại toàn bộ dữ liệu cũ ngay lập tức.</p>
+<p>Ví dụ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Dữ liệu cũ: partition theo ngày
+</span></span><span class="line"><span class="ln">2</span><span class="cl">Dữ liệu mới: partition theo giờ
+</span></span></code></pre></div><p>Cả hai cách tổ chức có thể cùng tồn tại trong một bảng.</p>
+<p>Người dùng vẫn hỏi trên cột <code>event_time</code>.</p>
+<p>Iceberg chịu trách nhiệm tìm đúng file.</p>
+<h1 id="schema-evolution-đổi-nhà-nhưng-không-đổi-căn-cước">Schema evolution: đổi nhà nhưng không đổi căn cước<a class="anchor ms-1" href="#schema-evolution-đổi-nhà-nhưng-không-đổi-căn-cước"><i class="fas fa-link"></i></a></h1>
+<p>Giả sử bảng có schema:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">1: order_id
+</span></span><span class="line"><span class="ln">2</span><span class="cl">2: customer_id
+</span></span><span class="line"><span class="ln">3</span><span class="cl">3: province
+</span></span></code></pre></div><p>Sau này đổi tên:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">3: city
+</span></span></code></pre></div><p>Iceberg theo dõi cột bằng field ID, không chỉ bằng tên hoặc vị trí.</p>
+<p>Tên có thể đổi.</p>
+<p>Vị trí có thể đổi.</p>
+<p>Nhưng định danh của cột vẫn giữ nguyên.</p>
+<p>Điều này giúp các thao tác sau an toàn hơn:</p>
+<ul>
+<li>Thêm cột.</li>
+<li>Xóa cột.</li>
+<li>Đổi tên.</li>
+<li>Sắp xếp lại thứ tự.</li>
+<li>Thay đổi một số kiểu dữ liệu tương thích.</li>
+<li>Thay đổi cấu trúc lồng nhau.</li>
+</ul>
+<p>Iceberg hỗ trợ schema evolution mà không cần lập tức ghi lại toàn bộ data file.</p>
+<h1 id="time-travel-nhìn-lại-căn-phòng-trước-khi-bị-sửa">Time travel: nhìn lại căn phòng trước khi bị sửa<a class="anchor ms-1" href="#time-travel-nhìn-lại-căn-phòng-trước-khi-bị-sửa"><i class="fas fa-link"></i></a></h1>
+<p>Vì Iceberg giữ snapshot, người dùng có thể đọc trạng thái cũ của bảng.</p>
+<p>Tính năng này hữu ích khi:</p>
+<ul>
+<li>Một pipeline ghi sai.</li>
+<li>Cần so sánh dữ liệu trước và sau.</li>
+<li>Cần tái hiện báo cáo cũ.</li>
+<li>Cần kiểm tra một quyết định dựa trên dữ liệu nào.</li>
+<li>Cần khôi phục bảng về trạng thái trước đó.</li>
+</ul>
+<p>Nhưng snapshot không miễn phí.</p>
+<p>Metadata cũ và những data file còn được snapshot tham chiếu vẫn chiếm dung lượng.</p>
+<p>Vì vậy, hệ thống phải có chính sách:</p>
+<ul>
+<li>Giữ snapshot bao lâu.</li>
+<li>Khi nào xóa file không còn được dùng.</li>
+<li>Khi nào compact file nhỏ.</li>
+<li>Làm sao tránh xóa nhầm file mà job khác vẫn cần.</li>
+</ul>
+<p>Iceberg cung cấp các thủ tục bảo trì, nhưng đội dữ liệu vẫn phải chủ động vận hành chúng.</p>
+<h1 id="bronze-silver-và-gold-nằm-ở-đâu">Bronze, Silver và Gold nằm ở đâu?<a class="anchor ms-1" href="#bronze-silver-và-gold-nằm-ở-đâu"><i class="fas fa-link"></i></a></h1>
+<p>Bronze, Silver và Gold không phải ba tính năng của Iceberg.</p>
+<p>Đó là cách tổ chức dữ liệu thành nhiều tầng chất lượng.</p>
+<p>Medallion architecture mô tả dữ liệu được cải thiện dần khi đi từ Bronze sang Silver rồi Gold.</p>
+<h1 id="bronze-giữ-lại-dấu-vết-ban-đầu">Bronze: giữ lại dấu vết ban đầu<a class="anchor ms-1" href="#bronze-giữ-lại-dấu-vết-ban-đầu"><i class="fas fa-link"></i></a></h1>
+<p>Bronze chứa dữ liệu gần với nguồn nhất.</p>
+<p>Ví dụ:</p>
+<ul>
+<li>CDC từ ERP.</li>
+<li>Event từ Kafka.</li>
+<li>File từ đối tác.</li>
+<li>Log ứng dụng.</li>
+<li>JSON từ API.</li>
+</ul>
+<p>Mục tiêu chính:</p>
+<ul>
+<li>Không làm mất dữ liệu nguồn.</li>
+<li>Có thể chạy lại pipeline.</li>
+<li>Giữ thời gian tiếp nhận.</li>
+<li>Giữ thông tin nguồn.</li>
+<li>Hạn chế biến đổi nghiệp vụ.</li>
+</ul>
+<p>Ví dụ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">bronze.erp_orders
+</span></span><span class="line"><span class="ln">2</span><span class="cl">bronze.inventory_events
+</span></span><span class="line"><span class="ln">3</span><span class="cl">bronze.web_clicks
+</span></span></code></pre></div><p>Bronze có thể chứa dữ liệu trùng, dữ liệu sai hoặc bản ghi đến trễ.</p>
+<p>Nó là camera giám sát.</p>
+<p>Camera nên ghi lại điều đã xảy ra, không nên tự chỉnh sửa hiện trường cho đẹp.</p>
+<h1 id="silver-dữ-liệu-đã-được-làm-sạch">Silver: dữ liệu đã được làm sạch<a class="anchor ms-1" href="#silver-dữ-liệu-đã-được-làm-sạch"><i class="fas fa-link"></i></a></h1>
+<p>Silver thực hiện:</p>
+<ul>
+<li>Chuẩn hóa kiểu dữ liệu.</li>
+<li>Loại bản ghi trùng.</li>
+<li>Xử lý CDC.</li>
+<li>Ghép mã sản phẩm.</li>
+<li>Chuẩn hóa khách hàng.</li>
+<li>Kiểm tra chất lượng.</li>
+<li>Xử lý dữ liệu đến trễ.</li>
+<li>Áp dụng các quy tắc cơ bản.</li>
+</ul>
+<p>Ví dụ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">silver.orders
+</span></span><span class="line"><span class="ln">2</span><span class="cl">silver.order_items
+</span></span><span class="line"><span class="ln">3</span><span class="cl">silver.inventory
+</span></span><span class="line"><span class="ln">4</span><span class="cl">silver.products
+</span></span></code></pre></div><p>Đây thường là tầng phù hợp để tạo bảng Iceberg có schema rõ, snapshot ổn định và nhiều hệ thống có thể cùng sử dụng.</p>
+<h1 id="gold-dữ-liệu-phục-vụ-quyết-định">Gold: dữ liệu phục vụ quyết định<a class="anchor ms-1" href="#gold-dữ-liệu-phục-vụ-quyết-định"><i class="fas fa-link"></i></a></h1>
+<p>Gold chứa:</p>
+<ul>
+<li>Doanh thu theo ngày.</li>
+<li>Lợi nhuận theo cửa hàng.</li>
+<li>Tỷ lệ hết hàng.</li>
+<li>Hiệu quả khuyến mãi.</li>
+<li>Phân khúc khách hàng.</li>
+<li>KPI điều hành.</li>
+</ul>
+<p>Ví dụ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">gold.daily_store_revenue
+</span></span><span class="line"><span class="ln">2</span><span class="cl">gold.product_availability
+</span></span><span class="line"><span class="ln">3</span><span class="cl">gold.customer_segments
+</span></span></code></pre></div><p>Gold không nhất thiết phải chứa dữ liệu chi tiết nhất.</p>
+<p>Nó chứa dữ liệu gần với ngôn ngữ kinh doanh nhất.</p>
+<p>Nếu Bronze nói:</p>
+<blockquote>
+<p>Có một event <code>OV_CREATED</code>.</p>
+</blockquote>
+<p>Silver nói:</p>
+<blockquote>
+<p>Đơn hàng số 123 đã được tạo.</p>
+</blockquote>
+<p>Gold nói:</p>
+<blockquote>
+<p>Doanh thu online hôm nay tăng 8%.</p>
+</blockquote>
+<h1 id="một-kiến-trúc-lakehouse-10-dùng-apache-iceberg">Một kiến trúc Lakehouse 1.0 dùng Apache Iceberg<a class="anchor ms-1" href="#một-kiến-trúc-lakehouse-10-dùng-apache-iceberg"><i class="fas fa-link"></i></a></h1>
+<p>Một kiến trúc mở, tương đối dễ hình dung có thể như sau:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">                         ┌─────────────────────┐
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">                         │ ERP / CRM / Website │
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">                         └──────────┬──────────┘
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">                                    │
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">                         CDC / Event / Batch
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">                                    │
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">                   ┌────────────────┴───────────────┐
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">                   │                                │
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">             Apache Kafka                    File / API
+</span></span><span class="line"><span class="ln">10</span><span class="cl">                   │                                │
+</span></span><span class="line"><span class="ln">11</span><span class="cl">                   └────────────────┬───────────────┘
+</span></span><span class="line"><span class="ln">12</span><span class="cl">                                    │
+</span></span><span class="line"><span class="ln">13</span><span class="cl">                         Spark hoặc Flink
+</span></span><span class="line"><span class="ln">14</span><span class="cl">                                    │
+</span></span><span class="line"><span class="ln">15</span><span class="cl">                             Bronze Iceberg
+</span></span><span class="line"><span class="ln">16</span><span class="cl">                                    │
+</span></span><span class="line"><span class="ln">17</span><span class="cl">                         Spark SQL / Flink SQL
+</span></span><span class="line"><span class="ln">18</span><span class="cl">                                    │
+</span></span><span class="line"><span class="ln">19</span><span class="cl">                             Silver Iceberg
+</span></span><span class="line"><span class="ln">20</span><span class="cl">                                    │
+</span></span><span class="line"><span class="ln">21</span><span class="cl">                             Spark SQL
+</span></span><span class="line"><span class="ln">22</span><span class="cl">                                    │
+</span></span><span class="line"><span class="ln">23</span><span class="cl">                              Gold Iceberg
+</span></span><span class="line"><span class="ln">24</span><span class="cl">                                    │
+</span></span><span class="line"><span class="ln">25</span><span class="cl">                   ┌────────────────┴───────────────┐
+</span></span><span class="line"><span class="ln">26</span><span class="cl">                   │                                │
+</span></span><span class="line"><span class="ln">27</span><span class="cl">                Trino                           Spark ML
+</span></span><span class="line"><span class="ln">28</span><span class="cl">                   │                                │
+</span></span><span class="line"><span class="ln">29</span><span class="cl">             BI / Dashboard                  Model training
+</span></span><span class="line"><span class="ln">30</span><span class="cl">
+</span></span><span class="line"><span class="ln">31</span><span class="cl">Storage: HDFS / S3 / ADLS / GCS
+</span></span><span class="line"><span class="ln">32</span><span class="cl">File format: Parquet
+</span></span><span class="line"><span class="ln">33</span><span class="cl">Table format: Apache Iceberg
+</span></span><span class="line"><span class="ln">34</span><span class="cl">Catalog: Hive Metastore
+</span></span><span class="line"><span class="ln">35</span><span class="cl">Orchestration: Apache Airflow
+</span></span></code></pre></div><p>Trong kiến trúc này:</p>
+<table>
+	<thead>
+			<tr>
+					<th>Thành phần</th>
+					<th>Trách nhiệm</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>Kafka</td>
+					<td>Vận chuyển sự kiện</td>
+			</tr>
+			<tr>
+					<td>Debezium</td>
+					<td>Đọc thay đổi từ database</td>
+			</tr>
+			<tr>
+					<td>Spark</td>
+					<td>Xử lý batch, ETL, join, tổng hợp</td>
+			</tr>
+			<tr>
+					<td>Flink</td>
+					<td>Xử lý luồng liên tục</td>
+			</tr>
+			<tr>
+					<td>Parquet</td>
+					<td>Lưu dữ liệu dạng cột trong từng file</td>
+			</tr>
+			<tr>
+					<td>Iceberg</td>
+					<td>Quản lý bảng, snapshot, schema và partition</td>
+			</tr>
+			<tr>
+					<td>Hive Metastore</td>
+					<td>Đăng ký và tìm bảng</td>
+			</tr>
+			<tr>
+					<td>Trino</td>
+					<td>Truy vấn SQL tương tác</td>
+			</tr>
+			<tr>
+					<td>Airflow</td>
+					<td>Điều phối pipeline</td>
+			</tr>
+			<tr>
+					<td>HDFS/S3/ADLS/GCS</td>
+					<td>Giữ file vật lý</td>
+			</tr>
+			<tr>
+					<td>Superset/BI tool</td>
+					<td>Hiển thị báo cáo</td>
+			</tr>
+	</tbody>
+</table>
+<p>Mỗi phần mềm nên làm đúng việc của nó.</p>
+<p>Đừng bắt Kafka làm database.</p>
+<p>Đừng bắt Airflow xử lý một tỷ dòng.</p>
+<p>Đừng bắt Parquet quản lý giao dịch.</p>
+<p>Đừng bắt Iceberg thay thế hệ thống chất lượng dữ liệu.</p>
+<p>Một kiến trúc tốt không phải kiến trúc có nhiều logo nhất.</p>
+<p>Nó là kiến trúc mà mỗi logo có một công việc rõ ràng.</p>
+<h1 id="iceberg-hudi-và-delta-lake-khác-nhau-thế-nào">Iceberg, Hudi và Delta Lake khác nhau thế nào?<a class="anchor ms-1" href="#iceberg-hudi-và-delta-lake-khác-nhau-thế-nào"><i class="fas fa-link"></i></a></h1>
+<p>Ba cái tên thường xuất hiện cùng nhau:</p>
+<ul>
+<li>Apache Iceberg.</li>
+<li>Apache Hudi.</li>
+<li>Delta Lake.</li>
+</ul>
+<p>Cả ba đều cố gắng đưa những khả năng giống bảng trong database lên Data Lake, nhưng chúng có lịch sử và điểm tập trung khác nhau.</p>
+<table>
+	<thead>
+			<tr>
+					<th>Đặc điểm</th>
+					<th>Apache Iceberg</th>
+					<th>Apache Hudi</th>
+					<th>Delta Lake</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>Trọng tâm ban đầu</td>
+					<td>Bảng phân tích cực lớn, nhiều engine</td>
+					<td>Upsert, dữ liệu tăng dần, table services</td>
+					<td>Lakehouse gắn mạnh với hệ sinh thái Spark</td>
+			</tr>
+			<tr>
+					<td>Metadata</td>
+					<td>Snapshot, manifest list, manifest</td>
+					<td>Timeline, file groups, index</td>
+					<td>Transaction log</td>
+			</tr>
+			<tr>
+					<td>File phổ biến</td>
+					<td>Parquet, ORC, Avro</td>
+					<td>Chủ yếu Parquet</td>
+					<td>Chủ yếu Parquet</td>
+			</tr>
+			<tr>
+					<td>Điểm mạnh nổi bật</td>
+					<td>Đặc tả mở, hidden partitioning, multi-engine</td>
+					<td>CDC, upsert, incremental processing</td>
+					<td>Trải nghiệm đơn giản với Spark</td>
+			</tr>
+			<tr>
+					<td>Phù hợp</td>
+					<td>Analytics lớn, nhiều engine cùng sử dụng</td>
+					<td>Pipeline thay đổi liên tục, cập nhật nhiều</td>
+					<td>Đội tập trung Spark và hệ sinh thái Delta</td>
+			</tr>
+	</tbody>
+</table>
+<p>Apache Hudi tự mô tả là một nền tảng Data Lakehouse mở, xây trên table format hiệu năng cao và tập trung mạnh vào xử lý dữ liệu tăng dần.</p>
+<p>Delta Lake cung cấp giao dịch, metadata có khả năng mở rộng và khả năng kết hợp xử lý batch với streaming trên các Data Lake như S3, ADLS, GCS và HDFS.</p>
+<p>Apache Iceberg nhấn mạnh khả năng để Spark, Trino, Flink, Presto, Hive và Impala làm việc an toàn trên cùng một bảng.</p>
+<p>Không có lựa chọn nào thắng trong mọi trường hợp.</p>
+<p>Cần hỏi:</p>
+<ul>
+<li>Ai ghi dữ liệu?</li>
+<li>Ai đọc dữ liệu?</li>
+<li>Tỷ lệ cập nhật cao hay thấp?</li>
+<li>Có bao nhiêu compute engine?</li>
+<li>Có cần truy vấn tăng dần không?</li>
+<li>Đội hiện tại mạnh Spark hay Flink?</li>
+<li>Có chấp nhận phụ thuộc một hệ sinh thái hay không?</li>
+<li>Khả năng vận hành hiện tại đến đâu?</li>
+</ul>
+<p>Chọn table format giống chọn nền móng.</p>
+<p>Đổi lại sau này không phải không thể.</p>
+<p>Nhưng chắc chắn không vui.</p>
+<h1 id="những-việc-nên-làm-khi-triển-khai-iceberg">Những việc nên làm khi triển khai Iceberg<a class="anchor ms-1" href="#những-việc-nên-làm-khi-triển-khai-iceberg"><i class="fas fa-link"></i></a></h1>
+<h1 id="bắt-đầu-từ-một-bảng-có-vấn-đề-thật">Bắt đầu từ một bảng có vấn đề thật<a class="anchor ms-1" href="#bắt-đầu-từ-một-bảng-có-vấn-đề-thật"><i class="fas fa-link"></i></a></h1>
+<p>Không cần chuyển toàn bộ Data Lake sang Iceberg ngay trong một đêm.</p>
+<p>Nên chọn một bảng đang gặp các vấn đề rõ ràng:</p>
+<ul>
+<li>Nhiều partition.</li>
+<li>Thường xuyên cập nhật.</li>
+<li>Nhiều engine cùng đọc.</li>
+<li>Cần quay lại phiên bản cũ.</li>
+<li>Schema thay đổi thường xuyên.</li>
+<li>Query planning chậm vì quá nhiều file.</li>
+</ul>
+<p>Ví dụ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">orders
+</span></span><span class="line"><span class="ln">2</span><span class="cl">inventory_events
+</span></span><span class="line"><span class="ln">3</span><span class="cl">product_price_history
+</span></span><span class="line"><span class="ln">4</span><span class="cl">customer_interactions
+</span></span></code></pre></div><p>Chuyển một bảng, đo kết quả rồi mới mở rộng.</p>
+<h1 id="chọn-catalog-rõ-ràng">Chọn catalog rõ ràng<a class="anchor ms-1" href="#chọn-catalog-rõ-ràng"><i class="fas fa-link"></i></a></h1>
+<p>Trong kiến trúc thế hệ đầu, Hive Metastore là lựa chọn dễ hiểu nếu hệ thống đã dùng Hive hoặc Trino.</p>
+<p>Cần xác định:</p>
+<ul>
+<li>Catalog chạy ở đâu.</li>
+<li>Database phía sau có HA không.</li>
+<li>Ai được tạo bảng.</li>
+<li>Ai được cập nhật metadata.</li>
+<li>Backup thế nào.</li>
+<li>Nếu catalog mất thì khôi phục ra sao.</li>
+</ul>
+<p>Data file còn nguyên nhưng catalog mất vẫn là một tình huống rất đau đầu.</p>
+<p>Giống như nhà vẫn còn, nhưng sổ địa chính cháy mất.</p>
+<h1 id="thiết-kế-partition-theo-truy-vấn">Thiết kế partition theo truy vấn<a class="anchor ms-1" href="#thiết-kế-partition-theo-truy-vấn"><i class="fas fa-link"></i></a></h1>
+<p>Không nên partition theo mọi cột thường xuất hiện trong báo cáo.</p>
+<p>Hãy xem:</p>
+<ul>
+<li>Cột nào xuất hiện thường xuyên trong bộ lọc.</li>
+<li>Độ phân tán của giá trị.</li>
+<li>Mỗi partition sẽ chứa bao nhiêu dữ liệu.</li>
+<li>Có tạo ra quá nhiều file nhỏ không.</li>
+<li>Dữ liệu đến theo thời gian nào.</li>
+</ul>
+<p>Ví dụ bảng đơn hàng có thể partition theo ngày:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="ln">1</span><span class="cl"><span class="n">PARTITIONED</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="p">(</span><span class="n">days</span><span class="p">(</span><span class="n">order_time</span><span class="p">))</span><span class="w">
+</span></span></span></code></pre></div><p>Một bảng sự kiện rất lớn có thể dùng:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="ln">1</span><span class="cl"><span class="n">PARTITIONED</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="w">    </span><span class="n">days</span><span class="p">(</span><span class="n">event_time</span><span class="p">),</span><span class="w">
+</span></span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="w">    </span><span class="n">bucket</span><span class="p">(</span><span class="mi">32</span><span class="p">,</span><span class="w"> </span><span class="n">customer_id</span><span class="p">)</span><span class="w">
+</span></span></span><span class="line"><span class="ln">4</span><span class="cl"><span class="p">)</span><span class="w">
+</span></span></span></code></pre></div><p>Partition quá thô khiến truy vấn đọc nhiều dữ liệu.</p>
+<p>Partition quá mịn tạo ra vô số file nhỏ.</p>
+<p>Không có một con số thần kỳ áp dụng cho mọi công ty.</p>
+<h1 id="kiểm-soát-kích-thước-file">Kiểm soát kích thước file<a class="anchor ms-1" href="#kiểm-soát-kích-thước-file"><i class="fas fa-link"></i></a></h1>
+<p>Một triệu file 10 KB vẫn có thể chứa ít dữ liệu hơn một file 10 GB, nhưng lại tạo ra gánh nặng metadata và lập kế hoạch khủng khiếp.</p>
+<p>Pipeline streaming thường dễ tạo file nhỏ vì nó ghi liên tục.</p>
+<p>Cần có chiến lược:</p>
+<ul>
+<li>Điều chỉnh checkpoint hoặc trigger.</li>
+<li>Gom đủ dữ liệu trước khi ghi.</li>
+<li>Compact file định kỳ.</li>
+<li>Theo dõi số lượng file trên mỗi partition.</li>
+<li>Theo dõi kích thước file trung bình.</li>
+</ul>
+<p>Iceberg quản lý file tốt hơn table Hive truyền thống.</p>
+<p>Nhưng nó không làm file nhỏ tự biến mất vì lòng tốt.</p>
+<h1 id="lập-lịch-bảo-trì">Lập lịch bảo trì<a class="anchor ms-1" href="#lập-lịch-bảo-trì"><i class="fas fa-link"></i></a></h1>
+<p>Cần vận hành định kỳ:</p>
+<ul>
+<li>Compact data file.</li>
+<li>Xóa snapshot quá cũ.</li>
+<li>Xóa file không còn được tham chiếu.</li>
+<li>Làm gọn manifest.</li>
+<li>Cập nhật statistics khi cần.</li>
+<li>Theo dõi metadata tăng trưởng.</li>
+</ul>
+<p>Một hệ thống giữ mọi snapshot mãi mãi sẽ ngày càng nặng.</p>
+<p>Một hệ thống xóa quá sớm sẽ mất khả năng điều tra và khôi phục.</p>
+<p>Chính sách retention phải dựa trên:</p>
+<ul>
+<li>Nhu cầu kiểm toán.</li>
+<li>Khả năng chạy lại pipeline.</li>
+<li>Thời gian phát hiện sự cố.</li>
+<li>Chi phí storage.</li>
+<li>SLA phục hồi.</li>
+</ul>
+<h1 id="tách-rõ-bronze-silver-và-gold">Tách rõ Bronze, Silver và Gold<a class="anchor ms-1" href="#tách-rõ-bronze-silver-và-gold"><i class="fas fa-link"></i></a></h1>
+<p>Đừng để một bảng vừa là dữ liệu thô, vừa là dữ liệu chuẩn hóa, vừa là báo cáo.</p>
+<p>Mỗi tầng nên có hợp đồng riêng:</p>
+<table>
+	<thead>
+			<tr>
+					<th>Tầng</th>
+					<th>Mức biến đổi</th>
+					<th style="text-align: right">Được cập nhật?</th>
+					<th>Người dùng chính</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>Bronze</td>
+					<td>Tối thiểu</td>
+					<td style="text-align: right">Chủ yếu ghi thêm</td>
+					<td>Data engineer</td>
+			</tr>
+			<tr>
+					<td>Silver</td>
+					<td>Làm sạch, chuẩn hóa</td>
+					<td style="text-align: right">Có</td>
+					<td>Data engineer, analyst</td>
+			</tr>
+			<tr>
+					<td>Gold</td>
+					<td>Logic kinh doanh</td>
+					<td style="text-align: right">Có</td>
+					<td>BI, quản lý, sản phẩm</td>
+			</tr>
+	</tbody>
+</table>
+<p>Việc tách tầng giúp:</p>
+<ul>
+<li>Dễ chạy lại.</li>
+<li>Dễ điều tra lỗi.</li>
+<li>Dễ kiểm soát chất lượng.</li>
+<li>Dễ xác định ai chịu trách nhiệm.</li>
+<li>Tránh để một thay đổi nghiệp vụ phá toàn bộ dữ liệu nguồn.</li>
+</ul>
+<h1 id="những-điều-không-nên-làm">Những điều không nên làm<a class="anchor ms-1" href="#những-điều-không-nên-làm"><i class="fas fa-link"></i></a></h1>
+<h1 id="không-xem-iceberg-là-database-giao-dịch">Không xem Iceberg là database giao dịch<a class="anchor ms-1" href="#không-xem-iceberg-là-database-giao-dịch"><i class="fas fa-link"></i></a></h1>
+<p>Iceberg được thiết kế cho bảng phân tích lớn.</p>
+<p>Nó không phải lựa chọn mặc định cho:</p>
+<ul>
+<li>Điểm bán hàng cần phản hồi vài mili giây.</li>
+<li>Kiểm tra số dư tài khoản.</li>
+<li>Khóa một dòng đơn hàng.</li>
+<li>Cập nhật một record rồi đọc lại ngay.</li>
+<li>Hàng nghìn giao dịch nhỏ mỗi giây theo kiểu OLTP.</li>
+</ul>
+<p>Database nghiệp vụ vẫn nên nằm ở PostgreSQL, Oracle, MySQL hoặc hệ thống phù hợp khác.</p>
+<p>Iceberg nhận dữ liệu để phân tích.</p>
+<p>Nó không nhất thiết thay thế nguồn phát sinh dữ liệu.</p>
+<h1 id="không-cho-nhiều-job-tự-sửa-file-bên-dưới">Không cho nhiều job tự sửa file bên dưới<a class="anchor ms-1" href="#không-cho-nhiều-job-tự-sửa-file-bên-dưới"><i class="fas fa-link"></i></a></h1>
+<p>Một khi bảng đã được Iceberg quản lý, không nên:</p>
+<ul>
+<li>Tự xóa file Parquet bằng script.</li>
+<li>Tự đổi tên folder.</li>
+<li>Tự di chuyển data file.</li>
+<li>Ghi file mới vào thư mục rồi nghĩ bảng sẽ tự nhận.</li>
+<li>Chạy lệnh dọn rác mà không hiểu snapshot.</li>
+</ul>
+<p>Iceberg biết bảng thông qua metadata.</p>
+<p>Một file nằm trong folder chưa chắc thuộc bảng.</p>
+<p>Một file không còn trong snapshot hiện tại chưa chắc đã có thể xóa ngay.</p>
+<p>Can thiệp trực tiếp vào storage giống vào kho hàng ban đêm rồi tự ý chuyển container mà không cập nhật vận đơn.</p>
+<p>Sáng hôm sau, mọi người vẫn tìm theo sổ cũ.</p>
+<h1 id="không-đưa-mọi-thứ-vào-một-bảng-khổng-lồ">Không đưa mọi thứ vào một bảng khổng lồ<a class="anchor ms-1" href="#không-đưa-mọi-thứ-vào-một-bảng-khổng-lồ"><i class="fas fa-link"></i></a></h1>
+<p>Iceberg xử lý bảng lớn tốt không có nghĩa tất cả dữ liệu nên nhét vào một bảng.</p>
+<p>Cần tách theo:</p>
+<ul>
+<li>Miền nghiệp vụ.</li>
+<li>Quyền sở hữu.</li>
+<li>Chu kỳ dữ liệu.</li>
+<li>Chính sách bảo mật.</li>
+<li>Mô hình truy vấn.</li>
+<li>Thời gian lưu trữ.</li>
+</ul>
+<p>Một bảng khổng lồ chứa đơn hàng, tồn kho, hành vi khách hàng và log hệ thống không phải Lakehouse.</p>
+<p>Đó là một nồi lẩu dữ liệu.</p>
+<h1 id="không-bỏ-qua-data-quality">Không bỏ qua data quality<a class="anchor ms-1" href="#không-bỏ-qua-data-quality"><i class="fas fa-link"></i></a></h1>
+<p>Iceberg đảm bảo một snapshot được công bố trọn vẹn.</p>
+<p>Nó không đảm bảo dữ liệu bên trong đúng.</p>
+<p>Một bảng vẫn có thể chứa:</p>
+<ul>
+<li>Doanh thu âm.</li>
+<li>Mã sản phẩm không tồn tại.</li>
+<li>Đơn hàng trùng.</li>
+<li>Ngày giao hàng trước ngày đặt.</li>
+<li>Tồn kho lớn hơn sức chứa của kho.</li>
+<li>Khách hàng 300 tuổi.</li>
+</ul>
+<p>Giao dịch tốt không cứu được dữ liệu sai về nghiệp vụ.</p>
+<p>Vẫn cần:</p>
+<ul>
+<li>Data contract.</li>
+<li>Validation.</li>
+<li>Quality rules.</li>
+<li>Monitoring.</li>
+<li>Lineage.</li>
+<li>Owner.</li>
+<li>Quy trình xử lý lỗi.</li>
+</ul>
+<h1 id="không-triển-khai-quá-nhiều-phần-mềm-cùng-lúc">Không triển khai quá nhiều phần mềm cùng lúc<a class="anchor ms-1" href="#không-triển-khai-quá-nhiều-phần-mềm-cùng-lúc"><i class="fas fa-link"></i></a></h1>
+<p>Một số sơ đồ Lakehouse có đủ:</p>
+<ul>
+<li>Kafka.</li>
+<li>Debezium.</li>
+<li>Flink.</li>
+<li>Spark.</li>
+<li>Iceberg.</li>
+<li>Trino.</li>
+<li>Airflow.</li>
+<li>Hive Metastore.</li>
+<li>Superset.</li>
+<li>Ranger.</li>
+<li>Atlas.</li>
+<li>Kubernetes.</li>
+</ul>
+<p>Nhìn rất hùng vĩ.</p>
+<p>Mỗi logo lại cần:</p>
+<ul>
+<li>Máy chủ.</li>
+<li>Cấu hình.</li>
+<li>Monitoring.</li>
+<li>Backup.</li>
+<li>Nâng cấp.</li>
+<li>Bảo mật.</li>
+<li>Người biết sửa lúc 2 giờ sáng.</li>
+</ul>
+<p>Nếu dữ liệu chỉ chạy batch mỗi đêm, có thể chưa cần Flink.</p>
+<p>Nếu chưa có CDC, chưa cần Kafka.</p>
+<p>Nếu chỉ Spark đọc dữ liệu, chưa chắc cần Trino ngay.</p>
+<p>Kiến trúc nên phát triển theo vấn đề.</p>
+<p>Không nên phát triển theo số lượng logo có thể đặt lên slide.</p>
+<h1 id="apache-iceberg-không-giải-quyết-những-gì">Apache Iceberg không giải quyết những gì?<a class="anchor ms-1" href="#apache-iceberg-không-giải-quyết-những-gì"><i class="fas fa-link"></i></a></h1>
+<p>Iceberg giải quyết rất tốt lớp bảng.</p>
+<p>Nhưng nó không tự giải quyết toàn bộ Lakehouse.</p>
+<p>Nó không tự làm:</p>
+<ul>
+<li>Thu thập dữ liệu.</li>
+<li>CDC.</li>
+<li>Điều phối pipeline.</li>
+<li>Kiểm tra chất lượng.</li>
+<li>Phân quyền toàn hệ thống.</li>
+<li>Data lineage hoàn chỉnh.</li>
+<li>Semantic layer.</li>
+<li>Dashboard.</li>
+<li>Tối ưu cluster Spark.</li>
+<li>Thiết kế mô hình dữ liệu.</li>
+<li>Định nghĩa KPI kinh doanh.</li>
+<li>Dọn file nhỏ nếu không được yêu cầu.</li>
+</ul>
+<p>Ta có thể viết:</p>
+<p>$$
+Lakehouse =
+Storage</p>
+<ul>
+<li>FileFormat</li>
+<li>TableFormat</li>
+<li>Catalog</li>
+<li>Compute</li>
+<li>Ingestion</li>
+<li>Orchestration</li>
+<li>Governance</li>
+<li>Consumption
+$$</li>
+</ul>
+<p>Iceberg chỉ là một thành phần.</p>
+<p>Nhưng đó là thành phần nằm đúng giữa rất nhiều dòng chảy.</p>
+<p>Nếu nó hoạt động tốt, Spark, Flink và Trino có thể nhìn cùng một bảng theo cùng một sự thật.</p>
+<p>Nếu lớp bảng yếu, mỗi engine có thể nhìn thấy một phiên bản khác nhau của cái hồ.</p>
+<h1 id="tổng-kết">Tổng kết<a class="anchor ms-1" href="#tổng-kết"><i class="fas fa-link"></i></a></h1>
+<p>Data Lake đời đầu giải quyết một bài toán rất lớn:</p>
+<blockquote>
+<p>Làm sao đưa khối lượng dữ liệu khổng lồ về một nơi lưu trữ rẻ và có thể mở rộng?</p>
+</blockquote>
+<p>Nó làm được điều đó bằng HDFS, object storage, Parquet, Hive, Spark và các query engine phân tán.</p>
+<p>Nhưng khi dữ liệu lớn hơn, thay đổi nhiều hơn và có nhiều công cụ cùng truy cập, chỉ lưu file là chưa đủ.</p>
+<p>Chúng ta cần biết:</p>
+<ul>
+<li>File nào thuộc bảng.</li>
+<li>Phiên bản hiện tại là gì.</li>
+<li>Thay đổi nào đã hoàn tất.</li>
+<li>Schema đã phát triển ra sao.</li>
+<li>Partition đang được tổ chức thế nào.</li>
+<li>File nào thật sự cần đọc.</li>
+<li>Làm sao quay lại trạng thái cũ.</li>
+</ul>
+<p>Apache Iceberg đặt một lớp quản lý bảng lên trên những file vốn dĩ không biết mình thuộc về bảng nào.</p>
+<p>Phía dưới vẫn là Parquet.</p>
+<p>Phía dưới nữa vẫn là HDFS hoặc object storage.</p>
+<p>Phía trên vẫn là Spark, Flink và Trino.</p>
+<p>Iceberg không thay thế mọi thứ.</p>
+<p>Nó khiến mọi thứ có thể phối hợp với nhau bằng một cuốn sổ chung.</p>
+<p>Và đó chính là bước chuyển quan trọng từ Data Lake sang Lakehouse thế hệ đầu.</p>
+<p>Không phải vì cái hồ bỗng nhiên biến thành database.</p>
+<p>Mà vì trên mặt hồ đã xuất hiện một hệ thống đủ chặt chẽ để dữ liệu không còn chỉ là hàng triệu file nằm im trong bóng tối.</p>
+<p>Mỗi file có địa chỉ.</p>
+<p>Mỗi thay đổi có lịch sử.</p>
+<p>Mỗi bảng có một trạng thái hiện tại.</p>
+<p>Mỗi engine có thể đọc cùng một sự thật.</p>
+<p>Trong thế giới dữ liệu, đôi khi thứ biến một nhà kho thành một hệ thống không phải là xây thêm kho.</p>
+<p>Mà là cuối cùng cũng có một cuốn sổ biết chính xác bên trong đang chứa những gì.</p>
+<h1 id="tham-khảo">Tham khảo<a class="anchor ms-1" href="#tham-khảo"><i class="fas fa-link"></i></a></h1>
+<ul>
+<li><a href="https://iceberg.apache.org/" target="_blank" rel="noopener noreferrer">Apache Iceberg</a></li>
+<li><a href="https://iceberg.apache.org/spec/" target="_blank" rel="noopener noreferrer">Apache Iceberg Table Specification</a></li>
+<li><a href="https://iceberg.apache.org/docs/latest/reliability/" target="_blank" rel="noopener noreferrer">Apache Iceberg Reliability</a></li>
+<li><a href="https://iceberg.apache.org/docs/latest/evolution/" target="_blank" rel="noopener noreferrer">Apache Iceberg Evolution</a></li>
+<li><a href="https://iceberg.apache.org/docs/latest/performance/" target="_blank" rel="noopener noreferrer">Apache Iceberg Performance</a></li>
+<li><a href="https://iceberg.apache.org/docs/latest/maintenance/" target="_blank" rel="noopener noreferrer">Apache Iceberg Maintenance</a></li>
+<li><a href="https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-hdfs/HdfsDesign.html" target="_blank" rel="noopener noreferrer">Apache Hadoop HDFS Architecture</a></li>
+<li><a href="https://hive.apache.org/docs/latest/admin/adminmanual-metastore-administration/" target="_blank" rel="noopener noreferrer">Apache Hive Metastore Administration</a></li>
+<li><a href="https://parquet.apache.org/docs/overview/" target="_blank" rel="noopener noreferrer">Apache Parquet Overview</a></li>
+<li><a href="https://spark.apache.org/docs/latest/sql-data-sources-parquet.html" target="_blank" rel="noopener noreferrer">Apache Spark Parquet Data Source</a></li>
+<li><a href="https://flink.apache.org/" target="_blank" rel="noopener noreferrer">Apache Flink</a></li>
+<li><a href="https://kafka.apache.org/documentation/" target="_blank" rel="noopener noreferrer">Apache Kafka</a></li>
+<li><a href="https://airflow.apache.org/docs/apache-airflow/stable/core-concepts/overview.html" target="_blank" rel="noopener noreferrer">Apache Airflow Architecture</a></li>
+<li><a href="https://trino.io/docs/current/overview.html" target="_blank" rel="noopener noreferrer">Trino Overview</a></li>
+<li><a href="https://trino.io/docs/current/connector/iceberg.html" target="_blank" rel="noopener noreferrer">Trino Iceberg Connector</a></li>
+<li><a href="https://hudi.apache.org/" target="_blank" rel="noopener noreferrer">Apache Hudi</a></li>
+<li><a href="https://docs.delta.io/" target="_blank" rel="noopener noreferrer">Delta Lake Documentation</a></li>
+<li><a href="https://docs.databricks.com/aws/en/lakehouse/medallion" target="_blank" rel="noopener noreferrer">Medallion Lakehouse Architecture</a></li>
+</ul>
+</div></div>
+  <div class="card-footer"><div class="post-navs d-flex justify-content-evenly"><div class="post-nav post-prev">
+    <i class="fas fa-fw fa-chevron-left"></i>
+    <a href="https://www.phamduytung.com/blog/2026-07-21-tidb-distributed-sql/">TiDB: Khi một database phải học cách sống như cả một thành phố
+</a>
+  </div><div class="post-nav post-next">
+    <a href="https://www.phamduytung.com/blog/2026-07-23-lakehouse-v1/">Lakehouse 1.0: Từ hồ dữ liệu hỗn loạn đến Bronze, Silver và Gold
+</a>
+    <i class="fas fa-fw fa-chevron-right"></i>
+  </div></div></div>
+</article><div class="card component row post-comments" id="post-comments">
+  <div class="card-header">
+    <h2 class="card-title">Bình luận</h2>
+  </div>
+  <div class="card-body"><script src="https://utteranc.es/client.js"
+  repo="AlexBlack2202/utterances"
+  issue-term="pathname"
+  label="comment"
+  theme="github-dark"
+  crossorigin="anonymous"
+  async>
+</script></div>
+</div></div>
+</div><aside class="col-lg-3 col-md-4 sidebar d-flex">
+  <div class="container d-flex flex-column">
+    
+    <a href="https://www.buymeacoffee.com/alexblack28"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=🍎&slug=alexblack28&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" /></a><div class="post-toc row mb-4 card component" id="postTOC">
+  <div class="card-header">
+    <h2 class="card-title">Mục lục</h2>
+  </div>
+  <div class="card-body">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#một-nhà-kho-chứa-một-tỷ-thùng-hàng">Một nhà kho chứa một tỷ thùng hàng</a></li>
+    <li><a href="#data-lake-10-là-gì">Data Lake 1.0 là gì?</a></li>
+    <li><a href="#data-lake-đời-đầu-được-tạo-từ-những-lớp-nào">Data Lake đời đầu được tạo từ những lớp nào?</a></li>
+    <li><a href="#lớp-lưu-trữ-hdfs-s3-adls-và-gcs">Lớp lưu trữ: HDFS, S3, ADLS và GCS</a></li>
+    <li><a href="#lớp-định-dạng-file-parquet-orc-và-avro">Lớp định dạng file: Parquet, ORC và Avro</a>
+      <ul>
+        <li><a href="#parquet">Parquet</a></li>
+        <li><a href="#orc">ORC</a></li>
+        <li><a href="#avro">Avro</a></li>
+      </ul>
+    </li>
+    <li><a href="#lớp-catalog-hive-metastore">Lớp catalog: Hive Metastore</a></li>
+    <li><a href="#lớp-xử-lý-spark-và-flink">Lớp xử lý: Spark và Flink</a>
+      <ul>
+        <li><a href="#apache-spark">Apache Spark</a></li>
+        <li><a href="#apache-flink">Apache Flink</a></li>
+      </ul>
+    </li>
+    <li><a href="#lớp-truy-vấn-hive-presto-và-trino">Lớp truy vấn: Hive, Presto và Trino</a></li>
+    <li><a href="#lớp-thu-thập-dữ-liệu-kafka-và-debezium">Lớp thu thập dữ liệu: Kafka và Debezium</a></li>
+    <li><a href="#lớp-điều-phối-apache-airflow">Lớp điều phối: Apache Airflow</a></li>
+    <li><a href="#vấn-đề-bắt-đầu-xuất-hiện">Vấn đề bắt đầu xuất hiện</a></li>
+    <li><a href="#ghi-nửa-chừng">Ghi nửa chừng</a></li>
+    <li><a href="#hai-người-cùng-ghi">Hai người cùng ghi</a></li>
+    <li><a href="#schema-thay-đổi-nguy-hiểm">Schema thay đổi nguy hiểm</a></li>
+    <li><a href="#partition-bị-lộ-vào-câu-truy-vấn">Partition bị lộ vào câu truy vấn</a></li>
+    <li><a href="#liệt-kê-quá-nhiều-file">Liệt kê quá nhiều file</a></li>
+    <li><a href="#xóa-và-cập-nhật-rất-đắt">Xóa và cập nhật rất đắt</a></li>
+    <li><a href="#apache-iceberg-thật-sự-là-gì">Apache Iceberg thật sự là gì?</a></li>
+    <li><a href="#những-thành-phần-nhỏ-nhất-của-một-bảng-iceberg">Những thành phần nhỏ nhất của một bảng Iceberg</a></li>
+    <li><a href="#catalog">Catalog</a></li>
+    <li><a href="#metadata-file">Metadata file</a></li>
+    <li><a href="#snapshot">Snapshot</a></li>
+    <li><a href="#manifest-list">Manifest list</a></li>
+    <li><a href="#manifest-file">Manifest file</a></li>
+    <li><a href="#data-file">Data file</a></li>
+    <li><a href="#một-lần-ghi-dữ-liệu-diễn-ra-như-thế-nào">Một lần ghi dữ liệu diễn ra như thế nào?</a>
+      <ul>
+        <li><a href="#bước-1-đọc-trạng-thái-hiện-tại">Bước 1: Đọc trạng thái hiện tại</a></li>
+        <li><a href="#bước-2-ghi-data-file-mới">Bước 2: Ghi data file mới</a></li>
+        <li><a href="#bước-3-tạo-manifest-và-snapshot-mới">Bước 3: Tạo manifest và snapshot mới</a></li>
+        <li><a href="#bước-4-công-bố-phiên-bản-mới">Bước 4: Công bố phiên bản mới</a></li>
+      </ul>
+    </li>
+    <li><a href="#hidden-partitioning-đừng-bắt-người-dùng-nhớ-cách-xếp-kho">Hidden partitioning: đừng bắt người dùng nhớ cách xếp kho</a></li>
+    <li><a href="#schema-evolution-đổi-nhà-nhưng-không-đổi-căn-cước">Schema evolution: đổi nhà nhưng không đổi căn cước</a></li>
+    <li><a href="#time-travel-nhìn-lại-căn-phòng-trước-khi-bị-sửa">Time travel: nhìn lại căn phòng trước khi bị sửa</a></li>
+    <li><a href="#bronze-silver-và-gold-nằm-ở-đâu">Bronze, Silver và Gold nằm ở đâu?</a></li>
+    <li><a href="#bronze-giữ-lại-dấu-vết-ban-đầu">Bronze: giữ lại dấu vết ban đầu</a></li>
+    <li><a href="#silver-dữ-liệu-đã-được-làm-sạch">Silver: dữ liệu đã được làm sạch</a></li>
+    <li><a href="#gold-dữ-liệu-phục-vụ-quyết-định">Gold: dữ liệu phục vụ quyết định</a></li>
+    <li><a href="#một-kiến-trúc-lakehouse-10-dùng-apache-iceberg">Một kiến trúc Lakehouse 1.0 dùng Apache Iceberg</a></li>
+    <li><a href="#iceberg-hudi-và-delta-lake-khác-nhau-thế-nào">Iceberg, Hudi và Delta Lake khác nhau thế nào?</a></li>
+    <li><a href="#những-việc-nên-làm-khi-triển-khai-iceberg">Những việc nên làm khi triển khai Iceberg</a></li>
+    <li><a href="#bắt-đầu-từ-một-bảng-có-vấn-đề-thật">Bắt đầu từ một bảng có vấn đề thật</a></li>
+    <li><a href="#chọn-catalog-rõ-ràng">Chọn catalog rõ ràng</a></li>
+    <li><a href="#thiết-kế-partition-theo-truy-vấn">Thiết kế partition theo truy vấn</a></li>
+    <li><a href="#kiểm-soát-kích-thước-file">Kiểm soát kích thước file</a></li>
+    <li><a href="#lập-lịch-bảo-trì">Lập lịch bảo trì</a></li>
+    <li><a href="#tách-rõ-bronze-silver-và-gold">Tách rõ Bronze, Silver và Gold</a></li>
+    <li><a href="#những-điều-không-nên-làm">Những điều không nên làm</a></li>
+    <li><a href="#không-xem-iceberg-là-database-giao-dịch">Không xem Iceberg là database giao dịch</a></li>
+    <li><a href="#không-cho-nhiều-job-tự-sửa-file-bên-dưới">Không cho nhiều job tự sửa file bên dưới</a></li>
+    <li><a href="#không-đưa-mọi-thứ-vào-một-bảng-khổng-lồ">Không đưa mọi thứ vào một bảng khổng lồ</a></li>
+    <li><a href="#không-bỏ-qua-data-quality">Không bỏ qua data quality</a></li>
+    <li><a href="#không-triển-khai-quá-nhiều-phần-mềm-cùng-lúc">Không triển khai quá nhiều phần mềm cùng lúc</a></li>
+    <li><a href="#apache-iceberg-không-giải-quyết-những-gì">Apache Iceberg không giải quyết những gì?</a></li>
+    <li><a href="#tổng-kết">Tổng kết</a></li>
+    <li><a href="#tham-khảo">Tham khảo</a></li>
+  </ul>
+</nav>
+  </div>
+</div><section class="recent-posts row card component">
+  <div class="card-header">
+    <h2 class="card-title">Bài gần đây</h2>
+  </div>
+  <div class="card-body">
+    <ul class="post-list"><li>
+        <a href="https://www.phamduytung.com/blog/2026-07-13-2-brain/">Second Brain được xây từ những gì?
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-07-24-lakehouse-v2/">Lakehouse 2.0: Khi căn nhà trên hồ bị tháo thành những mảnh Lego
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-07-23-lakehouse-v1/">Lakehouse 1.0: Từ hồ dữ liệu hỗn loạn đến Bronze, Silver và Gold
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-07-22-apache-iceberg/">Apache Iceberg: Tấm sổ đỏ biến Data Lake thành Lakehouse
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-07-21-tidb-distributed-sql/">TiDB: Khi một database phải học cách sống như cả một thành phố
+</a>
+      </li></ul>
+  </div>
+</section><section class="series-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/series">series</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/series/kh%C3%B3a-h%E1%BB%8Dc-python-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học Python Căn Bản">
+            Khóa Học Python Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="https://www.phamduytung.com/series/kh%C3%B3a-h%E1%BB%8Dc-c&#43;&#43;-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học C&#43;&#43; Căn Bản">
+            Khóa Học C&#43;&#43; Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="https://www.phamduytung.com/series/machine-learning-dataset/" class="badge rounded post-taxonomy" title="Machine Learning Dataset">
+            Machine Learning Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a><a href="https://www.phamduytung.com/series/ch%E1%BB%A9ng-kho%C3%A1n-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Chứng Khoán Căn Bản">
+            Chứng Khoán Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">1</span></a></div>
+      </div>
+    </section><section class="tools-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/tools">tools</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/tools/tool-random/" class="badge rounded post-taxonomy" title="Tool Random">
+            Tool Random<span class="badge badge-sm text-white bg-accent ms-1">3</span></a></div>
+      </div>
+    </section><section class="categories-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/categories">categories</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/categories/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="https://www.phamduytung.com/categories/c&#43;&#43;/" class="badge rounded post-taxonomy" title="C&#43;&#43;">
+            C&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="https://www.phamduytung.com/categories/dataset/" class="badge rounded post-taxonomy" title="Dataset">
+            Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a></div>
+      </div>
+    </section><section class="tags-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/tags">tags</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/tags/machine-learning/" class="badge rounded post-taxonomy" title="Machine Learning">
+            Machine Learning<span class="badge badge-sm text-white bg-accent ms-1">26</span></a><a href="https://www.phamduytung.com/tags/deep-learning/" class="badge rounded post-taxonomy" title="Deep Learning">
+            Deep Learning<span class="badge badge-sm text-white bg-accent ms-1">23</span></a><a href="https://www.phamduytung.com/tags/computer-vision/" class="badge rounded post-taxonomy" title="Computer Vision">
+            Computer Vision<span class="badge badge-sm text-white bg-accent ms-1">16</span></a><a href="https://www.phamduytung.com/tags/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">14</span></a><a href="https://www.phamduytung.com/tags/llm/" class="badge rounded post-taxonomy" title="LLM">
+            LLM<span class="badge badge-sm text-white bg-accent ms-1">13</span></a><a href="https://www.phamduytung.com/tags/recommendation-system/" class="badge rounded post-taxonomy" title="Recommendation System">
+            Recommendation System<span class="badge badge-sm text-white bg-accent ms-1">7</span></a><a href="https://www.phamduytung.com/tags/system-design/" class="badge rounded post-taxonomy" title="System Design">
+            System Design<span class="badge badge-sm text-white bg-accent ms-1">7</span></a><a href="https://www.phamduytung.com/tags/ai-agent/" class="badge rounded post-taxonomy" title="Ai Agent">
+            Ai Agent<span class="badge badge-sm text-white bg-accent ms-1">6</span></a><a href="https://www.phamduytung.com/tags/time-series/" class="badge rounded post-taxonomy" title="Time Series">
+            Time Series<span class="badge badge-sm text-white bg-accent ms-1">6</span></a><a href="https://www.phamduytung.com/tags/uber-engineering/" class="badge rounded post-taxonomy" title="Uber Engineering">
+            Uber Engineering<span class="badge badge-sm text-white bg-accent ms-1">6</span></a></div>
+      </div>
+    </section>
+    
+  </div>
+</aside>
+</div>
+    </main><footer class="footer mt-auto py-3 text-center container"><ul class="nav justify-content-between footer-memu mb-3"><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Community
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-facebook"></i>Facebook Group
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://github.com/AlexBlack2202/alexblack2202.github.io" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-github"></i>GitHub
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/contact/"><i class="fas fa-fw fa-info-circle"></i>Contact Us
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/faq/"><i class="fas fa-fw fa-question-circle"></i>Câu hỏi thường gặp
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Docs
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="/team_of_services" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-users"></i>Điều khoản sử dụng
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/privacy" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-lock"></i>Chính sách bảo mật
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Features
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="/utils/gen_paswords/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-key"></i>Tạo password ngẫu nhiên
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Liên kết khác
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">Netlify
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">facebook
+</a>
+        </li></ul></li></ul>
+<div class="copyright mb-2">
+  Copyright © 2016-2026 Phạm Duy Tùng. All Rights Reserved.
+</div>
+<div class="powered-by mb-2">
+  Website chia sẻ kiến thức của Phạm Duy Tùng và Đặng Thị Hằng. Vui lòng liên hệ email alexblack2202@gmail.com nếu bạn có thông tin cần trao đổi.
+</div></footer>
+<script src="https://www.phamduytung.com/js/main.111d51a8c754010f8399ca010e552d803e2d5170b361f8886ad04ec6c21ca551.js" integrity="sha256-ER1RqMdUAQ&#43;DmcoBDlUtgD4tUXCzYfiIatBOxsIcpVE=" crossorigin="anonymous" defer></script><script src="https://www.phamduytung.com/js/icons.min.cb4c9958dbc49e29ac644e168e82db2d0de9a741a15751cc5bf2b0af21eb2845.js" integrity="sha256-y0yZWNvEnimsZE4WjoLbLQ3pp0GhV1HMW/KwryHrKEU=" crossorigin="anonymous" defer></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('https:\/\/www.phamduytung.com\/service-worker.js').then(function(reg) {
+      console.log('Successfully registered service worker', reg);
+    }).catch(function(err) {
+      console.warn('Error whilst registering service worker', err);
+    });
+  });
+}
+</script><script src="https://www.phamduytung.com/js/viewer.min.28bcf5233e406dae6715f46c8b9e8ca7c6cbf347e8678f5a2bebe5369c3270bb.js" integrity="sha256-KLz1Iz5Aba5nFfRsi56Mp8bL80foZ49aK&#43;vlNpwycLs=" crossorigin="anonymous" defer></script><script defer src="https://www.phamduytung.com/js/katex.min.8582b9feadf92a2a977ed303b97d7713cf2754ccf2b4eb60d8be7453a21042c2.js" integrity="sha256-hYK5/q35KiqXftMDuX13E88nVMzytOtg2L50U6IQQsI=" crossorigin="anonymous"></script>
+
+<script  data-ad-client="ca-pub-4644989745435991"  async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4644989745435991"
+     crossorigin="anonymous"></script><script data-cfasync="false" type="text/javascript" data-adel="atag" src="//acscdn.com/script/atg.js" czid="eul3gyjdmm"></script>
+  </body>
+</html>

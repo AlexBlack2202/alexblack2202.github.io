@@ -1,0 +1,1276 @@
+<!doctype html><html lang="vi" data-palette="brown"
+   data-mode="light">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Lakehouse 1.0: Từ hồ dữ liệu hỗn loạn đến Bronze, Silver và Gold - Phạm Duy Tùng Machine Learning Blog</title>
+    <meta name="a.validate.02" content="1QZXZ8oi7g57H-GxBrBPkTYBydwii-Ic9iJu" /><link rel="apple-touch-icon" href="https://www.phamduytung.com/images/icons/icon-180x180.png" sizes="180x180">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/icon-32x32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/icon-16x16.png" sizes="16x16" type="image/png">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/favicon.ico">
+<link rel="manifest" href="https://www.phamduytung.com/manifest.json">
+<meta name="keywords" content="" />
+<meta name="description" content="Lakehouse 1.0 ra đời để dữ liệu không còn phải sống hai cuộc đời giữa data lake và data warehouse. Bài viết giải thích kiến trúc nền tảng giai đoạn 2019–2023, từ object storage, table format đến mô hình Bronze, Silver và Gold." /><meta name="robots" content="index, follow" />
+	<meta itemprop="name" content="Lakehouse 1.0: Từ hồ dữ liệu hỗn loạn đến Bronze, Silver và Gold">
+	<meta itemprop="description" content="Lakehouse 1.0 ra đời để dữ liệu không còn phải sống hai cuộc đời giữa data lake và data warehouse. Bài viết giải thích kiến trúc nền tảng giai đoạn 2019–2023, từ object storage, table format đến mô hình Bronze, Silver và Gold.">
+	<meta itemprop="datePublished" content="2026-07-23T00:00:00+03:00">
+	<meta itemprop="dateModified" content="2026-07-23T00:00:00+03:00">
+	<meta itemprop="wordCount" content="5684">
+	<meta itemprop="image" content="https://www.phamduytung.com/images/posts/2026-07-23-lakehouse-v1/cover.png">
+	<meta itemprop="keywords" content="Lakehouse,Medallion Architecture,Bronze Silver Gold,Data Lake,Data Warehouse"><meta property="og:url" content="https://www.phamduytung.com/blog/2026-07-23-lakehouse-v1/">
+	<meta property="og:site_name" content="Phạm Duy Tùng Machine Learning Blog">
+	<meta property="og:title" content="Lakehouse 1.0: Từ hồ dữ liệu hỗn loạn đến Bronze, Silver và Gold">
+	<meta property="og:description" content="Lakehouse 1.0 ra đời để dữ liệu không còn phải sống hai cuộc đời giữa data lake và data warehouse. Bài viết giải thích kiến trúc nền tảng giai đoạn 2019–2023, từ object storage, table format đến mô hình Bronze, Silver và Gold.">
+	<meta property="og:locale" content="vi_VN">
+	<meta property="og:type" content="article">
+		<meta property="article:section" content="blog">
+		<meta property="article:published_time" content="2026-07-23T00:00:00+03:00">
+		<meta property="article:modified_time" content="2026-07-23T00:00:00+03:00">
+		<meta property="article:tag" content="Lakehouse">
+		<meta property="article:tag" content="Medallion Architecture">
+		<meta property="article:tag" content="Bronze Silver Gold">
+		<meta property="article:tag" content="Data Lake">
+		<meta property="article:tag" content="Data Warehouse">
+		<meta property="og:image" content="https://www.phamduytung.com/images/posts/2026-07-23-lakehouse-v1/cover.png">
+
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:image" content="https://www.phamduytung.com/images/posts/2026-07-23-lakehouse-v1/cover.png">
+	<meta name="twitter:title" content="Lakehouse 1.0: Từ hồ dữ liệu hỗn loạn đến Bronze, Silver và Gold">
+	<meta name="twitter:description" content="Lakehouse 1.0 ra đời để dữ liệu không còn phải sống hai cuộc đời giữa data lake và data warehouse. Bài viết giải thích kiến trúc nền tảng giai đoạn 2019–2023, từ object storage, table format đến mô hình Bronze, Silver và Gold.">
+<link rel="stylesheet" href="https://www.phamduytung.com/css/main.min.7dd8c8ad44fe5c0f292dd635ae28981312b940a5894df3049d2a6e2fa2f43327.css" integrity="sha256-fdjIrUT&#43;XA8pLdY1riiYExK5QKWJTfMEnSpuL6L0Myc=" crossorigin="anonymous"><link rel="stylesheet" href="https://www.phamduytung.com/css/katex.min.4d6aa053ca8a5675016fa2c9c48ee5359bfaafb8295184458af9d64abce84c47.css" integrity="sha256-TWqgU8qKVnUBb6LJxI7lNZv6r7gpUYRFivnWSrzoTEc=" crossorigin="anonymous">
+<link rel="stylesheet" href="https://www.phamduytung.com/css/viewer.min.e882eb3a023412b73bb741b4604a1222a9f13aa7783c828d26d066ab8642bd51.css" integrity="sha256-6ILrOgI0Erc7t0G0YEoSIqnxOqd4PIKNJtBmq4ZCvVE=" crossorigin="anonymous"><link rel="canonical" href="https://www.phamduytung.com/blog/2026-07-23-lakehouse-v1/"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Phạm Duy Tùng"},"dateModified":"2026-07-23T00:00:00+03:00","datePublished":"2026-07-23T00:00:00+03:00","description":"Lakehouse 1.0 ra đời để dữ liệu không còn phải sống hai cuộc đời giữa data lake và data warehouse. Bài viết giải thích kiến trúc nền tảng giai đoạn 2019–2023, từ object storage, table format đến mô hình Bronze, Silver và Gold.","headline":"Lakehouse 1.0: Từ hồ dữ liệu hỗn loạn đến Bronze, Silver và Gold","image":["https://www.phamduytung.com/images/posts/2026-07-23-lakehouse-v1/cover.png"],"inLanguage":"vi","keywords":"lakehouse, medallion architecture, bronze silver gold, data lake, data warehouse","mainEntityOfPage":{"@id":"https://www.phamduytung.com/blog/2026-07-23-lakehouse-v1/","@type":"WebPage"},"publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://www.phamduytung.com/images/logo.png"},"name":"Phạm Duy Tùng Machine Learning Blog"},"url":"https://www.phamduytung.com/blog/2026-07-23-lakehouse-v1/"}</script></head>
+  <body><script>const items=["mode","palette"];items.forEach(function(e){const t=localStorage.getItem("hbs-"+e);t&&document.body.parentElement.setAttribute("data-"+e,t)})</script><header><nav class="navbar top-app-bar top-app-bar-expand-lg fixed-top">
+  <div class="container">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <i class="fas fa-bars"></i>
+    </button><a class="navbar-brand flex-grow-1 flex-lg-grow-0 text-center text-lg-start mx-auto me-lg-3" href="https://www.phamduytung.com/"><img class="logo" alt="Logo" src="https://www.phamduytung.com/images/logo.webp" loading="lazy"  title="Logo"
+   width="32" height="32"
+   />
+Phạm Duy Tùng
+    </a>
+    <div class="offcanvas offcanvas-bottom surface" tabindex="-1" id="offcanvasSocialShare" aria-labelledby="offcanvasSocialShare">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Share</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body">
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Twitter Share Button"
+      target="_blank" href="https://twitter.com/intent/tweet?title=Lakehouse%201.0%3a%20T%e1%bb%ab%20h%e1%bb%93%20d%e1%bb%af%20li%e1%bb%87u%20h%e1%bb%97n%20lo%e1%ba%a1n%20%c4%91%e1%ba%bfn%20Bronze%2c%20Silver%20v%c3%a0%20Gold&url=https%3a%2f%2fwww.phamduytung.com%2fblog%2f2026-07-23-lakehouse-v1%2f">
+      <i class="fab fa-fw fa-twitter"></i> Twitter
+    </a>
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Facebook Share Button"
+      target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.phamduytung.com%2fblog%2f2026-07-23-lakehouse-v1%2f">
+      <i class="fab fa-fw fa-facebook-f"></i> Facebook
+    </a>
+  </div>
+</div>
+    <button class="navbar-settings" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSettings"
+  aria-controls="offcanvasSettings" aria-label="Toggle settings">
+  <i class="fas fa-ellipsis-v"></i>
+</button>
+
+<div class="offcanvas offcanvas-end surface h-100" tabindex="-1" id="offcanvasSettings" aria-labelledby="offcanvasSettings">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Cài đặt</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body d-flex flex-column">
+
+
+
+<section class="setting">
+  <form class="font-size-switcher-form row">
+    <div class="col-auto">
+      <label for="fontSize" class="form-label"><i class="fas fa-fw fa-font"></i> Cỡ chữ</label>
+    </div>
+    <div class="col-auto ms-auto">
+      <input type="range" class="form-range" min="-2" max="2" id="fontSize">
+    </div>
+  </form>
+</section>
+
+
+
+<section class="setting actions d-flex justify-content-around mt-auto overflow-auto">
+  <a role="button" class="action action-go-back" href="javascript: window.history.back();">
+    <span class="action-icon"><i class="fas fa-2x fa-arrow-left"></i></span> Quay lại
+  </a>
+  <a role="button" class="action action-reload-page">
+    <span class="action-icon"><i class="fas fa-2x fa-redo-alt"></i></span> Tải lại
+  </a>
+  <a role="button" class="action action-copy-url">
+    <span class="action-icon"><i class="fas fa-2x fa-link"></i></span> Sao chép URL
+  </a><a class="action action-social-share" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSocialShare"
+    aria-controls="offcanvasSocialShare" aria-label="Toggle social share">
+    <span class="action-icon"><i class="fas fa-2x fa-share-alt"></i></span> Chia sẻ
+  </a></section>
+
+</div>
+</div>
+
+    <div class="collapse navbar-collapse" tabindex="-1" id="navbarSupportedContent" aria-labelledby="navbarSupportedContent">
+      <form class="search-bar my-1" action="https://www.phamduytung.com/search">
+  <div class="input-group input-group-sm">
+    <span class="btn btn-search disabled position-absolute left-0"><i class="fas fa-fw fa-search"></i></span>
+    <input class="form-control rounded-pill" name="q" type="search" aria-label="Search">
+  </div>
+</form>
+      <ul class="navbar-nav ms-auto"><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/series/">
+            <i class="fas fa-fw fa-columns"></i>Courses
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/tools/">
+            <i class="fas fa-fw fa-folder"></i>Tools
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/categories/">
+            <i class="fas fa-fw fa-folder"></i>Categories
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/archives/">
+            <i class="fas fa-fw fa-file-archive"></i>Archives
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/tags/">
+            <i class="fas fa-fw fa-tags"></i>Tags
+          </a>
+        </li><li class="nav-item dropdown">
+          <a class="nav-link" id="navbarDropdownSupport" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-fw fa-comments"></i>Community
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdownSupport"><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Facebook Group
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://github.com/AlexBlack2202/alexblack2202.github.io" target="_blank" rel="noopener noreferrer">
+                GitHub
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/contact/">
+                Contact
+              </a>
+            </li><li><hr class="dropdown-divider"></li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/faq/">
+                Câu hỏi thường gặp
+              </a>
+            </li></ul>
+        </li></ul>
+    </div>
+  </div>
+</nav>
+</header>
+<main role="main" class="container" style="line-height:1.7em">
+      <div class="row content">
+<div class="col-lg-9 col-md-8">
+  <div class="container"><nav class="row card component" aria-label="breadcrumb">
+  <div class="card-body">
+    <ol class="breadcrumb "><li class="breadcrumb-item"><a href="https://www.phamduytung.com/">Trang chủ</a></li><li class="breadcrumb-item"><a href="https://www.phamduytung.com/blog/">Blogs</a></li><li class="breadcrumb-item active">Lakehouse 1.0: Từ hồ dữ liệu hỗn loạn đến Bronze, Silver và Gold</li></ol>
+  </div>
+</nav>
+<div class="post-panel-wrapper">
+  <div class="d-flex flex-column component rounded post-panel">
+    
+    <a class="action action-panel-toggler" role="button" title="Panel toggler">
+      <i class="fas fa-fw fa-chevron-circle-down"></i>
+    </a>
+    <a id="sidebarToggler" class="action d-none d-lg-block" role="button" title="Sidebar toggler">
+  <i class="fas fa-fw fa-expand-alt" data-fa-transform="rotate-45"></i>
+</a>
+
+    
+
+    
+    
+    <a class="action" href="#post-comments" role="button" aria-label="Comments" title="Comments">
+  <i class="fas fa-fw fa-comments"></i>
+</a>
+    <a class="action" href="#postTOC" aria-controls="Table of contents" role="button" title="Table of contents">
+  <i class="fas fa-fw fa-list-alt"></i>
+</a>
+    
+  </div>
+</div>
+<article class="row card component mb-4 post">
+  <div class="card-header "><div class="bgcover" style="background-image:url(https://www.phamduytung.com/images/posts/2026-07-23-lakehouse-v1/cover.png)" aria-label="Lakehouse 1.0: Từ hồ dữ liệu hỗn loạn đến Bronze, Silver và Gold">
+      <div class="bgtrans">
+          <h1>Lakehouse 1.0: Từ hồ dữ liệu hỗn loạn đến Bronze, Silver và Gold
+</h1>
+      </div>
+  </div>
+</div>
+  <div class="card-body"><div class="post-meta">
+  <span class="post-date" title="tạo ngày 2026-07-23 04:00:00 &#43;0700 &#43;07.">
+    23/07/2026
+  </span><span class="post-reading-time">
+    27 phút đọc
+  </span><span class="post-taxonomies"><a href="https://www.phamduytung.com/tags/lakehouse/" class="badge post-taxonomy">lakehouse</a><a href="https://www.phamduytung.com/tags/medallion-architecture/" class="badge post-taxonomy">medallion architecture</a><a href="https://www.phamduytung.com/tags/bronze-silver-gold/" class="badge post-taxonomy">bronze silver gold</a><a href="https://www.phamduytung.com/tags/data-lake/" class="badge post-taxonomy">data lake</a><a href="https://www.phamduytung.com/tags/data-warehouse/" class="badge post-taxonomy">data warehouse</a></span>
+</div>
+<div class="post-content mb-3"><hr>
+<div class="toc">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#không-có-cái-hồ-dữ-liệu-nào-thật-sự-yên">Không có cái hồ dữ liệu nào thật sự yên</a></li>
+    <li><a href="#trước-lakehouse-dữ-liệu-phải-sống-hai-cuộc-đời">Trước Lakehouse, dữ liệu phải sống hai cuộc đời</a></li>
+    <li><a href="#vì-sao-giai-đoạn-20192023-trở-thành-cột-mốc-quan-trọng">Vì sao giai đoạn 2019–2023 trở thành cột mốc quan trọng?</a></li>
+    <li><a href="#lakehouse-10-là-gì">Lakehouse 1.0 là gì?</a></li>
+    <li><a href="#các-lớp-kỹ-thuật-của-lakehouse-10">Các lớp kỹ thuật của Lakehouse 1.0</a>
+      <ul>
+        <li><a href="#object-storage-mảnh-đất-rộng-nhưng-không-biết-làm-kế-toán">Object storage: mảnh đất rộng nhưng không biết làm kế toán</a></li>
+        <li><a href="#file-format-cách-dữ-liệu-được-xếp-vào-thùng">File format: cách dữ liệu được xếp vào thùng</a></li>
+        <li><a href="#table-format-cuốn-sổ-nói-file-nào-thuộc-về-bảng">Table format: cuốn sổ nói file nào thuộc về bảng</a></li>
+        <li><a href="#compute-engine-đội-công-nhân-được-thuê-theo-ca">Compute engine: đội công nhân được thuê theo ca</a></li>
+      </ul>
+    </li>
+    <li><a href="#bronze-silver-và-gold-ba-lần-dữ-liệu-được-tắm-rửa">Bronze, Silver và Gold: ba lần dữ liệu được tắm rửa</a>
+      <ul>
+        <li><a href="#bronze-cứ-đem-dữ-liệu-về-trước-đã">Bronze: cứ đem dữ liệu về trước đã</a>
+          <ul>
+            <li><a href="#bronze-nên-lưu-thêm-metadata-gì">Bronze nên lưu thêm metadata gì?</a></li>
+          </ul>
+        </li>
+        <li><a href="#silver-cùng-một-con-voi-chỉ-nên-có-một-cái-tên">Silver: cùng một con voi chỉ nên có một cái tên</a>
+          <ul>
+            <li><a href="#silver-có-phải-dữ-liệu-tổng-hợp-không">Silver có phải dữ liệu tổng hợp không?</a></li>
+          </ul>
+        </li>
+        <li><a href="#gold-dữ-liệu-bước-vào-phòng-họp">Gold: dữ liệu bước vào phòng họp</a>
+          <ul>
+            <li><a href="#gold-không-phải-một-bảng-duy-nhất">Gold không phải một bảng duy nhất</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+    <li><a href="#một-giao-dịch-đi-qua-bronze-silver-và-gold-như-thế-nào">Một giao dịch đi qua Bronze, Silver và Gold như thế nào?</a>
+      <ul>
+        <li><a href="#ở-bronze">Ở Bronze</a></li>
+        <li><a href="#ở-silver">Ở Silver</a></li>
+        <li><a href="#ở-gold">Ở Gold</a></li>
+      </ul>
+    </li>
+    <li><a href="#ví-dụ-với-một-triệu-đơn-hàng-mỗi-ngày">Ví dụ với một triệu đơn hàng mỗi ngày</a>
+      <ul>
+        <li><a href="#tầng-bronze">Tầng Bronze</a></li>
+        <li><a href="#tầng-silver">Tầng Silver</a></li>
+        <li><a href="#tầng-gold">Tầng Gold</a></li>
+      </ul>
+    </li>
+    <li><a href="#acid-trên-một-đống-file-hoạt-động-như-thế-nào">ACID trên một đống file hoạt động như thế nào?</a></li>
+    <li><a href="#bronze-silver-và-gold-không-phải-ba-loại-ổ-cứng">Bronze, Silver và Gold không phải ba loại ổ cứng</a></li>
+    <li><a href="#lakehouse-10-giải-quyết-được-gì">Lakehouse 1.0 giải quyết được gì?</a>
+      <ul>
+        <li><a href="#giảm-việc-sao-chép-giữa-lake-và-warehouse">Giảm việc sao chép giữa lake và warehouse</a></li>
+        <li><a href="#giữ-được-dữ-liệu-thô-để-xử-lý-lại">Giữ được dữ liệu thô để xử lý lại</a></li>
+        <li><a href="#tạo-một-lớp-dữ-liệu-dùng-chung">Tạo một lớp dữ liệu dùng chung</a></li>
+        <li><a href="#tách-dữ-liệu-khỏi-compute">Tách dữ liệu khỏi compute</a></li>
+      </ul>
+    </li>
+    <li><a href="#lakehouse-10-không-giải-quyết-được-gì">Lakehouse 1.0 không giải quyết được gì?</a>
+      <ul>
+        <li><a href="#nó-không-tự-định-nghĩa-nghiệp-vụ">Nó không tự định nghĩa nghiệp vụ</a></li>
+        <li><a href="#nó-không-tự-làm-truy-vấn-nhanh">Nó không tự làm truy vấn nhanh</a></li>
+        <li><a href="#nó-không-thay-thế-data-modeling">Nó không thay thế data modeling</a></li>
+        <li><a href="#nó-có-thể-làm-hệ-thống-nhiều-mảnh-hơn">Nó có thể làm hệ thống nhiều mảnh hơn</a></li>
+      </ul>
+    </li>
+    <li><a href="#khi-nào-chưa-cần-lakehouse">Khi nào chưa cần Lakehouse?</a></li>
+    <li><a href="#tổng-kết">Tổng kết</a></li>
+    <li><a href="#tham-khảo">Tham khảo</a></li>
+  </ul>
+</nav>
+  </div>
+<h1 id="không-có-cái-hồ-dữ-liệu-nào-thật-sự-yên">Không có cái hồ dữ liệu nào thật sự yên<a class="anchor ms-1" href="#không-có-cái-hồ-dữ-liệu-nào-thật-sự-yên"><i class="fas fa-link"></i></a></h1>
+<p>Giả sử công ty mình có 1.000 cửa hàng.</p>
+<p>Mỗi ngày, từ 1.000 cửa hàng ấy chảy về trung tâm hàng triệu hóa đơn, phiếu nhập kho, phiếu trả hàng, lượt bấm trên website, lịch sử tìm kiếm sản phẩm, log máy chủ, hình ảnh, âm thanh tổng đài và những file Excel mà không ai dám xóa vì sợ một ngày đẹp trời kế toán trưởng hỏi tới.</p>
+<p>Ban đầu, dữ liệu còn ít.</p>
+<p>Người ta dựng một <strong>data warehouse</strong>, thiết kế bảng ngay ngắn, đặt tên cột rõ ràng, xây báo cáo doanh thu rồi sống những ngày tương đối yên bình.</p>
+<p>Nhưng dữ liệu lớn dần.</p>
+<p>Hình ảnh không vừa trong những chiếc bảng quan hệ. Log máy chủ đổ xuống như mưa. Data scientist cần dữ liệu chi tiết để huấn luyện mô hình. Hệ thống recommendation muốn giữ từng cú bấm chuột. Voice bot lại sinh ra âm thanh và transcript mỗi ngày.</p>
+<p>Người ta bèn xây một cái hồ thật lớn để ném mọi thứ vào.</p>
+<p>Cái hồ ấy được gọi là <strong>data lake</strong>.</p>
+<p>Tên nghe rất thơ.</p>
+<p>Tưởng tượng có nước trong, có cá bơi, có một ông già ngồi câu bên bờ.</p>
+<p>Nhưng dưới mặt hồ thường là những thư mục như thế này:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">sales/
+</span></span><span class="line"><span class="ln">2</span><span class="cl">├── final/
+</span></span><span class="line"><span class="ln">3</span><span class="cl">├── final_v2/
+</span></span><span class="line"><span class="ln">4</span><span class="cl">├── final_v2_fix/
+</span></span><span class="line"><span class="ln">5</span><span class="cl">├── final_v2_fix_new/
+</span></span><span class="line"><span class="ln">6</span><span class="cl">└── final_v2_fix_new_latest/
+</span></span></code></pre></div><p>Và vì một quy luật thần bí nào đó của ngành dữ liệu, thư mục <code>latest</code> thường không phải là bản mới nhất.</p>
+<p>Data lake rộng, rẻ và chứa được gần như mọi thứ.</p>
+<p>Nhưng chứa được không có nghĩa là quản lý được.</p>
+<p>Một đống file Parquet nằm cạnh nhau vẫn chỉ là một đống file Parquet. Chúng chưa tự nhiên biến thành một bảng dữ liệu có transaction, schema, lịch sử phiên bản và khả năng chịu được việc nhiều tiến trình cùng đọc ghi.</p>
+<p>Từ mâu thuẫn đó, Lakehouse bắt đầu xuất hiện.</p>
+<h1 id="trước-lakehouse-dữ-liệu-phải-sống-hai-cuộc-đời">Trước Lakehouse, dữ liệu phải sống hai cuộc đời<a class="anchor ms-1" href="#trước-lakehouse-dữ-liệu-phải-sống-hai-cuộc-đời"><i class="fas fa-link"></i></a></h1>
+<p>Data warehouse và data lake đều được sinh ra để giải quyết những bài toán hợp lý.</p>
+<p>Data warehouse phù hợp với:</p>
+<ul>
+<li>Báo cáo doanh thu.</li>
+<li>Dashboard quản trị.</li>
+<li>Truy vấn SQL.</li>
+<li>Dữ liệu có schema rõ ràng.</li>
+<li>Các bảng tổng hợp ổn định.</li>
+</ul>
+<p>Data lake phù hợp với:</p>
+<ul>
+<li>Dữ liệu rất lớn.</li>
+<li>Dữ liệu thô.</li>
+<li>Log, JSON, hình ảnh và âm thanh.</li>
+<li>Xử lý bằng Spark hoặc Python.</li>
+<li>Machine Learning và Data Science.</li>
+</ul>
+<p>Nghe thì rất đẹp.</p>
+<p>Data lake làm việc của data lake.</p>
+<p>Data warehouse làm việc của data warehouse.</p>
+<p>Hai người một người rửa chén, một người nấu cơm, gia đình hạnh phúc.</p>
+<p>Nhưng ngoài đời, dữ liệu không chịu đứng yên trong phần việc được phân công.</p>
+<p>Dữ liệu bán hàng đi vào data lake trước.</p>
+<p>Sau đó, một pipeline đọc dữ liệu từ lake, làm sạch rồi chép sang data warehouse.</p>
+<p>Data scientist lại tạo thêm một bản riêng để huấn luyện mô hình.</p>
+<p>Nhóm báo cáo tài chính có thể tạo thêm bảng tổng hợp.</p>
+<p>Nhóm recommendation lại xuất một bộ dữ liệu khác để xây feature.</p>
+<p>Một chiếc tủ lạnh ngoài cửa hàng chỉ được bán đúng một lần.</p>
+<p>Nhưng bên trong hệ thống dữ liệu, chiếc tủ lạnh ấy có thể sống năm cuộc đời:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">Dữ liệu nguồn
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">    |
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">    v
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">Bản thô trong data lake
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">    |
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">    v
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">Bản staging
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">    |
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">    v
+</span></span><span class="line"><span class="ln">10</span><span class="cl">Bản trong data warehouse
+</span></span><span class="line"><span class="ln">11</span><span class="cl">    |
+</span></span><span class="line"><span class="ln">12</span><span class="cl">    v
+</span></span><span class="line"><span class="ln">13</span><span class="cl">Bản dùng cho Machine Learning
+</span></span><span class="line"><span class="ln">14</span><span class="cl">    |
+</span></span><span class="line"><span class="ln">15</span><span class="cl">    v
+</span></span><span class="line"><span class="ln">16</span><span class="cl">File CSV &#34;tạm thời&#34; tồn tại ba năm
+</span></span></code></pre></div><p>Mỗi lần dữ liệu được sao chép là thêm một pipeline.</p>
+<p>Mỗi pipeline là thêm một nơi có thể thất bại.</p>
+<p>Mỗi lần thất bại là thêm một kỹ sư bị gọi lúc hai giờ sáng để trả lời câu hỏi:</p>
+<blockquote>
+<p>Vì sao báo cáo hôm nay chỉ có 998 cửa hàng, trong khi hôm qua vẫn còn đủ 1.000?</p>
+</blockquote>
+<p>Bài toán mà Lakehouse 1.0 muốn giải quyết không phải là xóa bỏ data warehouse hay data lake.</p>
+<p>Nó muốn giảm khoảng cách giữa hai thế giới ấy, để nhiều workload có thể làm việc trên một lớp dữ liệu chung thay vì liên tục sao chép dữ liệu qua lại.</p>
+<h1 id="vì-sao-giai-đoạn-20192023-trở-thành-cột-mốc-quan-trọng">Vì sao giai đoạn 2019–2023 trở thành cột mốc quan trọng?<a class="anchor ms-1" href="#vì-sao-giai-đoạn-20192023-trở-thành-cột-mốc-quan-trọng"><i class="fas fa-link"></i></a></h1>
+<p>Lakehouse không được phát minh trong một ngày.</p>
+<p>Nó là kết quả của nhiều mảnh ghép đã phát triển trước đó:</p>
+<ul>
+<li>Object storage có chi phí thấp.</li>
+<li>Định dạng cột như Parquet.</li>
+<li>Hệ thống xử lý phân tán như Spark.</li>
+<li>Kiến trúc tách compute khỏi storage.</li>
+<li>Các SQL engine có thể truy vấn trực tiếp trên file.</li>
+<li>Lớp metadata giúp quản lý một tập hợp file như một bảng.</li>
+</ul>
+<p>Năm 2019 là một cột mốc dễ quan sát khi phiên bản mã nguồn mở đầu tiên của Delta Lake được công bố. Các phiên bản tiếp theo trong năm đó bổ sung hỗ trợ cloud storage và cải thiện khả năng xử lý đồng thời. Những thay đổi này cho thấy người ta có thể đặt một lớp giao dịch phía trên data lake thay vì xem hồ dữ liệu chỉ là nơi chứa file. (<a href="https://delta.io/blog/2019-04-22-delta-lake-0-1-0-released/?utm_source=chatgpt.com" title="Delta Lake 0.1.0 Released | Delta Lake" target="_blank" rel="noopener noreferrer">Delta</a>)</p>
+<p>Đến tháng 1 năm 2021, bài nghiên cứu <em>Lakehouse: A New Generation of Open Platforms that Unify Data Warehousing and Advanced Analytics</em> được trình bày tại CIDR 2021. Công trình này mô tả Lakehouse là một hệ thống quản lý dữ liệu xây dựng trên lớp lưu trữ chi phí thấp, có thể truy cập trực tiếp, nhưng bổ sung những khả năng quản lý quen thuộc của hệ thống phân tích như transaction, versioning và tối ưu truy vấn. (<a href="https://www.cidrdb.org/cidr2021/papers/cidr2021_paper17.pdf?utm_source=chatgpt.com" title="Lakehouse: A New Generation of Open Platforms that Unify" target="_blank" rel="noopener noreferrer">CIDRDB</a>)</p>
+<p>Từ năm 2021 đến khoảng năm 2023, khái niệm Lakehouse dần không còn chỉ là tên của một ý tưởng. Nó trở thành một cách thiết kế kiến trúc dữ liệu với các lớp tương đối rõ ràng:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">Object Storage
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">    |
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">File Format
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">    |
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">Table Format và Metadata
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">    |
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">Compute Engine
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">    |
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">Bronze → Silver → Gold
+</span></span><span class="line"><span class="ln">10</span><span class="cl">    |
+</span></span><span class="line"><span class="ln">11</span><span class="cl">BI, Analytics, Data Science
+</span></span></code></pre></div><p>Trong bài viết này, mình dùng cụm từ <strong>Lakehouse 1.0</strong> để nói về nền móng của giai đoạn đầu đó.</p>
+<p>Đây không phải tên phiên bản chính thức của một sản phẩm.</p>
+<p>Nó là cách gọi để phân biệt phần kiến trúc cốt lõi: dữ liệu mở trên object storage, lớp quản lý bảng, transaction, schema, versioning và quy trình tổ chức dữ liệu từ Bronze đến Gold.</p>
+<h1 id="lakehouse-10-là-gì">Lakehouse 1.0 là gì?<a class="anchor ms-1" href="#lakehouse-10-là-gì"><i class="fas fa-link"></i></a></h1>
+<p>Có thể hiểu Lakehouse 1.0 bằng một câu:</p>
+<blockquote>
+<p>Giữ sự rộng rãi và rẻ tiền của data lake, nhưng đặt lên trên nó một lớp quản lý để dữ liệu có thể được sử dụng gần giống những bảng phân tích đáng tin cậy trong data warehouse.</p>
+</blockquote>
+<p>Nếu data lake là một cái hồ, Lakehouse không hút cạn nước rồi đổ vào một nhà kho khác.</p>
+<p>Nó xây sàn, dựng cột, đặt luật và xây căn nhà ngay trên mặt hồ.</p>
+<p>Nghe hơi ngáo.</p>
+<p>Nhưng việc xây hai thành phố dữ liệu riêng biệt rồi dùng xe tải chở dữ liệu qua lại mỗi đêm cũng không tỉnh táo hơn bao nhiêu.</p>
+<p>Kiến trúc Lakehouse 1.0 có thể nhìn theo hai hướng.</p>
+<p>Hướng thứ nhất là <strong>các lớp kỹ thuật</strong>:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Object Storage
+</span></span><span class="line"><span class="ln">2</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln">3</span><span class="cl">File Format
+</span></span><span class="line"><span class="ln">4</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln">5</span><span class="cl">Table Format và Transaction Log
+</span></span><span class="line"><span class="ln">6</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln">7</span><span class="cl">Compute Engine
+</span></span></code></pre></div><p>Hướng thứ hai là <strong>vòng đời dữ liệu</strong>:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Bronze
+</span></span><span class="line"><span class="ln">2</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln">3</span><span class="cl">Silver
+</span></span><span class="line"><span class="ln">4</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln">5</span><span class="cl">Gold
+</span></span></code></pre></div><p>Hai hướng này thường bị trộn lẫn với nhau.</p>
+<p>Object storage, Parquet và table format trả lời câu hỏi:</p>
+<blockquote>
+<p>Dữ liệu được lưu và quản lý bằng cách nào?</p>
+</blockquote>
+<p>Bronze, Silver và Gold trả lời một câu hỏi khác:</p>
+<blockquote>
+<p>Dữ liệu đang sạch tới đâu và đã sẵn sàng phục vụ ai?</p>
+</blockquote>
+<h1 id="các-lớp-kỹ-thuật-của-lakehouse-10">Các lớp kỹ thuật của Lakehouse 1.0<a class="anchor ms-1" href="#các-lớp-kỹ-thuật-của-lakehouse-10"><i class="fas fa-link"></i></a></h1>
+<h2 id="object-storage-mảnh-đất-rộng-nhưng-không-biết-làm-kế-toán">Object storage: mảnh đất rộng nhưng không biết làm kế toán<a class="anchor ms-1" href="#object-storage-mảnh-đất-rộng-nhưng-không-biết-làm-kế-toán"><i class="fas fa-link"></i></a></h2>
+<p>Ở đáy kiến trúc là object storage như Amazon S3, Azure Data Lake Storage hoặc Google Cloud Storage. Với hệ thống tự vận hành, vai trò tương tự có thể được đảm nhiệm bởi HDFS hoặc các nền tảng lưu trữ tương thích.</p>
+<p>Đây là nơi những byte dữ liệu thật sự nằm xuống.</p>
+<p>Một bảng doanh thu có thể được chia thành hàng nghìn file:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">sales/
+</span></span><span class="line"><span class="ln">2</span><span class="cl">├── year=2026/
+</span></span><span class="line"><span class="ln">3</span><span class="cl">│   ├── month=07/
+</span></span><span class="line"><span class="ln">4</span><span class="cl">│   │   ├── day=23/
+</span></span><span class="line"><span class="ln">5</span><span class="cl">│   │   │   ├── part-00001.parquet
+</span></span><span class="line"><span class="ln">6</span><span class="cl">│   │   │   ├── part-00002.parquet
+</span></span><span class="line"><span class="ln">7</span><span class="cl">│   │   │   └── part-00003.parquet
+</span></span></code></pre></div><p>Object storage biết file nào tồn tại.</p>
+<p>Nó biết file nặng bao nhiêu byte.</p>
+<p>Nó biết file nằm ở đường dẫn nào.</p>
+<p>Nhưng nó không hiểu:</p>
+<ul>
+<li>File nào thuộc phiên bản hiện tại của bảng.</li>
+<li>Một lần ghi đã hoàn thành hay chưa.</li>
+<li>File nào bị thay thế.</li>
+<li>Hai tiến trình có đang ghi đè lên nhau không.</li>
+<li>Bản ghi nào là đơn hàng thật, bản ghi nào là dữ liệu lỗi.</li>
+</ul>
+<p>Object storage giống nền xi măng của nhà kho.</p>
+<p>Nền nhà có thể chịu được một triệu thùng hàng.</p>
+<p>Nhưng không thể yêu cầu nền nhà tự đếm hàng tồn kho.</p>
+<h2 id="file-format-cách-dữ-liệu-được-xếp-vào-thùng">File format: cách dữ liệu được xếp vào thùng<a class="anchor ms-1" href="#file-format-cách-dữ-liệu-được-xếp-vào-thùng"><i class="fas fa-link"></i></a></h2>
+<p>Lakehouse thường lưu dữ liệu phân tích bằng định dạng cột như Parquet hoặc ORC.</p>
+<p>Giả sử một bảng bán hàng có 100 cột.</p>
+<p>Nhưng câu SQL chỉ cần ba cột:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="ln">1</span><span class="cl"><span class="k">SELECT</span><span class="w">
+</span></span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="w">    </span><span class="n">sale_date</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="w">    </span><span class="n">store_id</span><span class="p">,</span><span class="w">
+</span></span></span><span class="line"><span class="ln">4</span><span class="cl"><span class="w">    </span><span class="n">revenue</span><span class="w">
+</span></span></span><span class="line"><span class="ln">5</span><span class="cl"><span class="k">FROM</span><span class="w"> </span><span class="n">sales</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><p>Với định dạng cột, hệ thống có thể tập trung đọc những phần dữ liệu cần thiết thay vì kéo toàn bộ 100 cột lên khỏi ổ đĩa.</p>
+<p>Điều này rất phù hợp với các workload phân tích.</p>
+<p>Nhưng cần nhớ:</p>
+<blockquote>
+<p>Parquet là định dạng file, không phải hệ quản trị cơ sở dữ liệu.</p>
+</blockquote>
+<p>Một file Parquet có schema.</p>
+<p>Nhưng một triệu file Parquet chưa tự động có transaction.</p>
+<p>Một file có thể ghi dở.</p>
+<p>Một job có thể chết giữa đường.</p>
+<p>Hai job có thể cùng thêm dữ liệu.</p>
+<p>Nếu không có lớp quản lý phía trên, người đọc có thể nhìn thấy một trạng thái nửa sống nửa chết, giống một con gà đã bước được một chân vào nồi nhưng chân còn lại vẫn chạy ngoài sân.</p>
+<h2 id="table-format-cuốn-sổ-nói-file-nào-thuộc-về-bảng">Table format: cuốn sổ nói file nào thuộc về bảng<a class="anchor ms-1" href="#table-format-cuốn-sổ-nói-file-nào-thuộc-về-bảng"><i class="fas fa-link"></i></a></h2>
+<p>Table format là một trong những mảnh ghép quan trọng nhất của Lakehouse 1.0.</p>
+<p>Nó đặt một lớp metadata phía trên các file dữ liệu để quản lý:</p>
+<ul>
+<li>Schema của bảng.</li>
+<li>Danh sách file hợp lệ.</li>
+<li>Phiên bản hiện tại.</li>
+<li>Lịch sử thay đổi.</li>
+<li>Partition.</li>
+<li>Trạng thái của một lần commit.</li>
+</ul>
+<p>Ví dụ, trên object storage có năm file:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">part-001.parquet
+</span></span><span class="line"><span class="ln">2</span><span class="cl">part-002.parquet
+</span></span><span class="line"><span class="ln">3</span><span class="cl">part-003.parquet
+</span></span><span class="line"><span class="ln">4</span><span class="cl">part-004.parquet
+</span></span><span class="line"><span class="ln">5</span><span class="cl">part-005.parquet
+</span></span></code></pre></div><p>Nhưng metadata của phiên bản hiện tại có thể nói:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Snapshot hiện tại: 108
+</span></span><span class="line"><span class="ln">2</span><span class="cl">
+</span></span><span class="line"><span class="ln">3</span><span class="cl">Các file đang thuộc bảng:
+</span></span><span class="line"><span class="ln">4</span><span class="cl">- part-001.parquet
+</span></span><span class="line"><span class="ln">5</span><span class="cl">- part-004.parquet
+</span></span><span class="line"><span class="ln">6</span><span class="cl">- part-005.parquet
+</span></span></code></pre></div><p>Hai file còn lại vẫn tồn tại về mặt vật lý.</p>
+<p>Nhưng về mặt logic, chúng không còn nằm trong phiên bản hiện tại của bảng.</p>
+<p>Apache Iceberg, chẳng hạn, dùng metadata, snapshot, manifest list và manifest để theo dõi trạng thái bảng cùng tập hợp data file thuộc từng snapshot. Một snapshot đại diện cho trạng thái của bảng tại một thời điểm. (<a href="https://iceberg.apache.org/spec/?h=snapshot&amp;utm_source=chatgpt.com" title="Spec - Apache Iceberg™" target="_blank" rel="noopener noreferrer">Apache Iceberg</a>)</p>
+<p>Đây là điểm rất quan trọng.</p>
+<p>Thay vì mở một file khổng lồ rồi sửa từng dòng, hệ thống có thể:</p>
+<ol>
+<li>Ghi file dữ liệu mới.</li>
+<li>Tạo metadata mới.</li>
+<li>Commit metadata.</li>
+<li>Chuyển con trỏ từ phiên bản cũ sang phiên bản mới.</li>
+</ol>
+<p>Người đọc hoặc thấy phiên bản cũ.</p>
+<p>Hoặc thấy phiên bản mới.</p>
+<p>Họ không thấy một sinh vật ba đầu, trong đó doanh thu buổi sáng thuộc phiên bản cũ còn doanh thu buổi chiều thuộc phiên bản mới.</p>
+<h2 id="compute-engine-đội-công-nhân-được-thuê-theo-ca">Compute engine: đội công nhân được thuê theo ca<a class="anchor ms-1" href="#compute-engine-đội-công-nhân-được-thuê-theo-ca"><i class="fas fa-link"></i></a></h2>
+<p>Phía trên storage và metadata là các compute engine.</p>
+<p>Ví dụ:</p>
+<ul>
+<li>Spark xử lý ETL.</li>
+<li>SQL engine phục vụ truy vấn.</li>
+<li>Python đọc dữ liệu cho Data Science.</li>
+<li>Một pipeline khác tạo bảng tổng hợp.</li>
+</ul>
+<p>Storage và compute được tách rời.</p>
+<p>Dữ liệu nằm cố định trong kho.</p>
+<p>Còn các đội công nhân có thể được gọi đến tùy công việc.</p>
+<p>Khi cần xử lý một lượng dữ liệu lớn, ta tăng compute.</p>
+<p>Khi công việc kết thúc, compute có thể được thu nhỏ.</p>
+<p>Không cần nhân bản toàn bộ nhà kho chỉ vì hôm nay cần thêm người đếm hàng.</p>
+<p>Kiến trúc Lakehouse ban đầu xem việc tách storage khỏi compute là một đặc điểm phù hợp với môi trường cloud, nơi nhiều cụm tính toán có thể truy cập cùng lớp dữ liệu nền. (<a href="https://www.cidrdb.org/cidr2021/papers/cidr2021_paper17.pdf?utm_source=chatgpt.com" title="Lakehouse: A New Generation of Open Platforms that Unify" target="_blank" rel="noopener noreferrer">CIDRDB</a>)</p>
+<h1 id="bronze-silver-và-gold-ba-lần-dữ-liệu-được-tắm-rửa">Bronze, Silver và Gold: ba lần dữ liệu được tắm rửa<a class="anchor ms-1" href="#bronze-silver-và-gold-ba-lần-dữ-liệu-được-tắm-rửa"><i class="fas fa-link"></i></a></h1>
+<p>Nếu chỉ có object storage, Parquet và transaction log, ta mới xây được một nhà kho biết giữ trật tự.</p>
+<p>Nhưng hàng hóa đi vào vẫn có thể lấm lem bùn đất.</p>
+<p>Một hệ thống gửi mã thành phố là:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">TP.HCM
+</span></span></code></pre></div><p>Hệ thống khác gửi:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Ho Chi Minh
+</span></span></code></pre></div><p>Hệ thống khác nữa gửi:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">SG
+</span></span></code></pre></div><p>Ba cái tên cùng chỉ một nơi, giống ba người cùng nhìn một con voi nhưng nhất quyết khai nó thành ba loài động vật khác nhau.</p>
+<p>Để tổ chức vòng đời dữ liệu, Lakehouse thường sử dụng mô hình <strong>Medallion Architecture</strong>:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">Nguồn dữ liệu
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">    |
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">    v
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">Bronze: dữ liệu thô
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">    |
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">    v
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">Silver: dữ liệu đã làm sạch và chuẩn hóa
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">    |
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">    v
+</span></span><span class="line"><span class="ln">10</span><span class="cl">Gold: dữ liệu phục vụ nghiệp vụ
+</span></span></code></pre></div><p>Tên nghe giống giải đấu thể thao.</p>
+<p>Nhưng thực chất đây là hành trình một dòng dữ liệu đi từ lúc vừa bước xuống xe tải, tóc tai rối bù, cho đến khi mặc áo sơ mi và bước vào phòng họp với ban giám đốc.</p>
+<p>Medallion Architecture tổ chức dữ liệu theo các lớp Bronze, Silver và Gold nhằm tăng dần chất lượng và mức độ sẵn sàng của dữ liệu khi nó đi qua pipeline. (<a href="https://docs.databricks.com/aws/pt/lakehouse/medallion?utm_source=chatgpt.com" title="Qual é a arquitetura da casa de lago do medalhão? | Databricks on AWS" target="_blank" rel="noopener noreferrer">Databricks Documentation</a>)</p>
+<h2 id="bronze-cứ-đem-dữ-liệu-về-trước-đã">Bronze: cứ đem dữ liệu về trước đã<a class="anchor ms-1" href="#bronze-cứ-đem-dữ-liệu-về-trước-đã"><i class="fas fa-link"></i></a></h2>
+<p>Bronze là tầng gần hệ thống nguồn nhất.</p>
+<p>Dữ liệu được đưa vào đây với mức biến đổi tối thiểu.</p>
+<p>Ví dụ một giao dịch từ hệ thống bán hàng có thể được nhận dưới dạng:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="ln">1</span><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl">  <span class="nt">&#34;store&#34;</span><span class="p">:</span> <span class="s2">&#34;Q9_001&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl">  <span class="nt">&#34;product&#34;</span><span class="p">:</span> <span class="s2">&#34;sony-tv-55-inch&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">4</span><span class="cl">  <span class="nt">&#34;price&#34;</span><span class="p">:</span> <span class="s2">&#34;15.990.000 VNĐ&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">5</span><span class="cl">  <span class="nt">&#34;created_at&#34;</span><span class="p">:</span> <span class="s2">&#34;23/07/2026 10:31&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">6</span><span class="cl">  <span class="nt">&#34;status&#34;</span><span class="p">:</span> <span class="s2">&#34;SUCCESS&#34;</span>
+</span></span><span class="line"><span class="ln">7</span><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>Ở tầng Bronze, ta thường quan tâm đến:</p>
+<ul>
+<li>Giữ lại dữ liệu gần với nguồn.</li>
+<li>Lưu thời điểm dữ liệu được tiếp nhận.</li>
+<li>Ghi nhận hệ thống nguồn.</li>
+<li>Hạn chế làm mất thông tin.</li>
+<li>Cho phép chạy lại pipeline.</li>
+<li>Hỗ trợ điều tra khi dữ liệu phía sau bị sai.</li>
+</ul>
+<p>Bronze giống khu nhận hàng phía sau siêu thị.</p>
+<p>Xe tải vừa tới, người ta đưa hàng xuống trước.</p>
+<p>Thùng có thể méo.</p>
+<p>Nhãn có thể sai.</p>
+<p>Rau còn dính đất.</p>
+<p>Một vài kiện hàng còn chưa biết thuộc quầy nào.</p>
+<p>Nhưng chưa ai vội ném đi, vì dữ liệu thô là dấu vết gần nhất với những gì thật sự xảy ra ở hệ thống nguồn.</p>
+<p>Nếu ta làm sạch quá sớm rồi ghi đè mất bản gốc, việc điều tra lỗi sau này giống như cố tìm dấu chân sau khi ai đó đã lau sạch sàn.</p>
+<p>Bronze không cần đẹp.</p>
+<p>Bronze cần trung thực.</p>
+<h3 id="bronze-nên-lưu-thêm-metadata-gì">Bronze nên lưu thêm metadata gì?<a class="anchor ms-1" href="#bronze-nên-lưu-thêm-metadata-gì"><i class="fas fa-link"></i></a></h3>
+<p>Ngoài dữ liệu gốc, mỗi bản ghi Bronze nên có thêm một số thông tin kỹ thuật:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">  <span class="nt">&#34;source_system&#34;</span><span class="p">:</span> <span class="s2">&#34;pos&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">  <span class="nt">&#34;source_file&#34;</span><span class="p">:</span> <span class="s2">&#34;sales_20260723_1030.json&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">  <span class="nt">&#34;ingested_at&#34;</span><span class="p">:</span> <span class="s2">&#34;2026-07-23T10:32:14+07:00&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">  <span class="nt">&#34;batch_id&#34;</span><span class="p">:</span> <span class="s2">&#34;batch_20260723_1032&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">  <span class="nt">&#34;raw_payload&#34;</span><span class="p">:</span> <span class="p">{</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">    <span class="nt">&#34;store&#34;</span><span class="p">:</span> <span class="s2">&#34;Q9_001&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">    <span class="nt">&#34;product&#34;</span><span class="p">:</span> <span class="s2">&#34;sony-tv-55-inch&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">    <span class="nt">&#34;price&#34;</span><span class="p">:</span> <span class="s2">&#34;15.990.000 VNĐ&#34;</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>Nhờ đó, khi một giao dịch có vấn đề, ta có thể lần ngược lại:</p>
+<ul>
+<li>Nó đến từ hệ thống nào?</li>
+<li>Được nhận lúc nào?</li>
+<li>Thuộc batch nào?</li>
+<li>Dữ liệu ban đầu là gì?</li>
+</ul>
+<p>Bronze là nơi hệ thống lưu lại trí nhớ.</p>
+<p>Không có trí nhớ, mỗi lần pipeline lỗi là cả đội lại đứng quanh một con số sai và tranh luận bằng niềm tin.</p>
+<h2 id="silver-cùng-một-con-voi-chỉ-nên-có-một-cái-tên">Silver: cùng một con voi chỉ nên có một cái tên<a class="anchor ms-1" href="#silver-cùng-một-con-voi-chỉ-nên-có-một-cái-tên"><i class="fas fa-link"></i></a></h2>
+<p>Silver là tầng dữ liệu đã được kiểm tra, làm sạch, chuẩn hóa và kết hợp.</p>
+<p>Đây thường là nơi xử lý:</p>
+<ul>
+<li>Kiểu dữ liệu.</li>
+<li>Dữ liệu trùng.</li>
+<li>Giá trị thiếu.</li>
+<li>Mã sản phẩm.</li>
+<li>Mã cửa hàng.</li>
+<li>Đơn vị đo.</li>
+<li>Múi giờ.</li>
+<li>Dữ liệu đến muộn.</li>
+<li>Quan hệ giữa các bảng.</li>
+<li>Bản ghi lỗi hoặc không hợp lệ.</li>
+</ul>
+<p>Bản ghi Bronze:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="ln">1</span><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl">  <span class="nt">&#34;store&#34;</span><span class="p">:</span> <span class="s2">&#34;Q9_001&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl">  <span class="nt">&#34;product&#34;</span><span class="p">:</span> <span class="s2">&#34;sony-tv-55-inch&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">4</span><span class="cl">  <span class="nt">&#34;price&#34;</span><span class="p">:</span> <span class="s2">&#34;15.990.000 VNĐ&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">5</span><span class="cl">  <span class="nt">&#34;created_at&#34;</span><span class="p">:</span> <span class="s2">&#34;23/07/2026 10:31&#34;</span>
+</span></span><span class="line"><span class="ln">6</span><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>Sau khi đi qua Silver có thể trở thành:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="ln">1</span><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl">  <span class="nt">&#34;store_id&#34;</span><span class="p">:</span> <span class="mi">1001</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl">  <span class="nt">&#34;product_id&#34;</span><span class="p">:</span> <span class="mi">583920</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">4</span><span class="cl">  <span class="nt">&#34;selling_price&#34;</span><span class="p">:</span> <span class="mi">15990000</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">5</span><span class="cl">  <span class="nt">&#34;currency&#34;</span><span class="p">:</span> <span class="s2">&#34;VND&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">6</span><span class="cl">  <span class="nt">&#34;created_at&#34;</span><span class="p">:</span> <span class="s2">&#34;2026-07-23T10:31:00+07:00&#34;</span>
+</span></span><span class="line"><span class="ln">7</span><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><p>Sự thay đổi nhìn có vẻ nhỏ.</p>
+<p>Nhưng nó rất quan trọng.</p>
+<p>Ở Bronze, <code>15.990.000 VNĐ</code> chỉ là một chuỗi ký tự.</p>
+<p>Ở Silver, <code>15990000</code> là một con số có thể cộng, trừ, so sánh và tổng hợp.</p>
+<p>Ở Bronze, <code>sony-tv-55-inch</code> là tên do một hệ thống tự đặt.</p>
+<p>Ở Silver, <code>product_id=583920</code> là định danh đã được đối chiếu với catalog sản phẩm chung.</p>
+<p>Silver là nơi nhiều hệ thống bắt đầu nói cùng một ngôn ngữ.</p>
+<p>Nếu công ty có mười hệ thống cùng nhắc đến một cái máy lạnh, Silver cố gắng làm cho chúng hiểu rằng đó là cùng một cái máy lạnh, chứ không phải mười sinh vật sống trong mười vũ trụ song song.</p>
+<h3 id="silver-có-phải-dữ-liệu-tổng-hợp-không">Silver có phải dữ liệu tổng hợp không?<a class="anchor ms-1" href="#silver-có-phải-dữ-liệu-tổng-hợp-không"><i class="fas fa-link"></i></a></h3>
+<p>Không nhất thiết.</p>
+<p>Silver thường vẫn giữ dữ liệu ở mức tương đối chi tiết.</p>
+<p>Ví dụ, mỗi dòng vẫn có thể đại diện cho:</p>
+<ul>
+<li>Một đơn hàng.</li>
+<li>Một sản phẩm trong đơn hàng.</li>
+<li>Một lần thay đổi tồn kho.</li>
+<li>Một sự kiện khách hàng bấm vào sản phẩm.</li>
+<li>Một cuộc gọi.</li>
+</ul>
+<p>Điểm khác biệt là dữ liệu đã đủ sạch và nhất quán để các nhóm khác sử dụng lại.</p>
+<p>Có thể xem Silver là lớp dữ liệu dùng chung của doanh nghiệp.</p>
+<p>Nó không còn quá thô như Bronze.</p>
+<p>Nhưng cũng chưa bị nấu thành một món ăn cụ thể như Gold.</p>
+<h2 id="gold-dữ-liệu-bước-vào-phòng-họp">Gold: dữ liệu bước vào phòng họp<a class="anchor ms-1" href="#gold-dữ-liệu-bước-vào-phòng-họp"><i class="fas fa-link"></i></a></h2>
+<p>Gold là tầng được tổ chức theo nhu cầu nghiệp vụ cụ thể.</p>
+<p>Thay vì bắt người dùng tự đọc hàng tỷ giao dịch, Gold chuẩn bị sẵn những bảng như:</p>
+<ul>
+<li>Doanh thu theo ngày và cửa hàng.</li>
+<li>Lợi nhuận theo ngành hàng.</li>
+<li>Tồn kho hiện tại.</li>
+<li>Tỷ lệ hết hàng.</li>
+<li>Hiệu quả khuyến mãi.</li>
+<li>Hiệu suất giao hàng.</li>
+<li>Giá trị vòng đời khách hàng.</li>
+</ul>
+<p>Ví dụ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">gold_daily_store_revenue
+</span></span></code></pre></div><table>
+	<thead>
+			<tr>
+					<th>date</th>
+					<th style="text-align: right">store_id</th>
+					<th style="text-align: right">revenue</th>
+					<th style="text-align: right">order_count</th>
+					<th style="text-align: right">average_order_value</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>2026-07-23</td>
+					<td style="text-align: right">1001</td>
+					<td style="text-align: right">1.250.000.000</td>
+					<td style="text-align: right">542</td>
+					<td style="text-align: right">2.306.273</td>
+			</tr>
+	</tbody>
+</table>
+<p>Dashboard không cần mở hàng triệu hóa đơn rồi cộng lại mỗi khi giám đốc tải trang.</p>
+<p>Nó đọc bảng Gold đã được chuẩn bị sẵn cho câu hỏi:</p>
+<blockquote>
+<p>Hôm qua cửa hàng này bán được bao nhiêu?</p>
+</blockquote>
+<p>Gold giống quầy thức ăn trong nhà hàng.</p>
+<p>Khách không cần xuống kho, mở bao gạo, rửa rau, bắt gà rồi tự nấu.</p>
+<p>Khách chỉ muốn gọi cơm gà.</p>
+<p>Và hệ thống cần đưa ra một đĩa cơm gà, không phải một con gà còn sống kèm đường dẫn đến nhà kho.</p>
+<h3 id="gold-không-phải-một-bảng-duy-nhất">Gold không phải một bảng duy nhất<a class="anchor ms-1" href="#gold-không-phải-một-bảng-duy-nhất"><i class="fas fa-link"></i></a></h3>
+<p>Mỗi nhu cầu có thể cần một nhóm bảng Gold khác nhau.</p>
+<p>Ví dụ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">gold_finance_daily_revenue
+</span></span><span class="line"><span class="ln">2</span><span class="cl">gold_operation_store_inventory
+</span></span><span class="line"><span class="ln">3</span><span class="cl">gold_marketing_campaign_performance
+</span></span><span class="line"><span class="ln">4</span><span class="cl">gold_product_category_margin
+</span></span></code></pre></div><p>Bảng Gold dành cho tài chính có thể khác bảng Gold dành cho vận hành.</p>
+<p>Bảng phục vụ dashboard doanh thu có thể không phù hợp cho việc phân tích hành vi khách hàng.</p>
+<p>Gold đã được chế biến cho một mục đích cụ thể.</p>
+<p>Vì vậy nó dễ sử dụng hơn, nhưng cũng ít linh hoạt hơn Silver.</p>
+<h1 id="một-giao-dịch-đi-qua-bronze-silver-và-gold-như-thế-nào">Một giao dịch đi qua Bronze, Silver và Gold như thế nào?<a class="anchor ms-1" href="#một-giao-dịch-đi-qua-bronze-silver-và-gold-như-thế-nào"><i class="fas fa-link"></i></a></h1>
+<p>Giả sử lúc 10 giờ 31 phút, một khách hàng mua chiếc TV Sony với giá 15.990.000 đồng.</p>
+<p>Ngoài cửa hàng, hành động ấy chỉ mất vài giây.</p>
+<p>Nhân viên quét mã.</p>
+<p>Khách thanh toán.</p>
+<p>Máy in nhả hóa đơn.</p>
+<p>Mọi người tưởng câu chuyện đã kết thúc.</p>
+<p>Nhưng bên dưới hệ thống, một chuỗi phản ứng vật chất vừa bắt đầu.</p>
+<p>Thông tin được biến thành tín hiệu điện.</p>
+<p>Tín hiệu chạy qua dây mạng.</p>
+<p>Một service ghi message vào hàng đợi.</p>
+<p>Một máy chủ khác đọc message.</p>
+<p>CPU kiểm tra từng byte.</p>
+<p>Dữ liệu được nén thành file.</p>
+<p>Object storage ghi nó xuống những thiết bị vật lý đang ăn điện và tỏa nhiệt.</p>
+<p>Sau đó, bản ghi bắt đầu chuyến đi qua ba tầng.</p>
+<h2 id="ở-bronze">Ở Bronze<a class="anchor ms-1" href="#ở-bronze"><i class="fas fa-link"></i></a></h2>
+<p>Dữ liệu gần giống với nguồn:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="ln">1</span><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl">  <span class="nt">&#34;store&#34;</span><span class="p">:</span> <span class="s2">&#34;Q9_001&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl">  <span class="nt">&#34;sku&#34;</span><span class="p">:</span> <span class="s2">&#34;SONY55X80L&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">4</span><span class="cl">  <span class="nt">&#34;price&#34;</span><span class="p">:</span> <span class="s2">&#34;15.990.000&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">5</span><span class="cl">  <span class="nt">&#34;transaction_time&#34;</span><span class="p">:</span> <span class="s2">&#34;23/07/2026 10:31&#34;</span>
+</span></span><span class="line"><span class="ln">6</span><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><h2 id="ở-silver">Ở Silver<a class="anchor ms-1" href="#ở-silver"><i class="fas fa-link"></i></a></h2>
+<p>Dữ liệu được chuẩn hóa:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="ln">1</span><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl">  <span class="nt">&#34;store_id&#34;</span><span class="p">:</span> <span class="mi">1001</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl">  <span class="nt">&#34;product_id&#34;</span><span class="p">:</span> <span class="mi">583920</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">4</span><span class="cl">  <span class="nt">&#34;selling_price&#34;</span><span class="p">:</span> <span class="mi">15990000</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">5</span><span class="cl">  <span class="nt">&#34;currency&#34;</span><span class="p">:</span> <span class="s2">&#34;VND&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">6</span><span class="cl">  <span class="nt">&#34;transaction_time&#34;</span><span class="p">:</span> <span class="s2">&#34;2026-07-23T10:31:00+07:00&#34;</span>
+</span></span><span class="line"><span class="ln">7</span><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><h2 id="ở-gold">Ở Gold<a class="anchor ms-1" href="#ở-gold"><i class="fas fa-link"></i></a></h2>
+<p>Giao dịch được cộng vào chỉ số kinh doanh:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Doanh thu cửa hàng 1001 ngày 2026-07-23
+</span></span><span class="line"><span class="ln">2</span><span class="cl">tăng thêm 15.990.000 đồng.
+</span></span></code></pre></div><p>Trên dashboard, kết quả cuối cùng chỉ là một ô nhỏ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Doanh thu hôm nay: 1.250.000.000 đồng
+</span></span></code></pre></div><p>Ô số ấy trông rất yên tĩnh.</p>
+<p>Nhưng phía sau nó là hàng tỷ electron vừa chạy qua chip, dây mạng, ổ lưu trữ và nhiều tầng xử lý.</p>
+<p>Không có gì là hoàn toàn ảo.</p>
+<p>Một con số trên dashboard luôn có trọng lượng vật lý của nó: điện năng, máy chủ, thiết bị lưu trữ, hệ thống làm mát và thời gian của những người xây pipeline.</p>
+<h1 id="ví-dụ-với-một-triệu-đơn-hàng-mỗi-ngày">Ví dụ với một triệu đơn hàng mỗi ngày<a class="anchor ms-1" href="#ví-dụ-với-một-triệu-đơn-hàng-mỗi-ngày"><i class="fas fa-link"></i></a></h1>
+<p>Giả sử hệ thống bán lẻ xử lý một triệu đơn hàng mỗi ngày.</p>
+<p>Mỗi đơn hàng trung bình có ba sản phẩm.</p>
+<p>Như vậy bảng chi tiết có khoảng:</p>
+<p>$$
+1.000.000 \times 3 = 3.000.000
+$$</p>
+<p>dòng mỗi ngày.</p>
+<p>Sau một năm:</p>
+<p>$$
+3.000.000 \times 365 = 1.095.000.000
+$$</p>
+<p>Tức hơn một tỷ dòng chi tiết đơn hàng.</p>
+<p>Ta có thể tổ chức như sau.</p>
+<h2 id="tầng-bronze">Tầng Bronze<a class="anchor ms-1" href="#tầng-bronze"><i class="fas fa-link"></i></a></h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">bronze_orders
+</span></span><span class="line"><span class="ln">2</span><span class="cl">bronze_order_details
+</span></span><span class="line"><span class="ln">3</span><span class="cl">bronze_payments
+</span></span><span class="line"><span class="ln">4</span><span class="cl">bronze_returns
+</span></span><span class="line"><span class="ln">5</span><span class="cl">bronze_shipments
+</span></span></code></pre></div><p>Các bảng này giữ dữ liệu gần nguồn và có metadata ingestion.</p>
+<h2 id="tầng-silver">Tầng Silver<a class="anchor ms-1" href="#tầng-silver"><i class="fas fa-link"></i></a></h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">silver_orders
+</span></span><span class="line"><span class="ln">2</span><span class="cl">silver_order_items
+</span></span><span class="line"><span class="ln">3</span><span class="cl">silver_products
+</span></span><span class="line"><span class="ln">4</span><span class="cl">silver_stores
+</span></span><span class="line"><span class="ln">5</span><span class="cl">silver_customers
+</span></span><span class="line"><span class="ln">6</span><span class="cl">silver_inventory_movements
+</span></span></code></pre></div><p>Tại đây, dữ liệu được:</p>
+<ul>
+<li>Chuẩn hóa mã sản phẩm.</li>
+<li>Xử lý đơn trùng.</li>
+<li>Đối chiếu cửa hàng.</li>
+<li>Chuẩn hóa thời gian.</li>
+<li>Liên kết đơn bán và đơn trả.</li>
+<li>Kiểm tra trạng thái thanh toán.</li>
+</ul>
+<h2 id="tầng-gold">Tầng Gold<a class="anchor ms-1" href="#tầng-gold"><i class="fas fa-link"></i></a></h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">gold_daily_store_sales
+</span></span><span class="line"><span class="ln">2</span><span class="cl">gold_product_margin
+</span></span><span class="line"><span class="ln">3</span><span class="cl">gold_inventory_status
+</span></span><span class="line"><span class="ln">4</span><span class="cl">gold_return_rate
+</span></span><span class="line"><span class="ln">5</span><span class="cl">gold_delivery_performance
+</span></span></code></pre></div><p>Gold không nhất thiết giữ toàn bộ một tỷ dòng.</p>
+<p>Ví dụ bảng doanh thu theo ngày, cửa hàng và ngành hàng có thể nhỏ hơn rất nhiều:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">365 ngày
+</span></span><span class="line"><span class="ln">2</span><span class="cl">× 1.000 cửa hàng
+</span></span><span class="line"><span class="ln">3</span><span class="cl">× 20 ngành hàng
+</span></span><span class="line"><span class="ln">4</span><span class="cl">= 7.300.000 dòng
+</span></span></code></pre></div><p>Bảy triệu dòng vẫn lớn.</p>
+<p>Nhưng nhẹ hơn rất nhiều so với việc dashboard phải quét hơn một tỷ dòng mỗi lần người dùng chọn lại bộ lọc.</p>
+<h1 id="acid-trên-một-đống-file-hoạt-động-như-thế-nào">ACID trên một đống file hoạt động như thế nào?<a class="anchor ms-1" href="#acid-trên-một-đống-file-hoạt-động-như-thế-nào"><i class="fas fa-link"></i></a></h1>
+<p>Một câu hỏi tự nhiên là:</p>
+<blockquote>
+<p>Dữ liệu chỉ là file trên object storage thì làm sao có transaction?</p>
+</blockquote>
+<p>Ý tưởng đơn giản là không công bố trạng thái mới cho đến khi toàn bộ thay đổi đã sẵn sàng.</p>
+<p>Giả sử bảng Silver đang ở phiên bản 100.</p>
+<p>Một job bắt đầu xử lý batch mới.</p>
+<p>Nó thực hiện:</p>
+<ol>
+<li>Đọc dữ liệu Bronze.</li>
+<li>Làm sạch và chuẩn hóa.</li>
+<li>Ghi các file dữ liệu mới.</li>
+<li>Tạo metadata cho phiên bản 101.</li>
+<li>Commit phiên bản 101.</li>
+<li>Chuyển trạng thái hiện tại từ 100 sang 101.</li>
+</ol>
+<p>Nếu job chết trước bước commit, người đọc vẫn thấy phiên bản 100.</p>
+<p>Nếu commit thành công, người đọc thấy phiên bản 101.</p>
+<p>Họ không thấy một trạng thái mà nửa bảng thuộc hôm qua, nửa bảng thuộc hôm nay, còn ba file ở giữa đang suy nghĩ về ý nghĩa cuộc đời.</p>
+<p>Trong Apache Iceberg, việc thay nguyên tử metadata file của bảng là nền tảng cho cơ chế cô lập khi commit. (<a href="https://iceberg.apache.org/spec/?h=snapshot&amp;utm_source=chatgpt.com" title="Spec - Apache Iceberg™" target="_blank" rel="noopener noreferrer">Apache Iceberg</a>)</p>
+<p>Đây là lý do table format quan trọng.</p>
+<p>Nó biến việc quản lý bảng từ:</p>
+<blockquote>
+<p>Hãy quét toàn bộ thư mục rồi đoán xem file nào đang dùng.</p>
+</blockquote>
+<p>thành:</p>
+<blockquote>
+<p>Hãy đọc metadata để biết chính xác snapshot hiện tại gồm những file nào.</p>
+</blockquote>
+<h1 id="bronze-silver-và-gold-không-phải-ba-loại-ổ-cứng">Bronze, Silver và Gold không phải ba loại ổ cứng<a class="anchor ms-1" href="#bronze-silver-và-gold-không-phải-ba-loại-ổ-cứng"><i class="fas fa-link"></i></a></h1>
+<p>Một hiểu nhầm khá phổ biến là nghĩ Bronze, Silver và Gold phải nằm trên ba hệ thống vật lý khác nhau.</p>
+<p>Không nhất thiết.</p>
+<p>Cả ba tầng có thể cùng nằm trên một object storage:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">lakehouse/
+</span></span><span class="line"><span class="ln">2</span><span class="cl">├── bronze/
+</span></span><span class="line"><span class="ln">3</span><span class="cl">├── silver/
+</span></span><span class="line"><span class="ln">4</span><span class="cl">└── gold/
+</span></span></code></pre></div><p>Hoặc được tổ chức thành các schema:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">bronze.orders
+</span></span><span class="line"><span class="ln">2</span><span class="cl">silver.orders
+</span></span><span class="line"><span class="ln">3</span><span class="cl">gold.daily_sales
+</span></span></code></pre></div><p>Tên gọi cũng không bắt buộc phải là Bronze, Silver và Gold.</p>
+<p>Một số hệ thống dùng:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">raw → curated → serving
+</span></span></code></pre></div><p>Hoặc:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">landing → standardized → business
+</span></span></code></pre></div><p>Doanh nghiệp cũng có thể thêm các lớp:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Landing
+</span></span><span class="line"><span class="ln">2</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln">3</span><span class="cl">Bronze
+</span></span><span class="line"><span class="ln">4</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln">5</span><span class="cl">Quarantine
+</span></span><span class="line"><span class="ln">6</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln">7</span><span class="cl">Silver
+</span></span><span class="line"><span class="ln">8</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln">9</span><span class="cl">Gold
+</span></span></code></pre></div><p>Tầng <code>Quarantine</code> có thể giữ những bản ghi lỗi:</p>
+<ul>
+<li>Thiếu mã sản phẩm.</li>
+<li>Giá bán âm.</li>
+<li>Không xác định được cửa hàng.</li>
+<li>Sai định dạng ngày.</li>
+<li>Không thể liên kết với đơn gốc.</li>
+</ul>
+<p>Điểm quan trọng không nằm ở màu huy chương.</p>
+<p>Điểm quan trọng là phải phân biệt được ba trạng thái:</p>
+<ul>
+<li>Dữ liệu vừa được tiếp nhận.</li>
+<li>Dữ liệu đã đủ sạch để dùng chung.</li>
+<li>Dữ liệu đã được chuẩn bị cho nghiệp vụ cụ thể.</li>
+</ul>
+<p>Nếu trộn cả ba vào một chỗ, người dùng có thể lấy nhầm dữ liệu Bronze để làm báo cáo tài chính, rồi phát hiện doanh thu có cả đơn trùng, đơn lỗi và những giao dịch mà hệ thống nguồn đã hủy từ ba ngày trước.</p>
+<h1 id="lakehouse-10-giải-quyết-được-gì">Lakehouse 1.0 giải quyết được gì?<a class="anchor ms-1" href="#lakehouse-10-giải-quyết-được-gì"><i class="fas fa-link"></i></a></h1>
+<h2 id="giảm-việc-sao-chép-giữa-lake-và-warehouse">Giảm việc sao chép giữa lake và warehouse<a class="anchor ms-1" href="#giảm-việc-sao-chép-giữa-lake-và-warehouse"><i class="fas fa-link"></i></a></h2>
+<p>Thay vì bắt dữ liệu đi qua nhiều hệ thống chỉ để phục vụ những workload khác nhau, Lakehouse cho phép nhiều engine làm việc trên cùng lớp dữ liệu được quản lý.</p>
+<p>Điều này không loại bỏ hoàn toàn việc nhân bản dữ liệu.</p>
+<p>Bronze, Silver và Gold vẫn là các phiên bản dữ liệu khác nhau.</p>
+<p>Bảng tổng hợp vẫn cần tồn tại.</p>
+<p>Feature dataset vẫn có thể cần được tạo riêng.</p>
+<p>Nhưng đây là những bản sao có mục đích nghiệp vụ hoặc hiệu năng rõ ràng, thay vì các bản sao chỉ sinh ra vì data lake và data warehouse không thể dùng chung một lớp lưu trữ.</p>
+<h2 id="giữ-được-dữ-liệu-thô-để-xử-lý-lại">Giữ được dữ liệu thô để xử lý lại<a class="anchor ms-1" href="#giữ-được-dữ-liệu-thô-để-xử-lý-lại"><i class="fas fa-link"></i></a></h2>
+<p>Khi logic làm sạch thay đổi, dữ liệu Bronze có thể được dùng để tái tạo Silver.</p>
+<p>Ví dụ hôm nay công ty phát hiện:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Q9_001
+</span></span></code></pre></div><p>và:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">HCM_Q9_01
+</span></span></code></pre></div><p>thực ra là cùng một cửa hàng.</p>
+<p>Ta có thể sửa quy tắc ánh xạ rồi chạy lại từ Bronze.</p>
+<p>Nếu chỉ giữ Gold, thông tin chi tiết có thể đã bị tổng hợp mất.</p>
+<p>Một khi trứng đã thành bánh, rất khó yêu cầu cái bánh trả lại đúng từng quả trứng ban đầu.</p>
+<h2 id="tạo-một-lớp-dữ-liệu-dùng-chung">Tạo một lớp dữ liệu dùng chung<a class="anchor ms-1" href="#tạo-một-lớp-dữ-liệu-dùng-chung"><i class="fas fa-link"></i></a></h2>
+<p>Silver có thể trở thành nơi nhiều nhóm cùng sử dụng:</p>
+<ul>
+<li>BI.</li>
+<li>Data Science.</li>
+<li>Vận hành.</li>
+<li>Tài chính.</li>
+<li>Recommendation.</li>
+<li>Forecasting.</li>
+</ul>
+<p>Mỗi nhóm không cần tự làm sạch lại mã sản phẩm, mã cửa hàng và thời gian theo một cách riêng.</p>
+<p>Nếu mỗi đội tự định nghĩa “đơn hàng thành công”, công ty sẽ có bảy con số doanh thu, và cả bảy đều đúng trong vũ trụ của người tạo ra chúng.</p>
+<h2 id="tách-dữ-liệu-khỏi-compute">Tách dữ liệu khỏi compute<a class="anchor ms-1" href="#tách-dữ-liệu-khỏi-compute"><i class="fas fa-link"></i></a></h2>
+<p>Storage có thể tồn tại lâu dài.</p>
+<p>Compute được lựa chọn theo workload.</p>
+<p>Spark có thể xử lý Silver.</p>
+<p>SQL engine có thể đọc Gold.</p>
+<p>Python có thể phân tích dữ liệu chi tiết.</p>
+<p>Các workload khác nhau không nhất thiết phải sao chép toàn bộ dữ liệu vào hệ thống lưu trữ riêng.</p>
+<h1 id="lakehouse-10-không-giải-quyết-được-gì">Lakehouse 1.0 không giải quyết được gì?<a class="anchor ms-1" href="#lakehouse-10-không-giải-quyết-được-gì"><i class="fas fa-link"></i></a></h1>
+<p>Lakehouse là kiến trúc.</p>
+<p>Nó không phải nước thánh.</p>
+<p>Đổ dữ liệu bẩn vào Lakehouse không làm dữ liệu sạch hơn.</p>
+<p>Nó chỉ giúp ta quản lý đống bẩn ấy có cấu trúc và lịch sử rõ ràng hơn.</p>
+<h2 id="nó-không-tự-định-nghĩa-nghiệp-vụ">Nó không tự định nghĩa nghiệp vụ<a class="anchor ms-1" href="#nó-không-tự-định-nghĩa-nghiệp-vụ"><i class="fas fa-link"></i></a></h2>
+<p>Lakehouse không tự biết:</p>
+<ul>
+<li>Doanh thu có trừ đơn trả hay chưa.</li>
+<li>Đơn giao thất bại có được tính là đơn bán không.</li>
+<li>Một sản phẩm nhiều màu là một product hay nhiều SKU.</li>
+<li>Khách đổi sản phẩm có được tính là hai giao dịch không.</li>
+</ul>
+<p>Đây là các quyết định nghiệp vụ.</p>
+<p>Không có transaction log nào đủ can đảm bước vào phòng họp giữa tài chính và vận hành để tự quyết định thay con người.</p>
+<h2 id="nó-không-tự-làm-truy-vấn-nhanh">Nó không tự làm truy vấn nhanh<a class="anchor ms-1" href="#nó-không-tự-làm-truy-vấn-nhanh"><i class="fas fa-link"></i></a></h2>
+<p>Dữ liệu vẫn có thể bị tổ chức tệ.</p>
+<p>Ví dụ:</p>
+<ul>
+<li>Quá nhiều file nhỏ.</li>
+<li>Partition sai.</li>
+<li>Một partition quá lớn.</li>
+<li>Quét nhiều cột không cần thiết.</li>
+<li>Bảng Gold thiết kế không phù hợp.</li>
+<li>Join khối lượng lớn giữa nhiều bảng.</li>
+</ul>
+<p>Lakehouse cung cấp nền móng.</p>
+<p>Nhưng nền móng tốt không tự biến thành ngôi nhà đẹp.</p>
+<p>Vẫn cần người biết đặt bếp ở đâu, đặt cửa ở đâu và không xây nhà vệ sinh giữa phòng khách.</p>
+<h2 id="nó-không-thay-thế-data-modeling">Nó không thay thế data modeling<a class="anchor ms-1" href="#nó-không-thay-thế-data-modeling"><i class="fas fa-link"></i></a></h2>
+<p>Gold vẫn cần star schema, bảng fact, dimension hoặc một cách tổ chức phù hợp với nghiệp vụ.</p>
+<p>Silver vẫn cần khóa định danh rõ ràng.</p>
+<p>Bronze vẫn cần chiến lược lưu trữ và retention.</p>
+<p>Gắn nhãn Bronze, Silver, Gold lên ba thư mục không tự động tạo ra kiến trúc.</p>
+<p>Một con vịt đeo bảng “đại bàng” vẫn chưa biết bay.</p>
+<h2 id="nó-có-thể-làm-hệ-thống-nhiều-mảnh-hơn">Nó có thể làm hệ thống nhiều mảnh hơn<a class="anchor ms-1" href="#nó-có-thể-làm-hệ-thống-nhiều-mảnh-hơn"><i class="fas fa-link"></i></a></h2>
+<p>Lakehouse thường gồm nhiều thành phần:</p>
+<ul>
+<li>Object storage.</li>
+<li>File format.</li>
+<li>Table format.</li>
+<li>Catalog.</li>
+<li>Compute engine.</li>
+<li>Công cụ ingestion.</li>
+<li>Công cụ orchestration.</li>
+<li>Pipeline Bronze–Silver–Gold.</li>
+</ul>
+<p>Tách rời giúp hệ thống linh hoạt.</p>
+<p>Nhưng linh hoạt cũng có nghĩa là có nhiều thứ phải hiểu, cấu hình, theo dõi và sửa chữa.</p>
+<p>Tự do kỹ thuật luôn đi kèm hóa đơn vận hành.</p>
+<h1 id="khi-nào-chưa-cần-lakehouse">Khi nào chưa cần Lakehouse?<a class="anchor ms-1" href="#khi-nào-chưa-cần-lakehouse"><i class="fas fa-link"></i></a></h1>
+<p>Không phải hệ thống nào cũng cần Lakehouse.</p>
+<p>Giả sử công ty có:</p>
+<ul>
+<li>Vài chục GB dữ liệu.</li>
+<li>Dữ liệu chủ yếu có cấu trúc.</li>
+<li>Một nhóm nhỏ chạy báo cáo.</li>
+<li>PostgreSQL vẫn xử lý tốt.</li>
+<li>Chưa có workload Machine Learning lớn.</li>
+<li>Chưa phải sao chép dữ liệu qua nhiều nền tảng.</li>
+</ul>
+<p>Trong trường hợp đó, dựng đầy đủ Lakehouse có thể giống mua xe tải 18 bánh để chở một bịch rau muống.</p>
+<p>Chở được.</p>
+<p>Nhìn rất mạnh.</p>
+<p>Nhưng đậu xe hơi cực.</p>
+<p>Lakehouse bắt đầu đáng cân nhắc khi:</p>
+<ul>
+<li>Object storage đã trở thành nơi giữ dữ liệu chính.</li>
+<li>Khối lượng dữ liệu tăng nhanh.</li>
+<li>BI và Data Science cần dùng chung dữ liệu.</li>
+<li>Data lake cần transaction và versioning.</li>
+<li>Có quá nhiều pipeline đồng bộ giữa lake và warehouse.</li>
+<li>Doanh nghiệp muốn tổ chức dữ liệu rõ ràng từ raw đến business.</li>
+<li>Việc chạy lại dữ liệu từ nguồn đang quá khó khăn.</li>
+</ul>
+<p>Câu hỏi đúng không phải là:</p>
+<blockquote>
+<p>Lakehouse có hiện đại không?</p>
+</blockquote>
+<p>Câu hỏi đúng là:</p>
+<blockquote>
+<p>Nỗi đau của mình có đúng là nỗi đau mà Lakehouse được sinh ra để giải quyết không?</p>
+</blockquote>
+<h1 id="tổng-kết">Tổng kết<a class="anchor ms-1" href="#tổng-kết"><i class="fas fa-link"></i></a></h1>
+<p>Lakehouse 1.0 xuất hiện từ một ý tưởng khá giản dị:</p>
+<p><strong>Đừng bắt dữ liệu phải sống hai cuộc đời chỉ vì data lake rộng nhưng bừa bộn, còn data warehouse ngăn nắp nhưng đóng kín.</strong></p>
+<p>Ở tầng kỹ thuật, Lakehouse đặt lớp quản lý bảng và transaction lên trên object storage cùng các định dạng file mở.</p>
+<p>Ở tầng xử lý, dữ liệu đi qua ba trạng thái:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Bronze → Silver → Gold
+</span></span></code></pre></div><p>Bronze giữ ký ức gần nhất với hệ thống nguồn.</p>
+<p>Silver biến nhiều cách gọi khác nhau thành một ngôn ngữ chung.</p>
+<p>Gold biến dữ liệu thành những bảng có thể trả lời trực tiếp câu hỏi nghiệp vụ.</p>
+<p>Một giao dịch ngoài cửa hàng chỉ mất vài giây.</p>
+<p>Nhưng khi bước vào hệ thống, nó phải chạy qua mạng, hàng đợi, CPU, object storage, transaction log, Bronze, Silver rồi Gold, trước khi biến thành một ô doanh thu nhỏ bé trên dashboard.</p>
+<p>Ô số ấy nhìn có vẻ nhẹ như không khí.</p>
+<p>Nhưng không có gì là hoàn toàn ảo.</p>
+<p>Phía sau nó là máy chủ thật, điện năng thật, dữ liệu thật và hàng trăm quyết định kỹ thuật của con người.</p>
+<p>Lakehouse không làm cái hồ biến mất.</p>
+<p>Nó chỉ giúp chúng ta xây được một căn nhà trên hồ mà không phải mỗi đêm thức dậy kiểm tra xem phòng khách đã trôi sang tỉnh khác hay chưa.</p>
+<p>Cảm ơn các bạn đã quan tâm và theo dõi bài viết, hẹn gặp lại ở các bài viết tiếp theo.</p>
+<h1 id="tham-khảo">Tham khảo<a class="anchor ms-1" href="#tham-khảo"><i class="fas fa-link"></i></a></h1>
+<ul>
+<li><a href="https://www.cidrdb.org/cidr2021/papers/cidr2021_paper17.pdf" target="_blank" rel="noopener noreferrer">Lakehouse: A New Generation of Open Platforms that Unify Data Warehousing and Advanced Analytics</a></li>
+<li><a href="https://delta.io/blog/2019-04-22-delta-lake-0-1-0-released/" target="_blank" rel="noopener noreferrer">Delta Lake 0.1.0 Released</a></li>
+<li><a href="https://delta.io/blog/2019-07-19-delta-lake-0-2-0-released/" target="_blank" rel="noopener noreferrer">Delta Lake 0.2.0 Released</a></li>
+<li><a href="https://delta.io/blog/2019-12-13-delta-lake-0-5-0-released/" target="_blank" rel="noopener noreferrer">Delta Lake 0.5.0 Released</a></li>
+<li><a href="https://iceberg.apache.org/spec/" target="_blank" rel="noopener noreferrer">Apache Iceberg Specification</a></li>
+<li><a href="https://docs.databricks.com/aws/en/lakehouse/medallion" target="_blank" rel="noopener noreferrer">Medallion Lakehouse Architecture</a></li>
+</ul>
+</div></div>
+  <div class="card-footer"><div class="post-navs d-flex justify-content-evenly"><div class="post-nav post-prev">
+    <i class="fas fa-fw fa-chevron-left"></i>
+    <a href="https://www.phamduytung.com/blog/2026-07-22-apache-iceberg/">Apache Iceberg: Tấm sổ đỏ biến Data Lake thành Lakehouse
+</a>
+  </div><div class="post-nav post-next">
+    <a href="https://www.phamduytung.com/blog/2026-07-24-lakehouse-v2/">Lakehouse 2.0: Khi căn nhà trên hồ bị tháo thành những mảnh Lego
+</a>
+    <i class="fas fa-fw fa-chevron-right"></i>
+  </div></div></div>
+</article><div class="card component row post-comments" id="post-comments">
+  <div class="card-header">
+    <h2 class="card-title">Bình luận</h2>
+  </div>
+  <div class="card-body"><script src="https://utteranc.es/client.js"
+  repo="AlexBlack2202/utterances"
+  issue-term="pathname"
+  label="comment"
+  theme="github-dark"
+  crossorigin="anonymous"
+  async>
+</script></div>
+</div></div>
+</div><aside class="col-lg-3 col-md-4 sidebar d-flex">
+  <div class="container d-flex flex-column">
+    
+    <a href="https://www.buymeacoffee.com/alexblack28"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=🍎&slug=alexblack28&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" /></a><div class="post-toc row mb-4 card component" id="postTOC">
+  <div class="card-header">
+    <h2 class="card-title">Mục lục</h2>
+  </div>
+  <div class="card-body">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#không-có-cái-hồ-dữ-liệu-nào-thật-sự-yên">Không có cái hồ dữ liệu nào thật sự yên</a></li>
+    <li><a href="#trước-lakehouse-dữ-liệu-phải-sống-hai-cuộc-đời">Trước Lakehouse, dữ liệu phải sống hai cuộc đời</a></li>
+    <li><a href="#vì-sao-giai-đoạn-20192023-trở-thành-cột-mốc-quan-trọng">Vì sao giai đoạn 2019–2023 trở thành cột mốc quan trọng?</a></li>
+    <li><a href="#lakehouse-10-là-gì">Lakehouse 1.0 là gì?</a></li>
+    <li><a href="#các-lớp-kỹ-thuật-của-lakehouse-10">Các lớp kỹ thuật của Lakehouse 1.0</a>
+      <ul>
+        <li><a href="#object-storage-mảnh-đất-rộng-nhưng-không-biết-làm-kế-toán">Object storage: mảnh đất rộng nhưng không biết làm kế toán</a></li>
+        <li><a href="#file-format-cách-dữ-liệu-được-xếp-vào-thùng">File format: cách dữ liệu được xếp vào thùng</a></li>
+        <li><a href="#table-format-cuốn-sổ-nói-file-nào-thuộc-về-bảng">Table format: cuốn sổ nói file nào thuộc về bảng</a></li>
+        <li><a href="#compute-engine-đội-công-nhân-được-thuê-theo-ca">Compute engine: đội công nhân được thuê theo ca</a></li>
+      </ul>
+    </li>
+    <li><a href="#bronze-silver-và-gold-ba-lần-dữ-liệu-được-tắm-rửa">Bronze, Silver và Gold: ba lần dữ liệu được tắm rửa</a>
+      <ul>
+        <li><a href="#bronze-cứ-đem-dữ-liệu-về-trước-đã">Bronze: cứ đem dữ liệu về trước đã</a>
+          <ul>
+            <li><a href="#bronze-nên-lưu-thêm-metadata-gì">Bronze nên lưu thêm metadata gì?</a></li>
+          </ul>
+        </li>
+        <li><a href="#silver-cùng-một-con-voi-chỉ-nên-có-một-cái-tên">Silver: cùng một con voi chỉ nên có một cái tên</a>
+          <ul>
+            <li><a href="#silver-có-phải-dữ-liệu-tổng-hợp-không">Silver có phải dữ liệu tổng hợp không?</a></li>
+          </ul>
+        </li>
+        <li><a href="#gold-dữ-liệu-bước-vào-phòng-họp">Gold: dữ liệu bước vào phòng họp</a>
+          <ul>
+            <li><a href="#gold-không-phải-một-bảng-duy-nhất">Gold không phải một bảng duy nhất</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+    <li><a href="#một-giao-dịch-đi-qua-bronze-silver-và-gold-như-thế-nào">Một giao dịch đi qua Bronze, Silver và Gold như thế nào?</a>
+      <ul>
+        <li><a href="#ở-bronze">Ở Bronze</a></li>
+        <li><a href="#ở-silver">Ở Silver</a></li>
+        <li><a href="#ở-gold">Ở Gold</a></li>
+      </ul>
+    </li>
+    <li><a href="#ví-dụ-với-một-triệu-đơn-hàng-mỗi-ngày">Ví dụ với một triệu đơn hàng mỗi ngày</a>
+      <ul>
+        <li><a href="#tầng-bronze">Tầng Bronze</a></li>
+        <li><a href="#tầng-silver">Tầng Silver</a></li>
+        <li><a href="#tầng-gold">Tầng Gold</a></li>
+      </ul>
+    </li>
+    <li><a href="#acid-trên-một-đống-file-hoạt-động-như-thế-nào">ACID trên một đống file hoạt động như thế nào?</a></li>
+    <li><a href="#bronze-silver-và-gold-không-phải-ba-loại-ổ-cứng">Bronze, Silver và Gold không phải ba loại ổ cứng</a></li>
+    <li><a href="#lakehouse-10-giải-quyết-được-gì">Lakehouse 1.0 giải quyết được gì?</a>
+      <ul>
+        <li><a href="#giảm-việc-sao-chép-giữa-lake-và-warehouse">Giảm việc sao chép giữa lake và warehouse</a></li>
+        <li><a href="#giữ-được-dữ-liệu-thô-để-xử-lý-lại">Giữ được dữ liệu thô để xử lý lại</a></li>
+        <li><a href="#tạo-một-lớp-dữ-liệu-dùng-chung">Tạo một lớp dữ liệu dùng chung</a></li>
+        <li><a href="#tách-dữ-liệu-khỏi-compute">Tách dữ liệu khỏi compute</a></li>
+      </ul>
+    </li>
+    <li><a href="#lakehouse-10-không-giải-quyết-được-gì">Lakehouse 1.0 không giải quyết được gì?</a>
+      <ul>
+        <li><a href="#nó-không-tự-định-nghĩa-nghiệp-vụ">Nó không tự định nghĩa nghiệp vụ</a></li>
+        <li><a href="#nó-không-tự-làm-truy-vấn-nhanh">Nó không tự làm truy vấn nhanh</a></li>
+        <li><a href="#nó-không-thay-thế-data-modeling">Nó không thay thế data modeling</a></li>
+        <li><a href="#nó-có-thể-làm-hệ-thống-nhiều-mảnh-hơn">Nó có thể làm hệ thống nhiều mảnh hơn</a></li>
+      </ul>
+    </li>
+    <li><a href="#khi-nào-chưa-cần-lakehouse">Khi nào chưa cần Lakehouse?</a></li>
+    <li><a href="#tổng-kết">Tổng kết</a></li>
+    <li><a href="#tham-khảo">Tham khảo</a></li>
+  </ul>
+</nav>
+  </div>
+</div><section class="recent-posts row card component">
+  <div class="card-header">
+    <h2 class="card-title">Bài gần đây</h2>
+  </div>
+  <div class="card-body">
+    <ul class="post-list"><li>
+        <a href="https://www.phamduytung.com/blog/2026-07-13-2-brain/">Second Brain được xây từ những gì?
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-07-24-lakehouse-v2/">Lakehouse 2.0: Khi căn nhà trên hồ bị tháo thành những mảnh Lego
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-07-23-lakehouse-v1/">Lakehouse 1.0: Từ hồ dữ liệu hỗn loạn đến Bronze, Silver và Gold
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-07-22-apache-iceberg/">Apache Iceberg: Tấm sổ đỏ biến Data Lake thành Lakehouse
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-07-21-tidb-distributed-sql/">TiDB: Khi một database phải học cách sống như cả một thành phố
+</a>
+      </li></ul>
+  </div>
+</section><section class="series-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/series">series</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/series/kh%C3%B3a-h%E1%BB%8Dc-python-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học Python Căn Bản">
+            Khóa Học Python Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="https://www.phamduytung.com/series/kh%C3%B3a-h%E1%BB%8Dc-c&#43;&#43;-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học C&#43;&#43; Căn Bản">
+            Khóa Học C&#43;&#43; Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="https://www.phamduytung.com/series/machine-learning-dataset/" class="badge rounded post-taxonomy" title="Machine Learning Dataset">
+            Machine Learning Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a><a href="https://www.phamduytung.com/series/ch%E1%BB%A9ng-kho%C3%A1n-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Chứng Khoán Căn Bản">
+            Chứng Khoán Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">1</span></a></div>
+      </div>
+    </section><section class="tools-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/tools">tools</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/tools/tool-random/" class="badge rounded post-taxonomy" title="Tool Random">
+            Tool Random<span class="badge badge-sm text-white bg-accent ms-1">3</span></a></div>
+      </div>
+    </section><section class="categories-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/categories">categories</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/categories/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="https://www.phamduytung.com/categories/c&#43;&#43;/" class="badge rounded post-taxonomy" title="C&#43;&#43;">
+            C&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="https://www.phamduytung.com/categories/dataset/" class="badge rounded post-taxonomy" title="Dataset">
+            Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a></div>
+      </div>
+    </section><section class="tags-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/tags">tags</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/tags/machine-learning/" class="badge rounded post-taxonomy" title="Machine Learning">
+            Machine Learning<span class="badge badge-sm text-white bg-accent ms-1">26</span></a><a href="https://www.phamduytung.com/tags/deep-learning/" class="badge rounded post-taxonomy" title="Deep Learning">
+            Deep Learning<span class="badge badge-sm text-white bg-accent ms-1">23</span></a><a href="https://www.phamduytung.com/tags/computer-vision/" class="badge rounded post-taxonomy" title="Computer Vision">
+            Computer Vision<span class="badge badge-sm text-white bg-accent ms-1">16</span></a><a href="https://www.phamduytung.com/tags/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">14</span></a><a href="https://www.phamduytung.com/tags/llm/" class="badge rounded post-taxonomy" title="LLM">
+            LLM<span class="badge badge-sm text-white bg-accent ms-1">13</span></a><a href="https://www.phamduytung.com/tags/recommendation-system/" class="badge rounded post-taxonomy" title="Recommendation System">
+            Recommendation System<span class="badge badge-sm text-white bg-accent ms-1">7</span></a><a href="https://www.phamduytung.com/tags/system-design/" class="badge rounded post-taxonomy" title="System Design">
+            System Design<span class="badge badge-sm text-white bg-accent ms-1">7</span></a><a href="https://www.phamduytung.com/tags/ai-agent/" class="badge rounded post-taxonomy" title="Ai Agent">
+            Ai Agent<span class="badge badge-sm text-white bg-accent ms-1">6</span></a><a href="https://www.phamduytung.com/tags/time-series/" class="badge rounded post-taxonomy" title="Time Series">
+            Time Series<span class="badge badge-sm text-white bg-accent ms-1">6</span></a><a href="https://www.phamduytung.com/tags/uber-engineering/" class="badge rounded post-taxonomy" title="Uber Engineering">
+            Uber Engineering<span class="badge badge-sm text-white bg-accent ms-1">6</span></a></div>
+      </div>
+    </section>
+    
+  </div>
+</aside>
+</div>
+    </main><footer class="footer mt-auto py-3 text-center container"><ul class="nav justify-content-between footer-memu mb-3"><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Community
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-facebook"></i>Facebook Group
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://github.com/AlexBlack2202/alexblack2202.github.io" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-github"></i>GitHub
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/contact/"><i class="fas fa-fw fa-info-circle"></i>Contact Us
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/faq/"><i class="fas fa-fw fa-question-circle"></i>Câu hỏi thường gặp
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Docs
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="/team_of_services" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-users"></i>Điều khoản sử dụng
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/privacy" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-lock"></i>Chính sách bảo mật
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Features
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="/utils/gen_paswords/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-key"></i>Tạo password ngẫu nhiên
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Liên kết khác
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">Netlify
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">facebook
+</a>
+        </li></ul></li></ul>
+<div class="copyright mb-2">
+  Copyright © 2016-2026 Phạm Duy Tùng. All Rights Reserved.
+</div>
+<div class="powered-by mb-2">
+  Website chia sẻ kiến thức của Phạm Duy Tùng và Đặng Thị Hằng. Vui lòng liên hệ email alexblack2202@gmail.com nếu bạn có thông tin cần trao đổi.
+</div></footer>
+<script src="https://www.phamduytung.com/js/main.111d51a8c754010f8399ca010e552d803e2d5170b361f8886ad04ec6c21ca551.js" integrity="sha256-ER1RqMdUAQ&#43;DmcoBDlUtgD4tUXCzYfiIatBOxsIcpVE=" crossorigin="anonymous" defer></script><script src="https://www.phamduytung.com/js/icons.min.cb4c9958dbc49e29ac644e168e82db2d0de9a741a15751cc5bf2b0af21eb2845.js" integrity="sha256-y0yZWNvEnimsZE4WjoLbLQ3pp0GhV1HMW/KwryHrKEU=" crossorigin="anonymous" defer></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('https:\/\/www.phamduytung.com\/service-worker.js').then(function(reg) {
+      console.log('Successfully registered service worker', reg);
+    }).catch(function(err) {
+      console.warn('Error whilst registering service worker', err);
+    });
+  });
+}
+</script><script src="https://www.phamduytung.com/js/viewer.min.28bcf5233e406dae6715f46c8b9e8ca7c6cbf347e8678f5a2bebe5369c3270bb.js" integrity="sha256-KLz1Iz5Aba5nFfRsi56Mp8bL80foZ49aK&#43;vlNpwycLs=" crossorigin="anonymous" defer></script><script defer src="https://www.phamduytung.com/js/katex.min.8582b9feadf92a2a977ed303b97d7713cf2754ccf2b4eb60d8be7453a21042c2.js" integrity="sha256-hYK5/q35KiqXftMDuX13E88nVMzytOtg2L50U6IQQsI=" crossorigin="anonymous"></script>
+
+<script  data-ad-client="ca-pub-4644989745435991"  async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4644989745435991"
+     crossorigin="anonymous"></script><script data-cfasync="false" type="text/javascript" data-adel="atag" src="//acscdn.com/script/atg.js" czid="eul3gyjdmm"></script>
+  </body>
+</html>

@@ -1,0 +1,1428 @@
+<!doctype html><html lang="vi" data-palette="brown"
+   data-mode="light">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Lakehouse 2.0: Khi căn nhà trên hồ bị tháo thành những mảnh Lego - Phạm Duy Tùng Machine Learning Blog</title>
+    <meta name="a.validate.02" content="1QZXZ8oi7g57H-GxBrBPkTYBydwii-Ic9iJu" /><link rel="apple-touch-icon" href="https://www.phamduytung.com/images/icons/icon-180x180.png" sizes="180x180">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/icon-32x32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/icon-16x16.png" sizes="16x16" type="image/png">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/favicon.ico">
+<link rel="manifest" href="https://www.phamduytung.com/manifest.json">
+<meta name="keywords" content="" />
+<meta name="description" content="Lakehouse 2.0 không chỉ đặt transaction lên data lake. Kiến trúc mới mở cả table format, catalog, compute và streaming để nhiều công cụ có thể cùng làm việc trên một bản dữ liệu." /><meta name="robots" content="index, follow" />
+	<meta itemprop="name" content="Lakehouse 2.0: Khi căn nhà trên hồ bị tháo thành những mảnh Lego">
+	<meta itemprop="description" content="Lakehouse 2.0 không chỉ đặt transaction lên data lake. Kiến trúc mới mở cả table format, catalog, compute và streaming để nhiều công cụ có thể cùng làm việc trên một bản dữ liệu.">
+	<meta itemprop="datePublished" content="2026-07-24T00:00:00+03:00">
+	<meta itemprop="dateModified" content="2026-07-24T00:00:00+03:00">
+	<meta itemprop="wordCount" content="6333">
+	<meta itemprop="image" content="https://www.phamduytung.com/images/posts/2026-07-24-lakehouse-v2/cover.png">
+	<meta itemprop="keywords" content="Lakehouse 2.0,Apache Iceberg,Open Table Format,Data Architecture,Data Engineering"><meta property="og:url" content="https://www.phamduytung.com/blog/2026-07-24-lakehouse-v2/">
+	<meta property="og:site_name" content="Phạm Duy Tùng Machine Learning Blog">
+	<meta property="og:title" content="Lakehouse 2.0: Khi căn nhà trên hồ bị tháo thành những mảnh Lego">
+	<meta property="og:description" content="Lakehouse 2.0 không chỉ đặt transaction lên data lake. Kiến trúc mới mở cả table format, catalog, compute và streaming để nhiều công cụ có thể cùng làm việc trên một bản dữ liệu.">
+	<meta property="og:locale" content="vi_VN">
+	<meta property="og:type" content="article">
+		<meta property="article:section" content="blog">
+		<meta property="article:published_time" content="2026-07-24T00:00:00+03:00">
+		<meta property="article:modified_time" content="2026-07-24T00:00:00+03:00">
+		<meta property="article:tag" content="Lakehouse 2.0">
+		<meta property="article:tag" content="Apache Iceberg">
+		<meta property="article:tag" content="Open Table Format">
+		<meta property="article:tag" content="Data Architecture">
+		<meta property="article:tag" content="Data Engineering">
+		<meta property="og:image" content="https://www.phamduytung.com/images/posts/2026-07-24-lakehouse-v2/cover.png">
+
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:image" content="https://www.phamduytung.com/images/posts/2026-07-24-lakehouse-v2/cover.png">
+	<meta name="twitter:title" content="Lakehouse 2.0: Khi căn nhà trên hồ bị tháo thành những mảnh Lego">
+	<meta name="twitter:description" content="Lakehouse 2.0 không chỉ đặt transaction lên data lake. Kiến trúc mới mở cả table format, catalog, compute và streaming để nhiều công cụ có thể cùng làm việc trên một bản dữ liệu.">
+<link rel="stylesheet" href="https://www.phamduytung.com/css/main.min.7dd8c8ad44fe5c0f292dd635ae28981312b940a5894df3049d2a6e2fa2f43327.css" integrity="sha256-fdjIrUT&#43;XA8pLdY1riiYExK5QKWJTfMEnSpuL6L0Myc=" crossorigin="anonymous"><link rel="stylesheet" href="https://www.phamduytung.com/css/katex.min.4d6aa053ca8a5675016fa2c9c48ee5359bfaafb8295184458af9d64abce84c47.css" integrity="sha256-TWqgU8qKVnUBb6LJxI7lNZv6r7gpUYRFivnWSrzoTEc=" crossorigin="anonymous">
+<link rel="stylesheet" href="https://www.phamduytung.com/css/viewer.min.e882eb3a023412b73bb741b4604a1222a9f13aa7783c828d26d066ab8642bd51.css" integrity="sha256-6ILrOgI0Erc7t0G0YEoSIqnxOqd4PIKNJtBmq4ZCvVE=" crossorigin="anonymous"><link rel="canonical" href="https://www.phamduytung.com/blog/2026-07-24-lakehouse-v2/"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Phạm Duy Tùng"},"dateModified":"2026-07-24T00:00:00+03:00","datePublished":"2026-07-24T00:00:00+03:00","description":"Lakehouse 2.0 không chỉ đặt transaction lên data lake. Kiến trúc mới mở cả table format, catalog, compute và streaming để nhiều công cụ có thể cùng làm việc trên một bản dữ liệu.","headline":"Lakehouse 2.0: Khi căn nhà trên hồ bị tháo thành những mảnh Lego","image":["https://www.phamduytung.com/images/posts/2026-07-24-lakehouse-v2/cover.png"],"inLanguage":"vi","keywords":"lakehouse 2.0, apache iceberg, open table format, data architecture, data engineering","mainEntityOfPage":{"@id":"https://www.phamduytung.com/blog/2026-07-24-lakehouse-v2/","@type":"WebPage"},"publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://www.phamduytung.com/images/logo.png"},"name":"Phạm Duy Tùng Machine Learning Blog"},"url":"https://www.phamduytung.com/blog/2026-07-24-lakehouse-v2/"}</script></head>
+  <body><script>const items=["mode","palette"];items.forEach(function(e){const t=localStorage.getItem("hbs-"+e);t&&document.body.parentElement.setAttribute("data-"+e,t)})</script><header><nav class="navbar top-app-bar top-app-bar-expand-lg fixed-top">
+  <div class="container">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <i class="fas fa-bars"></i>
+    </button><a class="navbar-brand flex-grow-1 flex-lg-grow-0 text-center text-lg-start mx-auto me-lg-3" href="https://www.phamduytung.com/"><img class="logo" alt="Logo" src="https://www.phamduytung.com/images/logo.webp" loading="lazy"  title="Logo"
+   width="32" height="32"
+   />
+Phạm Duy Tùng
+    </a>
+    <div class="offcanvas offcanvas-bottom surface" tabindex="-1" id="offcanvasSocialShare" aria-labelledby="offcanvasSocialShare">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Share</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body">
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Twitter Share Button"
+      target="_blank" href="https://twitter.com/intent/tweet?title=Lakehouse%202.0%3a%20Khi%20c%c4%83n%20nh%c3%a0%20tr%c3%aan%20h%e1%bb%93%20b%e1%bb%8b%20th%c3%a1o%20th%c3%a0nh%20nh%e1%bb%afng%20m%e1%ba%a3nh%20Lego&url=https%3a%2f%2fwww.phamduytung.com%2fblog%2f2026-07-24-lakehouse-v2%2f">
+      <i class="fab fa-fw fa-twitter"></i> Twitter
+    </a>
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Facebook Share Button"
+      target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.phamduytung.com%2fblog%2f2026-07-24-lakehouse-v2%2f">
+      <i class="fab fa-fw fa-facebook-f"></i> Facebook
+    </a>
+  </div>
+</div>
+    <button class="navbar-settings" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSettings"
+  aria-controls="offcanvasSettings" aria-label="Toggle settings">
+  <i class="fas fa-ellipsis-v"></i>
+</button>
+
+<div class="offcanvas offcanvas-end surface h-100" tabindex="-1" id="offcanvasSettings" aria-labelledby="offcanvasSettings">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Cài đặt</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body d-flex flex-column">
+
+
+
+<section class="setting">
+  <form class="font-size-switcher-form row">
+    <div class="col-auto">
+      <label for="fontSize" class="form-label"><i class="fas fa-fw fa-font"></i> Cỡ chữ</label>
+    </div>
+    <div class="col-auto ms-auto">
+      <input type="range" class="form-range" min="-2" max="2" id="fontSize">
+    </div>
+  </form>
+</section>
+
+
+
+<section class="setting actions d-flex justify-content-around mt-auto overflow-auto">
+  <a role="button" class="action action-go-back" href="javascript: window.history.back();">
+    <span class="action-icon"><i class="fas fa-2x fa-arrow-left"></i></span> Quay lại
+  </a>
+  <a role="button" class="action action-reload-page">
+    <span class="action-icon"><i class="fas fa-2x fa-redo-alt"></i></span> Tải lại
+  </a>
+  <a role="button" class="action action-copy-url">
+    <span class="action-icon"><i class="fas fa-2x fa-link"></i></span> Sao chép URL
+  </a><a class="action action-social-share" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSocialShare"
+    aria-controls="offcanvasSocialShare" aria-label="Toggle social share">
+    <span class="action-icon"><i class="fas fa-2x fa-share-alt"></i></span> Chia sẻ
+  </a></section>
+
+</div>
+</div>
+
+    <div class="collapse navbar-collapse" tabindex="-1" id="navbarSupportedContent" aria-labelledby="navbarSupportedContent">
+      <form class="search-bar my-1" action="https://www.phamduytung.com/search">
+  <div class="input-group input-group-sm">
+    <span class="btn btn-search disabled position-absolute left-0"><i class="fas fa-fw fa-search"></i></span>
+    <input class="form-control rounded-pill" name="q" type="search" aria-label="Search">
+  </div>
+</form>
+      <ul class="navbar-nav ms-auto"><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/series/">
+            <i class="fas fa-fw fa-columns"></i>Courses
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/tools/">
+            <i class="fas fa-fw fa-folder"></i>Tools
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/categories/">
+            <i class="fas fa-fw fa-folder"></i>Categories
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/archives/">
+            <i class="fas fa-fw fa-file-archive"></i>Archives
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/tags/">
+            <i class="fas fa-fw fa-tags"></i>Tags
+          </a>
+        </li><li class="nav-item dropdown">
+          <a class="nav-link" id="navbarDropdownSupport" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-fw fa-comments"></i>Community
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdownSupport"><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Facebook Group
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://github.com/AlexBlack2202/alexblack2202.github.io" target="_blank" rel="noopener noreferrer">
+                GitHub
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/contact/">
+                Contact
+              </a>
+            </li><li><hr class="dropdown-divider"></li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/faq/">
+                Câu hỏi thường gặp
+              </a>
+            </li></ul>
+        </li></ul>
+    </div>
+  </div>
+</nav>
+</header>
+<main role="main" class="container" style="line-height:1.7em">
+      <div class="row content">
+<div class="col-lg-9 col-md-8">
+  <div class="container"><nav class="row card component" aria-label="breadcrumb">
+  <div class="card-body">
+    <ol class="breadcrumb "><li class="breadcrumb-item"><a href="https://www.phamduytung.com/">Trang chủ</a></li><li class="breadcrumb-item"><a href="https://www.phamduytung.com/blog/">Blogs</a></li><li class="breadcrumb-item active">Lakehouse 2.0: Khi căn nhà trên hồ bị tháo thành những mảnh Lego</li></ol>
+  </div>
+</nav>
+<div class="post-panel-wrapper">
+  <div class="d-flex flex-column component rounded post-panel">
+    
+    <a class="action action-panel-toggler" role="button" title="Panel toggler">
+      <i class="fas fa-fw fa-chevron-circle-down"></i>
+    </a>
+    <a id="sidebarToggler" class="action d-none d-lg-block" role="button" title="Sidebar toggler">
+  <i class="fas fa-fw fa-expand-alt" data-fa-transform="rotate-45"></i>
+</a>
+
+    
+
+    
+    
+    <a class="action" href="#post-comments" role="button" aria-label="Comments" title="Comments">
+  <i class="fas fa-fw fa-comments"></i>
+</a>
+    <a class="action" href="#postTOC" aria-controls="Table of contents" role="button" title="Table of contents">
+  <i class="fas fa-fw fa-list-alt"></i>
+</a>
+    
+  </div>
+</div>
+<article class="row card component mb-4 post">
+  <div class="card-header "><div class="bgcover" style="background-image:url(https://www.phamduytung.com/images/posts/2026-07-24-lakehouse-v2/cover.png)" aria-label="Lakehouse 2.0: Khi căn nhà trên hồ bị tháo thành những mảnh Lego">
+      <div class="bgtrans">
+          <h1>Lakehouse 2.0: Khi căn nhà trên hồ bị tháo thành những mảnh Lego
+</h1>
+      </div>
+  </div>
+</div>
+  <div class="card-body"><div class="post-meta">
+  <span class="post-date" title="tạo ngày 2026-07-24 04:00:00 &#43;0700 &#43;07.">
+    24/07/2026
+  </span><span class="post-reading-time">
+    30 phút đọc
+  </span><span class="post-taxonomies"><a href="https://www.phamduytung.com/tags/lakehouse-2.0/" class="badge post-taxonomy">lakehouse 2.0</a><a href="https://www.phamduytung.com/tags/apache-iceberg/" class="badge post-taxonomy">apache iceberg</a><a href="https://www.phamduytung.com/tags/open-table-format/" class="badge post-taxonomy">open table format</a><a href="https://www.phamduytung.com/tags/data-architecture/" class="badge post-taxonomy">data architecture</a><a href="https://www.phamduytung.com/tags/data-engineering/" class="badge post-taxonomy">data engineering</a></span>
+</div>
+<div class="post-content mb-3"><hr>
+<div class="toc">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#căn-nhà-trên-hồ-đã-xây-xong-rồi-người-ta-phát-hiện-mình-bị-nhốt-bên-trong">Căn nhà trên hồ đã xây xong, rồi người ta phát hiện mình bị nhốt bên trong</a></li>
+    <li><a href="#lakehouse-20-có-phải-một-tiêu-chuẩn-chính-thức-không">Lakehouse 2.0 có phải một tiêu chuẩn chính thức không?</a></li>
+    <li><a href="#vấn-đề-còn-lại-của-lakehouse-10">Vấn đề còn lại của Lakehouse 1.0</a>
+      <ul>
+        <li><a href="#file-mở-nhưng-cách-hiểu-file-vẫn-có-thể-bị-khóa">File mở nhưng cách hiểu file vẫn có thể bị khóa</a></li>
+        <li><a href="#một-engine-thường-trở-thành-trung-tâm-vũ-trụ">Một engine thường trở thành trung tâm vũ trụ</a></li>
+        <li><a href="#streaming-và-batch-vẫn-là-hai-dòng-sông-riêng">Streaming và batch vẫn là hai dòng sông riêng</a></li>
+      </ul>
+    </li>
+    <li><a href="#giai-đoạn-20242026-các-mảnh-ghép-bắt-đầu-đổi-chỗ">Giai đoạn 2024–2026: các mảnh ghép bắt đầu đổi chỗ</a>
+      <ul>
+        <li><a href="#năm-2024-catalog-và-streaming-bắt-đầu-mở-cửa">Năm 2024: catalog và streaming bắt đầu mở cửa</a></li>
+        <li><a href="#năm-2025-open-bắt-đầu-đi-cùng-managed">Năm 2025: “open” bắt đầu đi cùng “managed”</a></li>
+        <li><a href="#năm-2026-catalog-trở-thành-đường-biên-giữa-các-cloud">Năm 2026: catalog trở thành đường biên giữa các cloud</a></li>
+      </ul>
+    </li>
+    <li><a href="#kiến-trúc-lakehouse-20">Kiến trúc Lakehouse 2.0</a></li>
+    <li><a href="#open-table-format-trở-thành-hợp-đồng-của-dữ-liệu">Open table format trở thành hợp đồng của dữ liệu</a></li>
+    <li><a href="#catalog-trở-thành-bộ-não-của-lakehouse">Catalog trở thành bộ não của Lakehouse</a></li>
+    <li><a href="#compute-không-còn-là-vua-compute-trở-thành-đội-thợ">Compute không còn là vua, compute trở thành đội thợ</a></li>
+    <li><a href="#object-storage-bắt-đầu-hiểu-khái-niệm-bảng">Object storage bắt đầu hiểu khái niệm bảng</a></li>
+    <li><a href="#streaming-không-còn-đứng-ngoài-cửa-lakehouse">Streaming không còn đứng ngoài cửa Lakehouse</a></li>
+    <li><a href="#bronze-silver-và-gold-có-biến-mất-không">Bronze, Silver và Gold có biến mất không?</a>
+      <ul>
+        <li><a href="#bronze-trong-lakehouse-20">Bronze trong Lakehouse 2.0</a></li>
+        <li><a href="#silver-trong-lakehouse-20">Silver trong Lakehouse 2.0</a></li>
+        <li><a href="#gold-trong-lakehouse-20">Gold trong Lakehouse 2.0</a></li>
+      </ul>
+    </li>
+    <li><a href="#ví-dụ-lakehouse-20-cho-hệ-thống-bán-lẻ">Ví dụ Lakehouse 2.0 cho hệ thống bán lẻ</a>
+      <ul>
+        <li><a href="#bước-1-đưa-thay-đổi-từ-hệ-thống-nguồn-vào-event-stream">Bước 1: đưa thay đổi từ hệ thống nguồn vào event stream</a></li>
+        <li><a href="#bước-2-materialize-sự-kiện-thành-bảng-bronze">Bước 2: materialize sự kiện thành bảng Bronze</a></li>
+        <li><a href="#bước-3-cập-nhật-silver">Bước 3: cập nhật Silver</a></li>
+        <li><a href="#bước-4-nhiều-engine-cùng-dùng-silver">Bước 4: nhiều engine cùng dùng Silver</a></li>
+        <li><a href="#bước-5-tạo-gold-theo-từng-data-product">Bước 5: tạo Gold theo từng data product</a></li>
+      </ul>
+    </li>
+    <li><a href="#lakehouse-10-và-lakehouse-20-khác-nhau-thế-nào">Lakehouse 1.0 và Lakehouse 2.0 khác nhau thế nào?</a></li>
+    <li><a href="#zero-copy-không-có-nghĩa-là-không-có-gì-di-chuyển">“Zero copy” không có nghĩa là không có gì di chuyển</a></li>
+    <li><a href="#những-vấn-đề-lakehouse-20-vẫn-chưa-giải-quyết-xong">Những vấn đề Lakehouse 2.0 vẫn chưa giải quyết xong</a>
+      <ul>
+        <li><a href="#nhiều-engine-không-đồng-nghĩa-hành-vi-giống-nhau">Nhiều engine không đồng nghĩa hành vi giống nhau</a></li>
+        <li><a href="#catalog-có-thể-trở-thành-điểm-nghẽn-mới">Catalog có thể trở thành điểm nghẽn mới</a></li>
+        <li><a href="#streaming-vẫn-tạo-ra-file-nhỏ">Streaming vẫn tạo ra file nhỏ</a></li>
+        <li><a href="#một-bản-dữ-liệu-không-có-nghĩa-là-một-sự-thật-nghiệp-vụ">Một bản dữ liệu không có nghĩa là một sự thật nghiệp vụ</a></li>
+        <li><a href="#open-format-không-xóa-hoàn-toàn-vendor-lock-in">Open format không xóa hoàn toàn vendor lock-in</a></li>
+      </ul>
+    </li>
+    <li><a href="#có-cần-nâng-cấp-từ-lakehouse-10-lên-20-không">Có cần nâng cấp từ Lakehouse 1.0 lên 2.0 không?</a></li>
+    <li><a href="#tổng-kết">Tổng kết</a></li>
+    <li><a href="#tham-khảo">Tham khảo</a></li>
+  </ul>
+</nav>
+  </div>
+<h1 id="căn-nhà-trên-hồ-đã-xây-xong-rồi-người-ta-phát-hiện-mình-bị-nhốt-bên-trong">Căn nhà trên hồ đã xây xong, rồi người ta phát hiện mình bị nhốt bên trong<a class="anchor ms-1" href="#căn-nhà-trên-hồ-đã-xây-xong-rồi-người-ta-phát-hiện-mình-bị-nhốt-bên-trong"><i class="fas fa-link"></i></a></h1>
+<p>Ở bài trước, chúng ta đã nói về Lakehouse 1.0.</p>
+<p>Ý tưởng khi đó khá dễ hiểu.</p>
+<p>Data lake là một cái hồ rất rộng, chứa được đủ thứ từ hóa đơn, log máy chủ, hình ảnh cho đến âm thanh tổng đài. Data warehouse là một căn nhà ngăn nắp, nơi dữ liệu được xếp thành bảng để chạy SQL và làm báo cáo.</p>
+<p>Lakehouse 1.0 cố gắng xây căn nhà ngay trên mặt hồ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Object Storage
+</span></span><span class="line"><span class="ln">2</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln">3</span><span class="cl">Parquet
+</span></span><span class="line"><span class="ln">4</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln">5</span><span class="cl">Table Format
+</span></span><span class="line"><span class="ln">6</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln">7</span><span class="cl">Compute Engine
+</span></span><span class="line"><span class="ln">8</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln">9</span><span class="cl">Bronze → Silver → Gold
+</span></span></code></pre></div><p>Ta không cần mỗi đêm chở dữ liệu từ hồ sang một nhà kho khác.</p>
+<p>Ta có thể giữ dữ liệu trên object storage, đặt transaction log và metadata lên trên, sau đó dùng Spark hoặc một SQL engine để xử lý.</p>
+<p>Nghe rất hợp lý.</p>
+<p>Và nó thực sự giải quyết được nhiều vấn đề.</p>
+<p>Nhưng sau vài năm sống trong căn nhà ấy, người ta bắt đầu nhận ra một chuyện hơi kỳ lạ.</p>
+<p>Cửa sổ là kính mở.</p>
+<p>Sàn nhà là Parquet mở.</p>
+<p>Nước dưới hồ cũng nằm trong object storage của mình.</p>
+<p>Nhưng chìa khóa cửa, bản đồ căn nhà, sổ hộ khẩu và hệ thống điện lại thường thuộc về một nền tảng duy nhất.</p>
+<p>Muốn thay bóng đèn phải gọi đúng người.</p>
+<p>Muốn đổi bếp phải dùng đúng hãng.</p>
+<p>Muốn mời một compute engine khác vào nhà, nó phải học cách nói chuyện với metadata, catalog và cơ chế bảo mật của chủ nhà cũ.</p>
+<p>Lakehouse 1.0 mở dữ liệu ở tầng file.</p>
+<p>Nhưng nhiều hệ thống vẫn còn đóng ở tầng metadata, catalog, governance và compute.</p>
+<p>Từ khoảng năm 2024, kiến trúc Lakehouse bắt đầu bước sang một giai đoạn khác.</p>
+<p>Không phải xây một căn nhà lớn hơn.</p>
+<p>Mà là tháo căn nhà thành những mảnh Lego, quy định rõ đầu nối giữa chúng, để người dùng có thể thay từng bộ phận mà không phải đập cả công trình.</p>
+<p>Trong bài viết này, mình gọi giai đoạn đó là <strong>Lakehouse 2.0</strong>.</p>
+<h1 id="lakehouse-20-có-phải-một-tiêu-chuẩn-chính-thức-không">Lakehouse 2.0 có phải một tiêu chuẩn chính thức không?<a class="anchor ms-1" href="#lakehouse-20-có-phải-một-tiêu-chuẩn-chính-thức-không"><i class="fas fa-link"></i></a></h1>
+<p>Cần nói rõ ngay từ đầu:</p>
+<blockquote>
+<p>Lakehouse 2.0 không phải một đặc tả chính thức của Apache, cũng không phải phiên bản phần mềm được toàn ngành thống nhất.</p>
+</blockquote>
+<p>Không có một tài liệu nào quy định rằng hệ thống phải có đúng bảy thành phần, vượt qua bài kiểm tra rồi mới được dán nhãn Lakehouse 2.0.</p>
+<p>Đây là cách gọi dùng để mô tả một hướng tiến hóa của kiến trúc Lakehouse sau năm 2024:</p>
+<ul>
+<li>Open table format trở thành nền tảng chung.</li>
+<li>Nhiều compute engine cùng đọc và ghi một bản dữ liệu.</li>
+<li>Catalog trở thành một giao diện mở.</li>
+<li>Storage bắt đầu hiểu khái niệm bảng.</li>
+<li>Streaming và batch tiến lại gần nhau.</li>
+<li>Governance không còn bị gắn chặt vào một engine duy nhất.</li>
+<li>Dữ liệu có thể được truy cập xuyên cloud và xuyên nền tảng mà không nhất thiết phải sao chép.</li>
+</ul>
+<p>Một số bài viết mô tả Lakehouse 2.0 là sự chuyển đổi từ kiến trúc tích hợp dọc sang một hệ thống mở, có thể lắp ghép và hỗ trợ nhiều engine như Spark, Flink, Trino, DuckDB hoặc các engine thương mại khác. (<a href="https://moderndata101.substack.com/p/introducing-lakehouse-20-what-changes" title="Introducing Lakehouse 2.0: What Changes?" target="_blank" rel="noopener noreferrer">Modern Data 101</a>)</p>
+<p>Có thể tóm gọn bằng một câu:</p>
+<blockquote>
+<p>Lakehouse 1.0 mở nơi dữ liệu được lưu. Lakehouse 2.0 cố gắng mở cả cách dữ liệu được hiểu, quản lý và sử dụng.</p>
+</blockquote>
+<h1 id="vấn-đề-còn-lại-của-lakehouse-10">Vấn đề còn lại của Lakehouse 1.0<a class="anchor ms-1" href="#vấn-đề-còn-lại-của-lakehouse-10"><i class="fas fa-link"></i></a></h1>
+<h2 id="file-mở-nhưng-cách-hiểu-file-vẫn-có-thể-bị-khóa">File mở nhưng cách hiểu file vẫn có thể bị khóa<a class="anchor ms-1" href="#file-mở-nhưng-cách-hiểu-file-vẫn-có-thể-bị-khóa"><i class="fas fa-link"></i></a></h2>
+<p>Giả sử dữ liệu bán hàng nằm trong Parquet trên S3.</p>
+<p>Về lý thuyết, đó là dữ liệu mở.</p>
+<p>Ta có thể tải file về.</p>
+<p>Ta có thể đọc bằng Python.</p>
+<p>Ta có thể dùng nhiều thư viện để mở nó.</p>
+<p>Nhưng một bảng Lakehouse không chỉ có file Parquet.</p>
+<p>Nó còn có:</p>
+<ul>
+<li>Danh sách file nào đang thuộc bảng.</li>
+<li>Snapshot hiện tại.</li>
+<li>Transaction nào đã commit.</li>
+<li>Schema đang có hiệu lực.</li>
+<li>Partition được tổ chức thế nào.</li>
+<li>File nào đã bị xóa về mặt logic.</li>
+<li>Chính sách ai được đọc và ai được ghi.</li>
+</ul>
+<p>Những thông tin này nằm trong <strong>table metadata</strong> và <strong>catalog</strong>.</p>
+<p>Nếu engine khác đọc được Parquet nhưng không hiểu metadata, nó giống một người nhìn thấy hàng triệu thùng hàng mà không có sổ kho.</p>
+<p>Hàng ở ngay trước mắt.</p>
+<p>Nhưng không biết thùng nào còn hiệu lực, thùng nào đã bị trả lại, thùng nào thuộc phiên bản hôm qua.</p>
+<p>Mở file là chưa đủ.</p>
+<p>Các hệ thống còn phải thống nhất cách hiểu cái bảng.</p>
+<h2 id="một-engine-thường-trở-thành-trung-tâm-vũ-trụ">Một engine thường trở thành trung tâm vũ trụ<a class="anchor ms-1" href="#một-engine-thường-trở-thành-trung-tâm-vũ-trụ"><i class="fas fa-link"></i></a></h2>
+<p>Trong nhiều kiến trúc Lakehouse đời đầu, một hệ sinh thái thường được xây quanh một engine chính.</p>
+<p>Ví dụ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Storage
+</span></span><span class="line"><span class="ln">2</span><span class="cl">   ↓
+</span></span><span class="line"><span class="ln">3</span><span class="cl">Table Format
+</span></span><span class="line"><span class="ln">4</span><span class="cl">   ↓
+</span></span><span class="line"><span class="ln">5</span><span class="cl">Catalog
+</span></span><span class="line"><span class="ln">6</span><span class="cl">   ↓
+</span></span><span class="line"><span class="ln">7</span><span class="cl">Engine chính
+</span></span><span class="line"><span class="ln">8</span><span class="cl">   ↓
+</span></span><span class="line"><span class="ln">9</span><span class="cl">Mọi workload còn lại
+</span></span></code></pre></div><p>ETL dùng engine đó.</p>
+<p>SQL dùng engine đó.</p>
+<p>Streaming cũng cố chạy trên engine đó.</p>
+<p>Machine Learning lại đi qua một bộ thư viện của hệ sinh thái đó.</p>
+<p>Cách thiết kế này có một lợi thế rất lớn: mọi thành phần được tối ưu cùng nhau.</p>
+<p>Nhưng nó cũng tạo ra một vấn đề.</p>
+<p>Khi một workload khác xuất hiện, ví dụ:</p>
+<ul>
+<li>Dashboard cần phản hồi trong vài trăm mili giây.</li>
+<li>Streaming cần xử lý liên tục.</li>
+<li>Một analyst muốn chạy DuckDB trên laptop.</li>
+<li>Một hệ thống realtime muốn dùng ClickHouse.</li>
+<li>Một nhóm khác muốn dùng Trino.</li>
+<li>Một ứng dụng chỉ cần đọc vài MB dữ liệu.</li>
+</ul>
+<p>Ta vẫn có xu hướng kéo tất cả vào cùng một động cơ khổng lồ.</p>
+<p>Nó giống việc gia đình mua được một chiếc xe tải rất mạnh, sau đó dùng nó cho mọi việc:</p>
+<ul>
+<li>Chở hàng.</li>
+<li>Đưa con đi học.</li>
+<li>Đi mua rau.</li>
+<li>Chạy ra đầu hẻm lấy một ly cà phê.</li>
+</ul>
+<p>Xe tải làm được hết.</p>
+<p>Chỉ là mỗi lần khởi động, hàng tỷ electron phải chạy qua con chip, động cơ gầm lên, tiền điện hóa thành nhiệt, hệ thống làm mát bắt đầu thở như một con trâu vừa chạy qua ba cánh đồng.</p>
+<h2 id="streaming-và-batch-vẫn-là-hai-dòng-sông-riêng">Streaming và batch vẫn là hai dòng sông riêng<a class="anchor ms-1" href="#streaming-và-batch-vẫn-là-hai-dòng-sông-riêng"><i class="fas fa-link"></i></a></h2>
+<p>Lakehouse 1.0 chủ yếu trưởng thành từ thế giới batch.</p>
+<p>Dữ liệu được gom lại.</p>
+<p>Job bắt đầu chạy.</p>
+<p>Job đọc Bronze.</p>
+<p>Job tạo Silver.</p>
+<p>Một job khác tạo Gold.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">00:00: Chốt dữ liệu
+</span></span><span class="line"><span class="ln">2</span><span class="cl">01:00: Chạy Bronze
+</span></span><span class="line"><span class="ln">3</span><span class="cl">02:00: Chạy Silver
+</span></span><span class="line"><span class="ln">4</span><span class="cl">04:00: Chạy Gold
+</span></span><span class="line"><span class="ln">5</span><span class="cl">06:00: Dashboard có dữ liệu
+</span></span></code></pre></div><p>Trong khi đó, thế giới vận hành lại sống bằng những sự kiện xảy ra liên tục:</p>
+<ul>
+<li>Khách vừa đặt hàng.</li>
+<li>Kho vừa hết sản phẩm.</li>
+<li>Giá vừa thay đổi.</li>
+<li>Một giao dịch vừa bị hủy.</li>
+<li>Xe giao hàng vừa đổi trạng thái.</li>
+<li>Một khách hàng vừa bấm vào chiếc máy lạnh thứ mười bảy.</li>
+</ul>
+<p>Để đưa dữ liệu từ Kafka hoặc database vào Lakehouse, doanh nghiệp thường phải tự xây một đoàn pipeline:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">Database WAL
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">Debezium
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">Kafka
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">Kafka Connect
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">Streaming Job
+</span></span><span class="line"><span class="ln">10</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln">11</span><span class="cl">Parquet
+</span></span><span class="line"><span class="ln">12</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln">13</span><span class="cl">Table Metadata
+</span></span><span class="line"><span class="ln">14</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln">15</span><span class="cl">Compaction
+</span></span></code></pre></div><p>Mỗi mũi tên là thêm một điểm có thể ngã.</p>
+<p>Mỗi điểm ngã là thêm một dashboard đỏ.</p>
+<p>Mỗi dashboard đỏ là thêm một cuộc điện thoại có câu mở đầu:</p>
+<blockquote>
+<p>Em kiểm tra giúp anh dữ liệu realtime sao đứng từ sáng tới giờ.</p>
+</blockquote>
+<h1 id="giai-đoạn-20242026-các-mảnh-ghép-bắt-đầu-đổi-chỗ">Giai đoạn 2024–2026: các mảnh ghép bắt đầu đổi chỗ<a class="anchor ms-1" href="#giai-đoạn-20242026-các-mảnh-ghép-bắt-đầu-đổi-chỗ"><i class="fas fa-link"></i></a></h1>
+<p>Lakehouse 2.0 không xuất hiện bởi một sản phẩm duy nhất.</p>
+<p>Nó hình thành từ nhiều sự kiện xảy ra gần nhau trong ngành dữ liệu.</p>
+<h2 id="năm-2024-catalog-và-streaming-bắt-đầu-mở-cửa">Năm 2024: catalog và streaming bắt đầu mở cửa<a class="anchor ms-1" href="#năm-2024-catalog-và-streaming-bắt-đầu-mở-cửa"><i class="fas fa-link"></i></a></h2>
+<p>Tháng 3 năm 2024, Confluent giới thiệu Tableflow với mục tiêu biến Kafka topic cùng schema của nó thành bảng Apache Iceberg hoặc Delta Lake. Thay vì tự viết pipeline chuyển Avro, JSON hoặc Protobuf thành Parquet rồi tự quản lý table metadata, hệ thống streaming có thể trực tiếp tạo ra bảng để các công cụ phân tích sử dụng. (<a href="https://www.confluent.io/blog/introducing-tableflow/" title="Introducing Tableflow: Unifying Streaming and Analytics" target="_blank" rel="noopener noreferrer">Confluent</a>)</p>
+<p>Tháng 6 năm 2024, Databricks công bố mã nguồn mở Unity Catalog với OpenAPI, khả năng tương thích Iceberg REST Catalog API, hỗ trợ nhiều định dạng và nhiều engine. Catalog không còn chỉ là một cuốn sổ nằm kín trong một nền tảng; nó bắt đầu được trình bày như một giao diện mà các hệ thống bên ngoài có thể nói chuyện cùng. (<a href="https://www.databricks.com/blog/open-sourcing-unity-catalog" title="Open sourcing Unity Catalog, creating the industry’s only universal catalog for data and AI | Databricks Blog" target="_blank" rel="noopener noreferrer">Databricks</a>)</p>
+<p>Tháng 8 năm 2024, Apache Polaris bước vào Apache Incubator. Polaris được xây như một catalog mã nguồn mở cho Apache Iceberg, triển khai Iceberg REST API và hướng tới khả năng nhiều engine cùng truy cập một nguồn metadata thống nhất. (<a href="https://incubator.apache.org/projects/polaris.html" title="Incubation Status Template - Apache Incubator" target="_blank" rel="noopener noreferrer">Apache Incubator</a>)</p>
+<p>Tháng 11 năm 2024, AWS giới thiệu khả năng đưa CDC từ PostgreSQL và MySQL vào Apache Iceberg trên S3 bằng Data Firehose. Ý tưởng quan trọng ở đây không phải tên dịch vụ, mà là việc thay đổi trong database có thể liên tục chảy thành các bản ghi Iceberg thay vì chờ một batch ETL ban đêm. (<a href="https://aws.amazon.com/blogs/aws/replicate-changes-from-databases-to-apache-iceberg-tables-using-amazon-data-firehose/" title="Replicate changes from databases to Apache Iceberg tables using Amazon Data Firehose (in preview) | AWS News Blog" target="_blank" rel="noopener noreferrer">Amazon Web Services, Inc.</a>)</p>
+<p>Đến tháng 12 năm 2024, Amazon giới thiệu S3 Tables, đưa khái niệm bảng Apache Iceberg xuống gần hơn với chính lớp object storage. Storage không chỉ giữ object nữa mà bắt đầu đảm nhiệm một phần công việc vận hành bảng. (<a href="https://aws.amazon.com/blogs/aws/new-amazon-s3-tables-storage-optimized-for-analytics-workloads/" title="New Amazon S3 Tables: Storage optimized for analytics workloads | AWS News Blog" target="_blank" rel="noopener noreferrer">Amazon Web Services, Inc.</a>)</p>
+<h2 id="năm-2025-open-bắt-đầu-đi-cùng-managed">Năm 2025: “open” bắt đầu đi cùng “managed”<a class="anchor ms-1" href="#năm-2025-open-bắt-đầu-đi-cùng-managed"><i class="fas fa-link"></i></a></h2>
+<p>Tháng 3 năm 2025, Tableflow hỗ trợ Iceberg ở trạng thái General Availability, cho phép Kafka topic được biểu diễn thành bảng Iceberg để các engine phân tích và AI truy cập. Hệ thống cũng xử lý chuyển đổi kiểu dữ liệu, schema evolution và việc sinh metadata tương ứng. (<a href="https://www.confluent.io/blog/tableflow-is-now-generally-available/" title="Tableflow is now generally available" target="_blank" rel="noopener noreferrer">Confluent</a>)</p>
+<p>Tháng 5 năm 2025, Google công bố hướng phát triển BigLake thành một storage engine cho Iceberg Lakehouse. BigQuery có thể đọc và ghi bảng Iceberg, trong khi lớp storage bổ sung streaming, quản lý bảng và tự động reclustering. (<a href="https://cloud.google.com/blog/products/data-analytics/enhancing-biglake-for-iceberg-lakehouses" title="Enhancing BigLake for Iceberg lakehouses | Google Cloud Blog" target="_blank" rel="noopener noreferrer">Google Cloud</a>)</p>
+<p>Đây là một thay đổi đáng chú ý.</p>
+<p>Trước đây, người dùng thường phải lựa chọn:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Mở nhưng phải tự vận hành
+</span></span></code></pre></div><p>hoặc:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Được quản lý nhưng bị khóa
+</span></span></code></pre></div><p>Đến giai đoạn này, các nhà cung cấp bắt đầu cố gắng bán một lựa chọn thứ ba:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Định dạng mở
+</span></span><span class="line"><span class="ln">2</span><span class="cl">+
+</span></span><span class="line"><span class="ln">3</span><span class="cl">Dịch vụ được quản lý
+</span></span></code></pre></div><p>Tất nhiên, “mở” không có nghĩa là hoàn toàn không phụ thuộc nhà cung cấp.</p>
+<p>Nhưng ít nhất dữ liệu và metadata bắt đầu có những giao diện chuẩn để hệ thống khác tiếp cận.</p>
+<h2 id="năm-2026-catalog-trở-thành-đường-biên-giữa-các-cloud">Năm 2026: catalog trở thành đường biên giữa các cloud<a class="anchor ms-1" href="#năm-2026-catalog-trở-thành-đường-biên-giữa-các-cloud"><i class="fas fa-link"></i></a></h2>
+<p>Tháng 2 năm 2026, Apache Polaris tốt nghiệp khỏi Apache Incubator và trở thành Apache Top-Level Project. Đây là một tín hiệu cho thấy catalog mở và Iceberg REST API không còn là một thử nghiệm nhỏ ở góc phòng, mà đã trở thành một mảnh ghép nghiêm túc của hệ sinh thái Lakehouse. (<a href="https://polaris.apache.org/blog/2026/02/19/apache-polaris-graduates-to-top-level-project/" title="Apache Polaris Graduates to Top Level Project! | Apache Polaris" target="_blank" rel="noopener noreferrer">Apache Polaris</a>)</p>
+<p>Đến tháng 4 năm 2026, Google mô tả kiến trúc Cross-cloud Lakehouse dựa trên Iceberg REST Catalog, catalog federation và khả năng khám phá hoặc chia sẻ dữ liệu giữa nhiều nền tảng như AWS Glue, Databricks, Snowflake và SAP. (<a href="https://cloud.google.com/blog/topics/google-cloud-next/google-cloud-next-2026-wrap-up" title="Google Cloud Next 2026 Wrap Up | Google Cloud Blog" target="_blank" rel="noopener noreferrer">Google Cloud</a>)</p>
+<p>Nhìn lại chuỗi sự kiện từ 2024 đến 2026, ta thấy một đường đi khá rõ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">File mở
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">Table format mở
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">Catalog mở
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">Nhiều engine
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">Streaming trực tiếp vào bảng
+</span></span><span class="line"><span class="ln">10</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln">11</span><span class="cl">Storage tự quản lý bảng
+</span></span><span class="line"><span class="ln">12</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln">13</span><span class="cl">Truy cập xuyên nền tảng
+</span></span></code></pre></div><p>Lakehouse 2.0 không sinh ra từ một bài công bố duy nhất.</p>
+<p>Nó mọc lên từ việc các lớp trong hệ thống lần lượt bị buộc phải mở cửa cho nhau.</p>
+<h1 id="kiến-trúc-lakehouse-20">Kiến trúc Lakehouse 2.0<a class="anchor ms-1" href="#kiến-trúc-lakehouse-20"><i class="fas fa-link"></i></a></h1>
+<p>Một kiến trúc đơn giản có thể được hình dung như sau:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">                  NGUỒN DỮ LIỆU
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">      Database        Kafka        File/API
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">          |              |             |
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">          +------- CDC / Streaming ----+
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">                         |
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">                         v
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">             OPEN TABLE STORAGE LAYER
+</span></span><span class="line"><span class="ln">10</span><span class="cl">
+</span></span><span class="line"><span class="ln">11</span><span class="cl">          Object Storage / Table Storage
+</span></span><span class="line"><span class="ln">12</span><span class="cl">                         |
+</span></span><span class="line"><span class="ln">13</span><span class="cl">            Parquet + Open Table Format
+</span></span><span class="line"><span class="ln">14</span><span class="cl">          Iceberg / Delta Lake / Apache Hudi
+</span></span><span class="line"><span class="ln">15</span><span class="cl">                         |
+</span></span><span class="line"><span class="ln">16</span><span class="cl">                         v
+</span></span><span class="line"><span class="ln">17</span><span class="cl">
+</span></span><span class="line"><span class="ln">18</span><span class="cl">                  OPEN CATALOG LAYER
+</span></span><span class="line"><span class="ln">19</span><span class="cl">
+</span></span><span class="line"><span class="ln">20</span><span class="cl">       Iceberg REST Catalog / Unity / Polaris
+</span></span><span class="line"><span class="ln">21</span><span class="cl">        Namespace / Metadata / Access / Audit
+</span></span><span class="line"><span class="ln">22</span><span class="cl">                         |
+</span></span><span class="line"><span class="ln">23</span><span class="cl">                         v
+</span></span><span class="line"><span class="ln">24</span><span class="cl">
+</span></span><span class="line"><span class="ln">25</span><span class="cl">               COMPOSABLE COMPUTE LAYER
+</span></span><span class="line"><span class="ln">26</span><span class="cl">
+</span></span><span class="line"><span class="ln">27</span><span class="cl">       Spark    Flink    Trino    DuckDB
+</span></span><span class="line"><span class="ln">28</span><span class="cl">       SQL Engine    Realtime Engine    AI
+</span></span><span class="line"><span class="ln">29</span><span class="cl">                         |
+</span></span><span class="line"><span class="ln">30</span><span class="cl">                         v
+</span></span><span class="line"><span class="ln">31</span><span class="cl">
+</span></span><span class="line"><span class="ln">32</span><span class="cl">               DATA PRODUCT / SEMANTIC LAYER
+</span></span><span class="line"><span class="ln">33</span><span class="cl">
+</span></span><span class="line"><span class="ln">34</span><span class="cl">       Bronze → Silver → Gold → Metrics
+</span></span><span class="line"><span class="ln">35</span><span class="cl">       Feature / Vector / Model / Document
+</span></span><span class="line"><span class="ln">36</span><span class="cl">                         |
+</span></span><span class="line"><span class="ln">37</span><span class="cl">                         v
+</span></span><span class="line"><span class="ln">38</span><span class="cl">
+</span></span><span class="line"><span class="ln">39</span><span class="cl">             BI / APP / AGENT / ANALYTICS
+</span></span></code></pre></div><p>Điểm khác biệt lớn nhất không nằm ở việc sơ đồ có thêm nhiều hộp.</p>
+<p>Điểm khác biệt nằm ở đường nối giữa các hộp.</p>
+<p>Trong Lakehouse 1.0, nhiều đường nối là dây điện riêng của nhà sản xuất.</p>
+<p>Trong Lakehouse 2.0, người ta cố biến chúng thành những ổ cắm tiêu chuẩn.</p>
+<h1 id="open-table-format-trở-thành-hợp-đồng-của-dữ-liệu">Open table format trở thành hợp đồng của dữ liệu<a class="anchor ms-1" href="#open-table-format-trở-thành-hợp-đồng-của-dữ-liệu"><i class="fas fa-link"></i></a></h1>
+<p>Ở Lakehouse 1.0, người ta thường nói:</p>
+<blockquote>
+<p>Dữ liệu của tôi là Parquet nên nó mở.</p>
+</blockquote>
+<p>Đến Lakehouse 2.0, câu hỏi được hỏi kỹ hơn:</p>
+<blockquote>
+<p>Metadata của bảng có mở không?</p>
+</blockquote>
+<p>Parquet chỉ mô tả dữ liệu bên trong từng file.</p>
+<p>Open table format mô tả cả tập hợp file như một bảng có lịch sử và giao dịch.</p>
+<p>Các định dạng phổ biến gồm:</p>
+<ul>
+<li>Apache Iceberg.</li>
+<li>Delta Lake.</li>
+<li>Apache Hudi.</li>
+</ul>
+<p>Chúng giải quyết những vấn đề gần giống nhau:</p>
+<ul>
+<li>Snapshot.</li>
+<li>Transaction.</li>
+<li>Schema evolution.</li>
+<li>Partition evolution.</li>
+<li>Time travel.</li>
+<li>Thêm, sửa và xóa dữ liệu.</li>
+<li>Theo dõi data file.</li>
+</ul>
+<p>Nhưng metadata của chúng không giống nhau.</p>
+<p>Điều này tạo ra một câu hỏi khó:</p>
+<blockquote>
+<p>Doanh nghiệp nên chọn một format duy nhất hay chấp nhận nhiều format cùng tồn tại?</p>
+</blockquote>
+<p>Lakehouse 2.0 nghiêng về khả năng tương tác thay vì ép toàn bộ thế giới chọn cùng một màu áo.</p>
+<p>Delta UniForm, chẳng hạn, tận dụng việc Delta Lake, Iceberg và Hudi đều có thể dùng chung các file Parquet. Hệ thống có thể sinh thêm metadata Iceberg cho một bảng Delta mà không tạo thêm bản sao dữ liệu vật lý. Một engine hiểu Delta dùng metadata Delta; một engine hiểu Iceberg đọc cùng file thông qua metadata Iceberg. (<a href="https://delta.io/blog/state-of-the-project-pt2/" title="Delta Lake - State of the Project - Part 2 | Delta Lake" target="_blank" rel="noopener noreferrer">Delta</a>)</p>
+<p>Có thể hình dung như một nhà kho có cùng một đống hàng, nhưng hai loại sổ kho:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">                Parquet Data Files
+</span></span><span class="line"><span class="ln">2</span><span class="cl">                  /           \
+</span></span><span class="line"><span class="ln">3</span><span class="cl">                 /             \
+</span></span><span class="line"><span class="ln">4</span><span class="cl">        Delta Metadata     Iceberg Metadata
+</span></span><span class="line"><span class="ln">5</span><span class="cl">             |                    |
+</span></span><span class="line"><span class="ln">6</span><span class="cl">        Delta Engine         Iceberg Engine
+</span></span></code></pre></div><p>Hàng hóa không bị chép thành hai bản.</p>
+<p>Chỉ có hai bộ bản đồ giúp các nhóm người khác nhau tìm đến cùng những thùng hàng đó.</p>
+<p>Nghe quá dễ.</p>
+<p>Xong thuật toán.</p>
+<p>Nhưng ngoài đời, giữ cho hai bộ metadata luôn nhất quán là một bài toán không hề nhẹ. Một thay đổi chỉ được ghi vào một bên có thể khiến hai engine nhìn thấy hai vũ trụ khác nhau.</p>
+<p>Vì vậy, khả năng đa định dạng cần được cung cấp bởi một cơ chế được thiết kế rõ ràng, không phải vài script tự viết rồi đặt tên <code>sync_metadata_final_v3.py</code>.</p>
+<h1 id="catalog-trở-thành-bộ-não-của-lakehouse">Catalog trở thành bộ não của Lakehouse<a class="anchor ms-1" href="#catalog-trở-thành-bộ-não-của-lakehouse"><i class="fas fa-link"></i></a></h1>
+<p>Nếu object storage là đất đai và table format là sổ đỏ của từng căn nhà, catalog là cơ quan địa chính.</p>
+<p>Nó biết:</p>
+<ul>
+<li>Bảng nào tồn tại.</li>
+<li>Bảng nằm ở đâu.</li>
+<li>Schema hiện tại là gì.</li>
+<li>Ai sở hữu bảng.</li>
+<li>Ai được đọc.</li>
+<li>Ai được ghi.</li>
+<li>Engine nào đang yêu cầu truy cập.</li>
+<li>Credential tạm thời nào được cấp.</li>
+<li>Dữ liệu có nguồn gốc từ đâu.</li>
+<li>Bảng liên quan đến dashboard hoặc mô hình nào.</li>
+</ul>
+<p>Trong Lakehouse 1.0, catalog thường bị xem như một nơi tra tên bảng:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">catalog.schema.table
+</span></span></code></pre></div><p>Trong Lakehouse 2.0, catalog tiến gần hơn đến vai trò <strong>control plane</strong>.</p>
+<p>Compute engine không nhất thiết được cấp quyền đọc thẳng toàn bộ bucket.</p>
+<p>Nó có thể hỏi catalog:</p>
+<blockquote>
+<p>Người dùng Tùng có quyền đọc bảng <code>silver.orders</code> không?</p>
+</blockquote>
+<p>Catalog kiểm tra chính sách rồi cấp credential tạm thời, chỉ đủ để đọc những file cần thiết.</p>
+<p>Iceberg REST Catalog được tạo ra để nhiều ngôn ngữ và engine có thể dùng một giao thức chung khi làm việc với catalog. Đặc tả này cũng hỗ trợ các hướng như xử lý xung đột phía server, credential vending, multi-table commit và caching. (<a href="https://iceberg.apache.org/rest-catalog-spec/" title="REST Catalog Spec - Apache Iceberg™" target="_blank" rel="noopener noreferrer">Apache Iceberg</a>)</p>
+<p>Luồng truy cập có thể trông như sau:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">Người dùng
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">    |
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">    v
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">Trino / Spark / Flink
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">    |
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">    | Xin mở bảng silver.orders
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">    v
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">REST Catalog
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">    |
+</span></span><span class="line"><span class="ln">10</span><span class="cl">    | Kiểm tra quyền
+</span></span><span class="line"><span class="ln">11</span><span class="cl">    | Trả metadata
+</span></span><span class="line"><span class="ln">12</span><span class="cl">    | Cấp credential tạm thời
+</span></span><span class="line"><span class="ln">13</span><span class="cl">    v
+</span></span><span class="line"><span class="ln">14</span><span class="cl">Object Storage
+</span></span></code></pre></div><p>Compute engine không còn tự mò vào nhà kho bằng một chiếc chìa khóa tổng được lưu trong file cấu hình ba năm chưa đổi.</p>
+<p>Nó phải xin quyền theo từng danh tính và từng phạm vi.</p>
+<p>Đây là một bước tiến lớn về governance.</p>
+<p>Nhưng nó cũng tạo ra một trung tâm quyền lực mới.</p>
+<p>Khi table format và compute trở nên thay thế được, catalog trở thành nơi kiểm soát quan trọng nhất.</p>
+<p>Quyền lực không biến mất.</p>
+<p>Nó chỉ leo lên một tầng cao hơn.</p>
+<h1 id="compute-không-còn-là-vua-compute-trở-thành-đội-thợ">Compute không còn là vua, compute trở thành đội thợ<a class="anchor ms-1" href="#compute-không-còn-là-vua-compute-trở-thành-đội-thợ"><i class="fas fa-link"></i></a></h1>
+<p>Trong Lakehouse 2.0, không có một engine bắt buộc phải làm mọi việc.</p>
+<p>Mỗi engine có thể được lựa chọn theo workload:</p>
+<table>
+	<thead>
+			<tr>
+					<th>Bài toán</th>
+					<th>Engine phù hợp có thể là</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>ETL dữ liệu lớn</td>
+					<td>Spark</td>
+			</tr>
+			<tr>
+					<td>Streaming liên tục</td>
+					<td>Flink</td>
+			</tr>
+			<tr>
+					<td>SQL phân tán</td>
+					<td>Trino</td>
+			</tr>
+			<tr>
+					<td>Phân tích cục bộ</td>
+					<td>DuckDB</td>
+			</tr>
+			<tr>
+					<td>Dashboard độ trễ thấp</td>
+					<td>Realtime OLAP engine</td>
+			</tr>
+			<tr>
+					<td>Machine Learning</td>
+					<td>Python, Spark hoặc engine chuyên dụng</td>
+			</tr>
+			<tr>
+					<td>Truy vấn cloud serverless</td>
+					<td>Engine của nhà cung cấp cloud</td>
+			</tr>
+	</tbody>
+</table>
+<p>Điểm quan trọng không phải chọn đúng tên sản phẩm trong bảng.</p>
+<p>Điểm quan trọng là dữ liệu không cần chuyển nhà mỗi khi ta đổi đội thợ.</p>
+<p>Giả sử bảng Silver nằm trong Iceberg:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">s3://retail-lakehouse/silver/orders/
+</span></span></code></pre></div><p>Spark có thể tạo bảng.</p>
+<p>Flink cập nhật liên tục.</p>
+<p>Trino chạy truy vấn cho analyst.</p>
+<p>DuckDB đọc một lát dữ liệu nhỏ trên laptop.</p>
+<p>Một engine realtime có thể đồng bộ phần dữ liệu cần thiết để phục vụ dashboard.</p>
+<p>Không engine nào cần sở hữu toàn bộ đời sống của bảng.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">                         Spark
+</span></span><span class="line"><span class="ln">2</span><span class="cl">                           |
+</span></span><span class="line"><span class="ln">3</span><span class="cl">Flink -------- Iceberg Table -------- Trino
+</span></span><span class="line"><span class="ln">4</span><span class="cl">                           |
+</span></span><span class="line"><span class="ln">5</span><span class="cl">                         DuckDB
+</span></span></code></pre></div><p>Đây là ý nghĩa của <strong>composable compute</strong>.</p>
+<p>Compute trở thành một thành phần có thể thay đổi theo nhu cầu, chi phí và độ trễ.</p>
+<p>Tuy nhiên, “nhiều engine cùng hỗ trợ Iceberg” không đồng nghĩa mọi engine có khả năng giống hệt nhau.</p>
+<p>Có engine chỉ đọc.</p>
+<p>Có engine đọc và append.</p>
+<p>Có engine hỗ trợ <code>MERGE</code>, <code>UPDATE</code>, <code>DELETE</code>.</p>
+<p>Có engine hiểu branching hoặc position delete.</p>
+<p>Có engine chậm cập nhật phiên bản table format mới.</p>
+<p>Trên tờ quảng cáo, tất cả cùng ngồi quanh một chiếc bàn rất vui vẻ.</p>
+<p>Trong production, cần kiểm tra kỹ xem từng người có thật sự dùng được cùng loại muỗng hay không.</p>
+<h1 id="object-storage-bắt-đầu-hiểu-khái-niệm-bảng">Object storage bắt đầu hiểu khái niệm bảng<a class="anchor ms-1" href="#object-storage-bắt-đầu-hiểu-khái-niệm-bảng"><i class="fas fa-link"></i></a></h1>
+<p>Trong Lakehouse 1.0, object storage thường rất ngây thơ.</p>
+<p>Nó chỉ biết:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">PUT object
+</span></span><span class="line"><span class="ln">2</span><span class="cl">GET object
+</span></span><span class="line"><span class="ln">3</span><span class="cl">DELETE object
+</span></span><span class="line"><span class="ln">4</span><span class="cl">LIST prefix
+</span></span></code></pre></div><p>Việc quản lý bảng nằm ở các job phía trên:</p>
+<ul>
+<li>Compact file nhỏ.</li>
+<li>Xóa snapshot cũ.</li>
+<li>Dọn file không còn được tham chiếu.</li>
+<li>Viết manifest.</li>
+<li>Tối ưu cách bố trí dữ liệu.</li>
+<li>Theo dõi transaction.</li>
+</ul>
+<p>Đây là lý do nhiều Lakehouse nhìn rất đẹp trong sơ đồ nhưng sau hai năm lại có hàng chục triệu file nhỏ nằm dưới đáy hồ như những chai nhựa không ai vớt.</p>
+<p>Một luồng streaming có thể liên tục tạo file:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">10 KB
+</span></span><span class="line"><span class="ln">2</span><span class="cl">15 KB
+</span></span><span class="line"><span class="ln">3</span><span class="cl">8 KB
+</span></span><span class="line"><span class="ln">4</span><span class="cl">20 KB
+</span></span><span class="line"><span class="ln">5</span><span class="cl">12 KB
+</span></span></code></pre></div><p>Query engine phải mở hàng trăm nghìn file nhỏ chỉ để đọc vài GB dữ liệu.</p>
+<p>Mỗi lần mở file là một request.</p>
+<p>Mỗi request là một chuyến tín hiệu xuyên qua mạng.</p>
+<p>Một file 10 KB nhìn rất bé.</p>
+<p>Nhưng một triệu file 10 KB là một triệu lần hệ thống phải tìm đường, kiểm tra quyền, đọc metadata và mở kết nối.</p>
+<p>Lakehouse 2.0 đưa nhiều công việc này xuống gần storage hơn.</p>
+<p>S3 Tables được giới thiệu cuối năm 2024 như một lớp lưu trữ bảng Apache Iceberg được quản lý. BigLake năm 2025 cũng đi theo hướng storage engine cho Iceberg với quản lý và tối ưu bảng tự động. (<a href="https://aws.amazon.com/blogs/aws/new-amazon-s3-tables-storage-optimized-for-analytics-workloads/" title="New Amazon S3 Tables: Storage optimized for analytics workloads | AWS News Blog" target="_blank" rel="noopener noreferrer">Amazon Web Services, Inc.</a>)</p>
+<p>Ý tưởng là:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Trước đây:
+</span></span><span class="line"><span class="ln">2</span><span class="cl">Object Storage + Một đống cron job tự chăm sóc bảng
+</span></span><span class="line"><span class="ln">3</span><span class="cl">
+</span></span><span class="line"><span class="ln">4</span><span class="cl">Sau này:
+</span></span><span class="line"><span class="ln">5</span><span class="cl">Table-aware Storage + Dịch vụ maintenance được quản lý
+</span></span></code></pre></div><p>Người dùng vẫn sở hữu dữ liệu ở định dạng mở.</p>
+<p>Nhưng các công việc dọn dẹp bắt đầu được nền tảng đảm nhiệm.</p>
+<p>Không phải vì compaction bỗng trở thành phép thuật.</p>
+<p>Máy chủ vẫn phải đọc file cũ, giải nén dữ liệu, sắp xếp lại, ghi file mới rồi cập nhật metadata.</p>
+<p>Con chip vẫn nóng.</p>
+<p>Ổ đĩa vẫn nhận hàng tỷ thao tác.</p>
+<p>Hệ thống làm mát vẫn phải gầm lên.</p>
+<p>Chỉ là người vận hành không còn tự viết từng dòng cron để ra lệnh cho cỗ máy ấy.</p>
+<h1 id="streaming-không-còn-đứng-ngoài-cửa-lakehouse">Streaming không còn đứng ngoài cửa Lakehouse<a class="anchor ms-1" href="#streaming-không-còn-đứng-ngoài-cửa-lakehouse"><i class="fas fa-link"></i></a></h1>
+<p>Trong kiến trúc cũ, Kafka và Lakehouse thường là hai thế giới.</p>
+<p>Kafka giữ dòng sự kiện nóng.</p>
+<p>Lakehouse giữ dữ liệu lịch sử lạnh.</p>
+<p>Muốn đi từ nóng sang lạnh, ta phải xây một cây cầu riêng.</p>
+<p>Lakehouse 2.0 cố gắng biến table format thành điểm giao nhau giữa streaming và analytics.</p>
+<p>Ví dụ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Đơn hàng mới
+</span></span><span class="line"><span class="ln">2</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln">3</span><span class="cl">Kafka Topic
+</span></span><span class="line"><span class="ln">4</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln">5</span><span class="cl">Tableflow / Flink / Managed CDC
+</span></span><span class="line"><span class="ln">6</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln">7</span><span class="cl">Iceberg hoặc Delta Table
+</span></span><span class="line"><span class="ln">8</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln">9</span><span class="cl">Trino / Spark / BI / AI
+</span></span></code></pre></div><p>Tableflow được giới thiệu năm 2024 và GA cho Iceberg năm 2025 với khả năng biểu diễn Kafka topic thành bảng, chuyển dữ liệu sang Parquet, xuất bản metadata và xử lý schema evolution. (<a href="https://www.confluent.io/blog/introducing-tableflow/" title="Introducing Tableflow: Unifying Streaming and Analytics" target="_blank" rel="noopener noreferrer">Confluent</a>)</p>
+<p>Các dịch vụ CDC cũng bắt đầu ghi trực tiếp thay đổi từ database vào Iceberg.</p>
+<p>Điều này không có nghĩa Kafka biến mất.</p>
+<p>Kafka vẫn phù hợp với:</p>
+<ul>
+<li>Giao tiếp sự kiện.</li>
+<li>Xử lý operational realtime.</li>
+<li>Consumer cần độ trễ rất thấp.</li>
+<li>Replay theo offset.</li>
+<li>Kết nối các ứng dụng đang chạy.</li>
+</ul>
+<p>Iceberg phù hợp với:</p>
+<ul>
+<li>Lịch sử dài hạn.</li>
+<li>Truy vấn phân tích.</li>
+<li>Join dữ liệu lớn.</li>
+<li>Đọc bằng nhiều engine.</li>
+<li>Time travel và snapshot.</li>
+</ul>
+<p>Hai hệ thống không thay thế nhau.</p>
+<p>Chúng bắt đầu nối với nhau ít keo dán thủ công hơn.</p>
+<h1 id="bronze-silver-và-gold-có-biến-mất-không">Bronze, Silver và Gold có biến mất không?<a class="anchor ms-1" href="#bronze-silver-và-gold-có-biến-mất-không"><i class="fas fa-link"></i></a></h1>
+<p>Không.</p>
+<p>Lakehouse 2.0 không đập bỏ mô hình Bronze, Silver và Gold.</p>
+<p>Nó thay đổi cách ba tầng này được tạo ra và phục vụ.</p>
+<p>Trong Lakehouse 1.0, ta thường hình dung:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Bronze Batch
+</span></span><span class="line"><span class="ln">2</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln">3</span><span class="cl">Silver Batch
+</span></span><span class="line"><span class="ln">4</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln">5</span><span class="cl">Gold Batch
+</span></span></code></pre></div><p>Trong Lakehouse 2.0, kiến trúc có thể trở thành:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Kafka / CDC
+</span></span><span class="line"><span class="ln">2</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln">3</span><span class="cl">Bronze Streaming Table
+</span></span><span class="line"><span class="ln">4</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln">5</span><span class="cl">Silver Continuously Updated Table
+</span></span><span class="line"><span class="ln">6</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln">7</span><span class="cl">Gold Materialized Data Product
+</span></span></code></pre></div><h2 id="bronze-trong-lakehouse-20">Bronze trong Lakehouse 2.0<a class="anchor ms-1" href="#bronze-trong-lakehouse-20"><i class="fas fa-link"></i></a></h2>
+<p>Bronze vẫn giữ dữ liệu gần nguồn.</p>
+<p>Nhưng dữ liệu có thể chảy liên tục thay vì đợi một file lớn cuối ngày.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">bronze.orders_cdc
+</span></span><span class="line"><span class="ln">2</span><span class="cl">bronze.inventory_events
+</span></span><span class="line"><span class="ln">3</span><span class="cl">bronze.customer_clicks
+</span></span></code></pre></div><p>Bronze có thể lưu:</p>
+<ul>
+<li>Giá trị trước khi cập nhật.</li>
+<li>Giá trị sau khi cập nhật.</li>
+<li>Loại sự kiện <code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code>.</li>
+<li>Thời điểm xảy ra tại nguồn.</li>
+<li>Thời điểm được tiếp nhận.</li>
+<li>Offset hoặc sequence number.</li>
+<li>Schema version.</li>
+</ul>
+<h2 id="silver-trong-lakehouse-20">Silver trong Lakehouse 2.0<a class="anchor ms-1" href="#silver-trong-lakehouse-20"><i class="fas fa-link"></i></a></h2>
+<p>Silver vẫn chuẩn hóa và hợp nhất dữ liệu.</p>
+<p>Nhưng thay vì mỗi đêm xây lại toàn bộ bảng, hệ thống có thể cập nhật liên tục bằng <code>MERGE</code>, incremental processing hoặc streaming state.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">bronze.orders_cdc
+</span></span><span class="line"><span class="ln">2</span><span class="cl">        |
+</span></span><span class="line"><span class="ln">3</span><span class="cl">        | chuẩn hóa, deduplicate, merge
+</span></span><span class="line"><span class="ln">4</span><span class="cl">        v
+</span></span><span class="line"><span class="ln">5</span><span class="cl">silver.orders
+</span></span></code></pre></div><p>Một đơn hàng thay đổi trạng thái:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">CREATED
+</span></span><span class="line"><span class="ln">2</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln">3</span><span class="cl">PAID
+</span></span><span class="line"><span class="ln">4</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln">5</span><span class="cl">SHIPPED
+</span></span><span class="line"><span class="ln">6</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln">7</span><span class="cl">DELIVERED
+</span></span></code></pre></div><p>không nhất thiết tạo ra bốn đơn hàng khác nhau.</p>
+<p>Silver có thể giữ trạng thái hiện tại, trong khi lịch sử thay đổi vẫn được bảo toàn ở Bronze hoặc trong snapshot.</p>
+<h2 id="gold-trong-lakehouse-20">Gold trong Lakehouse 2.0<a class="anchor ms-1" href="#gold-trong-lakehouse-20"><i class="fas fa-link"></i></a></h2>
+<p>Gold vẫn phục vụ nghiệp vụ.</p>
+<p>Điểm khác là một bảng Gold có thể được cập nhật nhanh hơn và được nhiều engine sử dụng:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">gold.hourly_store_revenue
+</span></span><span class="line"><span class="ln">2</span><span class="cl">gold_realtime_inventory
+</span></span><span class="line"><span class="ln">3</span><span class="cl">gold_customer_360
+</span></span><span class="line"><span class="ln">4</span><span class="cl">gold_delivery_performance
+</span></span></code></pre></div><p>Dashboard có thể đọc bằng một engine SQL.</p>
+<p>Agent AI có thể dùng cùng metric đã được quản trị.</p>
+<p>Một ứng dụng vận hành có thể lấy dữ liệu qua API.</p>
+<p>Gold không chỉ là bảng cuối pipeline.</p>
+<p>Nó bắt đầu được xem như một <strong>data product</strong> có:</p>
+<ul>
+<li>Chủ sở hữu.</li>
+<li>Định nghĩa nghiệp vụ.</li>
+<li>SLA.</li>
+<li>Quyền truy cập.</li>
+<li>Chất lượng dữ liệu.</li>
+<li>Lineage.</li>
+<li>Phiên bản.</li>
+<li>Hợp đồng với người sử dụng.</li>
+</ul>
+<h1 id="ví-dụ-lakehouse-20-cho-hệ-thống-bán-lẻ">Ví dụ Lakehouse 2.0 cho hệ thống bán lẻ<a class="anchor ms-1" href="#ví-dụ-lakehouse-20-cho-hệ-thống-bán-lẻ"><i class="fas fa-link"></i></a></h1>
+<p>Giả sử doanh nghiệp có:</p>
+<ul>
+<li>1.000 cửa hàng.</li>
+<li>Một triệu đơn hàng mỗi ngày.</li>
+<li>Ba triệu dòng chi tiết đơn hàng.</li>
+<li>Hàng chục triệu lượt xem sản phẩm.</li>
+<li>Thay đổi tồn kho liên tục.</li>
+<li>Nhiều database vận hành.</li>
+<li>Kafka chứa sự kiện realtime.</li>
+</ul>
+<p>Kiến trúc có thể được tổ chức như sau.</p>
+<h2 id="bước-1-đưa-thay-đổi-từ-hệ-thống-nguồn-vào-event-stream">Bước 1: đưa thay đổi từ hệ thống nguồn vào event stream<a class="anchor ms-1" href="#bước-1-đưa-thay-đổi-từ-hệ-thống-nguồn-vào-event-stream"><i class="fas fa-link"></i></a></h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">POS Database --------\
+</span></span><span class="line"><span class="ln">2</span><span class="cl">OMS Database ---------+--&gt; CDC / Kafka
+</span></span><span class="line"><span class="ln">3</span><span class="cl">Inventory Database ---/
+</span></span><span class="line"><span class="ln">4</span><span class="cl">Website Events -------/
+</span></span></code></pre></div><p>Mỗi lần một đơn hàng được tạo, cập nhật hoặc hủy, hệ thống phát ra một sự kiện.</p>
+<p>Ví dụ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-json" data-lang="json"><span class="line"><span class="ln">1</span><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl">  <span class="nt">&#34;event_type&#34;</span><span class="p">:</span> <span class="s2">&#34;ORDER_UPDATED&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl">  <span class="nt">&#34;order_id&#34;</span><span class="p">:</span> <span class="mi">918273645</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">4</span><span class="cl">  <span class="nt">&#34;old_status&#34;</span><span class="p">:</span> <span class="s2">&#34;SHIPPED&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">5</span><span class="cl">  <span class="nt">&#34;new_status&#34;</span><span class="p">:</span> <span class="s2">&#34;DELIVERED&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">6</span><span class="cl">  <span class="nt">&#34;event_time&#34;</span><span class="p">:</span> <span class="s2">&#34;2026-07-24T10:31:22+07:00&#34;</span>
+</span></span><span class="line"><span class="ln">7</span><span class="cl"><span class="p">}</span>
+</span></span></code></pre></div><h2 id="bước-2-materialize-sự-kiện-thành-bảng-bronze">Bước 2: materialize sự kiện thành bảng Bronze<a class="anchor ms-1" href="#bước-2-materialize-sự-kiện-thành-bảng-bronze"><i class="fas fa-link"></i></a></h2>
+<p>Streaming engine hoặc dịch vụ được quản lý ghi sự kiện thành Iceberg hoặc Delta:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">bronze.order_events
+</span></span><span class="line"><span class="ln">2</span><span class="cl">bronze.inventory_events
+</span></span><span class="line"><span class="ln">3</span><span class="cl">bronze.payment_events
+</span></span></code></pre></div><p>Table metadata được cập nhật liên tục.</p>
+<p>Schema Registry hoặc data contract giúp kiểm soát cấu trúc sự kiện.</p>
+<h2 id="bước-3-cập-nhật-silver">Bước 3: cập nhật Silver<a class="anchor ms-1" href="#bước-3-cập-nhật-silver"><i class="fas fa-link"></i></a></h2>
+<p>Flink hoặc Spark xử lý:</p>
+<ul>
+<li>Deduplicate.</li>
+<li>Chuẩn hóa khóa.</li>
+<li>Ghép mã cửa hàng.</li>
+<li>Ghép mã sản phẩm.</li>
+<li>Xử lý dữ liệu đến trễ.</li>
+<li>Áp dụng <code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code>.</li>
+<li>Tạo trạng thái hiện tại của đơn hàng.</li>
+</ul>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">silver.orders
+</span></span><span class="line"><span class="ln">2</span><span class="cl">silver.order_items
+</span></span><span class="line"><span class="ln">3</span><span class="cl">silver.inventory
+</span></span><span class="line"><span class="ln">4</span><span class="cl">silver.products
+</span></span><span class="line"><span class="ln">5</span><span class="cl">silver.customers
+</span></span></code></pre></div><h2 id="bước-4-nhiều-engine-cùng-dùng-silver">Bước 4: nhiều engine cùng dùng Silver<a class="anchor ms-1" href="#bước-4-nhiều-engine-cùng-dùng-silver"><i class="fas fa-link"></i></a></h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">                     Spark
+</span></span><span class="line"><span class="ln">2</span><span class="cl">                       |
+</span></span><span class="line"><span class="ln">3</span><span class="cl">Flink ---- silver.orders ---- Trino
+</span></span><span class="line"><span class="ln">4</span><span class="cl">                       |
+</span></span><span class="line"><span class="ln">5</span><span class="cl">                    DuckDB
+</span></span><span class="line"><span class="ln">6</span><span class="cl">                       |
+</span></span><span class="line"><span class="ln">7</span><span class="cl">                 AI Feature Job
+</span></span></code></pre></div><p>Spark chạy job lớn.</p>
+<p>Trino phục vụ analyst.</p>
+<p>Flink tiếp tục cập nhật.</p>
+<p>DuckDB dùng để kiểm tra một lát dữ liệu nhỏ.</p>
+<p>Một pipeline AI đọc dữ liệu để tạo feature.</p>
+<p>Không cần tạo bốn bản sao chỉ vì bốn nhóm thích bốn công cụ khác nhau.</p>
+<h2 id="bước-5-tạo-gold-theo-từng-data-product">Bước 5: tạo Gold theo từng data product<a class="anchor ms-1" href="#bước-5-tạo-gold-theo-từng-data-product"><i class="fas fa-link"></i></a></h2>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">gold.daily_revenue
+</span></span><span class="line"><span class="ln">2</span><span class="cl">gold.realtime_inventory
+</span></span><span class="line"><span class="ln">3</span><span class="cl">gold.return_rate
+</span></span><span class="line"><span class="ln">4</span><span class="cl">gold.delivery_sla
+</span></span><span class="line"><span class="ln">5</span><span class="cl">gold.product_conversion
+</span></span></code></pre></div><p>Mỗi bảng có:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-yaml" data-lang="yaml"><span class="line"><span class="ln">1</span><span class="cl"><span class="nt">owner</span><span class="p">:</span><span class="w"> </span><span class="l">retail-analytics</span><span class="w">
+</span></span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="nt">sla</span><span class="p">:</span><span class="w"> </span><span class="l">5_minutes</span><span class="w">
+</span></span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="nt">catalog</span><span class="p">:</span><span class="w"> </span><span class="l">retail</span><span class="w">
+</span></span></span><span class="line"><span class="ln">4</span><span class="cl"><span class="nt">classification</span><span class="p">:</span><span class="w"> </span><span class="l">internal</span><span class="w">
+</span></span></span><span class="line"><span class="ln">5</span><span class="cl"><span class="nt">quality</span><span class="p">:</span><span class="w">
+</span></span></span><span class="line"><span class="ln">6</span><span class="cl"><span class="w">  </span><span class="nt">order_id_not_null</span><span class="p">:</span><span class="w"> </span><span class="m">100</span><span class="l">%</span><span class="w">
+</span></span></span><span class="line"><span class="ln">7</span><span class="cl"><span class="w">  </span><span class="nt">revenue_non_negative</span><span class="p">:</span><span class="w"> </span><span class="m">99.99</span><span class="l">%</span><span class="w">
+</span></span></span></code></pre></div><p>Catalog giữ thông tin quyền truy cập, lineage và chủ sở hữu.</p>
+<p>Dashboard, API và AI agent cùng đọc một định nghĩa doanh thu, thay vì mỗi hệ thống tự chế tạo một con số rồi mang vào phòng họp tranh luận.</p>
+<h1 id="lakehouse-10-và-lakehouse-20-khác-nhau-thế-nào">Lakehouse 1.0 và Lakehouse 2.0 khác nhau thế nào?<a class="anchor ms-1" href="#lakehouse-10-và-lakehouse-20-khác-nhau-thế-nào"><i class="fas fa-link"></i></a></h1>
+<table>
+	<thead>
+			<tr>
+					<th>Thành phần</th>
+					<th>Lakehouse 1.0</th>
+					<th>Lakehouse 2.0</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>Storage</td>
+					<td>Object storage chứa file</td>
+					<td>Storage bắt đầu hiểu và quản lý bảng</td>
+			</tr>
+			<tr>
+					<td>Table format</td>
+					<td>Thường gắn với một hệ sinh thái</td>
+					<td>Open format và interoperability</td>
+			</tr>
+			<tr>
+					<td>Catalog</td>
+					<td>Metastore hoặc catalog của nền tảng</td>
+					<td>Open API, REST Catalog, credential vending</td>
+			</tr>
+			<tr>
+					<td>Compute</td>
+					<td>Một engine thường giữ vai trò chính</td>
+					<td>Nhiều engine theo từng workload</td>
+			</tr>
+			<tr>
+					<td>Streaming</td>
+					<td>Pipeline riêng đưa dữ liệu vào lake</td>
+					<td>Stream có thể materialize trực tiếp thành table</td>
+			</tr>
+			<tr>
+					<td>Bronze–Silver–Gold</td>
+					<td>Chủ yếu xử lý theo batch</td>
+					<td>Có thể cập nhật liên tục</td>
+			</tr>
+			<tr>
+					<td>Governance</td>
+					<td>Gắn với nền tảng hoặc engine</td>
+					<td>Tập trung ở catalog và áp dụng xuyên engine</td>
+			</tr>
+			<tr>
+					<td>Chia sẻ dữ liệu</td>
+					<td>Sao chép hoặc export</td>
+					<td>Federation và zero-copy access</td>
+			</tr>
+			<tr>
+					<td>Vận hành bảng</td>
+					<td>Tự compact, vacuum, optimize</td>
+					<td>Ngày càng được storage hoặc dịch vụ quản lý</td>
+			</tr>
+			<tr>
+					<td>AI</td>
+					<td>Đọc dữ liệu từ các pipeline riêng</td>
+					<td>Dữ liệu, file, model và function tiến gần một catalog chung</td>
+			</tr>
+	</tbody>
+</table>
+<p>Điểm cốt lõi là:</p>
+<blockquote>
+<p>Lakehouse 1.0 thống nhất dữ liệu vào một nền tảng. Lakehouse 2.0 thống nhất dữ liệu bằng những giao thức mở để nhiều nền tảng cùng sử dụng.</p>
+</blockquote>
+<h1 id="zero-copy-không-có-nghĩa-là-không-có-gì-di-chuyển">“Zero copy” không có nghĩa là không có gì di chuyển<a class="anchor ms-1" href="#zero-copy-không-có-nghĩa-là-không-có-gì-di-chuyển"><i class="fas fa-link"></i></a></h1>
+<p>Lakehouse 2.0 thường đi cùng những cụm từ rất hấp dẫn:</p>
+<ul>
+<li>Zero copy.</li>
+<li>Zero ETL.</li>
+<li>Cross-cloud.</li>
+<li>Federation.</li>
+<li>One copy of data.</li>
+</ul>
+<p>Những cụm từ này đúng trong một phạm vi nhất định.</p>
+<p>Ví dụ một engine có thể đọc trực tiếp bảng Iceberg trên storage mà không cần tạo một bản dữ liệu lâu dài trong hệ thống của nó.</p>
+<p>Nhưng dữ liệu vẫn phải chạy qua mạng.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">S3 tại AWS
+</span></span><span class="line"><span class="ln">2</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln">3</span><span class="cl">Mạng
+</span></span><span class="line"><span class="ln">4</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln">5</span><span class="cl">Compute ở một nơi khác
+</span></span></code></pre></div><p>Nếu compute nằm khác vùng hoặc khác cloud, hệ thống có thể phát sinh:</p>
+<ul>
+<li>Network latency.</li>
+<li>Egress cost.</li>
+<li>Cache.</li>
+<li>Bản sao tạm thời.</li>
+<li>Kết nối xuyên cloud.</li>
+<li>Vấn đề chủ quyền dữ liệu.</li>
+</ul>
+<p>Không có dữ liệu nào dịch chuyển bằng ý niệm.</p>
+<p>Một truy vấn xuyên cloud vẫn kéo những electron thật chạy qua router thật, cáp quang thật và thiết bị mạng thật.</p>
+<p>“Zero copy” thường có nghĩa:</p>
+<blockquote>
+<p>Không cần duy trì thêm một bản dữ liệu lâu dài do người dùng chủ động xây pipeline sao chép.</p>
+</blockquote>
+<p>Nó không có nghĩa:</p>
+<blockquote>
+<p>Không byte nào từng rời khỏi nơi lưu trữ.</p>
+</blockquote>
+<h1 id="những-vấn-đề-lakehouse-20-vẫn-chưa-giải-quyết-xong">Những vấn đề Lakehouse 2.0 vẫn chưa giải quyết xong<a class="anchor ms-1" href="#những-vấn-đề-lakehouse-20-vẫn-chưa-giải-quyết-xong"><i class="fas fa-link"></i></a></h1>
+<h2 id="nhiều-engine-không-đồng-nghĩa-hành-vi-giống-nhau">Nhiều engine không đồng nghĩa hành vi giống nhau<a class="anchor ms-1" href="#nhiều-engine-không-đồng-nghĩa-hành-vi-giống-nhau"><i class="fas fa-link"></i></a></h2>
+<p>Hai engine cùng ghi “hỗ trợ Iceberg” có thể hỗ trợ những phạm vi rất khác nhau.</p>
+<p>Cần kiểm tra:</p>
+<ul>
+<li>Có đọc được table format version mới không?</li>
+<li>Có ghi được không?</li>
+<li>Có hỗ trợ <code>MERGE</code> không?</li>
+<li>Có hỗ trợ row-level delete không?</li>
+<li>Có xử lý schema evolution giống nhau không?</li>
+<li>Có cập nhật catalog đúng chuẩn không?</li>
+<li>Có tương thích với credential vending không?</li>
+<li>Có bảo toàn transaction khi nhiều writer chạy đồng thời không?</li>
+</ul>
+<p>Logo đặt cạnh nhau trên sơ đồ không phải bằng chứng cho khả năng tương thích production.</p>
+<h2 id="catalog-có-thể-trở-thành-điểm-nghẽn-mới">Catalog có thể trở thành điểm nghẽn mới<a class="anchor ms-1" href="#catalog-có-thể-trở-thành-điểm-nghẽn-mới"><i class="fas fa-link"></i></a></h2>
+<p>Khi mọi engine đều hỏi catalog:</p>
+<ul>
+<li>Bảng nằm đâu?</li>
+<li>Ai có quyền?</li>
+<li>Snapshot nào hiện tại?</li>
+<li>Credential nào được cấp?</li>
+</ul>
+<p>catalog trở thành một hệ thống cực kỳ quan trọng.</p>
+<p>Nếu catalog chậm, truy vấn khởi tạo chậm.</p>
+<p>Nếu catalog lỗi, nhiều engine cùng mất khả năng truy cập.</p>
+<p>Nếu chính sách catalog sai, dữ liệu có thể bị lộ hoặc bị khóa nhầm.</p>
+<p>Nếu toàn bộ tổ chức phụ thuộc vào một catalog độc quyền, vendor lock-in chỉ chuyển từ compute lên metadata.</p>
+<p>Cái khóa cửa không biến mất.</p>
+<p>Nó chỉ được treo ở một căn phòng cao hơn.</p>
+<h2 id="streaming-vẫn-tạo-ra-file-nhỏ">Streaming vẫn tạo ra file nhỏ<a class="anchor ms-1" href="#streaming-vẫn-tạo-ra-file-nhỏ"><i class="fas fa-link"></i></a></h2>
+<p>Dữ liệu chảy từng giây thường tạo ra những commit nhỏ.</p>
+<p>Commit nhỏ tạo file nhỏ.</p>
+<p>File nhỏ tạo nhiều metadata.</p>
+<p>Nhiều metadata làm planning chậm.</p>
+<p>Vì vậy hệ thống vẫn cần:</p>
+<ul>
+<li>Compaction.</li>
+<li>Snapshot expiration.</li>
+<li>Manifest rewrite.</li>
+<li>Orphan file cleanup.</li>
+<li>Clustering.</li>
+<li>Retention policy.</li>
+</ul>
+<p>Dịch vụ managed có thể tự động hóa các việc này.</p>
+<p>Nhưng chi phí compute và I/O vẫn tồn tại.</p>
+<p>Không có ông tiên nào bay xuống gom file miễn phí vào ban đêm.</p>
+<h2 id="một-bản-dữ-liệu-không-có-nghĩa-là-một-sự-thật-nghiệp-vụ">Một bản dữ liệu không có nghĩa là một sự thật nghiệp vụ<a class="anchor ms-1" href="#một-bản-dữ-liệu-không-có-nghĩa-là-một-sự-thật-nghiệp-vụ"><i class="fas fa-link"></i></a></h2>
+<p>Mọi engine có thể đọc cùng một bảng <code>silver.orders</code>.</p>
+<p>Nhưng nếu tài chính định nghĩa doanh thu theo ngày xuất hóa đơn, vận hành tính theo ngày giao hàng, còn marketing tính theo ngày đặt hàng, ba con số vẫn khác nhau.</p>
+<p>Lakehouse 2.0 giải quyết sự thống nhất vật lý và kỹ thuật tốt hơn.</p>
+<p>Nó không tự giải quyết sự thống nhất về ý nghĩa.</p>
+<p>Doanh nghiệp vẫn cần:</p>
+<ul>
+<li>Metric definition.</li>
+<li>Semantic model.</li>
+<li>Data contract.</li>
+<li>Data ownership.</li>
+<li>Quy trình thay đổi.</li>
+<li>Kiểm tra chất lượng.</li>
+</ul>
+<p>Một triệu engine cùng đọc một bảng sai chỉ giúp cái sai lan nhanh hơn.</p>
+<h2 id="open-format-không-xóa-hoàn-toàn-vendor-lock-in">Open format không xóa hoàn toàn vendor lock-in<a class="anchor ms-1" href="#open-format-không-xóa-hoàn-toàn-vendor-lock-in"><i class="fas fa-link"></i></a></h2>
+<p>Dữ liệu có thể nằm trong Iceberg.</p>
+<p>Nhưng hệ thống vẫn có thể phụ thuộc vào:</p>
+<ul>
+<li>Catalog riêng.</li>
+<li>Chính sách bảo mật riêng.</li>
+<li>Công cụ orchestration.</li>
+<li>API quản trị.</li>
+<li>Cách tối ưu bảng.</li>
+<li>Cơ chế cache.</li>
+<li>SQL extension.</li>
+<li>Hệ thống billing.</li>
+</ul>
+<p>Lakehouse 2.0 làm chi phí rời đi thấp hơn.</p>
+<p>Nó không biến việc rời đi thành miễn phí.</p>
+<p>Ngôi nhà có nhiều cửa hơn.</p>
+<p>Nhưng chuyển nhà vẫn phải đóng thùng.</p>
+<h1 id="có-cần-nâng-cấp-từ-lakehouse-10-lên-20-không">Có cần nâng cấp từ Lakehouse 1.0 lên 2.0 không?<a class="anchor ms-1" href="#có-cần-nâng-cấp-từ-lakehouse-10-lên-20-không"><i class="fas fa-link"></i></a></h1>
+<p>Không phải lúc nào cũng cần.</p>
+<p>Giả sử hệ thống hiện tại:</p>
+<ul>
+<li>Chủ yếu dùng một engine.</li>
+<li>Dữ liệu chạy batch mỗi ngày.</li>
+<li>Số lượng người dùng không lớn.</li>
+<li>Không có yêu cầu cross-cloud.</li>
+<li>Governance hiện tại đủ dùng.</li>
+<li>Chi phí vận hành ổn định.</li>
+<li>Không gặp vấn đề vendor lock-in.</li>
+<li>Bronze, Silver và Gold đang hoạt động tốt.</li>
+</ul>
+<p>Khi đó, việc tháo kiến trúc thành nhiều thành phần có thể làm hệ thống phức tạp hơn mà chưa tạo thêm giá trị.</p>
+<p>Lakehouse 2.0 phù hợp hơn khi:</p>
+<ul>
+<li>Nhiều nhóm cần dùng các compute engine khác nhau.</li>
+<li>Dữ liệu cần được cập nhật gần realtime.</li>
+<li>Kafka và database operational cần đổ trực tiếp vào Lakehouse.</li>
+<li>Doanh nghiệp muốn dùng open table format làm nền dữ liệu lâu dài.</li>
+<li>Cần governance thống nhất xuyên nhiều engine.</li>
+<li>Có nhu cầu chia sẻ dữ liệu mà không nhân bản.</li>
+<li>Muốn giảm phụ thuộc vào một compute engine hoặc một vendor.</li>
+<li>Khối lượng table maintenance đã vượt khả năng cron job tự quản lý.</li>
+<li>Dữ liệu cần phục vụ đồng thời BI, AI, ứng dụng và agent.</li>
+</ul>
+<p>Câu hỏi không nên là:</p>
+<blockquote>
+<p>Lakehouse 2.0 có mới hơn không?</p>
+</blockquote>
+<p>Mà nên là:</p>
+<blockquote>
+<p>Kiến trúc hiện tại đang bị khóa ở tầng nào, và việc mở tầng đó có đem lại giá trị đủ lớn không?</p>
+</blockquote>
+<h1 id="tổng-kết">Tổng kết<a class="anchor ms-1" href="#tổng-kết"><i class="fas fa-link"></i></a></h1>
+<p>Lakehouse 1.0 đã giải quyết một vấn đề lớn:</p>
+<p><strong>Đưa sự ngăn nắp của data warehouse xuống lớp lưu trữ rộng và rẻ của data lake.</strong></p>
+<p>Nhưng trong quá trình xây dựng, nhiều hệ thống lại tạo ra một căn nhà được tích hợp quá chặt:</p>
+<ul>
+<li>Một table format chính.</li>
+<li>Một catalog chính.</li>
+<li>Một compute engine chính.</li>
+<li>Một nền tảng giữ phần lớn quyền kiểm soát.</li>
+</ul>
+<p>Lakehouse 2.0 cố gắng hoàn thành lời hứa mở còn dang dở.</p>
+<p>Nó đưa kiến trúc theo hướng:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">Open Storage
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">    +
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">Open Table Format
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">    +
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">Open Catalog API
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">    +
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">Composable Compute
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">    +
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">Streaming Tables
+</span></span><span class="line"><span class="ln">10</span><span class="cl">    +
+</span></span><span class="line"><span class="ln">11</span><span class="cl">Unified Governance
+</span></span></code></pre></div><p>Bronze, Silver và Gold vẫn còn đó.</p>
+<p>Nhưng dữ liệu không nhất thiết phải đợi đến nửa đêm mới bắt đầu đi tắm.</p>
+<p>Nó có thể chảy liên tục từ database và Kafka vào Bronze, được chuẩn hóa ở Silver rồi nhanh chóng trở thành Gold cho dashboard, ứng dụng và AI.</p>
+<p>Một đơn hàng vừa được khách bấm xác nhận ngoài cửa hàng có thể lập tức tạo ra một chuỗi phản ứng khổng lồ.</p>
+<p>Database ghi transaction.</p>
+<p>WAL sinh thêm byte.</p>
+<p>CDC đọc thay đổi.</p>
+<p>Kafka giữ sự kiện.</p>
+<p>Streaming engine chuyển đổi schema.</p>
+<p>Parquet được ghi xuống storage.</p>
+<p>Table metadata tạo snapshot mới.</p>
+<p>Catalog kiểm tra quyền.</p>
+<p>Trino đọc bảng.</p>
+<p>Dashboard sáng lên một con số.</p>
+<p>AI agent nhìn thấy tồn kho vừa giảm.</p>
+<p>Tất cả diễn ra trong vài giây, nhưng phía sau là hàng triệu transistor đóng mở, những chip silicon nóng dần, những luồng dữ liệu chạy xuyên cáp quang và những cỗ máy làm mát đang gầm gừ giữ cho cái gọi là “đám mây” không bốc khói.</p>
+<p>Không có gì là hoàn toàn ảo.</p>
+<p>Lakehouse 2.0 chỉ làm cho đoàn máy móc vật lý ấy biết nói chuyện với nhau bằng những ngôn ngữ mở hơn.</p>
+<p>Nếu Lakehouse 1.0 là căn nhà được xây trên hồ, Lakehouse 2.0 là lúc người ta tháo căn nhà thành những mảnh Lego.</p>
+<p>Mỗi mảnh có thể được thay.</p>
+<p>Mỗi đội thợ có thể bước vào.</p>
+<p>Nhưng bản vẽ, ổ cắm và luật xây dựng phải đủ rõ ràng để khi thay cái bếp, phòng khách không bất ngờ rơi xuống hồ.</p>
+<h1 id="tham-khảo">Tham khảo<a class="anchor ms-1" href="#tham-khảo"><i class="fas fa-link"></i></a></h1>
+<ul>
+<li><a href="https://moderndata101.substack.com/p/introducing-lakehouse-20-what-changes" target="_blank" rel="noopener noreferrer">Introducing Lakehouse 2.0: What Changes?</a></li>
+<li><a href="https://www.moderndata101.com/blogs/lakehouse-2-0-the-open-system-that-lakehouse-1-0-was-meant-to-be-part-1" target="_blank" rel="noopener noreferrer">Lakehouse 2.0: The Open System That Lakehouse 1.0 Was Meant to Be</a></li>
+<li><a href="https://www.databricks.com/blog/open-sourcing-unity-catalog" target="_blank" rel="noopener noreferrer">Open Sourcing Unity Catalog</a></li>
+<li><a href="https://iceberg.apache.org/rest-catalog-spec/" target="_blank" rel="noopener noreferrer">Apache Iceberg REST Catalog Specification</a></li>
+<li><a href="https://polaris.apache.org/" target="_blank" rel="noopener noreferrer">Apache Polaris Project</a></li>
+<li><a href="https://polaris.apache.org/blog/2026/02/19/apache-polaris-graduates-to-top-level-project/" target="_blank" rel="noopener noreferrer">Apache Polaris Graduates to Top Level Project</a></li>
+<li><a href="https://delta.io/blog/state-of-the-project-pt2/" target="_blank" rel="noopener noreferrer">Delta Lake: State of the Project — Interoperability</a></li>
+<li><a href="https://www.confluent.io/blog/introducing-tableflow/" target="_blank" rel="noopener noreferrer">Introducing Tableflow</a></li>
+<li><a href="https://www.confluent.io/blog/tableflow-is-now-generally-available/" target="_blank" rel="noopener noreferrer">Tableflow Is Generally Available</a></li>
+<li><a href="https://aws.amazon.com/blogs/aws/new-amazon-s3-tables-storage-optimized-for-analytics-workloads/" target="_blank" rel="noopener noreferrer">Amazon S3 Tables</a></li>
+<li><a href="https://aws.amazon.com/blogs/aws/replicate-changes-from-databases-to-apache-iceberg-tables-using-amazon-data-firehose/" target="_blank" rel="noopener noreferrer">Replicate Database Changes to Apache Iceberg Using Amazon Data Firehose</a></li>
+<li><a href="https://cloud.google.com/blog/products/data-analytics/enhancing-biglake-for-iceberg-lakehouses" target="_blank" rel="noopener noreferrer">Enhancing BigLake for Iceberg Lakehouses</a></li>
+<li><a href="https://cloud.google.com/blog/products/data-analytics/extending-the-google-data-cloud-lakehouse-architecture" target="_blank" rel="noopener noreferrer">Extending the Google Data Cloud Lakehouse Architecture</a></li>
+<li><a href="https://cloud.google.com/blog/topics/google-cloud-next/google-cloud-next-2026-wrap-up" target="_blank" rel="noopener noreferrer">Google Cloud Next 2026 Wrap Up</a></li>
+</ul>
+</div></div>
+  <div class="card-footer"><div class="post-navs d-flex justify-content-evenly"><div class="post-nav post-prev">
+    <i class="fas fa-fw fa-chevron-left"></i>
+    <a href="https://www.phamduytung.com/blog/2026-07-23-lakehouse-v1/">Lakehouse 1.0: Từ hồ dữ liệu hỗn loạn đến Bronze, Silver và Gold
+</a>
+  </div><div class="post-nav post-next">
+    <a href="https://www.phamduytung.com/blog/2026-07-13-2-brain/">Second Brain được xây từ những gì?
+</a>
+    <i class="fas fa-fw fa-chevron-right"></i>
+  </div></div></div>
+</article><div class="card component row post-comments" id="post-comments">
+  <div class="card-header">
+    <h2 class="card-title">Bình luận</h2>
+  </div>
+  <div class="card-body"><script src="https://utteranc.es/client.js"
+  repo="AlexBlack2202/utterances"
+  issue-term="pathname"
+  label="comment"
+  theme="github-dark"
+  crossorigin="anonymous"
+  async>
+</script></div>
+</div></div>
+</div><aside class="col-lg-3 col-md-4 sidebar d-flex">
+  <div class="container d-flex flex-column">
+    
+    <a href="https://www.buymeacoffee.com/alexblack28"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=🍎&slug=alexblack28&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" /></a><div class="post-toc row mb-4 card component" id="postTOC">
+  <div class="card-header">
+    <h2 class="card-title">Mục lục</h2>
+  </div>
+  <div class="card-body">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#căn-nhà-trên-hồ-đã-xây-xong-rồi-người-ta-phát-hiện-mình-bị-nhốt-bên-trong">Căn nhà trên hồ đã xây xong, rồi người ta phát hiện mình bị nhốt bên trong</a></li>
+    <li><a href="#lakehouse-20-có-phải-một-tiêu-chuẩn-chính-thức-không">Lakehouse 2.0 có phải một tiêu chuẩn chính thức không?</a></li>
+    <li><a href="#vấn-đề-còn-lại-của-lakehouse-10">Vấn đề còn lại của Lakehouse 1.0</a>
+      <ul>
+        <li><a href="#file-mở-nhưng-cách-hiểu-file-vẫn-có-thể-bị-khóa">File mở nhưng cách hiểu file vẫn có thể bị khóa</a></li>
+        <li><a href="#một-engine-thường-trở-thành-trung-tâm-vũ-trụ">Một engine thường trở thành trung tâm vũ trụ</a></li>
+        <li><a href="#streaming-và-batch-vẫn-là-hai-dòng-sông-riêng">Streaming và batch vẫn là hai dòng sông riêng</a></li>
+      </ul>
+    </li>
+    <li><a href="#giai-đoạn-20242026-các-mảnh-ghép-bắt-đầu-đổi-chỗ">Giai đoạn 2024–2026: các mảnh ghép bắt đầu đổi chỗ</a>
+      <ul>
+        <li><a href="#năm-2024-catalog-và-streaming-bắt-đầu-mở-cửa">Năm 2024: catalog và streaming bắt đầu mở cửa</a></li>
+        <li><a href="#năm-2025-open-bắt-đầu-đi-cùng-managed">Năm 2025: “open” bắt đầu đi cùng “managed”</a></li>
+        <li><a href="#năm-2026-catalog-trở-thành-đường-biên-giữa-các-cloud">Năm 2026: catalog trở thành đường biên giữa các cloud</a></li>
+      </ul>
+    </li>
+    <li><a href="#kiến-trúc-lakehouse-20">Kiến trúc Lakehouse 2.0</a></li>
+    <li><a href="#open-table-format-trở-thành-hợp-đồng-của-dữ-liệu">Open table format trở thành hợp đồng của dữ liệu</a></li>
+    <li><a href="#catalog-trở-thành-bộ-não-của-lakehouse">Catalog trở thành bộ não của Lakehouse</a></li>
+    <li><a href="#compute-không-còn-là-vua-compute-trở-thành-đội-thợ">Compute không còn là vua, compute trở thành đội thợ</a></li>
+    <li><a href="#object-storage-bắt-đầu-hiểu-khái-niệm-bảng">Object storage bắt đầu hiểu khái niệm bảng</a></li>
+    <li><a href="#streaming-không-còn-đứng-ngoài-cửa-lakehouse">Streaming không còn đứng ngoài cửa Lakehouse</a></li>
+    <li><a href="#bronze-silver-và-gold-có-biến-mất-không">Bronze, Silver và Gold có biến mất không?</a>
+      <ul>
+        <li><a href="#bronze-trong-lakehouse-20">Bronze trong Lakehouse 2.0</a></li>
+        <li><a href="#silver-trong-lakehouse-20">Silver trong Lakehouse 2.0</a></li>
+        <li><a href="#gold-trong-lakehouse-20">Gold trong Lakehouse 2.0</a></li>
+      </ul>
+    </li>
+    <li><a href="#ví-dụ-lakehouse-20-cho-hệ-thống-bán-lẻ">Ví dụ Lakehouse 2.0 cho hệ thống bán lẻ</a>
+      <ul>
+        <li><a href="#bước-1-đưa-thay-đổi-từ-hệ-thống-nguồn-vào-event-stream">Bước 1: đưa thay đổi từ hệ thống nguồn vào event stream</a></li>
+        <li><a href="#bước-2-materialize-sự-kiện-thành-bảng-bronze">Bước 2: materialize sự kiện thành bảng Bronze</a></li>
+        <li><a href="#bước-3-cập-nhật-silver">Bước 3: cập nhật Silver</a></li>
+        <li><a href="#bước-4-nhiều-engine-cùng-dùng-silver">Bước 4: nhiều engine cùng dùng Silver</a></li>
+        <li><a href="#bước-5-tạo-gold-theo-từng-data-product">Bước 5: tạo Gold theo từng data product</a></li>
+      </ul>
+    </li>
+    <li><a href="#lakehouse-10-và-lakehouse-20-khác-nhau-thế-nào">Lakehouse 1.0 và Lakehouse 2.0 khác nhau thế nào?</a></li>
+    <li><a href="#zero-copy-không-có-nghĩa-là-không-có-gì-di-chuyển">“Zero copy” không có nghĩa là không có gì di chuyển</a></li>
+    <li><a href="#những-vấn-đề-lakehouse-20-vẫn-chưa-giải-quyết-xong">Những vấn đề Lakehouse 2.0 vẫn chưa giải quyết xong</a>
+      <ul>
+        <li><a href="#nhiều-engine-không-đồng-nghĩa-hành-vi-giống-nhau">Nhiều engine không đồng nghĩa hành vi giống nhau</a></li>
+        <li><a href="#catalog-có-thể-trở-thành-điểm-nghẽn-mới">Catalog có thể trở thành điểm nghẽn mới</a></li>
+        <li><a href="#streaming-vẫn-tạo-ra-file-nhỏ">Streaming vẫn tạo ra file nhỏ</a></li>
+        <li><a href="#một-bản-dữ-liệu-không-có-nghĩa-là-một-sự-thật-nghiệp-vụ">Một bản dữ liệu không có nghĩa là một sự thật nghiệp vụ</a></li>
+        <li><a href="#open-format-không-xóa-hoàn-toàn-vendor-lock-in">Open format không xóa hoàn toàn vendor lock-in</a></li>
+      </ul>
+    </li>
+    <li><a href="#có-cần-nâng-cấp-từ-lakehouse-10-lên-20-không">Có cần nâng cấp từ Lakehouse 1.0 lên 2.0 không?</a></li>
+    <li><a href="#tổng-kết">Tổng kết</a></li>
+    <li><a href="#tham-khảo">Tham khảo</a></li>
+  </ul>
+</nav>
+  </div>
+</div><section class="recent-posts row card component">
+  <div class="card-header">
+    <h2 class="card-title">Bài gần đây</h2>
+  </div>
+  <div class="card-body">
+    <ul class="post-list"><li>
+        <a href="https://www.phamduytung.com/blog/2026-07-13-2-brain/">Second Brain được xây từ những gì?
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-07-24-lakehouse-v2/">Lakehouse 2.0: Khi căn nhà trên hồ bị tháo thành những mảnh Lego
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-07-23-lakehouse-v1/">Lakehouse 1.0: Từ hồ dữ liệu hỗn loạn đến Bronze, Silver và Gold
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-07-22-apache-iceberg/">Apache Iceberg: Tấm sổ đỏ biến Data Lake thành Lakehouse
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-07-21-tidb-distributed-sql/">TiDB: Khi một database phải học cách sống như cả một thành phố
+</a>
+      </li></ul>
+  </div>
+</section><section class="series-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/series">series</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/series/kh%C3%B3a-h%E1%BB%8Dc-python-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học Python Căn Bản">
+            Khóa Học Python Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="https://www.phamduytung.com/series/kh%C3%B3a-h%E1%BB%8Dc-c&#43;&#43;-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học C&#43;&#43; Căn Bản">
+            Khóa Học C&#43;&#43; Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="https://www.phamduytung.com/series/machine-learning-dataset/" class="badge rounded post-taxonomy" title="Machine Learning Dataset">
+            Machine Learning Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a><a href="https://www.phamduytung.com/series/ch%E1%BB%A9ng-kho%C3%A1n-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Chứng Khoán Căn Bản">
+            Chứng Khoán Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">1</span></a></div>
+      </div>
+    </section><section class="tools-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/tools">tools</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/tools/tool-random/" class="badge rounded post-taxonomy" title="Tool Random">
+            Tool Random<span class="badge badge-sm text-white bg-accent ms-1">3</span></a></div>
+      </div>
+    </section><section class="categories-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/categories">categories</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/categories/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="https://www.phamduytung.com/categories/c&#43;&#43;/" class="badge rounded post-taxonomy" title="C&#43;&#43;">
+            C&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="https://www.phamduytung.com/categories/dataset/" class="badge rounded post-taxonomy" title="Dataset">
+            Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a></div>
+      </div>
+    </section><section class="tags-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/tags">tags</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/tags/machine-learning/" class="badge rounded post-taxonomy" title="Machine Learning">
+            Machine Learning<span class="badge badge-sm text-white bg-accent ms-1">26</span></a><a href="https://www.phamduytung.com/tags/deep-learning/" class="badge rounded post-taxonomy" title="Deep Learning">
+            Deep Learning<span class="badge badge-sm text-white bg-accent ms-1">23</span></a><a href="https://www.phamduytung.com/tags/computer-vision/" class="badge rounded post-taxonomy" title="Computer Vision">
+            Computer Vision<span class="badge badge-sm text-white bg-accent ms-1">16</span></a><a href="https://www.phamduytung.com/tags/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">14</span></a><a href="https://www.phamduytung.com/tags/llm/" class="badge rounded post-taxonomy" title="LLM">
+            LLM<span class="badge badge-sm text-white bg-accent ms-1">13</span></a><a href="https://www.phamduytung.com/tags/recommendation-system/" class="badge rounded post-taxonomy" title="Recommendation System">
+            Recommendation System<span class="badge badge-sm text-white bg-accent ms-1">7</span></a><a href="https://www.phamduytung.com/tags/system-design/" class="badge rounded post-taxonomy" title="System Design">
+            System Design<span class="badge badge-sm text-white bg-accent ms-1">7</span></a><a href="https://www.phamduytung.com/tags/ai-agent/" class="badge rounded post-taxonomy" title="Ai Agent">
+            Ai Agent<span class="badge badge-sm text-white bg-accent ms-1">6</span></a><a href="https://www.phamduytung.com/tags/time-series/" class="badge rounded post-taxonomy" title="Time Series">
+            Time Series<span class="badge badge-sm text-white bg-accent ms-1">6</span></a><a href="https://www.phamduytung.com/tags/uber-engineering/" class="badge rounded post-taxonomy" title="Uber Engineering">
+            Uber Engineering<span class="badge badge-sm text-white bg-accent ms-1">6</span></a></div>
+      </div>
+    </section>
+    
+  </div>
+</aside>
+</div>
+    </main><footer class="footer mt-auto py-3 text-center container"><ul class="nav justify-content-between footer-memu mb-3"><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Community
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-facebook"></i>Facebook Group
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://github.com/AlexBlack2202/alexblack2202.github.io" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-github"></i>GitHub
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/contact/"><i class="fas fa-fw fa-info-circle"></i>Contact Us
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/faq/"><i class="fas fa-fw fa-question-circle"></i>Câu hỏi thường gặp
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Docs
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="/team_of_services" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-users"></i>Điều khoản sử dụng
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/privacy" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-lock"></i>Chính sách bảo mật
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Features
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="/utils/gen_paswords/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-key"></i>Tạo password ngẫu nhiên
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Liên kết khác
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">Netlify
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">facebook
+</a>
+        </li></ul></li></ul>
+<div class="copyright mb-2">
+  Copyright © 2016-2026 Phạm Duy Tùng. All Rights Reserved.
+</div>
+<div class="powered-by mb-2">
+  Website chia sẻ kiến thức của Phạm Duy Tùng và Đặng Thị Hằng. Vui lòng liên hệ email alexblack2202@gmail.com nếu bạn có thông tin cần trao đổi.
+</div></footer>
+<script src="https://www.phamduytung.com/js/main.111d51a8c754010f8399ca010e552d803e2d5170b361f8886ad04ec6c21ca551.js" integrity="sha256-ER1RqMdUAQ&#43;DmcoBDlUtgD4tUXCzYfiIatBOxsIcpVE=" crossorigin="anonymous" defer></script><script src="https://www.phamduytung.com/js/icons.min.cb4c9958dbc49e29ac644e168e82db2d0de9a741a15751cc5bf2b0af21eb2845.js" integrity="sha256-y0yZWNvEnimsZE4WjoLbLQ3pp0GhV1HMW/KwryHrKEU=" crossorigin="anonymous" defer></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('https:\/\/www.phamduytung.com\/service-worker.js').then(function(reg) {
+      console.log('Successfully registered service worker', reg);
+    }).catch(function(err) {
+      console.warn('Error whilst registering service worker', err);
+    });
+  });
+}
+</script><script src="https://www.phamduytung.com/js/viewer.min.28bcf5233e406dae6715f46c8b9e8ca7c6cbf347e8678f5a2bebe5369c3270bb.js" integrity="sha256-KLz1Iz5Aba5nFfRsi56Mp8bL80foZ49aK&#43;vlNpwycLs=" crossorigin="anonymous" defer></script><script defer src="https://www.phamduytung.com/js/katex.min.8582b9feadf92a2a977ed303b97d7713cf2754ccf2b4eb60d8be7453a21042c2.js" integrity="sha256-hYK5/q35KiqXftMDuX13E88nVMzytOtg2L50U6IQQsI=" crossorigin="anonymous"></script>
+
+<script  data-ad-client="ca-pub-4644989745435991"  async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4644989745435991"
+     crossorigin="anonymous"></script><script data-cfasync="false" type="text/javascript" data-adel="atag" src="//acscdn.com/script/atg.js" czid="eul3gyjdmm"></script>
+  </body>
+</html>
