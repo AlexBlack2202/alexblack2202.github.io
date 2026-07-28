@@ -1,0 +1,1131 @@
+<!doctype html><html lang="vi" data-palette="brown"
+   data-mode="light">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Grab chuyển Data Lake sang Apache Iceberg: Bài học không nằm ở việc đổi định dạng file - Phạm Duy Tùng Machine Learning Blog</title>
+    <meta name="a.validate.02" content="1QZXZ8oi7g57H-GxBrBPkTYBydwii-Ic9iJu" /><link rel="apple-touch-icon" href="https://www.phamduytung.com/images/icons/icon-180x180.png" sizes="180x180">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/icon-32x32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/icon-16x16.png" sizes="16x16" type="image/png">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/favicon.ico">
+<link rel="manifest" href="https://www.phamduytung.com/manifest.json">
+<meta name="keywords" content="" />
+<meta name="description" content="Hành trình Grab đưa Apache Iceberg vào Data Lake quy mô petabyte, những vấn đề của Hive Parquet và các bài học thực tế về migration, metadata, timestamp, small file và trải nghiệm người dùng." /><meta name="robots" content="index, follow" />
+	<meta itemprop="name" content="Grab chuyển Data Lake sang Apache Iceberg: Bài học không nằm ở việc đổi định dạng file">
+	<meta itemprop="description" content="Hành trình Grab đưa Apache Iceberg vào Data Lake quy mô petabyte, những vấn đề của Hive Parquet và các bài học thực tế về migration, metadata, timestamp, small file và trải nghiệm người dùng.">
+	<meta itemprop="datePublished" content="2026-07-28T10:00:00+07:00">
+	<meta itemprop="dateModified" content="2026-07-28T10:00:00+07:00">
+	<meta itemprop="wordCount" content="5292">
+	<meta itemprop="image" content="https://www.phamduytung.com/images/posts/2026-07-28-grab-apache-iceberg-migration/cover.jpg">
+	<meta itemprop="keywords" content="Apache Iceberg,Data Lake,Lakehouse,Spark,Data Engineering"><meta property="og:url" content="https://www.phamduytung.com/blog/2026-07-28-grab-apache-iceberg-migration/">
+	<meta property="og:site_name" content="Phạm Duy Tùng Machine Learning Blog">
+	<meta property="og:title" content="Grab chuyển Data Lake sang Apache Iceberg: Bài học không nằm ở việc đổi định dạng file">
+	<meta property="og:description" content="Hành trình Grab đưa Apache Iceberg vào Data Lake quy mô petabyte, những vấn đề của Hive Parquet và các bài học thực tế về migration, metadata, timestamp, small file và trải nghiệm người dùng.">
+	<meta property="og:locale" content="vi_VN">
+	<meta property="og:type" content="article">
+		<meta property="article:section" content="blog">
+		<meta property="article:published_time" content="2026-07-28T10:00:00+07:00">
+		<meta property="article:modified_time" content="2026-07-28T10:00:00+07:00">
+		<meta property="article:tag" content="Apache Iceberg">
+		<meta property="article:tag" content="Data Lake">
+		<meta property="article:tag" content="Lakehouse">
+		<meta property="article:tag" content="Spark">
+		<meta property="article:tag" content="Data Engineering">
+		<meta property="og:image" content="https://www.phamduytung.com/images/posts/2026-07-28-grab-apache-iceberg-migration/cover.jpg">
+
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:image" content="https://www.phamduytung.com/images/posts/2026-07-28-grab-apache-iceberg-migration/cover.jpg">
+	<meta name="twitter:title" content="Grab chuyển Data Lake sang Apache Iceberg: Bài học không nằm ở việc đổi định dạng file">
+	<meta name="twitter:description" content="Hành trình Grab đưa Apache Iceberg vào Data Lake quy mô petabyte, những vấn đề của Hive Parquet và các bài học thực tế về migration, metadata, timestamp, small file và trải nghiệm người dùng.">
+<link rel="stylesheet" href="https://www.phamduytung.com/css/main.min.7dd8c8ad44fe5c0f292dd635ae28981312b940a5894df3049d2a6e2fa2f43327.css" integrity="sha256-fdjIrUT&#43;XA8pLdY1riiYExK5QKWJTfMEnSpuL6L0Myc=" crossorigin="anonymous"><link rel="stylesheet" href="https://www.phamduytung.com/css/katex.min.4d6aa053ca8a5675016fa2c9c48ee5359bfaafb8295184458af9d64abce84c47.css" integrity="sha256-TWqgU8qKVnUBb6LJxI7lNZv6r7gpUYRFivnWSrzoTEc=" crossorigin="anonymous">
+<link rel="stylesheet" href="https://www.phamduytung.com/css/viewer.min.e882eb3a023412b73bb741b4604a1222a9f13aa7783c828d26d066ab8642bd51.css" integrity="sha256-6ILrOgI0Erc7t0G0YEoSIqnxOqd4PIKNJtBmq4ZCvVE=" crossorigin="anonymous"><link rel="canonical" href="https://www.phamduytung.com/blog/2026-07-28-grab-apache-iceberg-migration/"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Phạm Duy Tùng"},"dateModified":"2026-07-28T10:00:00+07:00","datePublished":"2026-07-28T10:00:00+07:00","description":"Hành trình Grab đưa Apache Iceberg vào Data Lake quy mô petabyte, những vấn đề của Hive Parquet và các bài học thực tế về migration, metadata, timestamp, small file và trải nghiệm người dùng.","headline":"Grab chuyển Data Lake sang Apache Iceberg: Bài học không nằm ở việc đổi định dạng file","image":["https://www.phamduytung.com/images/posts/2026-07-28-grab-apache-iceberg-migration/cover.jpg"],"inLanguage":"vi","keywords":"apache-iceberg, data-lake, lakehouse, spark, data-engineering","mainEntityOfPage":{"@id":"https://www.phamduytung.com/blog/2026-07-28-grab-apache-iceberg-migration/","@type":"WebPage"},"publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://www.phamduytung.com/images/logo.png"},"name":"Phạm Duy Tùng Machine Learning Blog"},"url":"https://www.phamduytung.com/blog/2026-07-28-grab-apache-iceberg-migration/"}</script></head>
+  <body><script>const items=["mode","palette"];items.forEach(function(e){const t=localStorage.getItem("hbs-"+e);t&&document.body.parentElement.setAttribute("data-"+e,t)})</script><header><nav class="navbar top-app-bar top-app-bar-expand-lg fixed-top">
+  <div class="container">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <i class="fas fa-bars"></i>
+    </button><a class="navbar-brand flex-grow-1 flex-lg-grow-0 text-center text-lg-start mx-auto me-lg-3" href="https://www.phamduytung.com/"><img class="logo" alt="Logo" src="https://www.phamduytung.com/images/logo.webp" loading="lazy"  title="Logo"
+   width="32" height="32"
+   />
+Phạm Duy Tùng
+    </a>
+    <div class="offcanvas offcanvas-bottom surface" tabindex="-1" id="offcanvasSocialShare" aria-labelledby="offcanvasSocialShare">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Share</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body">
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Twitter Share Button"
+      target="_blank" href="https://twitter.com/intent/tweet?title=Grab%20chuy%e1%bb%83n%20Data%20Lake%20sang%20Apache%20Iceberg%3a%20B%c3%a0i%20h%e1%bb%8dc%20kh%c3%b4ng%20n%e1%ba%b1m%20%e1%bb%9f%20vi%e1%bb%87c%20%c4%91%e1%bb%95i%20%c4%91%e1%bb%8bnh%20d%e1%ba%a1ng%20file&url=https%3a%2f%2fwww.phamduytung.com%2fblog%2f2026-07-28-grab-apache-iceberg-migration%2f">
+      <i class="fab fa-fw fa-twitter"></i> Twitter
+    </a>
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Facebook Share Button"
+      target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.phamduytung.com%2fblog%2f2026-07-28-grab-apache-iceberg-migration%2f">
+      <i class="fab fa-fw fa-facebook-f"></i> Facebook
+    </a>
+  </div>
+</div>
+    <button class="navbar-settings" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSettings"
+  aria-controls="offcanvasSettings" aria-label="Toggle settings">
+  <i class="fas fa-ellipsis-v"></i>
+</button>
+
+<div class="offcanvas offcanvas-end surface h-100" tabindex="-1" id="offcanvasSettings" aria-labelledby="offcanvasSettings">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Cài đặt</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body d-flex flex-column">
+
+
+
+<section class="setting">
+  <form class="font-size-switcher-form row">
+    <div class="col-auto">
+      <label for="fontSize" class="form-label"><i class="fas fa-fw fa-font"></i> Cỡ chữ</label>
+    </div>
+    <div class="col-auto ms-auto">
+      <input type="range" class="form-range" min="-2" max="2" id="fontSize">
+    </div>
+  </form>
+</section>
+
+
+
+<section class="setting actions d-flex justify-content-around mt-auto overflow-auto">
+  <a role="button" class="action action-go-back" href="javascript: window.history.back();">
+    <span class="action-icon"><i class="fas fa-2x fa-arrow-left"></i></span> Quay lại
+  </a>
+  <a role="button" class="action action-reload-page">
+    <span class="action-icon"><i class="fas fa-2x fa-redo-alt"></i></span> Tải lại
+  </a>
+  <a role="button" class="action action-copy-url">
+    <span class="action-icon"><i class="fas fa-2x fa-link"></i></span> Sao chép URL
+  </a><a class="action action-social-share" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSocialShare"
+    aria-controls="offcanvasSocialShare" aria-label="Toggle social share">
+    <span class="action-icon"><i class="fas fa-2x fa-share-alt"></i></span> Chia sẻ
+  </a></section>
+
+</div>
+</div>
+
+    <div class="collapse navbar-collapse" tabindex="-1" id="navbarSupportedContent" aria-labelledby="navbarSupportedContent">
+      <form class="search-bar my-1" action="https://www.phamduytung.com/search">
+  <div class="input-group input-group-sm">
+    <span class="btn btn-search disabled position-absolute left-0"><i class="fas fa-fw fa-search"></i></span>
+    <input class="form-control rounded-pill" name="q" type="search" aria-label="Search">
+  </div>
+</form>
+      <ul class="navbar-nav ms-auto"><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/series/">
+            <i class="fas fa-fw fa-columns"></i>Courses
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/tools/">
+            <i class="fas fa-fw fa-folder"></i>Tools
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/categories/">
+            <i class="fas fa-fw fa-folder"></i>Categories
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/archives/">
+            <i class="fas fa-fw fa-file-archive"></i>Archives
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/tags/">
+            <i class="fas fa-fw fa-tags"></i>Tags
+          </a>
+        </li><li class="nav-item dropdown">
+          <a class="nav-link" id="navbarDropdownSupport" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-fw fa-comments"></i>Community
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdownSupport"><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Facebook Group
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://github.com/AlexBlack2202/alexblack2202.github.io" target="_blank" rel="noopener noreferrer">
+                GitHub
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/contact/">
+                Contact
+              </a>
+            </li><li><hr class="dropdown-divider"></li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/faq/">
+                Câu hỏi thường gặp
+              </a>
+            </li></ul>
+        </li></ul>
+    </div>
+  </div>
+</nav>
+</header>
+<main role="main" class="container" style="line-height:1.7em">
+      <div class="row content">
+<div class="col-lg-9 col-md-8">
+  <div class="container"><nav class="row card component" aria-label="breadcrumb">
+  <div class="card-body">
+    <ol class="breadcrumb "><li class="breadcrumb-item"><a href="https://www.phamduytung.com/">Trang chủ</a></li><li class="breadcrumb-item"><a href="https://www.phamduytung.com/blog/">Blogs</a></li><li class="breadcrumb-item active">Grab chuyển Data Lake sang Apache Iceberg: Bài học không nằm ở việc đổi định dạng file</li></ol>
+  </div>
+</nav>
+<div class="post-panel-wrapper">
+  <div class="d-flex flex-column component rounded post-panel">
+    
+    <a class="action action-panel-toggler" role="button" title="Panel toggler">
+      <i class="fas fa-fw fa-chevron-circle-down"></i>
+    </a>
+    <a id="sidebarToggler" class="action d-none d-lg-block" role="button" title="Sidebar toggler">
+  <i class="fas fa-fw fa-expand-alt" data-fa-transform="rotate-45"></i>
+</a>
+
+    
+
+    
+    
+    <a class="action" href="#post-comments" role="button" aria-label="Comments" title="Comments">
+  <i class="fas fa-fw fa-comments"></i>
+</a>
+    <a class="action" href="#postTOC" aria-controls="Table of contents" role="button" title="Table of contents">
+  <i class="fas fa-fw fa-list-alt"></i>
+</a>
+    
+  </div>
+</div>
+<article class="row card component mb-4 post">
+  <div class="card-header "><div class="bgcover" style="background-image:url(https://www.phamduytung.com/images/posts/2026-07-28-grab-apache-iceberg-migration/cover.jpg)" aria-label="Grab chuyển Data Lake sang Apache Iceberg: Bài học không nằm ở việc đổi định dạng file">
+      <div class="bgtrans">
+          <h1>Grab chuyển Data Lake sang Apache Iceberg: Bài học không nằm ở việc đổi định dạng file
+</h1>
+      </div>
+  </div>
+</div>
+  <div class="card-body"><div class="post-meta">
+  <span class="post-date" title="tạo ngày 2026-07-28 10:00:00 &#43;0700 &#43;07.">
+    28/07/2026
+  </span><span class="post-reading-time">
+    25 phút đọc
+  </span><span class="post-taxonomies"><a href="https://www.phamduytung.com/tags/apache-iceberg/" class="badge post-taxonomy">apache iceberg</a><a href="https://www.phamduytung.com/tags/data-lake/" class="badge post-taxonomy">data lake</a><a href="https://www.phamduytung.com/tags/lakehouse/" class="badge post-taxonomy">lakehouse</a><a href="https://www.phamduytung.com/tags/spark/" class="badge post-taxonomy">spark</a><a href="https://www.phamduytung.com/tags/data-engineering/" class="badge post-taxonomy">data engineering</a></span>
+</div>
+<div class="post-content mb-3"><div class="toc">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#không-có-gì-chỉ-là-một-file-parquet">Không có gì chỉ là một file Parquet</a></li>
+    <li><a href="#khi-data-lake-lớn-đến-mức-thư-mục-trở-thành-gánh-nặng">Khi Data Lake lớn đến mức thư mục trở thành gánh nặng</a>
+      <ul>
+        <li><a href="#bốn-vấn-đề-grab-gặp-phải">Bốn vấn đề Grab gặp phải</a>
+          <ul>
+            <li><a href="#catalog-trở-thành-nút-cổ-chai">Catalog trở thành nút cổ chai</a></li>
+            <li><a href="#small-file-biến-thành-một-đàn-muỗi">Small file biến thành một đàn muỗi</a></li>
+            <li><a href="#không-có-thao-tác-thay-đổi-dữ-liệu-tự-nhiên">Không có thao tác thay đổi dữ liệu tự nhiên</a></li>
+            <li><a href="#catalog-và-storage-có-thể-không-đồng-bộ">Catalog và storage có thể không đồng bộ</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+    <li><a href="#apache-iceberg-thay-đổi-điều-gì">Apache Iceberg thay đổi điều gì?</a>
+      <ul>
+        <li><a href="#từ-directory-centric-sang-table-centric">Từ directory-centric sang table-centric</a></li>
+      </ul>
+    </li>
+    <li><a href="#vì-sao-grab-chọn-iceberg">Vì sao Grab chọn Iceberg?</a></li>
+    <li><a href="#grab-không-migration-toàn-bộ-data-lake-trong-một-đêm">Grab không migration toàn bộ Data Lake trong một đêm</a>
+      <ul>
+        <li><a href="#query-nhanh-hơn-khoảng-10-lần">Query nhanh hơn khoảng 10 lần</a></li>
+        <li><a href="#chi-phí-s3-api-giảm-tới-95">Chi phí S3 API giảm tới 95%</a></li>
+        <li><a href="#tài-nguyên-compute-giảm-khoảng-một-nửa">Tài nguyên compute giảm khoảng một nửa</a></li>
+      </ul>
+    </li>
+    <li><a href="#unifiedsparkcatalog-người-dùng-không-nên-trả-giá-cho-migration">UnifiedSparkCatalog: Người dùng không nên trả giá cho migration</a></li>
+    <li><a href="#những-lesson-learned-quan-trọng-nhất">Những lesson learned quan trọng nhất</a></li>
+    <li><a href="#1-đừng-migration-vì-công-nghệ-mới-trông-đẹp">1. Đừng migration vì công nghệ mới trông đẹp</a></li>
+    <li><a href="#2-table-format-không-tự-chữa-được-small-file">2. Table format không tự chữa được small file</a></li>
+    <li><a href="#3-metadata-cũng-là-một-hệ-thống-production">3. Metadata cũng là một hệ thống production</a></li>
+    <li><a href="#4-timestamp-không-phải-một-kiểu-dữ-liệu-vô-tội">4. Timestamp không phải một kiểu dữ liệu vô tội</a></li>
+    <li><a href="#5-đọc-dữ-liệu-cũ-có-thể-làm-hóa-đơn-tăng-trước-khi-giảm">5. Đọc dữ liệu cũ có thể làm hóa đơn tăng trước khi giảm</a></li>
+    <li><a href="#6-migration-format-phải-đi-cùng-migration-trải-nghiệm-người-dùng">6. Migration format phải đi cùng migration trải nghiệm người dùng</a></li>
+    <li><a href="#7-hãy-thiết-kế-cho-thời-kỳ-nhiều-format-cùng-tồn-tại">7. Hãy thiết kế cho thời kỳ nhiều format cùng tồn tại</a></li>
+    <li><a href="#một-lộ-trình-triển-khai-iceberg-thực-tế">Một lộ trình triển khai Iceberg thực tế</a>
+      <ul>
+        <li><a href="#bước-1-lập-bản-đồ-hiện-trạng">Bước 1: Lập bản đồ hiện trạng</a></li>
+        <li><a href="#bước-2-chia-bảng-thành-nhóm">Bước 2: Chia bảng thành nhóm</a></li>
+        <li><a href="#bước-3-xây-compatibility-layer">Bước 3: Xây compatibility layer</a></li>
+        <li><a href="#bước-4-chạy-song-song-và-đối-chiếu">Bước 4: Chạy song song và đối chiếu</a></li>
+        <li><a href="#bước-5-thiết-lập-maintenance-trước-khi-mở-rộng">Bước 5: Thiết lập maintenance trước khi mở rộng</a></li>
+        <li><a href="#bước-6-đo-lại-sau-migration">Bước 6: Đo lại sau migration</a></li>
+      </ul>
+    </li>
+    <li><a href="#iceberg-không-phải-phép-màu">Iceberg không phải phép màu</a></li>
+    <li><a href="#tổng-kết">Tổng kết</a></li>
+    <li><a href="#tham-khảo">Tham khảo</a></li>
+  </ul>
+</nav>
+  </div>
+<h1 id="không-có-gì-chỉ-là-một-file-parquet">Không có gì chỉ là một file Parquet<a class="anchor ms-1" href="#không-có-gì-chỉ-là-một-file-parquet"><i class="fas fa-link"></i></a></h1>
+<p>Giả sử nhà mình có một cái kho.</p>
+<p>Lúc đầu kho chỉ chứa vài chục thùng mì tôm, vài cái ghế nhựa và một chiếc quạt cũ không biết còn chạy hay không. Mình có thể nhớ mọi thứ bằng đầu:</p>
+<ul>
+<li>Thùng mì nằm bên trái.</li>
+<li>Ghế nhựa nằm cạnh cửa.</li>
+<li>Cái quạt nằm đâu đó phía sau.</li>
+<li>Còn cục sạc Nokia thì đã biến mất khỏi thế giới vật chất.</li>
+</ul>
+<p>Khi cần lấy đồ, mình chỉ việc mở cửa kho rồi nhìn quanh.</p>
+<p>Nghe thì có vẻ đơn giản.</p>
+<p>Nhưng nếu cái kho ấy lớn bằng một thành phố, chứa hàng tỷ thùng hàng và mỗi ngày có hàng nghìn người cùng chạy vào tìm đồ, câu chuyện bắt đầu không còn vui nữa.</p>
+<p>Một người cần tìm hóa đơn tháng trước.</p>
+<p>Một người khác muốn cập nhật trạng thái đơn hàng.</p>
+<p>Một chương trình Machine Learning đang cố đọc vài tỷ dòng dữ liệu hành vi.</p>
+<p>Trong khi đó, một ông nào đó vừa lén đặt thêm 20.000 thùng vào góc kho nhưng quên cập nhật sổ quản lý.</p>
+<p>Lúc này, vấn đề không còn là “dữ liệu được lưu bằng Parquet hay CSV”.</p>
+<p>Vấn đề là cái kho có biết chính xác nó đang chứa những gì hay không.</p>
+<p>Data Lake của Grab từng đối mặt với một phiên bản rất lớn của câu chuyện đó. Hệ thống chứa dữ liệu ở quy mô petabyte, trải trên hàng tỷ object trong Amazon S3. Phần lớn các bảng được lưu dưới dạng Hive Parquet, quản lý bằng Hive Metastore và tổ chức theo thư mục. Kiến trúc này hoạt động tốt trong nhiều năm, nhưng khi số lượng dữ liệu, partition và workload tăng lên, cái kho bắt đầu kêu cót két. (<a href="https://engineering.grab.com/our-journey-to-apache-iceberg-adoption" title="Scaling Grab&#39;s Data Lake: Our journey to Apache Iceberg adoption" target="_blank" rel="noopener noreferrer">Grab Tech</a>)</p>
+<p>Grab quyết định chuyển dần sang Apache Iceberg.</p>
+<p>Nhưng điểm đáng học nhất trong hành trình này không phải là câu:</p>
+<blockquote>
+<p>Iceberg nhanh hơn Hive.</p>
+</blockquote>
+<p>Câu đó đúng trong một số trường hợp, nhưng quá đơn giản.</p>
+<p>Bài học thật sự là: <strong>thay table format không chỉ là thay cách lưu file; nó là thay cách cả tổ chức nhìn nhận, vận hành và chịu trách nhiệm với dữ liệu.</strong></p>
+<h1 id="khi-data-lake-lớn-đến-mức-thư-mục-trở-thành-gánh-nặng">Khi Data Lake lớn đến mức thư mục trở thành gánh nặng<a class="anchor ms-1" href="#khi-data-lake-lớn-đến-mức-thư-mục-trở-thành-gánh-nặng"><i class="fas fa-link"></i></a></h1>
+<p>Hive Parquet thường được hiểu như sau:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">s3://data-lake/orders/year=2026/month=07/day=28/
+</span></span></code></pre></div><p>Trong thư mục đó có các file Parquet:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">part-00001.parquet
+</span></span><span class="line"><span class="ln">2</span><span class="cl">part-00002.parquet
+</span></span><span class="line"><span class="ln">3</span><span class="cl">part-00003.parquet
+</span></span><span class="line"><span class="ln">4</span><span class="cl">...
+</span></span></code></pre></div><p>Bên ngoài S3, Hive Metastore giữ thông tin về bảng, schema, partition và location.</p>
+<p>Nói theo kiểu kho hàng:</p>
+<ul>
+<li>S3 là kho vật lý.</li>
+<li>File Parquet là các thùng hàng.</li>
+<li>Thư mục là các dãy kệ.</li>
+<li>Hive Metastore là cuốn sổ ghi vị trí hàng hóa.</li>
+</ul>
+<p>Mô hình này dễ hiểu, dễ triển khai và từng là nền móng của rất nhiều Data Lake.</p>
+<p>Nhưng nó có một vấn đề triết học hơi đau đầu: <strong>sự thật nằm ở đâu?</strong></p>
+<p>Sự thật nằm trong cuốn sổ Hive Metastore?</p>
+<p>Hay sự thật nằm trong những file thực tế trên S3?</p>
+<p>Nếu ai đó xóa file trực tiếp trên S3 nhưng không cập nhật Hive Metastore, cuốn sổ nói rằng hàng vẫn còn trong kho, trong khi cái thùng đã bốc hơi.</p>
+<p>Nếu ai đó thêm file vào S3 nhưng quên đăng ký partition, hàng đã nằm trong kho nhưng không ai biết nó tồn tại.</p>
+<p>Hai thực tại bắt đầu tách nhau ra.</p>
+<p>Một thực tại nằm trong catalog.</p>
+<p>Một thực tại nằm trên storage.</p>
+<p>Và ở giữa hai thực tại ấy là một kỹ sư dữ liệu đang uống ly cà phê thứ tư trong ngày.</p>
+<h2 id="bốn-vấn-đề-grab-gặp-phải">Bốn vấn đề Grab gặp phải<a class="anchor ms-1" href="#bốn-vấn-đề-grab-gặp-phải"><i class="fas fa-link"></i></a></h2>
+<p>Grab chỉ ra bốn giới hạn lớn của kiến trúc Hive Parquet dựa trên thư mục.</p>
+<h3 id="catalog-trở-thành-nút-cổ-chai">Catalog trở thành nút cổ chai<a class="anchor ms-1" href="#catalog-trở-thành-nút-cổ-chai"><i class="fas fa-link"></i></a></h3>
+<p>Khi query một bảng có rất nhiều partition, hệ thống phải hỏi Hive Metastore và duyệt qua lượng metadata ngày càng lớn.</p>
+<p>Chi phí lập kế hoạch truy vấn có thể tăng gần tuyến tính theo số partition. Tức là dữ liệu chưa được đọc, CPU chưa xử lý một dòng nghiệp vụ nào, nhưng chương trình đã tốn nhiều thời gian chỉ để xác định xem cần mở những file nào. (<a href="https://engineering.grab.com/our-journey-to-apache-iceberg-adoption" title="Scaling Grab&#39;s Data Lake: Our journey to Apache Iceberg adoption" target="_blank" rel="noopener noreferrer">Grab Tech</a>)</p>
+<p>Giống như mình gọi điện đến thư viện:</p>
+<blockquote>
+<p>Cho tôi mượn cuốn sách về Apache Iceberg.</p>
+</blockquote>
+<p>Nhân viên trả lời:</p>
+<blockquote>
+<p>Anh chờ em đọc tên toàn bộ ba triệu cuốn sách trước đã.</p>
+</blockquote>
+<p>Cuốn sách có thể chỉ dày 200 trang, nhưng quá trình tìm nó mất cả buổi chiều.</p>
+<h3 id="small-file-biến-thành-một-đàn-muỗi">Small file biến thành một đàn muỗi<a class="anchor ms-1" href="#small-file-biến-thành-một-đàn-muỗi"><i class="fas fa-link"></i></a></h3>
+<p>Một số dataset Machine Learning của Grab có kích thước file trung bình dưới 1 MB, với hàng nghìn file trong mỗi partition. (<a href="https://engineering.grab.com/our-journey-to-apache-iceberg-adoption" title="Scaling Grab&#39;s Data Lake: Our journey to Apache Iceberg adoption" target="_blank" rel="noopener noreferrer">Grab Tech</a>)</p>
+<p>Một file 1 MB nghe không đáng sợ.</p>
+<p>Mười file cũng không đáng sợ.</p>
+<p>Nhưng khi có hàng triệu file nhỏ, hệ thống phải thực hiện hàng triệu lần:</p>
+<ul>
+<li>Liệt kê object.</li>
+<li>Đọc metadata.</li>
+<li>Mở kết nối.</li>
+<li>Lập kế hoạch task.</li>
+<li>Mở file.</li>
+<li>Đọc một ít dữ liệu.</li>
+<li>Đóng file.</li>
+</ul>
+<p>Nó giống như chuyển một tấn gạo bằng một triệu chiếc muỗng cà phê.</p>
+<p>Khối lượng gạo không đổi, nhưng số lần đưa tay lên xuống đủ khiến con người suy ngẫm về ý nghĩa cuộc đời.</p>
+<h3 id="không-có-thao-tác-thay-đổi-dữ-liệu-tự-nhiên">Không có thao tác thay đổi dữ liệu tự nhiên<a class="anchor ms-1" href="#không-có-thao-tác-thay-đổi-dữ-liệu-tự-nhiên"><i class="fas fa-link"></i></a></h3>
+<p>Hive Parquet truyền thống không cung cấp trực tiếp mô hình transaction hoàn chỉnh cho những thao tác như:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="ln">1</span><span class="cl"><span class="k">UPDATE</span><span class="w">
+</span></span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="k">DELETE</span><span class="w">
+</span></span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="n">MERGE</span><span class="w">
+</span></span></span><span class="line"><span class="ln">4</span><span class="cl"><span class="n">UPSERT</span><span class="w">
+</span></span></span></code></pre></div><p>Muốn cập nhật một phần dữ liệu, đội kỹ thuật thường phải tự xây dựng workflow:</p>
+<ol>
+<li>Đọc dữ liệu cũ.</li>
+<li>Ghép với dữ liệu mới.</li>
+<li>Ghi ra thư mục tạm.</li>
+<li>Đổi partition.</li>
+<li>Cập nhật catalog.</li>
+<li>Dọn dữ liệu cũ.</li>
+<li>Cầu nguyện không có job nào đọc đúng lúc chuyển giao.</li>
+</ol>
+<p>Với dữ liệu đơn hàng, tồn kho, hoàn trả hoặc cập nhật muộn từ ERP, đây không phải nhu cầu hiếm gặp. Nó là chuyện xảy ra mỗi ngày.</p>
+<h3 id="catalog-và-storage-có-thể-không-đồng-bộ">Catalog và storage có thể không đồng bộ<a class="anchor ms-1" href="#catalog-và-storage-có-thể-không-đồng-bộ"><i class="fas fa-link"></i></a></h3>
+<p>Việc thay đổi trực tiếp trên S3 có thể khiến Hive Metastore không còn phản ánh đúng trạng thái vật lý của dữ liệu.</p>
+<p>Đây là kiểu lỗi nguy hiểm vì hệ thống vẫn chạy.</p>
+<p>Query vẫn trả kết quả.</p>
+<p>Dashboard vẫn có biểu đồ.</p>
+<p>Chỉ có điều biểu đồ ấy có thể đang kể một câu chuyện không đúng.</p>
+<p>Máy tính không nổi giận khi dữ liệu sai. Nó chỉ rất bình thản tính toán sai với tốc độ cực nhanh.</p>
+<h1 id="apache-iceberg-thay-đổi-điều-gì">Apache Iceberg thay đổi điều gì?<a class="anchor ms-1" href="#apache-iceberg-thay-đổi-điều-gì"><i class="fas fa-link"></i></a></h1>
+<p>Apache Iceberg là một open table format dành cho các tập dữ liệu phân tích lớn. Nó không thay thế Parquet, S3 hay Spark.</p>
+<p>Iceberg đứng ở một tầng khác.</p>
+<ul>
+<li>S3 vẫn giữ dữ liệu.</li>
+<li>Parquet vẫn có thể là định dạng file.</li>
+<li>Spark, Trino hoặc Flink vẫn là compute engine.</li>
+<li>Iceberg định nghĩa bảng gồm những file nào, phiên bản nào đang hợp lệ và dữ liệu được tổ chức ra sao.</li>
+</ul>
+<p>Có thể hình dung một bảng Iceberg gồm nhiều tầng metadata:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Table metadata
+</span></span><span class="line"><span class="ln">2</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln">3</span><span class="cl">Snapshot
+</span></span><span class="line"><span class="ln">4</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln">5</span><span class="cl">Manifest list
+</span></span><span class="line"><span class="ln">6</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln">7</span><span class="cl">Manifest files
+</span></span><span class="line"><span class="ln">8</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln">9</span><span class="cl">Data files
+</span></span></code></pre></div><p>Mỗi lần ghi dữ liệu thành công, Iceberg tạo ra một snapshot mới của bảng.</p>
+<p>Snapshot không cần sao chép toàn bộ dữ liệu. Nó chỉ mô tả trạng thái mới bằng một cây metadata liên kết đến những file đang thuộc về bảng.</p>
+<p>Nhờ vậy, một commit có thể diễn ra theo cách gần giống thay cuốn mục lục hơn là dọn lại toàn bộ kho.</p>
+<p>Khi mục lục mới được công bố thành công, người đọc nhìn thấy phiên bản mới.</p>
+<p>Nếu commit thất bại giữa đường, mục lục cũ vẫn còn nguyên.</p>
+<p>Đó là nền tảng giúp Iceberg hỗ trợ các đặc tính như:</p>
+<ul>
+<li>Atomic commit.</li>
+<li>Snapshot isolation.</li>
+<li>Time travel.</li>
+<li>Rollback.</li>
+<li>Schema evolution.</li>
+<li>Partition evolution.</li>
+<li>Optimistic concurrency.</li>
+</ul>
+<p>Các manifest của Iceberg còn lưu partition information và thống kê cấp file như giá trị nhỏ nhất, lớn nhất, số lượng giá trị hoặc số lượng null. Query engine có thể dùng metadata này để loại bỏ những file chắc chắn không chứa dữ liệu cần tìm trước khi thực sự mở file. (<a href="https://iceberg.apache.org/docs/latest/performance/" title="Performance - Apache Iceberg™" target="_blank" rel="noopener noreferrer">Apache Iceberg</a>)</p>
+<h2 id="từ-directory-centric-sang-table-centric">Từ directory-centric sang table-centric<a class="anchor ms-1" href="#từ-directory-centric-sang-table-centric"><i class="fas fa-link"></i></a></h2>
+<p>Sự thay đổi quan trọng nhất là chuyển từ tư duy:</p>
+<blockquote>
+<p>Bảng là một thư mục chứa nhiều file.</p>
+</blockquote>
+<p>sang:</p>
+<blockquote>
+<p>Bảng là một thực thể có lịch sử, metadata, transaction và trạng thái rõ ràng.</p>
+</blockquote>
+<p>Trong mô hình cũ, thư mục gần như là API.</p>
+<p>Người dùng biết partition vật lý và đôi khi viết query phụ thuộc trực tiếp vào nó:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="ln">1</span><span class="cl"><span class="k">WHERE</span><span class="w"> </span><span class="n">event_date</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;2026-07-28&#39;</span><span class="w">
+</span></span></span></code></pre></div><p>Trong Iceberg, partition có thể được ẩn khỏi người dùng:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="ln">1</span><span class="cl"><span class="n">PARTITIONED</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="p">(</span><span class="n">days</span><span class="p">(</span><span class="n">event_time</span><span class="p">))</span><span class="w">
+</span></span></span></code></pre></div><p>Người dùng chỉ cần query trên trường nghiệp vụ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="ln">1</span><span class="cl"><span class="k">WHERE</span><span class="w"> </span><span class="n">event_time</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="k">TIMESTAMP</span><span class="w"> </span><span class="s1">&#39;2026-07-28 00:00:00&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="w">  </span><span class="k">AND</span><span class="w"> </span><span class="n">event_time</span><span class="w"> </span><span class="o">&lt;</span><span class="w">  </span><span class="k">TIMESTAMP</span><span class="w"> </span><span class="s1">&#39;2026-07-29 00:00:00&#39;</span><span class="w">
+</span></span></span></code></pre></div><p>Iceberg tự chuyển điều kiện đó thành điều kiện lọc partition phù hợp.</p>
+<p>Cách partition cũng có thể thay đổi theo thời gian. Dữ liệu cũ vẫn giữ cách tổ chức cũ, còn dữ liệu mới dùng partition specification mới. Query engine hiểu cả hai mà không bắt người dùng viết lại toàn bộ câu SQL. (<a href="https://iceberg.apache.org/docs/latest/partitioning/" title="Partitioning - Apache Iceberg™" target="_blank" rel="noopener noreferrer">Apache Iceberg</a>)</p>
+<p>Đây là một thay đổi rất lớn.</p>
+<p>Bởi vì layout vật lý không còn trói chặt hợp đồng logic của bảng.</p>
+<p>Cái kho được phép thay đổi cách xếp hàng mà người mua không cần học lại đường đi trong kho.</p>
+<h1 id="vì-sao-grab-chọn-iceberg">Vì sao Grab chọn Iceberg?<a class="anchor ms-1" href="#vì-sao-grab-chọn-iceberg"><i class="fas fa-link"></i></a></h1>
+<p>Grab đánh giá nhiều open table format trước khi chọn Apache Iceberg làm định dạng mặc định.</p>
+<p>Ba yếu tố chính được nhắc đến là:</p>
+<ul>
+<li>Mô hình quản trị cộng đồng.</li>
+<li>Khả năng tương thích với nhiều compute engine.</li>
+<li>Tính linh hoạt trong dài hạn. (<a href="https://engineering.grab.com/our-journey-to-apache-iceberg-adoption" title="Scaling Grab&#39;s Data Lake: Our journey to Apache Iceberg adoption" target="_blank" rel="noopener noreferrer">Grab Tech</a>)</li>
+</ul>
+<p>Điểm này rất đáng chú ý.</p>
+<p>Grab không tuyên bố rằng từ nay toàn bộ thế giới chỉ còn Iceberg.</p>
+<p>Ngược lại, họ muốn kiến trúc dài hạn có khả năng không phụ thuộc cứng vào một format duy nhất.</p>
+<p>Iceberg là lựa chọn mặc định ở thời điểm hiện tại, nhưng hệ thống vẫn phải sống chung với:</p>
+<ul>
+<li>Hive.</li>
+<li>Delta Lake.</li>
+<li>Apache Hudi.</li>
+<li>Những bảng chưa kịp migration.</li>
+<li>Những workload chưa thể chuyển đổi.</li>
+<li>Những engine có mức hỗ trợ format khác nhau.</li>
+</ul>
+<p>Trong phòng thí nghiệm, chúng ta có thể tạo một Data Lake mới tinh, chọn một công nghệ rồi tuyên bố chiến thắng.</p>
+<p>Trong production, quá khứ không biến mất chỉ vì kiến trúc sư vừa vẽ một sơ đồ mới.</p>
+<h1 id="grab-không-migration-toàn-bộ-data-lake-trong-một-đêm">Grab không migration toàn bộ Data Lake trong một đêm<a class="anchor ms-1" href="#grab-không-migration-toàn-bộ-data-lake-trong-một-đêm"><i class="fas fa-link"></i></a></h1>
+<p>Một Data Lake lớn không thể chuyển đổi bằng một câu lệnh:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="ln">1</span><span class="cl">migrate-everything-to-iceberg --pray
+</span></span></code></pre></div><p>Grab chọn chiến lược migration theo giá trị.</p>
+<p>Những bảng có lợi ích lớn nhất được chuyển trước, thay vì cố đổi toàn bộ hệ thống cùng lúc. Các tiêu chí gồm tần suất scan, chi phí API và mức độ ảnh hưởng đến workload. (<a href="https://engineering.grab.com/our-journey-to-apache-iceberg-adoption" title="Scaling Grab&#39;s Data Lake: Our journey to Apache Iceberg adoption" target="_blank" rel="noopener noreferrer">Grab Tech</a>)</p>
+<p>Kết quả được Grab công bố trên một số workload tiêu biểu khá rõ ràng.</p>
+<h2 id="query-nhanh-hơn-khoảng-10-lần">Query nhanh hơn khoảng 10 lần<a class="anchor ms-1" href="#query-nhanh-hơn-khoảng-10-lần"><i class="fas fa-link"></i></a></h2>
+<p>Với một dataset navigation có lưu lượng cao, việc sắp xếp dữ liệu theo Z-order giúp Trino tận dụng data skipping và thống kê min/max tốt hơn.</p>
+<p>Thời gian chạy query giảm từ khoảng 70 giây xuống còn 6 giây. (<a href="https://engineering.grab.com/our-journey-to-apache-iceberg-adoption" title="Scaling Grab&#39;s Data Lake: Our journey to Apache Iceberg adoption" target="_blank" rel="noopener noreferrer">Grab Tech</a>)</p>
+<p>Z-ordering cố gắng đặt những dòng có giá trị gần nhau trên nhiều chiều vào gần nhau về mặt vật lý.</p>
+<p>Ví dụ query thường lọc theo:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">customer_id
+</span></span><span class="line"><span class="ln">2</span><span class="cl">event_time
+</span></span><span class="line"><span class="ln">3</span><span class="cl">site_id
+</span></span></code></pre></div><p>Nếu dữ liệu có liên quan được gom vào một nhóm file nhỏ hơn, metadata có thể chỉ ra rằng phần lớn file không cần đọc.</p>
+<p>Không phải CPU đột nhiên chạy nhanh gấp mười lần.</p>
+<p>Hệ thống chỉ trở nên khôn ngoan hơn trong việc <strong>không làm những việc vô ích</strong>.</p>
+<p>Trong data engineering, đôi khi tối ưu lớn nhất không đến từ việc chạy nhanh hơn, mà đến từ việc quyết định không chạy.</p>
+<h2 id="chi-phí-s3-api-giảm-tới-95">Chi phí S3 API giảm tới 95%<a class="anchor ms-1" href="#chi-phí-s3-api-giảm-tới-95"><i class="fas fa-link"></i></a></h2>
+<p>Với một bảng vận hành được truy vấn nhiều, Grab ghi nhận chi phí S3 API hằng ngày giảm tới 95% mà không cần thay đổi câu query. (<a href="https://engineering.grab.com/our-journey-to-apache-iceberg-adoption" title="Scaling Grab&#39;s Data Lake: Our journey to Apache Iceberg adoption" target="_blank" rel="noopener noreferrer">Grab Tech</a>)</p>
+<p>Phần tiết kiệm đến từ:</p>
+<ul>
+<li>File lớn hơn.</li>
+<li>Ít object hơn.</li>
+<li>Không phải thực hiện object listing tốn kém trong quá trình planning.</li>
+<li>Metadata chỉ dẫn chính xác hơn về file cần đọc.</li>
+</ul>
+<p>Đây là một điểm nhiều người bỏ quên.</p>
+<p>Khi nói đến Data Lake, chúng ta thường chỉ nhìn chi phí lưu trữ theo TB.</p>
+<p>Nhưng một object storage không chỉ tính tiền dung lượng.</p>
+<p>Nó còn có thể tính tiền theo số lần:</p>
+<ul>
+<li>LIST.</li>
+<li>GET.</li>
+<li>PUT.</li>
+<li>HEAD.</li>
+<li>DELETE.</li>
+</ul>
+<p>Một tỷ file nhỏ không chỉ là một tỷ mẩu dữ liệu.</p>
+<p>Nó là một tỷ cánh cửa cần được gõ, mở rồi đóng lại.</p>
+<h2 id="tài-nguyên-compute-giảm-khoảng-một-nửa">Tài nguyên compute giảm khoảng một nửa<a class="anchor ms-1" href="#tài-nguyên-compute-giảm-khoảng-một-nửa"><i class="fas fa-link"></i></a></h2>
+<p>Một dataset phục vụ funnel analysis giảm khoảng một nửa lượng tài nguyên cluster sử dụng. Một pipeline Machine Learning khác cũng cải thiện độ mới của feature cho downstream model. (<a href="https://engineering.grab.com/our-journey-to-apache-iceberg-adoption" title="Scaling Grab&#39;s Data Lake: Our journey to Apache Iceberg adoption" target="_blank" rel="noopener noreferrer">Grab Tech</a>)</p>
+<p>Điểm quan trọng là lợi ích của table format không dừng ở nhóm Data Platform.</p>
+<p>Khi table planning tốt hơn, file layout hợp lý hơn và dữ liệu mới xuất hiện sớm hơn, những hệ thống phía sau cũng được hưởng lợi:</p>
+<ul>
+<li>Dashboard cập nhật nhanh hơn.</li>
+<li>Feature phục vụ model mới hơn.</li>
+<li>Job batch hoàn thành sớm hơn.</li>
+<li>Cluster rảnh hơn cho workload khác.</li>
+<li>Người dùng ít có thời gian đi pha cà phê trong lúc chờ query.</li>
+</ul>
+<h1 id="unifiedsparkcatalog-người-dùng-không-nên-trả-giá-cho-migration">UnifiedSparkCatalog: Người dùng không nên trả giá cho migration<a class="anchor ms-1" href="#unifiedsparkcatalog-người-dùng-không-nên-trả-giá-cho-migration"><i class="fas fa-link"></i></a></h1>
+<p>Sau khi Iceberg xuất hiện, Grab gặp một vấn đề mới.</p>
+<p>Spark chỉ có thể gắn một implementation làm <code>spark_catalog</code> mặc định. Trong khi đó, mỗi table format thường có catalog riêng:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">iceberg_catalog.schema.table
+</span></span><span class="line"><span class="ln">2</span><span class="cl">delta_catalog.schema.table
+</span></span><span class="line"><span class="ln">3</span><span class="cl">hudi_catalog.schema.table
+</span></span></code></pre></div><p>Điều này tạo ra hai vấn đề.</p>
+<p>Thứ nhất, kỹ sư phải biết chính xác bảng đang dùng format nào.</p>
+<p>Thứ hai, khi một bảng được migration từ Hive sang Iceberg hoặc từ format này sang format khác, những query viết cứng catalog prefix có thể bị hỏng.</p>
+<p>Ví dụ trước migration:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="ln">1</span><span class="cl"><span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w">
+</span></span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="k">FROM</span><span class="w"> </span><span class="n">hive_catalog</span><span class="p">.</span><span class="n">sales</span><span class="p">.</span><span class="n">orders</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><p>Sau migration, người dùng phải sửa thành:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="ln">1</span><span class="cl"><span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w">
+</span></span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="k">FROM</span><span class="w"> </span><span class="n">iceberg_catalog</span><span class="p">.</span><span class="n">sales</span><span class="p">.</span><span class="n">orders</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><p>Một bảng có thể chỉ cần vài phút để migration.</p>
+<p>Nhưng hàng nghìn query, notebook, dashboard và pipeline phía sau có thể mất nhiều tháng để sửa.</p>
+<p>Grab xây dựng <code>UnifiedSparkCatalog</code> nhằm che giấu sự khác biệt đó.</p>
+<p>Người dùng tiếp tục query:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="ln">1</span><span class="cl"><span class="k">SELECT</span><span class="w"> </span><span class="o">*</span><span class="w">
+</span></span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="k">FROM</span><span class="w"> </span><span class="n">sales</span><span class="p">.</span><span class="n">orders</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><p>Ở phía dưới, catalog thực hiện các bước:</p>
+<ol>
+<li>Đọc metadata của bảng.</li>
+<li>Phát hiện bảng thuộc Hive, Iceberg, Delta hay Hudi.</li>
+<li>Chuyển operation đến catalog tương ứng.</li>
+<li>Fallback về session catalog nếu cần.</li>
+</ol>
+<p>Grab đã công bố mã nguồn của UnifiedSparkCatalog. Công cụ hỗ trợ Spark 3.4 và 3.5, tự động phát hiện format từ metadata, khởi tạo catalog theo kiểu lazy và cho phép join bảng thuộc nhiều format mà không cần prefix riêng. (<a href="https://github.com/grab/unified-spark-catalog" title="GitHub - grab/unified-spark-catalog: Unified Spark catalog routing to Delta, Iceberg, or Hudi by auto-detecting format · GitHub" target="_blank" rel="noopener noreferrer">GitHub</a>)</p>
+<p>Đây không chỉ là một tiện ích kỹ thuật.</p>
+<p>Nó thể hiện một nguyên tắc kiến trúc quan trọng:</p>
+<blockquote>
+<p>Một cuộc migration tốt là cuộc migration mà phần lớn người dùng không biết nó vừa xảy ra.</p>
+</blockquote>
+<h1 id="những-lesson-learned-quan-trọng-nhất">Những lesson learned quan trọng nhất<a class="anchor ms-1" href="#những-lesson-learned-quan-trọng-nhất"><i class="fas fa-link"></i></a></h1>
+<h1 id="1-đừng-migration-vì-công-nghệ-mới-trông-đẹp">1. Đừng migration vì công nghệ mới trông đẹp<a class="anchor ms-1" href="#1-đừng-migration-vì-công-nghệ-mới-trông-đẹp"><i class="fas fa-link"></i></a></h1>
+<p>Iceberg mang lại nhiều lợi ích, nhưng không phải bảng nào cũng đáng được chuyển ngay lập tức.</p>
+<p>Một bảng nhỏ, mỗi ngày chỉ đọc một lần, không có update và cũng không gặp vấn đề small file có thể chưa cần migration.</p>
+<p>Trong khi đó, một bảng có:</p>
+<ul>
+<li>Hàng trăm nghìn partition.</li>
+<li>Hàng triệu file nhỏ.</li>
+<li>Tần suất query cao.</li>
+<li>Chi phí S3 LIST lớn.</li>
+<li>Nhu cầu <code>MERGE</code>, <code>UPDATE</code> hoặc xử lý late-arriving data.</li>
+</ul>
+<p>sẽ là ứng viên tốt hơn.</p>
+<p>Grab ưu tiên migration dựa trên mức độ scan và chi phí API thay vì đổi toàn bộ lake cùng lúc. (<a href="https://engineering.grab.com/our-journey-to-apache-iceberg-adoption" title="Scaling Grab&#39;s Data Lake: Our journey to Apache Iceberg adoption" target="_blank" rel="noopener noreferrer">Grab Tech</a>)</p>
+<p>Bài học ở đây là phải có baseline trước khi migration:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">Planning time
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">Query runtime
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">S3 API requests
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">S3 API cost
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">Bytes scanned
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">File count
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">Average file size
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">Compute hours
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">Failure rate
+</span></span><span class="line"><span class="ln">10</span><span class="cl">Data freshness
+</span></span></code></pre></div><p>Không có baseline, chúng ta rất dễ rơi vào tình huống:</p>
+<blockquote>
+<p>Migration thành công rực rỡ, nhưng không ai biết nó thành công ở chỗ nào.</p>
+</blockquote>
+<h1 id="2-table-format-không-tự-chữa-được-small-file">2. Table format không tự chữa được small file<a class="anchor ms-1" href="#2-table-format-không-tự-chữa-được-small-file"><i class="fas fa-link"></i></a></h1>
+<p>Iceberg quản lý file tốt hơn, nhưng nó không thể biến một triệu file 500 KB thành file 512 MB chỉ bằng sức mạnh tinh thần.</p>
+<p>Nếu pipeline streaming hoặc micro-batch liên tục tạo file nhỏ, chúng ta vẫn cần compaction.</p>
+<p>Apache Iceberg khuyến nghị thực hiện các hoạt động bảo trì định kỳ như:</p>
+<ul>
+<li>Compact data files.</li>
+<li>Rewrite manifests.</li>
+<li>Expire snapshots.</li>
+<li>Xóa orphan files.</li>
+<li>Quản lý metadata cũ. (<a href="https://iceberg.apache.org/docs/latest/maintenance/" title="Maintenance - Apache Iceberg™" target="_blank" rel="noopener noreferrer">Apache Iceberg</a>)</li>
+</ul>
+<p>Ví dụ với Spark SQL:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="ln">1</span><span class="cl"><span class="k">CALL</span><span class="w"> </span><span class="k">catalog</span><span class="p">.</span><span class="k">system</span><span class="p">.</span><span class="n">rewrite_data_files</span><span class="p">(</span><span class="w">
+</span></span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="w">    </span><span class="k">table</span><span class="w"> </span><span class="o">=&gt;</span><span class="w"> </span><span class="s1">&#39;analytics.customer_events&#39;</span><span class="w">
+</span></span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="p">);</span><span class="w">
+</span></span></span></code></pre></div><p>Small file không phải một lỗi xảy ra một lần.</p>
+<p>Nó giống bụi trong nhà.</p>
+<p>Dọn hôm nay không có nghĩa là ba tháng sau nhà vẫn sạch.</p>
+<p>Vì vậy, khi triển khai Iceberg, maintenance phải được xem là một phần của platform:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">Ingestion
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">Commit
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">Monitor file size
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">Compact khi cần
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">Rewrite manifests
+</span></span><span class="line"><span class="ln">10</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln">11</span><span class="cl">Expire snapshots
+</span></span><span class="line"><span class="ln">12</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln">13</span><span class="cl">Delete orphan files an toàn
+</span></span></code></pre></div><p>Nếu chỉ tạo bảng Iceberg rồi bỏ mặc, vài tháng sau metadata và file layout có thể lại trở thành một khu rừng.</p>
+<h1 id="3-metadata-cũng-là-một-hệ-thống-production">3. Metadata cũng là một hệ thống production<a class="anchor ms-1" href="#3-metadata-cũng-là-một-hệ-thống-production"><i class="fas fa-link"></i></a></h1>
+<p>Trong quá trình triển khai, Grab gặp tình trạng lock tồn tại bất thường trong Hive Metastore và chặn commit.</p>
+<p>Nguyên nhân được truy ra là read timeout ở phía metastore quá thấp khi tải cao. Grab điều chỉnh retry interval và tăng timeout để giải quyết. (<a href="https://engineering.grab.com/our-journey-to-apache-iceberg-adoption" title="Scaling Grab&#39;s Data Lake: Our journey to Apache Iceberg adoption" target="_blank" rel="noopener noreferrer">Grab Tech</a>)</p>
+<p>Bài học là metadata không phải vài file JSON vô hại nằm bên cạnh dữ liệu.</p>
+<p>Nó nằm trên đường đi của:</p>
+<ul>
+<li>Query planning.</li>
+<li>Commit.</li>
+<li>Schema change.</li>
+<li>Snapshot creation.</li>
+<li>Table discovery.</li>
+<li>Lineage.</li>
+<li>Access control.</li>
+</ul>
+<p>Nếu catalog chậm, toàn bộ Data Lake có thể chậm.</p>
+<p>Nếu catalog không ổn định, writer có thể commit thất bại.</p>
+<p>Nếu retry được cấu hình thiếu cẩn thận, một lỗi mạng vài giây có thể biến thành một đàn job cùng retry và giẫm lên nhau.</p>
+<p>Cần theo dõi riêng các chỉ số như:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">Catalog request latency
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">Commit latency
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">Commit retry count
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">Lock waiting time
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">Lock age
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">Failed commits
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">Concurrent writers
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">Metadata file count
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">Manifest count
+</span></span><span class="line"><span class="ln">10</span><span class="cl">Snapshot count
+</span></span></code></pre></div><p>Đừng đợi đến khi người dùng báo “Spark treo” mới bắt đầu nhìn vào Hive Metastore.</p>
+<h1 id="4-timestamp-không-phải-một-kiểu-dữ-liệu-vô-tội">4. Timestamp không phải một kiểu dữ liệu vô tội<a class="anchor ms-1" href="#4-timestamp-không-phải-một-kiểu-dữ-liệu-vô-tội"><i class="fas fa-link"></i></a></h1>
+<p>Grab gặp vấn đề tương thích khi Spark 3.4 đưa vào <code>TIMESTAMP_NTZ</code>, tức timestamp không gắn múi giờ, trong khi Iceberg thường làm việc với semantics của <code>TIMESTAMP_LTZ</code> cho timestamp có liên quan đến múi giờ.</p>
+<p>Sự khác biệt này ảnh hưởng đến các Hive view cũ. Grab phải xây dựng workflow migration riêng và áp dụng các thay đổi có mục tiêu ở Trino để việc cast dữ liệu nhất quán. (<a href="https://engineering.grab.com/our-journey-to-apache-iceberg-adoption" title="Scaling Grab&#39;s Data Lake: Our journey to Apache Iceberg adoption" target="_blank" rel="noopener noreferrer">Grab Tech</a>)</p>
+<p>Nhìn bên ngoài, hai giá trị có thể giống nhau:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">2026-07-28 08:00:00
+</span></span></code></pre></div><p>Nhưng chúng có thể mang hai ý nghĩa hoàn toàn khác.</p>
+<p><code>TIMESTAMP_NTZ</code> có thể được hiểu là:</p>
+<blockquote>
+<p>Đồng hồ trên tường chỉ 8 giờ. Không quan tâm cái tường đang ở quốc gia nào.</p>
+</blockquote>
+<p>Trong khi timestamp có timezone semantics gần hơn với:</p>
+<blockquote>
+<p>Đây là một thời điểm cụ thể của vũ trụ, được hiển thị thành 8 giờ theo một múi giờ nào đó.</p>
+</blockquote>
+<p>Nếu chuyển đổi sai, dữ liệu không nổ tung.</p>
+<p>Nó chỉ lặng lẽ lệch vài giờ.</p>
+<p>Đơn hàng 00:30 có thể chạy sang ngày hôm trước.</p>
+<p>Doanh thu cuối tháng có thể nhảy qua partition khác.</p>
+<p>Dashboard vẫn đẹp, chỉ có sự thật bị nghiêng đi một chút.</p>
+<p>Trước khi migration, cần lập bảng kiểm kê:</p>
+<ul>
+<li>Cột nào là thời điểm tuyệt đối?</li>
+<li>Cột nào chỉ là giờ địa phương?</li>
+<li>Dữ liệu cũ được ghi theo timezone nào?</li>
+<li>Spark session dùng timezone nào?</li>
+<li>Trino, Flink và các BI tool cast ra sao?</li>
+<li>View cũ đang ngầm chuyển đổi kiểu dữ liệu thế nào?</li>
+</ul>
+<p>Timestamp migration phải được xem là một dự án kiểm thử dữ liệu, không phải một thay đổi DDL nhỏ.</p>
+<h1 id="5-đọc-dữ-liệu-cũ-có-thể-làm-hóa-đơn-tăng-trước-khi-giảm">5. Đọc dữ liệu cũ có thể làm hóa đơn tăng trước khi giảm<a class="anchor ms-1" href="#5-đọc-dữ-liệu-cũ-có-thể-làm-hóa-đơn-tăng-trước-khi-giảm"><i class="fas fa-link"></i></a></h1>
+<p>Để tạo metadata Iceberg cho dữ liệu lịch sử, hệ thống có thể phải đọc metadata hoặc truy cập lại những object cũ.</p>
+<p>Nếu dữ liệu đang nằm trong các storage tier giá rẻ hoặc tier lạnh, việc truy cập có thể tạo ra một đợt chi phí bất thường.</p>
+<p>Grab ghi nhận nguy cơ tăng chi phí một lần trong lúc migration và vì vậy tiếp tục ưu tiên những bảng mang lại lợi ích lớn nhất thay vì quét toàn bộ lake. (<a href="https://engineering.grab.com/our-journey-to-apache-iceberg-adoption" title="Scaling Grab&#39;s Data Lake: Our journey to Apache Iceberg adoption" target="_blank" rel="noopener noreferrer">Grab Tech</a>)</p>
+<p>Đây là kiểu chi phí dễ bị bỏ qua trong slide kiến trúc.</p>
+<p>Trên slide, migration chỉ là một mũi tên:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Hive Parquet ───────────→ Apache Iceberg
+</span></span></code></pre></div><p>Trong thế giới vật lý, mũi tên ấy có thể là:</p>
+<ul>
+<li>Hàng tỷ request đến object storage.</li>
+<li>Hàng nghìn giờ compute.</li>
+<li>Dữ liệu bị kéo ra khỏi tầng lưu trữ lạnh.</li>
+<li>Network traffic.</li>
+<li>Metadata generation.</li>
+<li>Compaction.</li>
+<li>Kiểm tra checksum.</li>
+<li>Chạy song song hệ thống cũ và mới.</li>
+<li>Đội kỹ thuật thức khuya nhìn dashboard.</li>
+</ul>
+<p>Không có mũi tên kiến trúc nào thực sự miễn phí.</p>
+<h1 id="6-migration-format-phải-đi-cùng-migration-trải-nghiệm-người-dùng">6. Migration format phải đi cùng migration trải nghiệm người dùng<a class="anchor ms-1" href="#6-migration-format-phải-đi-cùng-migration-trải-nghiệm-người-dùng"><i class="fas fa-link"></i></a></h1>
+<p>Nếu mỗi kỹ sư phải nhớ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Bảng A là Hive
+</span></span><span class="line"><span class="ln">2</span><span class="cl">Bảng B là Iceberg
+</span></span><span class="line"><span class="ln">3</span><span class="cl">Bảng C là Delta
+</span></span><span class="line"><span class="ln">4</span><span class="cl">Bảng D tuần trước là Hive nhưng hôm nay là Iceberg
+</span></span></code></pre></div><p>thì sự phức tạp của platform đã bị chuyển từ máy tính sang não người.</p>
+<p>UnifiedSparkCatalog của Grab giải quyết chính điểm này.</p>
+<p>Nó tạo một lớp ổn định cho tên bảng trong khi định dạng vật lý phía dưới có thể thay đổi. (<a href="https://github.com/grab/unified-spark-catalog" title="GitHub - grab/unified-spark-catalog: Unified Spark catalog routing to Delta, Iceberg, or Hudi by auto-detecting format · GitHub" target="_blank" rel="noopener noreferrer">GitHub</a>)</p>
+<p>Đây là lesson learned rất đáng giá:</p>
+<blockquote>
+<p>Đừng bắt người dùng hiểu chi tiết của cuộc migration nếu chi tiết đó không giúp họ làm việc tốt hơn.</p>
+</blockquote>
+<p>Platform team nên cố gắng giữ ổn định:</p>
+<ul>
+<li>Tên bảng.</li>
+<li>Schema contract.</li>
+<li>Quyền truy cập.</li>
+<li>Cú pháp query.</li>
+<li>Data lineage.</li>
+<li>SLA dữ liệu.</li>
+<li>Cách phát hiện lỗi.</li>
+</ul>
+<p>Format phía dưới có thể thay đổi.</p>
+<p>Hợp đồng với người dùng thì không nên thay đổi tùy hứng.</p>
+<h1 id="7-hãy-thiết-kế-cho-thời-kỳ-nhiều-format-cùng-tồn-tại">7. Hãy thiết kế cho thời kỳ nhiều format cùng tồn tại<a class="anchor ms-1" href="#7-hãy-thiết-kế-cho-thời-kỳ-nhiều-format-cùng-tồn-tại"><i class="fas fa-link"></i></a></h1>
+<p>Một tổ chức lớn hiếm khi có thể đạt trạng thái mọi bảng đều dùng chung một format.</p>
+<p>Sẽ luôn có:</p>
+<ul>
+<li>Bảng legacy chưa migration.</li>
+<li>Bảng do đối tác cung cấp.</li>
+<li>Workload phù hợp hơn với format khác.</li>
+<li>Engine chưa hỗ trợ đủ tính năng.</li>
+<li>Nhóm dự án chưa có thời gian chuyển đổi.</li>
+<li>Một bảng kỳ lạ được tạo từ năm nào đó mà không ai dám chạm vào.</li>
+</ul>
+<p>Vì vậy, kiến trúc thực tế không phải:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Hive biến mất
+</span></span><span class="line"><span class="ln">2</span><span class="cl">Iceberg xuất hiện
+</span></span></code></pre></div><p>Mà là:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Hive + Iceberg + Delta + Hudi + các hệ thống cũ
+</span></span><span class="line"><span class="ln">2</span><span class="cl">                    ↓
+</span></span><span class="line"><span class="ln">3</span><span class="cl">          Một lớp truy cập thống nhất
+</span></span></code></pre></div><p>Grab muốn giữ khả năng format-agnostic trong dài hạn và đang quan sát những dự án như Apache XTable để cải thiện tính tương tác giữa các table format. (<a href="https://engineering.grab.com/our-journey-to-apache-iceberg-adoption" title="Scaling Grab&#39;s Data Lake: Our journey to Apache Iceberg adoption" target="_blank" rel="noopener noreferrer">Grab Tech</a>)</p>
+<p>Đây là cách tiếp cận lành mạnh hơn việc biến một công nghệ thành tôn giáo.</p>
+<p>Công nghệ tồn tại để phục vụ dữ liệu.</p>
+<p>Dữ liệu không tồn tại để chứng minh công nghệ mình chọn là đúng.</p>
+<h1 id="một-lộ-trình-triển-khai-iceberg-thực-tế">Một lộ trình triển khai Iceberg thực tế<a class="anchor ms-1" href="#một-lộ-trình-triển-khai-iceberg-thực-tế"><i class="fas fa-link"></i></a></h1>
+<p>Từ hành trình của Grab, có thể rút ra một lộ trình tương đối an toàn cho các doanh nghiệp đang có Data Lake dựa trên Hive Parquet.</p>
+<h2 id="bước-1-lập-bản-đồ-hiện-trạng">Bước 1: Lập bản đồ hiện trạng<a class="anchor ms-1" href="#bước-1-lập-bản-đồ-hiện-trạng"><i class="fas fa-link"></i></a></h2>
+<p>Thu thập cho từng bảng:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">Dung lượng
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">Số partition
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">Số file
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">Kích thước file trung bình
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">Tần suất đọc
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">Tần suất ghi
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">Số lượng consumer
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">Engine đang sử dụng
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">Chi phí object storage API
+</span></span><span class="line"><span class="ln">10</span><span class="cl">Nhu cầu UPDATE, DELETE, MERGE
+</span></span><span class="line"><span class="ln">11</span><span class="cl">Yêu cầu time travel
+</span></span><span class="line"><span class="ln">12</span><span class="cl">Mức độ quan trọng
+</span></span></code></pre></div><p>Không nên bắt đầu bằng câu:</p>
+<blockquote>
+<p>Bảng nào dễ migration nhất?</p>
+</blockquote>
+<p>Nên bắt đầu bằng câu:</p>
+<blockquote>
+<p>Bảng nào đang gây đau nhiều nhất và migration có thể đo được giá trị?</p>
+</blockquote>
+<h2 id="bước-2-chia-bảng-thành-nhóm">Bước 2: Chia bảng thành nhóm<a class="anchor ms-1" href="#bước-2-chia-bảng-thành-nhóm"><i class="fas fa-link"></i></a></h2>
+<p>Ví dụ:</p>
+<ul>
+<li><strong>Nhóm A:</strong> Đọc nhiều, nhiều file nhỏ, chi phí cao.</li>
+<li><strong>Nhóm B:</strong> Có late update, correction hoặc delete.</li>
+<li><strong>Nhóm C:</strong> Dữ liệu lạnh, ít truy cập.</li>
+<li><strong>Nhóm D:</strong> Legacy phức tạp, nhiều downstream dependency.</li>
+<li><strong>Nhóm E:</strong> Bảng mới chưa có consumer.</li>
+</ul>
+<p>Có thể bắt đầu với một số bảng thuộc nhóm A, B và E.</p>
+<p>Nhóm E giúp kiểm chứng quy trình tạo bảng mới.</p>
+<p>Nhóm A và B giúp chứng minh giá trị kinh tế.</p>
+<h2 id="bước-3-xây-compatibility-layer">Bước 3: Xây compatibility layer<a class="anchor ms-1" href="#bước-3-xây-compatibility-layer"><i class="fas fa-link"></i></a></h2>
+<p>Trước khi migration hàng loạt, cần trả lời:</p>
+<ul>
+<li>Tên bảng có giữ nguyên không?</li>
+<li>Query cũ có tiếp tục chạy không?</li>
+<li>Spark và Trino nhìn cùng một trạng thái bảng không?</li>
+<li>Access control có thay đổi không?</li>
+<li>Lineage có còn hoạt động không?</li>
+<li>BI tool có đọc được kiểu dữ liệu mới không?</li>
+<li>Các view Hive cũ có bị lỗi không?</li>
+</ul>
+<p>Một lớp catalog thống nhất như cách Grab xây dựng có thể giảm đáng kể blast radius.</p>
+<h2 id="bước-4-chạy-song-song-và-đối-chiếu">Bước 4: Chạy song song và đối chiếu<a class="anchor ms-1" href="#bước-4-chạy-song-song-và-đối-chiếu"><i class="fas fa-link"></i></a></h2>
+<p>Trong thời gian đầu, có thể chạy query trên cả bảng cũ và bảng mới:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-sql" data-lang="sql"><span class="line"><span class="ln">1</span><span class="cl"><span class="k">SELECT</span><span class="w"> </span><span class="k">COUNT</span><span class="p">(</span><span class="o">*</span><span class="p">)</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">hive_table</span><span class="p">;</span><span class="w">
+</span></span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="k">SELECT</span><span class="w"> </span><span class="k">COUNT</span><span class="p">(</span><span class="o">*</span><span class="p">)</span><span class="w"> </span><span class="k">FROM</span><span class="w"> </span><span class="n">iceberg_table</span><span class="p">;</span><span class="w">
+</span></span></span></code></pre></div><p>Nhưng chỉ so sánh <code>COUNT(*)</code> là chưa đủ.</p>
+<p>Cần kiểm tra thêm:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">Count theo ngày
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">Sum doanh thu
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">Min/max timestamp
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">Số lượng null
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">Distinct key
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">Duplicate key
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">Late-arriving records
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">Delete và return records
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">Các partition biên tháng
+</span></span><span class="line"><span class="ln">10</span><span class="cl">Các mốc đổi múi giờ
+</span></span></code></pre></div><p>Đặc biệt với hệ thống bán lẻ, nên kiểm tra những tình huống khó:</p>
+<ul>
+<li>Đặt hàng cuối tháng, nhận hàng đầu tháng sau.</li>
+<li>Đơn bị hủy rồi tạo đơn thay thế.</li>
+<li>Hàng trả lại sau nhiều ngày.</li>
+<li>ERP cập nhật chứng từ lịch sử.</li>
+<li>Dữ liệu đến trễ.</li>
+<li>Một nghiệp vụ được sửa nhiều lần.</li>
+</ul>
+<h2 id="bước-5-thiết-lập-maintenance-trước-khi-mở-rộng">Bước 5: Thiết lập maintenance trước khi mở rộng<a class="anchor ms-1" href="#bước-5-thiết-lập-maintenance-trước-khi-mở-rộng"><i class="fas fa-link"></i></a></h2>
+<p>Trước khi onboarding hàng nghìn bảng, phải có sẵn:</p>
+<ul>
+<li>Chính sách target file size.</li>
+<li>Job compaction.</li>
+<li>Snapshot retention.</li>
+<li>Orphan file cleanup.</li>
+<li>Manifest rewrite.</li>
+<li>Cảnh báo file nhỏ.</li>
+<li>Cảnh báo snapshot tăng bất thường.</li>
+<li>Dashboard commit latency.</li>
+<li>Runbook khi commit conflict.</li>
+</ul>
+<p>Không nên chờ hệ thống bẩn rồi mới xây đội vệ sinh.</p>
+<h2 id="bước-6-đo-lại-sau-migration">Bước 6: Đo lại sau migration<a class="anchor ms-1" href="#bước-6-đo-lại-sau-migration"><i class="fas fa-link"></i></a></h2>
+<p>Sau khi migration, so sánh:</p>
+<p>$$
+\text{Improvement} =
+\frac{\text{Before} - \text{After}}
+{\text{Before}}
+\times 100%
+$$</p>
+<p>Ví dụ query giảm từ 70 giây xuống 6 giây:</p>
+<p>$$
+\frac{70 - 6}{70} \times 100%
+\approx 91.4%
+$$</p>
+<p>Nhưng không nên chỉ đo query nhanh nhất.</p>
+<p>Cần nhìn toàn bộ hệ thống:</p>
+<ul>
+<li>P50, P95 planning time.</li>
+<li>P50, P95 runtime.</li>
+<li>Compute cost.</li>
+<li>Storage API cost.</li>
+<li>Data freshness.</li>
+<li>Commit failure.</li>
+<li>Số lần vận hành thủ công.</li>
+<li>Số incident.</li>
+<li>Thời gian xử lý incident.</li>
+</ul>
+<p>Một migration tốt không chỉ làm benchmark đẹp.</p>
+<p>Nó phải khiến số lần con người bị gọi dậy lúc hai giờ sáng giảm xuống.</p>
+<h1 id="iceberg-không-phải-phép-màu">Iceberg không phải phép màu<a class="anchor ms-1" href="#iceberg-không-phải-phép-màu"><i class="fas fa-link"></i></a></h1>
+<p>Apache Iceberg giải quyết nhiều vấn đề mà Hive Parquet gặp phải ở quy mô lớn:</p>
+<ul>
+<li>Quản lý bảng bằng metadata thay vì phụ thuộc vào directory listing.</li>
+<li>Hỗ trợ snapshot và transaction.</li>
+<li>Cho phép schema và partition evolution.</li>
+<li>Hỗ trợ query planning và data skipping tốt hơn.</li>
+<li>Làm nền tảng cho <code>UPDATE</code>, <code>DELETE</code>, <code>MERGE</code> và time travel.</li>
+<li>Hoạt động với nhiều compute engine.</li>
+</ul>
+<p>Nhưng Iceberg không tự động giải quyết:</p>
+<ul>
+<li>Pipeline ghi dữ liệu kém.</li>
+<li>File nhỏ liên tục được sinh ra.</li>
+<li>Catalog cấu hình sai.</li>
+<li>Timestamp semantics không rõ ràng.</li>
+<li>Data contract lỏng lẻo.</li>
+<li>Query viết thiếu điều kiện.</li>
+<li>Team không có quy trình maintenance.</li>
+<li>Migration không có metric.</li>
+<li>Người dùng bị bắt nhớ quá nhiều chi tiết hạ tầng.</li>
+</ul>
+<p>Đổi sang Iceberg nhưng không thay đổi cách vận hành cũng giống như mua một chiếc tủ lạnh mới rồi tiếp tục để cửa mở cả ngày.</p>
+<p>Máy tốt hơn thật.</p>
+<p>Nhưng tiền điện vẫn ra đi trong tiếng máy nén gầm gừ.</p>
+<h1 id="tổng-kết">Tổng kết<a class="anchor ms-1" href="#tổng-kết"><i class="fas fa-link"></i></a></h1>
+<p>Hành trình của Grab cho thấy Apache Iceberg không chỉ là một định dạng bảng mới đặt lên S3.</p>
+<p>Nó là quá trình đưa khái niệm “bảng” trở lại Data Lake: một thực thể có trạng thái, lịch sử, metadata và quy tắc commit rõ ràng.</p>
+<p>Grab đạt được những kết quả đáng chú ý trên các workload tiêu biểu: query từ khoảng 70 giây xuống 6 giây, chi phí S3 API giảm tới 95% và tài nguyên compute của một số pipeline giảm khoảng một nửa. Nhưng những con số đó không tự nhiên xuất hiện chỉ vì đổi vài dòng cấu hình. (<a href="https://engineering.grab.com/our-journey-to-apache-iceberg-adoption" title="Scaling Grab&#39;s Data Lake: Our journey to Apache Iceberg adoption" target="_blank" rel="noopener noreferrer">Grab Tech</a>)</p>
+<p>Phía sau chúng là hàng loạt bài học ít hào nhoáng hơn:</p>
+<ul>
+<li>Migration theo giá trị, không chạy theo phong trào.</li>
+<li>Metadata phải được vận hành như một hệ thống production.</li>
+<li>Small file cần maintenance liên tục.</li>
+<li>Timestamp có thể phá hỏng tính đúng đắn của dữ liệu.</li>
+<li>Storage tier có thể tạo chi phí migration bất ngờ.</li>
+<li>Trải nghiệm người dùng phải được bảo vệ bằng lớp abstraction.</li>
+<li>Nhiều table format sẽ cùng tồn tại trong một thời gian rất dài.</li>
+</ul>
+<p>Có lẽ lesson learned lớn nhất là thế này:</p>
+<p><strong>Một Data Lake không trở thành Lakehouse chỉ vì bên trong xuất hiện vài bảng Iceberg. Nó chỉ thực sự thay đổi khi dữ liệu được quản lý như một sản phẩm có hợp đồng, lịch sử, người chịu trách nhiệm và chi phí vật lý rõ ràng.</strong></p>
+<p>Bởi vì dưới một câu SQL tưởng như rất nhẹ nhàng là hàng nghìn CPU core đang thức dậy, hàng triệu metadata entry đang được duyệt, hàng tỷ electron đang chạy xuyên qua dây dẫn và những chiếc quạt trong data center đang gầm lên để đẩy nhiệt trở lại không khí.</p>
+<p>Không có gì là hoàn toàn ảo.</p>
+<p>Kể cả một cái bảng.</p>
+<p>Cảm ơn các bạn đã quan tâm và theo dõi bài viết, hẹn gặp lại ở các bài viết tiếp theo.</p>
+<h1 id="tham-khảo">Tham khảo<a class="anchor ms-1" href="#tham-khảo"><i class="fas fa-link"></i></a></h1>
+<ul>
+<li>Grab Engineering, “Scaling Grab&rsquo;s Data Lake: Our journey to Apache Iceberg adoption”. (<a href="https://engineering.grab.com/our-journey-to-apache-iceberg-adoption" title="Scaling Grab&#39;s Data Lake: Our journey to Apache Iceberg adoption" target="_blank" rel="noopener noreferrer">Grab Tech</a>)</li>
+<li>Grab, mã nguồn UnifiedSparkCatalog. (<a href="https://github.com/grab/unified-spark-catalog" title="GitHub - grab/unified-spark-catalog: Unified Spark catalog routing to Delta, Iceberg, or Hudi by auto-detecting format · GitHub" target="_blank" rel="noopener noreferrer">GitHub</a>)</li>
+<li>Apache Iceberg Documentation, giới thiệu và các đặc tính của table format. (<a href="https://iceberg.apache.org/docs/latest/" title="Introduction - Apache Iceberg™" target="_blank" rel="noopener noreferrer">Apache Iceberg</a>)</li>
+<li>Apache Iceberg Documentation, hidden partitioning. (<a href="https://iceberg.apache.org/docs/latest/partitioning/" title="Partitioning - Apache Iceberg™" target="_blank" rel="noopener noreferrer">Apache Iceberg</a>)</li>
+<li>Apache Iceberg Documentation, schema và partition evolution. (<a href="https://iceberg.apache.org/docs/latest/evolution/" title="Evolution - Apache Iceberg™" target="_blank" rel="noopener noreferrer">Apache Iceberg</a>)</li>
+<li>Apache Iceberg Documentation, metadata filtering và data skipping. (<a href="https://iceberg.apache.org/docs/latest/performance/" title="Performance - Apache Iceberg™" target="_blank" rel="noopener noreferrer">Apache Iceberg</a>)</li>
+<li>Apache Iceberg Documentation, maintenance, compaction và snapshot expiration. (<a href="https://iceberg.apache.org/docs/latest/maintenance/" title="Maintenance - Apache Iceberg™" target="_blank" rel="noopener noreferrer">Apache Iceberg</a>)</li>
+</ul>
+</div></div>
+  <div class="card-footer"><div class="post-navs d-flex justify-content-evenly"><div class="post-nav post-prev">
+    <i class="fas fa-fw fa-chevron-left"></i>
+    <a href="https://www.phamduytung.com/blog/2026-07-28-kakeya-hong-wang-fields-medal/">Bài toán Kakeya: cây kim, căn phòng vô hình và Huy chương Fields của Vương Hồng
+</a>
+  </div><div class="post-nav post-next">
+    <a href="https://www.phamduytung.com/blog/2026-07-28-ai-search-retail-catalog/">Khi Google không còn đưa người dùng đến website: Catalog bán lẻ phải thay đổi thế nào trong thời đại AI Search?
+</a>
+    <i class="fas fa-fw fa-chevron-right"></i>
+  </div></div></div>
+</article><div class="card component row post-comments" id="post-comments">
+  <div class="card-header">
+    <h2 class="card-title">Bình luận</h2>
+  </div>
+  <div class="card-body"><script src="https://utteranc.es/client.js"
+  repo="AlexBlack2202/utterances"
+  issue-term="pathname"
+  label="comment"
+  theme="github-dark"
+  crossorigin="anonymous"
+  async>
+</script></div>
+</div></div>
+</div><aside class="col-lg-3 col-md-4 sidebar d-flex">
+  <div class="container d-flex flex-column">
+    
+    <a href="https://www.buymeacoffee.com/alexblack28"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=🍎&slug=alexblack28&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" /></a><div class="post-toc row mb-4 card component" id="postTOC">
+  <div class="card-header">
+    <h2 class="card-title">Mục lục</h2>
+  </div>
+  <div class="card-body">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#không-có-gì-chỉ-là-một-file-parquet">Không có gì chỉ là một file Parquet</a></li>
+    <li><a href="#khi-data-lake-lớn-đến-mức-thư-mục-trở-thành-gánh-nặng">Khi Data Lake lớn đến mức thư mục trở thành gánh nặng</a>
+      <ul>
+        <li><a href="#bốn-vấn-đề-grab-gặp-phải">Bốn vấn đề Grab gặp phải</a>
+          <ul>
+            <li><a href="#catalog-trở-thành-nút-cổ-chai">Catalog trở thành nút cổ chai</a></li>
+            <li><a href="#small-file-biến-thành-một-đàn-muỗi">Small file biến thành một đàn muỗi</a></li>
+            <li><a href="#không-có-thao-tác-thay-đổi-dữ-liệu-tự-nhiên">Không có thao tác thay đổi dữ liệu tự nhiên</a></li>
+            <li><a href="#catalog-và-storage-có-thể-không-đồng-bộ">Catalog và storage có thể không đồng bộ</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+    <li><a href="#apache-iceberg-thay-đổi-điều-gì">Apache Iceberg thay đổi điều gì?</a>
+      <ul>
+        <li><a href="#từ-directory-centric-sang-table-centric">Từ directory-centric sang table-centric</a></li>
+      </ul>
+    </li>
+    <li><a href="#vì-sao-grab-chọn-iceberg">Vì sao Grab chọn Iceberg?</a></li>
+    <li><a href="#grab-không-migration-toàn-bộ-data-lake-trong-một-đêm">Grab không migration toàn bộ Data Lake trong một đêm</a>
+      <ul>
+        <li><a href="#query-nhanh-hơn-khoảng-10-lần">Query nhanh hơn khoảng 10 lần</a></li>
+        <li><a href="#chi-phí-s3-api-giảm-tới-95">Chi phí S3 API giảm tới 95%</a></li>
+        <li><a href="#tài-nguyên-compute-giảm-khoảng-một-nửa">Tài nguyên compute giảm khoảng một nửa</a></li>
+      </ul>
+    </li>
+    <li><a href="#unifiedsparkcatalog-người-dùng-không-nên-trả-giá-cho-migration">UnifiedSparkCatalog: Người dùng không nên trả giá cho migration</a></li>
+    <li><a href="#những-lesson-learned-quan-trọng-nhất">Những lesson learned quan trọng nhất</a></li>
+    <li><a href="#1-đừng-migration-vì-công-nghệ-mới-trông-đẹp">1. Đừng migration vì công nghệ mới trông đẹp</a></li>
+    <li><a href="#2-table-format-không-tự-chữa-được-small-file">2. Table format không tự chữa được small file</a></li>
+    <li><a href="#3-metadata-cũng-là-một-hệ-thống-production">3. Metadata cũng là một hệ thống production</a></li>
+    <li><a href="#4-timestamp-không-phải-một-kiểu-dữ-liệu-vô-tội">4. Timestamp không phải một kiểu dữ liệu vô tội</a></li>
+    <li><a href="#5-đọc-dữ-liệu-cũ-có-thể-làm-hóa-đơn-tăng-trước-khi-giảm">5. Đọc dữ liệu cũ có thể làm hóa đơn tăng trước khi giảm</a></li>
+    <li><a href="#6-migration-format-phải-đi-cùng-migration-trải-nghiệm-người-dùng">6. Migration format phải đi cùng migration trải nghiệm người dùng</a></li>
+    <li><a href="#7-hãy-thiết-kế-cho-thời-kỳ-nhiều-format-cùng-tồn-tại">7. Hãy thiết kế cho thời kỳ nhiều format cùng tồn tại</a></li>
+    <li><a href="#một-lộ-trình-triển-khai-iceberg-thực-tế">Một lộ trình triển khai Iceberg thực tế</a>
+      <ul>
+        <li><a href="#bước-1-lập-bản-đồ-hiện-trạng">Bước 1: Lập bản đồ hiện trạng</a></li>
+        <li><a href="#bước-2-chia-bảng-thành-nhóm">Bước 2: Chia bảng thành nhóm</a></li>
+        <li><a href="#bước-3-xây-compatibility-layer">Bước 3: Xây compatibility layer</a></li>
+        <li><a href="#bước-4-chạy-song-song-và-đối-chiếu">Bước 4: Chạy song song và đối chiếu</a></li>
+        <li><a href="#bước-5-thiết-lập-maintenance-trước-khi-mở-rộng">Bước 5: Thiết lập maintenance trước khi mở rộng</a></li>
+        <li><a href="#bước-6-đo-lại-sau-migration">Bước 6: Đo lại sau migration</a></li>
+      </ul>
+    </li>
+    <li><a href="#iceberg-không-phải-phép-màu">Iceberg không phải phép màu</a></li>
+    <li><a href="#tổng-kết">Tổng kết</a></li>
+    <li><a href="#tham-khảo">Tham khảo</a></li>
+  </ul>
+</nav>
+  </div>
+</div><section class="recent-posts row card component">
+  <div class="card-header">
+    <h2 class="card-title">Bài gần đây</h2>
+  </div>
+  <div class="card-body">
+    <ul class="post-list"><li>
+        <a href="https://www.phamduytung.com/blog/2026-07-28-enterprise-ai-vendor-lock-in/">Doanh nghiệp giao hết bộ não cho một AI có thể không sống sót
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-07-28-ai-search-retail-catalog/">Khi Google không còn đưa người dùng đến website: Catalog bán lẻ phải thay đổi thế nào trong thời đại AI Search?
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-07-28-grab-apache-iceberg-migration/">Grab chuyển Data Lake sang Apache Iceberg: Bài học không nằm ở việc đổi định dạng file
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-07-28-kakeya-hong-wang-fields-medal/">Bài toán Kakeya: cây kim, căn phòng vô hình và Huy chương Fields của Vương Hồng
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-07-25-ai-unknowns/">AI càng thông minh, con người càng phải biết mình không biết gì
+</a>
+      </li></ul>
+  </div>
+</section><section class="series-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/series">series</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/series/kh%C3%B3a-h%E1%BB%8Dc-python-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học Python Căn Bản">
+            Khóa Học Python Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="https://www.phamduytung.com/series/kh%C3%B3a-h%E1%BB%8Dc-c&#43;&#43;-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học C&#43;&#43; Căn Bản">
+            Khóa Học C&#43;&#43; Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="https://www.phamduytung.com/series/machine-learning-dataset/" class="badge rounded post-taxonomy" title="Machine Learning Dataset">
+            Machine Learning Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a><a href="https://www.phamduytung.com/series/ch%E1%BB%A9ng-kho%C3%A1n-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Chứng Khoán Căn Bản">
+            Chứng Khoán Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">1</span></a></div>
+      </div>
+    </section><section class="tools-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/tools">tools</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/tools/tool-random/" class="badge rounded post-taxonomy" title="Tool Random">
+            Tool Random<span class="badge badge-sm text-white bg-accent ms-1">3</span></a></div>
+      </div>
+    </section><section class="categories-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/categories">categories</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/categories/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="https://www.phamduytung.com/categories/c&#43;&#43;/" class="badge rounded post-taxonomy" title="C&#43;&#43;">
+            C&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="https://www.phamduytung.com/categories/dataset/" class="badge rounded post-taxonomy" title="Dataset">
+            Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a></div>
+      </div>
+    </section><section class="tags-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/tags">tags</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/tags/machine-learning/" class="badge rounded post-taxonomy" title="Machine Learning">
+            Machine Learning<span class="badge badge-sm text-white bg-accent ms-1">26</span></a><a href="https://www.phamduytung.com/tags/deep-learning/" class="badge rounded post-taxonomy" title="Deep Learning">
+            Deep Learning<span class="badge badge-sm text-white bg-accent ms-1">23</span></a><a href="https://www.phamduytung.com/tags/computer-vision/" class="badge rounded post-taxonomy" title="Computer Vision">
+            Computer Vision<span class="badge badge-sm text-white bg-accent ms-1">16</span></a><a href="https://www.phamduytung.com/tags/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">14</span></a><a href="https://www.phamduytung.com/tags/llm/" class="badge rounded post-taxonomy" title="LLM">
+            LLM<span class="badge badge-sm text-white bg-accent ms-1">13</span></a><a href="https://www.phamduytung.com/tags/ai-agent/" class="badge rounded post-taxonomy" title="AI Agent">
+            AI Agent<span class="badge badge-sm text-white bg-accent ms-1">7</span></a><a href="https://www.phamduytung.com/tags/recommendation-system/" class="badge rounded post-taxonomy" title="Recommendation System">
+            Recommendation System<span class="badge badge-sm text-white bg-accent ms-1">7</span></a><a href="https://www.phamduytung.com/tags/system-design/" class="badge rounded post-taxonomy" title="System Design">
+            System Design<span class="badge badge-sm text-white bg-accent ms-1">7</span></a><a href="https://www.phamduytung.com/tags/time-series/" class="badge rounded post-taxonomy" title="Time Series">
+            Time Series<span class="badge badge-sm text-white bg-accent ms-1">6</span></a><a href="https://www.phamduytung.com/tags/uber-engineering/" class="badge rounded post-taxonomy" title="Uber Engineering">
+            Uber Engineering<span class="badge badge-sm text-white bg-accent ms-1">6</span></a></div>
+      </div>
+    </section>
+    
+  </div>
+</aside>
+</div>
+    </main><footer class="footer mt-auto py-3 text-center container"><ul class="nav justify-content-between footer-memu mb-3"><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Community
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-facebook"></i>Facebook Group
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://github.com/AlexBlack2202/alexblack2202.github.io" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-github"></i>GitHub
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/contact/"><i class="fas fa-fw fa-info-circle"></i>Contact Us
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/faq/"><i class="fas fa-fw fa-question-circle"></i>Câu hỏi thường gặp
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Docs
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="/team_of_services" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-users"></i>Điều khoản sử dụng
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/privacy" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-lock"></i>Chính sách bảo mật
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Features
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="/utils/gen_paswords/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-key"></i>Tạo password ngẫu nhiên
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Liên kết khác
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">Netlify
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">facebook
+</a>
+        </li></ul></li></ul>
+<div class="copyright mb-2">
+  Copyright © 2016-2026 Phạm Duy Tùng. All Rights Reserved.
+</div>
+<div class="powered-by mb-2">
+  Website chia sẻ kiến thức của Phạm Duy Tùng và Đặng Thị Hằng. Vui lòng liên hệ email alexblack2202@gmail.com nếu bạn có thông tin cần trao đổi.
+</div></footer>
+<script src="https://www.phamduytung.com/js/main.111d51a8c754010f8399ca010e552d803e2d5170b361f8886ad04ec6c21ca551.js" integrity="sha256-ER1RqMdUAQ&#43;DmcoBDlUtgD4tUXCzYfiIatBOxsIcpVE=" crossorigin="anonymous" defer></script><script src="https://www.phamduytung.com/js/icons.min.cb4c9958dbc49e29ac644e168e82db2d0de9a741a15751cc5bf2b0af21eb2845.js" integrity="sha256-y0yZWNvEnimsZE4WjoLbLQ3pp0GhV1HMW/KwryHrKEU=" crossorigin="anonymous" defer></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('https:\/\/www.phamduytung.com\/service-worker.js').then(function(reg) {
+      console.log('Successfully registered service worker', reg);
+    }).catch(function(err) {
+      console.warn('Error whilst registering service worker', err);
+    });
+  });
+}
+</script><script src="https://www.phamduytung.com/js/viewer.min.28bcf5233e406dae6715f46c8b9e8ca7c6cbf347e8678f5a2bebe5369c3270bb.js" integrity="sha256-KLz1Iz5Aba5nFfRsi56Mp8bL80foZ49aK&#43;vlNpwycLs=" crossorigin="anonymous" defer></script><script defer src="https://www.phamduytung.com/js/katex.min.8582b9feadf92a2a977ed303b97d7713cf2754ccf2b4eb60d8be7453a21042c2.js" integrity="sha256-hYK5/q35KiqXftMDuX13E88nVMzytOtg2L50U6IQQsI=" crossorigin="anonymous"></script>
+
+<script  data-ad-client="ca-pub-4644989745435991"  async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4644989745435991"
+     crossorigin="anonymous"></script><script data-cfasync="false" type="text/javascript" data-adel="atag" src="//acscdn.com/script/atg.js" czid="eul3gyjdmm"></script>
+  </body>
+</html>
