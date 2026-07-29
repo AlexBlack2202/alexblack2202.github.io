@@ -1,0 +1,1295 @@
+<!doctype html><html lang="vi" data-palette="brown"
+   data-mode="light">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Pailitao-MMSearch: Khi mỗi sản phẩm trở thành một chuỗi token trong bộ não tìm kiếm của Taobao - Phạm Duy Tùng Machine Learning Blog</title>
+    <meta name="a.validate.02" content="1QZXZ8oi7g57H-GxBrBPkTYBydwii-Ic9iJu" /><link rel="apple-touch-icon" href="https://www.phamduytung.com/images/icons/icon-180x180.png" sizes="180x180">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/icon-32x32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/icon-16x16.png" sizes="16x16" type="image/png">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/favicon.ico">
+<link rel="manifest" href="https://www.phamduytung.com/manifest.json">
+<meta name="keywords" content="" />
+<meta name="description" content="Phân tích học thuật Pailitao-MMSearch, mô hình tìm kiếm thương mại điện tử đa phương thức của Alibaba, từ Hybrid Semantic ID, continual pre-training, on-policy distillation đến generative retrieval và các giới hạn thực nghiệm còn bỏ ngỏ." /><meta name="robots" content="index, follow" />
+	<meta itemprop="name" content="Pailitao-MMSearch: Khi mỗi sản phẩm trở thành một chuỗi token trong bộ não tìm kiếm của Taobao">
+	<meta itemprop="description" content="Phân tích học thuật Pailitao-MMSearch, mô hình tìm kiếm thương mại điện tử đa phương thức của Alibaba, từ Hybrid Semantic ID, continual pre-training, on-policy distillation đến generative retrieval và các giới hạn thực nghiệm còn bỏ ngỏ.">
+	<meta itemprop="datePublished" content="2026-07-29T00:00:00+07:00">
+	<meta itemprop="dateModified" content="2026-07-29T00:00:00+07:00">
+	<meta itemprop="wordCount" content="5970">
+	<meta itemprop="image" content="https://www.phamduytung.com/images/posts/2026-07-29-multimodal-search/cover.jpg">
+	<meta itemprop="keywords" content="Multimodal-Search,Generative-Retrieval,Semantic-Id,E-Commerce,LLM"><meta property="og:url" content="https://www.phamduytung.com/blog/2026-07-29-multimodal-search/">
+	<meta property="og:site_name" content="Phạm Duy Tùng Machine Learning Blog">
+	<meta property="og:title" content="Pailitao-MMSearch: Khi mỗi sản phẩm trở thành một chuỗi token trong bộ não tìm kiếm của Taobao">
+	<meta property="og:description" content="Phân tích học thuật Pailitao-MMSearch, mô hình tìm kiếm thương mại điện tử đa phương thức của Alibaba, từ Hybrid Semantic ID, continual pre-training, on-policy distillation đến generative retrieval và các giới hạn thực nghiệm còn bỏ ngỏ.">
+	<meta property="og:locale" content="vi_VN">
+	<meta property="og:type" content="article">
+		<meta property="article:section" content="blog">
+		<meta property="article:published_time" content="2026-07-29T00:00:00+07:00">
+		<meta property="article:modified_time" content="2026-07-29T00:00:00+07:00">
+		<meta property="article:tag" content="Multimodal-Search">
+		<meta property="article:tag" content="Generative-Retrieval">
+		<meta property="article:tag" content="Semantic-Id">
+		<meta property="article:tag" content="E-Commerce">
+		<meta property="article:tag" content="LLM">
+		<meta property="og:image" content="https://www.phamduytung.com/images/posts/2026-07-29-multimodal-search/cover.jpg">
+
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:image" content="https://www.phamduytung.com/images/posts/2026-07-29-multimodal-search/cover.jpg">
+	<meta name="twitter:title" content="Pailitao-MMSearch: Khi mỗi sản phẩm trở thành một chuỗi token trong bộ não tìm kiếm của Taobao">
+	<meta name="twitter:description" content="Phân tích học thuật Pailitao-MMSearch, mô hình tìm kiếm thương mại điện tử đa phương thức của Alibaba, từ Hybrid Semantic ID, continual pre-training, on-policy distillation đến generative retrieval và các giới hạn thực nghiệm còn bỏ ngỏ.">
+<link rel="stylesheet" href="https://www.phamduytung.com/css/main.min.7dd8c8ad44fe5c0f292dd635ae28981312b940a5894df3049d2a6e2fa2f43327.css" integrity="sha256-fdjIrUT&#43;XA8pLdY1riiYExK5QKWJTfMEnSpuL6L0Myc=" crossorigin="anonymous"><link rel="stylesheet" href="https://www.phamduytung.com/css/katex.min.4d6aa053ca8a5675016fa2c9c48ee5359bfaafb8295184458af9d64abce84c47.css" integrity="sha256-TWqgU8qKVnUBb6LJxI7lNZv6r7gpUYRFivnWSrzoTEc=" crossorigin="anonymous">
+<link rel="stylesheet" href="https://www.phamduytung.com/css/viewer.min.e882eb3a023412b73bb741b4604a1222a9f13aa7783c828d26d066ab8642bd51.css" integrity="sha256-6ILrOgI0Erc7t0G0YEoSIqnxOqd4PIKNJtBmq4ZCvVE=" crossorigin="anonymous"><link rel="canonical" href="https://www.phamduytung.com/blog/2026-07-29-multimodal-search/"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Phạm Duy Tùng"},"dateModified":"2026-07-29T00:00:00+07:00","datePublished":"2026-07-29T00:00:00+07:00","description":"Phân tích học thuật Pailitao-MMSearch, mô hình tìm kiếm thương mại điện tử đa phương thức của Alibaba, từ Hybrid Semantic ID, continual pre-training, on-policy distillation đến generative retrieval và các giới hạn thực nghiệm còn bỏ ngỏ.","headline":"Pailitao-MMSearch: Khi mỗi sản phẩm trở thành một chuỗi token trong bộ não tìm kiếm của Taobao","image":["https://www.phamduytung.com/images/posts/2026-07-29-multimodal-search/cover.jpg"],"inLanguage":"vi","keywords":"multimodal-search, generative-retrieval, semantic-id, e-commerce, LLM","mainEntityOfPage":{"@id":"https://www.phamduytung.com/blog/2026-07-29-multimodal-search/","@type":"WebPage"},"publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://www.phamduytung.com/images/logo.png"},"name":"Phạm Duy Tùng Machine Learning Blog"},"url":"https://www.phamduytung.com/blog/2026-07-29-multimodal-search/"}</script></head>
+  <body><script>const items=["mode","palette"];items.forEach(function(e){const t=localStorage.getItem("hbs-"+e);t&&document.body.parentElement.setAttribute("data-"+e,t)})</script><header><nav class="navbar top-app-bar top-app-bar-expand-lg fixed-top">
+  <div class="container">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <i class="fas fa-bars"></i>
+    </button><a class="navbar-brand flex-grow-1 flex-lg-grow-0 text-center text-lg-start mx-auto me-lg-3" href="https://www.phamduytung.com/"><img class="logo" alt="Logo" src="https://www.phamduytung.com/images/logo.webp" loading="lazy"  title="Logo"
+   width="32" height="32"
+   />
+Phạm Duy Tùng
+    </a>
+    <div class="offcanvas offcanvas-bottom surface" tabindex="-1" id="offcanvasSocialShare" aria-labelledby="offcanvasSocialShare">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Share</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body">
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Twitter Share Button"
+      target="_blank" href="https://twitter.com/intent/tweet?title=Pailitao-MMSearch%3a%20Khi%20m%e1%bb%97i%20s%e1%ba%a3n%20ph%e1%ba%a9m%20tr%e1%bb%9f%20th%c3%a0nh%20m%e1%bb%99t%20chu%e1%bb%97i%20token%20trong%20b%e1%bb%99%20n%c3%a3o%20t%c3%acm%20ki%e1%ba%bfm%20c%e1%bb%a7a%20Taobao&url=https%3a%2f%2fwww.phamduytung.com%2fblog%2f2026-07-29-multimodal-search%2f">
+      <i class="fab fa-fw fa-twitter"></i> Twitter
+    </a>
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Facebook Share Button"
+      target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.phamduytung.com%2fblog%2f2026-07-29-multimodal-search%2f">
+      <i class="fab fa-fw fa-facebook-f"></i> Facebook
+    </a>
+  </div>
+</div>
+    <button class="navbar-settings" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSettings"
+  aria-controls="offcanvasSettings" aria-label="Toggle settings">
+  <i class="fas fa-ellipsis-v"></i>
+</button>
+
+<div class="offcanvas offcanvas-end surface h-100" tabindex="-1" id="offcanvasSettings" aria-labelledby="offcanvasSettings">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Cài đặt</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body d-flex flex-column">
+
+
+
+<section class="setting">
+  <form class="font-size-switcher-form row">
+    <div class="col-auto">
+      <label for="fontSize" class="form-label"><i class="fas fa-fw fa-font"></i> Cỡ chữ</label>
+    </div>
+    <div class="col-auto ms-auto">
+      <input type="range" class="form-range" min="-2" max="2" id="fontSize">
+    </div>
+  </form>
+</section>
+
+
+
+<section class="setting actions d-flex justify-content-around mt-auto overflow-auto">
+  <a role="button" class="action action-go-back" href="javascript: window.history.back();">
+    <span class="action-icon"><i class="fas fa-2x fa-arrow-left"></i></span> Quay lại
+  </a>
+  <a role="button" class="action action-reload-page">
+    <span class="action-icon"><i class="fas fa-2x fa-redo-alt"></i></span> Tải lại
+  </a>
+  <a role="button" class="action action-copy-url">
+    <span class="action-icon"><i class="fas fa-2x fa-link"></i></span> Sao chép URL
+  </a><a class="action action-social-share" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSocialShare"
+    aria-controls="offcanvasSocialShare" aria-label="Toggle social share">
+    <span class="action-icon"><i class="fas fa-2x fa-share-alt"></i></span> Chia sẻ
+  </a></section>
+
+</div>
+</div>
+
+    <div class="collapse navbar-collapse" tabindex="-1" id="navbarSupportedContent" aria-labelledby="navbarSupportedContent">
+      <form class="search-bar my-1" action="https://www.phamduytung.com/search">
+  <div class="input-group input-group-sm">
+    <span class="btn btn-search disabled position-absolute left-0"><i class="fas fa-fw fa-search"></i></span>
+    <input class="form-control rounded-pill" name="q" type="search" aria-label="Search">
+  </div>
+</form>
+      <ul class="navbar-nav ms-auto"><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/series/">
+            <i class="fas fa-fw fa-columns"></i>Courses
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/tools/">
+            <i class="fas fa-fw fa-folder"></i>Tools
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/categories/">
+            <i class="fas fa-fw fa-folder"></i>Categories
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/archives/">
+            <i class="fas fa-fw fa-file-archive"></i>Archives
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/tags/">
+            <i class="fas fa-fw fa-tags"></i>Tags
+          </a>
+        </li><li class="nav-item dropdown">
+          <a class="nav-link" id="navbarDropdownSupport" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-fw fa-comments"></i>Community
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdownSupport"><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Facebook Group
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://github.com/AlexBlack2202/alexblack2202.github.io" target="_blank" rel="noopener noreferrer">
+                GitHub
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/contact/">
+                Contact
+              </a>
+            </li><li><hr class="dropdown-divider"></li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/faq/">
+                Câu hỏi thường gặp
+              </a>
+            </li></ul>
+        </li></ul>
+    </div>
+  </div>
+</nav>
+</header>
+<main role="main" class="container" style="line-height:1.7em">
+      <div class="row content">
+<div class="col-lg-9 col-md-8">
+  <div class="container"><nav class="row card component" aria-label="breadcrumb">
+  <div class="card-body">
+    <ol class="breadcrumb "><li class="breadcrumb-item"><a href="https://www.phamduytung.com/">Trang chủ</a></li><li class="breadcrumb-item"><a href="https://www.phamduytung.com/blog/">Blogs</a></li><li class="breadcrumb-item active">Pailitao-MMSearch: Khi mỗi sản phẩm trở thành một chuỗi token trong bộ não tìm kiếm của Taobao</li></ol>
+  </div>
+</nav>
+<div class="post-panel-wrapper">
+  <div class="d-flex flex-column component rounded post-panel">
+    
+    <a class="action action-panel-toggler" role="button" title="Panel toggler">
+      <i class="fas fa-fw fa-chevron-circle-down"></i>
+    </a>
+    <a id="sidebarToggler" class="action d-none d-lg-block" role="button" title="Sidebar toggler">
+  <i class="fas fa-fw fa-expand-alt" data-fa-transform="rotate-45"></i>
+</a>
+
+    
+
+    
+    
+    <a class="action" href="#post-comments" role="button" aria-label="Comments" title="Comments">
+  <i class="fas fa-fw fa-comments"></i>
+</a>
+    <a class="action" href="#postTOC" aria-controls="Table of contents" role="button" title="Table of contents">
+  <i class="fas fa-fw fa-list-alt"></i>
+</a>
+    
+  </div>
+</div>
+<article class="row card component mb-4 post">
+  <div class="card-header "><div class="bgcover" style="background-image:url(https://www.phamduytung.com/images/posts/2026-07-29-multimodal-search/cover.jpg)" aria-label="Pailitao-MMSearch: Khi mỗi sản phẩm trở thành một chuỗi token trong bộ não tìm kiếm của Taobao">
+      <div class="bgtrans">
+          <h1>Pailitao-MMSearch: Khi mỗi sản phẩm trở thành một chuỗi token trong bộ não tìm kiếm của Taobao
+</h1>
+      </div>
+  </div>
+</div>
+  <div class="card-body"><div class="post-meta">
+  <span class="post-date" title="tạo ngày 2026-07-29 00:00:00 &#43;0700 &#43;07.">
+    29/07/2026
+  </span><span class="post-reading-time">
+    29 phút đọc
+  </span><span class="post-taxonomies"><a href="https://www.phamduytung.com/tags/multimodal-search/" class="badge post-taxonomy">multimodal-search</a><a href="https://www.phamduytung.com/tags/generative-retrieval/" class="badge post-taxonomy">generative-retrieval</a><a href="https://www.phamduytung.com/tags/semantic-id/" class="badge post-taxonomy">semantic-id</a><a href="https://www.phamduytung.com/tags/e-commerce/" class="badge post-taxonomy">e-commerce</a><a href="https://www.phamduytung.com/tags/llm/" class="badge post-taxonomy">LLM</a></span>
+</div>
+<div class="post-content mb-3"><hr>
+<div class="toc">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#không-có-sản-phẩm-nào-chỉ-là-một-con-số">Không có sản phẩm nào chỉ là một con số</a></li>
+    <li><a href="#paper-này-thực-sự-đang-nghiên-cứu-điều-gì">Paper này thực sự đang nghiên cứu điều gì?</a></li>
+    <li><a href="#từ-retrieval-truyền-thống-đến-generative-retrieval">Từ retrieval truyền thống đến generative retrieval</a>
+      <ul>
+        <li><a href="#retrieval-truyền-thống-làm-gì">Retrieval truyền thống làm gì?</a></li>
+        <li><a href="#generative-retrieval-làm-gì-khác">Generative retrieval làm gì khác?</a></li>
+      </ul>
+    </li>
+    <li><a href="#hybsid-địa-chỉ-nhà-cộng-với-dấu-vân-tay">HybSID: địa chỉ nhà cộng với dấu vân tay</a>
+      <ul>
+        <li><a href="#vì-sao-semantic-id-thuần-rời-rạc-chưa-đủ">Vì sao Semantic ID thuần rời rạc chưa đủ?</a></li>
+        <li><a href="#không-gian-mã-rất-lớn-nhưng-sức-chứa-thực-tế-lại-nhỏ-hơn-tưởng-tượng">Không gian mã rất lớn, nhưng sức chứa thực tế lại nhỏ hơn tưởng tượng</a></li>
+        <li><a href="#thêm-một-vector-liên-tục-vào-cuối-chuỗi">Thêm một vector liên tục vào cuối chuỗi</a></li>
+        <li><a href="#hàm-loss-của-hybsid">Hàm loss của HybSID</a></li>
+      </ul>
+    </li>
+    <li><a href="#continual-pre-training-dạy-mô-hình-đi-bán-hàng-mà-không-làm-nó-quên-nói-chuyện">Continual pre-training: dạy mô hình đi bán hàng mà không làm nó quên nói chuyện</a>
+      <ul>
+        <li><a href="#catastrophic-forgetting-là-gì">Catastrophic forgetting là gì?</a></li>
+        <li><a href="#giai-đoạn-1-bơm-kiến-thức-thương-mại-điện-tử">Giai đoạn 1: bơm kiến thức thương mại điện tử</a>
+          <ul>
+            <li><a href="#product-knowledge-alignment">Product Knowledge Alignment</a></li>
+            <li><a href="#user-behavior-alignment">User Behavior Alignment</a></li>
+          </ul>
+        </li>
+        <li><a href="#giai-đoạn-2-on-policy-distillation">Giai đoạn 2: On-Policy Distillation</a></li>
+        <li><a href="#nhưng-paper-có-thực-sự-khôi-phục-năng-lực-tổng-quát-không">Nhưng paper có thực sự “khôi phục” năng lực tổng quát không?</a></li>
+      </ul>
+    </li>
+    <li><a href="#post-training-lúc-mô-hình-học-cách-hiểu-ý-định-mua-hàng">Post-training: lúc mô hình học cách hiểu ý định mua hàng</a>
+      <ul>
+        <li><a href="#không-phải-query-nào-cũng-cần-suy-nghĩ">Không phải query nào cũng cần “suy nghĩ”</a></li>
+      </ul>
+    </li>
+    <li><a href="#reinforcement-learning-với-phần-thưởng-có-thể-kiểm-chứng">Reinforcement learning với phần thưởng có thể kiểm chứng</a></li>
+    <li><a href="#multi-expert-opd-gom-nhiều-ông-thầy-vào-một-học-sinh">Multi-Expert OPD: gom nhiều ông thầy vào một học sinh</a></li>
+    <li><a href="#thực-nghiệm-được-tổ-chức-như-thế-nào">Thực nghiệm được tổ chức như thế nào?</a>
+      <ul>
+        <li><a href="#quy-mô-huấn-luyện">Quy mô huấn luyện</a></li>
+      </ul>
+    </li>
+    <li><a href="#kết-quả-online-con-số-lớn-nhưng-cần-đọc-đúng-phạm-vi">Kết quả online: con số lớn nhưng cần đọc đúng phạm vi</a>
+      <ul>
+        <li><a href="#generative-retrieval">Generative retrieval</a></li>
+        <li><a href="#generative-ranking">Generative ranking</a></li>
+      </ul>
+    </li>
+    <li><a href="#kết-quả-offline-nói-lên-điều-gì">Kết quả offline nói lên điều gì?</a>
+      <ul>
+        <li><a href="#khả-năng-hiểu-semantic-id">Khả năng hiểu Semantic ID</a></li>
+        <li><a href="#ablation-của-hybsid">Ablation của HybSID</a></li>
+      </ul>
+    </li>
+    <li><a href="#chain-of-thought-có-giúp-tìm-sản-phẩm-tốt-hơn-không">Chain-of-thought có giúp tìm sản phẩm tốt hơn không?</a></li>
+    <li><a href="#đóng-góp-học-thuật-thực-sự-nằm-ở-đâu">Đóng góp học thuật thực sự nằm ở đâu?</a></li>
+    <li><a href="#những-điểm-còn-thiếu-theo-chuẩn-một-paper-học-thuật-mạnh">Những điểm còn thiếu theo chuẩn một paper học thuật mạnh</a>
+      <ul>
+        <li><a href="#thiếu-khả-năng-tái-lập">Thiếu khả năng tái lập</a></li>
+        <li><a href="#ablation-chưa-bao-phủ-các-tuyên-bố-chính">Ablation chưa bao phủ các tuyên bố chính</a></li>
+        <li><a href="#dữ-liệu-hành-vi-có-thể-mang-theo-exposure-bias">Dữ liệu hành vi có thể mang theo exposure bias</a></li>
+        <li><a href="#catalog-không-đứng-yên">Catalog không đứng yên</a></li>
+      </ul>
+    </li>
+    <li><a href="#ý-nghĩa-lớn-hơn-catalog-bắt-đầu-trở-thành-ngôn-ngữ">Ý nghĩa lớn hơn: catalog bắt đầu trở thành ngôn ngữ</a></li>
+    <li><a href="#tổng-kết">Tổng kết</a></li>
+    <li><a href="#tham-khảo">Tham khảo</a></li>
+  </ul>
+</nav>
+  </div>
+<h1 id="không-có-sản-phẩm-nào-chỉ-là-một-con-số">Không có sản phẩm nào chỉ là một con số<a class="anchor ms-1" href="#không-có-sản-phẩm-nào-chỉ-là-một-con-số"><i class="fas fa-link"></i></a></h1>
+<p>Giả sử chúng ta bước vào một nhà kho khổng lồ chứa một tỷ sản phẩm.</p>
+<p>Có áo sơ mi, máy ảnh, dép trẻ em, dây sạc, bàn chải, ốp điện thoại, bình giữ nhiệt, những chiếc váy nhìn gần giống nhau đến mức ngay cả người bán đôi khi cũng phải lật nhãn ra xem.</p>
+<p>Mỗi sản phẩm được dán một mã như:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">8938505974102
+</span></span></code></pre></div><p>Mã này giúp máy tính biết hai hộp hàng là hai vật khác nhau. Nhưng bản thân dãy số không nói cho máy biết đây là một chiếc váy màu xanh, một đôi dép chống trượt hay một cái ốp vừa với điện thoại nào.</p>
+<p>Nó giống số căn cước của con người. Số căn cước giúp phân biệt tôi với anh hàng xóm, nhưng nhìn vào số đó, chúng ta không biết ai thích uống cà phê, ai chạy bộ buổi sáng, ai đang nợ tiền trà sữa.</p>
+<p>Trong tìm kiếm sản phẩm truyền thống, chuyện này không quá nghiêm trọng. Hệ thống có thể dùng một mô hình để hiểu câu chữ, một mô hình khác để nhìn hình ảnh, một bộ máy khác để tìm ứng viên, rồi thêm vài tầng ranking phía sau.</p>
+<p>Nhưng khi người dùng đưa lên một bức ảnh và nói:</p>
+<blockquote>
+<p>Tìm cho tôi chiếc váy giống mẫu này, nhưng màu xanh đậm, kín đáo hơn và phù hợp đi đám cưới.</p>
+</blockquote>
+<p>Vấn đề bỗng trở nên hơi ngáo.</p>
+<p>Bức ảnh nói một nửa. Câu chữ nói một nửa. Ý định mua hàng nằm ở khoảng không giữa hai nửa ấy. Nếu tách chúng ra xử lý riêng, hệ thống có thể tìm được váy giống hình nhưng sai màu, đúng màu nhưng sai kiểu, hoặc rất đẹp nhưng trông giống đồ đi biển hơn đồ đi đám cưới.</p>
+<p>Pailitao-MMSearch, một nghiên cứu của nhóm Taobao và Tmall thuộc Alibaba, cố gắng giải bài toán này bằng một ý tưởng khá mạnh: thay vì xem sản phẩm là những bản ghi nằm bên ngoài mô hình, hãy biến sản phẩm thành một loại ngôn ngữ mà mô hình có thể đọc, hiểu và sinh ra trực tiếp.</p>
+<p>Paper được công bố trên arXiv ngày 20 tháng 7 năm 2026 dưới dạng bản v1, với tiêu đề <em>Pailitao-MMSearch: Building Native E-Commerce Multimodal Search Foundation</em>. Hệ thống được xây dựng trên họ kiến trúc Qwen và đã được triển khai trong nền tảng tìm kiếm bằng hình ảnh Pailitao của Taobao.</p>
+<h1 id="paper-này-thực-sự-đang-nghiên-cứu-điều-gì">Paper này thực sự đang nghiên cứu điều gì?<a class="anchor ms-1" href="#paper-này-thực-sự-đang-nghiên-cứu-điều-gì"><i class="fas fa-link"></i></a></h1>
+<p>Nếu bỏ qua những cụm từ khá to như “foundation model”, “native e-commerce” hay “end-to-end”, câu hỏi nghiên cứu trung tâm của paper có thể viết lại như sau:</p>
+<blockquote>
+<p>Có thể xây dựng một mô hình duy nhất vừa hiểu hình ảnh, ngôn ngữ, thuộc tính sản phẩm và lịch sử hành vi người dùng, vừa trực tiếp sinh ra định danh của sản phẩm cần tìm hay không?</p>
+</blockquote>
+<p>Đây không chỉ là bài toán multimodal understanding.</p>
+<p>Một mô hình có thể nhìn ảnh rồi mô tả “đây là một chiếc váy trẻ em màu hồng” chưa chắc tìm được đúng sản phẩm trong một catalog gồm hàng tỷ listing. Hiểu thế giới và chỉ đúng một món hàng trong kho là hai khả năng khác nhau.</p>
+<p>Theo nhóm tác giả, các hệ thống hiện tại thường rơi vào hai thái cực:</p>
+<ul>
+<li>Các mô hình chuyên biệt cho từng modality hoạt động tốt trong phạm vi hẹp, nhưng hình ảnh, văn bản và giọng nói sống trong những không gian biểu diễn riêng biệt.</li>
+<li>Các vision-language model tổng quát hiểu ảnh và chữ khá tốt, nhưng thiếu taxonomy sản phẩm, thuộc tính thương mại, quan hệ mua kèm, hành vi người dùng và khả năng sinh trực tiếp product ID.</li>
+</ul>
+<p>Do đó, Pailitao-MMSearch được thiết kế quanh ba giả thuyết học thuật:</p>
+<ol>
+<li>Một sản phẩm nên được biểu diễn đồng thời bằng mã rời rạc và vector liên tục.</li>
+<li>Domain knowledge có thể được đưa vào mô hình bằng continual pre-training, sau đó giảm catastrophic forgetting bằng on-policy distillation.</li>
+<li>Tìm kiếm sản phẩm có thể được mô hình hóa thành bài toán sinh chuỗi tự hồi quy, thay vì chỉ là phép đo khoảng cách giữa query embedding và product embedding.</li>
+</ol>
+<p>Ba giả thuyết này tạo thành ba tầng của paper: biểu diễn sản phẩm, huấn luyện nền tảng và post-training cho từng ý định tìm kiếm.</p>
+<h1 id="từ-retrieval-truyền-thống-đến-generative-retrieval">Từ retrieval truyền thống đến generative retrieval<a class="anchor ms-1" href="#từ-retrieval-truyền-thống-đến-generative-retrieval"><i class="fas fa-link"></i></a></h1>
+<h2 id="retrieval-truyền-thống-làm-gì">Retrieval truyền thống làm gì?<a class="anchor ms-1" href="#retrieval-truyền-thống-làm-gì"><i class="fas fa-link"></i></a></h2>
+<p>Trong dense retrieval, ta thường có hai encoder:</p>
+<p>$$
+\mathbf{q}=f_{\theta}(q)
+$$</p>
+<p>$$
+\mathbf{p}<em>{i}=g</em>{\phi}(p_i)
+$$</p>
+<p>Query và sản phẩm được biến thành hai vector. Hệ thống tìm sản phẩm có cosine similarity hoặc dot product lớn nhất:</p>
+<p>$$
+\operatorname{score}(q,p_i)=\mathbf{q}^{\top}\mathbf{p}_i
+$$</p>
+<p>Sau đó một approximate nearest neighbor index như HNSW hoặc IVF sẽ tìm các vector gần query nhất.</p>
+<p>Cách làm này nhanh, dễ mở rộng và vẫn là xương sống của rất nhiều search engine. Nhưng nó đặt catalog ở bên ngoài mô hình. Mô hình chỉ tạo query vector; một hệ thống retrieval khác mới thực sự đi lấy sản phẩm.</p>
+<h2 id="generative-retrieval-làm-gì-khác">Generative retrieval làm gì khác?<a class="anchor ms-1" href="#generative-retrieval-làm-gì-khác"><i class="fas fa-link"></i></a></h2>
+<p>Generative retrieval biến việc tìm kiếm thành sinh định danh:</p>
+<p>$$
+q \rightarrow z_1,z_2,\ldots,z_m
+$$</p>
+<p>Trong đó chuỗi $z$ đại diện cho item cần tìm.</p>
+<p>Ý tưởng này có lịch sử từ Differentiable Search Index, nơi Transformer học ánh xạ query trực tiếp thành document ID. Những nghiên cứu sau đó như TIGER thay ID ngẫu nhiên bằng Semantic ID, tức chuỗi mã rời rạc mang ý nghĩa về nội dung và quan hệ giữa item.</p>
+<p>Với Pailitao-MMSearch, xác suất sinh một sản phẩm được phân rã tự hồi quy:</p>
+<p>$$
+\begin{aligned}
+p_{\theta}\left(z\mid q,\mathcal{H}<em>{u}\right)
+&amp;=
+\prod</em>{j=1}^{|z|}
+p_{\theta}\left(z_j\mid z_{&lt;j},q,\mathcal{H}_{u}\right)
+\end{aligned}
+$$</p>
+<p>Trong đó:</p>
+<ul>
+<li>$q$ là query gồm ảnh và văn bản.</li>
+<li>$\mathcal{H}_{u}$ là lịch sử tương tác của người dùng.</li>
+<li>$z$ là biểu diễn đặc biệt của sản phẩm.</li>
+<li>Mỗi token tiếp theo được sinh dựa trên query, lịch sử và các token sản phẩm đã sinh trước đó.</li>
+</ul>
+<p>Nói một cách lúa hóa, mô hình không còn nói:</p>
+<blockquote>
+<p>Hãy đưa tôi đến một vùng trong không gian vector rồi để hệ thống khác tìm hàng.</p>
+</blockquote>
+<p>Nó bắt đầu nói:</p>
+<blockquote>
+<p>Tôi nghĩ sản phẩm cần tìm nằm ở khu 152, dãy 7011, kệ 284, và có dấu vân tay giống vector này.</p>
+</blockquote>
+<p>Phần “khu, dãy, kệ” chính là Semantic ID. Phần “dấu vân tay” chính là continuous embedding.</p>
+<p>Đó là HybSID.</p>
+<h1 id="hybsid-địa-chỉ-nhà-cộng-với-dấu-vân-tay">HybSID: địa chỉ nhà cộng với dấu vân tay<a class="anchor ms-1" href="#hybsid-địa-chỉ-nhà-cộng-với-dấu-vân-tay"><i class="fas fa-link"></i></a></h1>
+<h2 id="vì-sao-semantic-id-thuần-rời-rạc-chưa-đủ">Vì sao Semantic ID thuần rời rạc chưa đủ?<a class="anchor ms-1" href="#vì-sao-semantic-id-thuần-rời-rạc-chưa-đủ"><i class="fas fa-link"></i></a></h2>
+<p>Một Product ID ngẫu nhiên không mang cấu trúc. Hai chiếc váy gần giống nhau có thể mang hai mã hoàn toàn không liên quan.</p>
+<p>Semantic ID giải quyết vấn đề này bằng cách gom những sản phẩm gần nhau vào các nhánh mã chung.</p>
+<p>Ví dụ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">&lt;Váy&gt; &lt;Trẻ em&gt; &lt;Công chúa&gt;
+</span></span><span class="line"><span class="ln">2</span><span class="cl">&lt;Váy&gt; &lt;Trẻ em&gt; &lt;Thể thao&gt;
+</span></span><span class="line"><span class="ln">3</span><span class="cl">&lt;Áo&gt;  &lt;Người lớn&gt; &lt;Công sở&gt;
+</span></span></code></pre></div><p>Các token đầu biểu diễn ngữ nghĩa rộng. Token sau dần bổ sung chi tiết.</p>
+<p>Pailitao-MMSearch tạo Semantic ID bằng residual quantization với ba tầng. Trước hết, mỗi sản phẩm được mã hóa thành vector multimodal $\mathbf{v}_i$, chứa thông tin từ ảnh, tiêu đề và thuộc tính.</p>
+<p>Ở tầng thứ nhất, hệ thống chọn codeword gần $\mathbf{v}_i$ nhất:</p>
+<p>$$
+\begin{aligned}
+c_{i,l}
+&amp;=
+\arg\min_{j\in[K]}
+\left|
+\mathbf{r}<em>{i}^{(l-1)} -
+\mathbf{s}</em>{j}^{(l)}
+\right|_2
+\end{aligned}
+$$</p>
+<p>Sau đó lấy phần sai số còn lại:</p>
+<p>$$
+\mathbf{r}_{i}^{(0)}=\mathbf{v}_i
+$$</p>
+<p>$$
+\mathbf{r}<em>{i}^{(l)}
+=\mathbf{r}</em>{i}^{(l-1)}-\mathbf{s}<em>{c</em>{i,l}}^{(l)}
+$$</p>
+<p>Tầng đầu mô tả phần lớn nhất của vector. Tầng sau không mã hóa lại từ đầu mà tiếp tục mã hóa phần sai số chưa được tầng trước giải thích.</p>
+<p>Nó giống như vẽ một con mèo.</p>
+<p>Người thứ nhất vẽ thân mèo. Người thứ hai nhìn vào phần còn thiếu rồi thêm tai. Người thứ ba thấy vẫn chưa đủ giống nên vẽ thêm ria mép. Ba người không vẽ ba con mèo; họ lần lượt sửa phần dư của cùng một con mèo.</p>
+<p>Residual-Quantized VAE ban đầu được phát triển trong bài toán sinh ảnh tự hồi quy, nhằm đạt biểu diễn rời rạc ngắn mà vẫn giảm sai số tái tạo. Sau này kỹ thuật này được dùng để tạo Semantic ID trong recommendation và generative retrieval.</p>
+<h2 id="không-gian-mã-rất-lớn-nhưng-sức-chứa-thực-tế-lại-nhỏ-hơn-tưởng-tượng">Không gian mã rất lớn, nhưng sức chứa thực tế lại nhỏ hơn tưởng tượng<a class="anchor ms-1" href="#không-gian-mã-rất-lớn-nhưng-sức-chứa-thực-tế-lại-nhỏ-hơn-tưởng-tượng"><i class="fas fa-link"></i></a></h2>
+<p>Paper sử dụng:</p>
+<ul>
+<li>Ba tầng mã: $L=3$.</li>
+<li>Mỗi codebook có $K=8192$ codeword.</li>
+</ul>
+<p>Không gian mã lý thuyết là:</p>
+<p>$$
+K^L=8192^3=549,755,813,888
+$$</p>
+<p>Tức khoảng 550 tỷ tổ hợp, đủ lớn trên giấy để định danh catalog khoảng một tỷ sản phẩm.</p>
+<p>Nhưng đây là chỗ cần đọc chậm lại.</p>
+<p>Không gian lý thuyết không đồng nghĩa với 550 tỷ địa chỉ thực sự được sử dụng đều nhau. Sản phẩm phân bố không đều trong semantic space; nhiều tổ hợp có thể không bao giờ xuất hiện, trong khi các vùng thời trang phổ biến lại bị chen chúc.</p>
+<p>Paper cho biết một bucket sau đủ ba tầng SID vẫn chứa trung bình khoảng 24 sản phẩm. Điều này có nghĩa mã rời rạc chưa phân biệt được chính xác từng listing. Hai chiếc váy cùng kiểu dáng, màu sắc và nhóm khách hàng vẫn có thể rơi vào cùng một mã.</p>
+<p>Đây chính là nút thắt mà HybSID muốn giải quyết.</p>
+<h2 id="thêm-một-vector-liên-tục-vào-cuối-chuỗi">Thêm một vector liên tục vào cuối chuỗi<a class="anchor ms-1" href="#thêm-một-vector-liên-tục-vào-cuối-chuỗi"><i class="fas fa-link"></i></a></h2>
+<p>Pailitao-MMSearch biểu diễn sản phẩm bằng:</p>
+<p>$$
+\mathcal{z}(p_i)
+=\left(c_1^i,c_2^i,c_3^i,\mathbf{e}_i\right)
+$$</p>
+<p>Ba mã rời rạc dùng để tìm vùng sản phẩm phù hợp. Vector $\mathbf{e}_i$ dùng để phân biệt các sản phẩm nằm trong cùng vùng ấy.</p>
+<p>Mỗi sản phẩm vì thế có cả:</p>
+<ul>
+<li>Địa chỉ: ba SID token.</li>
+<li>Dấu vân tay: một continuous multimodal embedding.</li>
+</ul>
+<p>Nhóm tác giả thêm token đặc biệt:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">&lt;|emb_token|&gt;
+</span></span></code></pre></div><p>Khi token này xuất hiện ở đầu vào, một lớp <code>HybProjection</code> biến product embedding thành chiều không gian mà LLM hiểu được.</p>
+<p>Khi token này được mô hình sinh ra, hidden state tại vị trí đó đi qua <code>HybDecoder</code> để tái tạo một vector sản phẩm:</p>
+<p>$$
+\hat{\mathbf{e}}<em>i
+=\operatorname{HybDecoder}\left(\mathbf{h}</em>{\mathrm{emb}}\right)
+$$</p>
+<p>Sau đó vector được dùng để nearest-neighbor search trong bucket đã xác định bởi SID.</p>
+<p>Về mặt kiến trúc, đây là một thiết kế lai khá thực dụng. Mô hình không cố nhồi toàn bộ độ chính xác của một tỷ sản phẩm vào vài token rời rạc. Nó dùng token để định tuyến và dùng vector để phân giải chi tiết.</p>
+<h2 id="hàm-loss-của-hybsid">Hàm loss của HybSID<a class="anchor ms-1" href="#hàm-loss-của-hybsid"><i class="fas fa-link"></i></a></h2>
+<p>HybSID phải học đồng thời hai việc:</p>
+<ol>
+<li>Sinh đúng ba token rời rạc.</li>
+<li>Tái tạo đúng vector liên tục.</li>
+</ol>
+<p>Hàm loss là:</p>
+<p>$$
+\begin{aligned}
+\mathcal{L}<em>{\mathrm{hyb}}
+&amp;=
+\mathcal{L}</em>{\mathrm{CE}}
+\left(
+\hat{c}^{(1:3)},c^{(1:3)<em>}
+\right)
++
+\lambda
+\mathcal{L}_{\mathrm{emb}}
+\left(
+\hat{\mathbf{e}},\mathbf{e}^{</em>}
+\right)
+\end{aligned}
+$$</p>
+<p>Trong đó:</p>
+<ul>
+<li>$\mathcal{L}_{\mathrm{CE}}$ là cross-entropy cho SID token.</li>
+<li>$\mathcal{L}_{\mathrm{emb}}$ là mean squared error cho vector liên tục.</li>
+<li>$\lambda$ cân bằng hai mục tiêu.</li>
+</ul>
+<p>Đây là một dạng multi-objective learning. Nếu $\lambda$ quá nhỏ, embedding sinh ra có thể không đủ chính xác. Nếu quá lớn, mô hình có thể ưu tiên tái tạo vector và làm giảm khả năng sinh SID.</p>
+<p>Đáng tiếc, bản v1 không công bố giá trị $\lambda$, kích thước vector $\mathbf{e}$, cấu trúc chi tiết của HybDecoder hay độ nhạy theo các siêu tham số này. Vì vậy, ý tưởng có thể hiểu được, nhưng khả năng tái lập đầy đủ vẫn khá hạn chế.</p>
+<h1 id="continual-pre-training-dạy-mô-hình-đi-bán-hàng-mà-không-làm-nó-quên-nói-chuyện">Continual pre-training: dạy mô hình đi bán hàng mà không làm nó quên nói chuyện<a class="anchor ms-1" href="#continual-pre-training-dạy-mô-hình-đi-bán-hàng-mà-không-làm-nó-quên-nói-chuyện"><i class="fas fa-link"></i></a></h1>
+<h2 id="catastrophic-forgetting-là-gì">Catastrophic forgetting là gì?<a class="anchor ms-1" href="#catastrophic-forgetting-là-gì"><i class="fas fa-link"></i></a></h2>
+<p>Giả sử một sinh viên biết toán, văn, tiếng Anh và lập trình.</p>
+<p>Sau đó chúng ta nhốt sinh viên ấy vào kho hàng trong sáu tháng, bắt đọc tên sản phẩm, thuộc tính, click log và lịch sử mua hàng mỗi ngày.</p>
+<p>Kết quả có thể là sinh viên nhớ rất rõ khách mua điện thoại thường mua thêm ốp, nhưng khi được hỏi một câu kiến thức phổ thông thì bắt đầu trả lời như hóa đơn.</p>
+<p>Đó là catastrophic forgetting: khi học mạnh một domain mới, mô hình làm mất một phần năng lực đã có từ pre-training trước đó.</p>
+<p>Pailitao-MMSearch giải quyết việc này bằng hai giai đoạn continual pre-training.</p>
+<h2 id="giai-đoạn-1-bơm-kiến-thức-thương-mại-điện-tử">Giai đoạn 1: bơm kiến thức thương mại điện tử<a class="anchor ms-1" href="#giai-đoạn-1-bơm-kiến-thức-thương-mại-điện-tử"><i class="fas fa-link"></i></a></h2>
+<p>Giai đoạn đầu có khoảng 800 triệu mẫu và hai nhóm nhiệm vụ chính.</p>
+<h3 id="product-knowledge-alignment">Product Knowledge Alignment<a class="anchor ms-1" href="#product-knowledge-alignment"><i class="fas fa-link"></i></a></h3>
+<p>Mô hình học hai chiều:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">HybSID → tiêu đề và thuộc tính
+</span></span></code></pre></div><p>và:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">ảnh + văn bản + thuộc tính → HybSID
+</span></span></code></pre></div><p>Chiều thứ nhất buộc SID mang ý nghĩa có thể giải mã. Chiều thứ hai giúp mô hình ánh xạ biểu hiện bên ngoài của sản phẩm về đúng vùng định danh.</p>
+<h3 id="user-behavior-alignment">User Behavior Alignment<a class="anchor ms-1" href="#user-behavior-alignment"><i class="fas fa-link"></i></a></h3>
+<p>Mô hình còn học trên chuỗi hành vi:</p>
+<p>$$
+\mathcal{H}<em>u
+=(p</em>{u,1},p_{u,2},\ldots,p_{u,T})
+$$</p>
+<p>Nó dự đoán sản phẩm tiếp theo, học quan hệ đồng xuất hiện và sự chuyển dịch sở thích giữa các phiên.</p>
+<p>Đây là chỗ Pailitao-MMSearch khác một vision-language model thông thường. Mô hình không chỉ học rằng hai sản phẩm nhìn giống nhau. Nó còn học rằng con người thường xem chúng cùng nhau, mua chúng cùng nhau hoặc chuyển từ món này sang món kia.</p>
+<p>Một lượng nhỏ dữ liệu hội thoại tổng quát cũng được trộn vào giai đoạn này như regularizer, nhưng kết quả thực nghiệm cho thấy biện pháp ấy không đủ để ngăn suy giảm năng lực tổng quát.</p>
+<h2 id="giai-đoạn-2-on-policy-distillation">Giai đoạn 2: On-Policy Distillation<a class="anchor ms-1" href="#giai-đoạn-2-on-policy-distillation"><i class="fas fa-link"></i></a></h2>
+<p>Do nhóm tác giả không có tập pre-training ban đầu của base model, họ dùng chính Qwen3 gốc làm teacher.</p>
+<p>Điểm quan trọng của on-policy nằm ở chỗ response được sinh từ student hiện tại:</p>
+<p>$$
+y
+\sim
+\pi_{\mathrm{s1}}(\cdot\mid x)
+$$</p>
+<p>Sau đó, tại những trạng thái mà student thực sự đi qua, phân phối token của student được kéo gần teacher bằng KL divergence:</p>
+<p>$$
+\begin{aligned}
+\mathcal{L}<em>{\mathrm{stage2}}
+&amp;=
+\mathcal{L}</em>{\mathrm{task}}
++
+\mu
+\mathbb{E}
+\left[
+\sum_{t=1}^{|y|}
+D_{\mathrm{KL}}
+\left(
+\pi_{\mathrm{s1}}(\cdot\mid y_{&lt;t},x)
+\parallel
+\pi_{\mathrm{base}}(\cdot\mid y_{&lt;t},x)
+\right)
+\right]
+\end{aligned}
+$$</p>
+<p>Knowledge distillation truyền thống thường cho student học trên dữ liệu hoặc trajectory cố định của teacher. On-policy distillation để student tự bước đi, tự đi vào những trạng thái hơi kỳ quặc mà nó có khả năng gặp khi inference, rồi nhờ teacher sửa ngay tại những trạng thái đó.</p>
+<p>Nó giống dạy một đứa trẻ đi xe đạp. Thay vì chỉ cho xem video người lớn chạy xe hoàn hảo, chúng ta để đứa trẻ tự đạp, chao qua trái, sắp đâm bụi cây, rồi sửa đúng tại vị trí mà nó vừa chạy tới.</p>
+<p>Đây là một hướng nghiên cứu đang được quan tâm vì nó giảm độ lệch giữa phân phối dữ liệu huấn luyện và phân phối trạng thái do student tạo ra khi vận hành.</p>
+<h2 id="nhưng-paper-có-thực-sự-khôi-phục-năng-lực-tổng-quát-không">Nhưng paper có thực sự “khôi phục” năng lực tổng quát không?<a class="anchor ms-1" href="#nhưng-paper-có-thực-sự-khôi-phục-năng-lực-tổng-quát-không"><i class="fas fa-link"></i></a></h2>
+<p>Đây là phần cần đọc với một chiếc kính hơi khó tính.</p>
+<p>Kết quả được báo cáo:</p>
+<table>
+	<thead>
+			<tr>
+					<th>Benchmark</th>
+					<th style="text-align: right">Qwen3-0.6B</th>
+					<th style="text-align: right">Sau CPT Stage 1</th>
+					<th style="text-align: right">Sau OPD Stage 2</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>MMLU-Redux</td>
+					<td style="text-align: right">44.60</td>
+					<td style="text-align: right">37.05</td>
+					<td style="text-align: right">37.05</td>
+			</tr>
+			<tr>
+					<td>C-Eval</td>
+					<td style="text-align: right">42.60</td>
+					<td style="text-align: right">34.70</td>
+					<td style="text-align: right">34.77</td>
+			</tr>
+			<tr>
+					<td>IFEval</td>
+					<td style="text-align: right">54.50</td>
+					<td style="text-align: right">36.78</td>
+					<td style="text-align: right">38.45</td>
+			</tr>
+			<tr>
+					<td>LiveCodeBench v5</td>
+					<td style="text-align: right">3.60</td>
+					<td style="text-align: right">3.86</td>
+					<td style="text-align: right">3.41</td>
+			</tr>
+			<tr>
+					<td>INCLUDE</td>
+					<td style="text-align: right">34.40</td>
+					<td style="text-align: right">28.65</td>
+					<td style="text-align: right">28.73</td>
+			</tr>
+	</tbody>
+</table>
+<p>OPD cải thiện IFEval thêm 1,67 điểm so với Stage 1. Nhưng MMLU-Redux không phục hồi, C-Eval và INCLUDE gần như đứng yên, còn LiveCodeBench giảm.</p>
+<p>Do đó, cách diễn đạt học thuật thận trọng hơn nên là:</p>
+<blockquote>
+<p>OPD giúp cải thiện một phần instruction following và làm quá trình suy giảm ổn định hơn.</p>
+</blockquote>
+<p>Chưa đủ bằng chứng để nói mô hình đã “khôi phục” năng lực của base model. Khoảng cách so với Qwen3-0.6B gốc vẫn còn đáng kể trên phần lớn benchmark. Chính paper cũng thừa nhận OPD không cải thiện đồng đều mọi nhiệm vụ.</p>
+<p>Ngoài ra, bản v1 không nói thật rõ mô hình production có đúng là Qwen3-0.6B hay không. Kích thước 0.6B chỉ xuất hiện rõ trong bảng đánh giá năng lực ngôn ngữ, trong khi phần mô tả deployment chỉ nói sử dụng Qwen3 làm backbone.</p>
+<p>Đây là một chi tiết quan trọng, vì chi phí serving, năng lực reasoning và khả năng ghi nhớ catalog phụ thuộc rất mạnh vào quy mô mô hình.</p>
+<h1 id="post-training-lúc-mô-hình-học-cách-hiểu-ý-định-mua-hàng">Post-training: lúc mô hình học cách hiểu ý định mua hàng<a class="anchor ms-1" href="#post-training-lúc-mô-hình-học-cách-hiểu-ý-định-mua-hàng"><i class="fas fa-link"></i></a></h1>
+<p>Sau continual pre-training, mô hình có kiến thức về sản phẩm và hành vi, nhưng chưa chắc biết xử lý mọi kiểu query trong production.</p>
+<p>Nhóm tác giả tiếp tục huấn luyện khoảng 30 triệu mẫu SFT, bao phủ năm nhóm nhiệm vụ:</p>
+<ul>
+<li>Tìm sản phẩm tương tự.</li>
+<li>Sửa đổi một thuộc tính của sản phẩm tham chiếu.</li>
+<li>Tìm sản phẩm phối hợp hoặc bổ trợ.</li>
+<li>Xử lý ý định kết hợp nhiều điều kiện.</li>
+<li>Gợi ý sản phẩm liên quan đến một chủ đề.</li>
+</ul>
+<p>Dữ liệu được khai thác từ trajectory hành vi, sau đó dùng heuristic để nhận diện task, sinh instruction và chia độ khó. Ví dụ, người dùng xem một chiếc cốc rồi mua bao đựng cốc có thể tạo thành mẫu huấn luyện cho bài toán matching product.</p>
+<h2 id="không-phải-query-nào-cũng-cần-suy-nghĩ">Không phải query nào cũng cần “suy nghĩ”<a class="anchor ms-1" href="#không-phải-query-nào-cũng-cần-suy-nghĩ"><i class="fas fa-link"></i></a></h2>
+<p>Paper chia query thành hai nhóm.</p>
+<p>Với query đơn giản, mô hình sinh HybSID trực tiếp.</p>
+<p>Với query khó, mô hình sinh chain-of-thought trước khi sinh sản phẩm:</p>
+<ol>
+<li>Nhận diện thuộc tính của sản phẩm tham chiếu.</li>
+<li>Phân tích yêu cầu sửa đổi.</li>
+<li>Suy luận thuộc tính của sản phẩm đích.</li>
+<li>Sinh HybSID.</li>
+</ol>
+<p>Hàm loss SFT vẫn là negative log-likelihood thông thường:</p>
+<p>$$
+\begin{aligned}
+\mathcal{L}<em>{\mathrm{sft}}
+&amp;=-
+\mathbb{E}</em>{(x,y)\sim\mathcal{D}<em>{\mathrm{sft}}}
+\left[
+\sum</em>{l=1}^{|y|}
+\log
+P_{\theta}
+\left(
+y_l\mid y_{&lt;l},x
+\right)
+\right]
+\end{aligned}
+$$</p>
+<p>Điểm thực dụng là reasoning mode được chỉ định rõ trong instruction dựa trên yêu cầu latency của từng kịch bản. Tức là bản v1 chưa trình bày một router tự học để quyết định query nào cần suy luận sâu; hệ thống bên ngoài vẫn chọn chế độ.</p>
+<p>Nói cách khác, bộ não đã biết nghĩ, nhưng vẫn cần một người đứng cạnh nói:</p>
+<blockquote>
+<p>Câu này dễ, trả lời lẹ đi.</p>
+</blockquote>
+<p>hoặc:</p>
+<blockquote>
+<p>Câu này hơi căng, nghĩ thêm một vòng.</p>
+</blockquote>
+<h1 id="reinforcement-learning-với-phần-thưởng-có-thể-kiểm-chứng">Reinforcement learning với phần thưởng có thể kiểm chứng<a class="anchor ms-1" href="#reinforcement-learning-với-phần-thưởng-có-thể-kiểm-chứng"><i class="fas fa-link"></i></a></h1>
+<p>Nhóm tác giả sử dụng Group Relative Policy Optimization, hay GRPO, để tối ưu các task khó.</p>
+<p>GRPO trở nên nổi tiếng từ DeepSeekMath. Thay vì cần một value model riêng như PPO, phương pháp so sánh reward giữa một nhóm response được sinh cho cùng prompt rồi dùng reward tương đối để cập nhật policy.</p>
+<p>Reward của Pailitao-MMSearch gồm hai thành phần:</p>
+<p>$$
+\begin{aligned}
+R(o)
+&amp;=
+\alpha_r
+\mathbb{1}
+\left[
+\hat{\mathbf{z}}\in\mathcal{G}(z)
+\right]
++
+\beta_r
+\operatorname{CosSim}
+\left(
+\hat{\mathbf{e}},\mathbf{e}^{*}
+\right)
+\end{aligned}
+$$</p>
+<p>Thành phần đầu kiểm tra SID sinh ra có thuộc tập sản phẩm đúng hay không.</p>
+<p>Thành phần sau đo độ tương đồng giữa embedding được sinh và embedding đích.</p>
+<p>Việc dùng nhiều sản phẩm đúng $\mathcal{G}(z)$ thay vì một click duy nhất là hợp lý. Trong tìm kiếm thương mại điện tử, một query thường có nhiều câu trả lời chấp nhận được. Nếu chỉ xem sản phẩm đã click là đáp án duy nhất, mô hình sẽ bị phạt dù nó tìm ra một sản phẩm khác cũng phù hợp.</p>
+<p>Tuy nhiên, paper có một điểm diễn đạt chưa nhất quán. Nhóm tác giả nói reward “không cần human annotation”, nhưng ngay trước đó lại mô tả tập ground truth được xây dựng từ expert annotation kết hợp transaction log. Có thể ý của họ là quá trình chấm reward trong từng rollout không cần con người ngồi chấm trực tiếp. Nhưng việc tạo tập đáp án chuẩn ban đầu vẫn có yếu tố chuyên gia.</p>
+<h1 id="multi-expert-opd-gom-nhiều-ông-thầy-vào-một-học-sinh">Multi-Expert OPD: gom nhiều ông thầy vào một học sinh<a class="anchor ms-1" href="#multi-expert-opd-gom-nhiều-ông-thầy-vào-một-học-sinh"><i class="fas fa-link"></i></a></h1>
+<p>Sau RL, hệ thống có nhiều expert:</p>
+<ul>
+<li>Expert cho matching sản phẩm.</li>
+<li>Expert cho compound intent.</li>
+<li>Base LLM giữ năng lực ngôn ngữ.</li>
+<li>SFT model giữ khả năng xử lý nhiều task.</li>
+</ul>
+<p>Multi-Expert On-Policy Distillation gom các năng lực này vào một student:</p>
+<p>$$
+\begin{aligned}
+\mathcal{L}<em>{\mathrm{meopd}}
+&amp;=
+\mathcal{L}</em>{\mathrm{sft}}
++
+\mathbb{E}
+\left[
+\sum_t
+\sum_{k=1}^{M}
+w_k
+D_{\mathrm{KL}}
+\left(
+\pi_{\mathrm{student}}
+\parallel
+\pi_k
+\right)
+\right]
+\end{aligned}
+$$</p>
+<p>Về trực giác, student tự sinh trajectory rồi lần lượt hỏi nhiều giáo viên:</p>
+<blockquote>
+<p>Với trạng thái này, thầy thời trang nghĩ sao?</p>
+</blockquote>
+<blockquote>
+<p>Thầy ngôn ngữ nghĩ sao?</p>
+</blockquote>
+<blockquote>
+<p>Thầy matching nghĩ sao?</p>
+</blockquote>
+<p>Sau đó student cố đứng ở một vị trí cân bằng giữa các phân phối teacher.</p>
+<p>Đây là một thiết kế thú vị nhưng chưa được kiểm chứng đầy đủ trong bản v1. Bảng ablation cho hybrid reasoning, RL enhancement và multi-expert OPD vẫn được ghi là sẽ cập nhật ở phiên bản arXiv sau. Vì vậy, phần này hiện mới mạnh về mặt mô tả phương pháp, chưa mạnh về bằng chứng nhân quả.</p>
+<h1 id="thực-nghiệm-được-tổ-chức-như-thế-nào">Thực nghiệm được tổ chức như thế nào?<a class="anchor ms-1" href="#thực-nghiệm-được-tổ-chức-như-thế-nào"><i class="fas fa-link"></i></a></h1>
+<h2 id="quy-mô-huấn-luyện">Quy mô huấn luyện<a class="anchor ms-1" href="#quy-mô-huấn-luyện"><i class="fas fa-link"></i></a></h2>
+<p>Paper công bố các cấu hình chính:</p>
+<table>
+	<thead>
+			<tr>
+					<th>Giai đoạn</th>
+					<th style="text-align: right">Số mẫu</th>
+					<th style="text-align: right">Learning rate</th>
+					<th style="text-align: right">Batch size</th>
+					<th style="text-align: right">Sequence length</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>CPT Stage 1</td>
+					<td style="text-align: right">800 triệu</td>
+					<td style="text-align: right">$8\times10^{-5}$</td>
+					<td style="text-align: right">64</td>
+					<td style="text-align: right">4096</td>
+			</tr>
+			<tr>
+					<td>CPT Stage 2</td>
+					<td style="text-align: right">2 triệu</td>
+					<td style="text-align: right">$1\times10^{-6}$</td>
+					<td style="text-align: right">24</td>
+					<td style="text-align: right">4096</td>
+			</tr>
+			<tr>
+					<td>Post-training SFT</td>
+					<td style="text-align: right">30 triệu</td>
+					<td style="text-align: right">$5\times10^{-6}$</td>
+					<td style="text-align: right">384</td>
+					<td style="text-align: right">4096</td>
+			</tr>
+	</tbody>
+</table>
+<p>Vision encoder bị đóng băng và trước đó đã được huấn luyện trên hàng chục tỷ mẫu visual-search nội bộ. Catalog production có quy mô hàng tỷ listing và nền tảng phục vụ hàng chục triệu người dùng hoạt động mỗi ngày theo phần mô tả thí nghiệm.</p>
+<p>Đây là một lợi thế rất lớn nhưng cũng là rào cản tái lập. Một nhóm nghiên cứu bên ngoài không có vision encoder, interaction log, transaction log và catalog cùng quy mô gần như không thể tái tạo đúng điều kiện thí nghiệm.</p>
+<h1 id="kết-quả-online-con-số-lớn-nhưng-cần-đọc-đúng-phạm-vi">Kết quả online: con số lớn nhưng cần đọc đúng phạm vi<a class="anchor ms-1" href="#kết-quả-online-con-số-lớn-nhưng-cần-đọc-đúng-phạm-vi"><i class="fas fa-link"></i></a></h1>
+<p>Pailitao-MMSearch được triển khai ở hai vị trí: generative retrieval và generative ranking.</p>
+<h2 id="generative-retrieval">Generative retrieval<a class="anchor ms-1" href="#generative-retrieval"><i class="fas fa-link"></i></a></h2>
+<p>Trên khu vực “PeiWoGuang” chuyên tìm sản phẩm tương tự từ hình ảnh, paper báo cáo:</p>
+<table>
+	<thead>
+			<tr>
+					<th>Chỉ số</th>
+					<th style="text-align: right">Mức thay đổi</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>GMV</td>
+					<td style="text-align: right">+3,67%</td>
+			</tr>
+			<tr>
+					<td>Transaction Volume</td>
+					<td style="text-align: right">+3,74%</td>
+			</tr>
+			<tr>
+					<td>Transaction UV</td>
+					<td style="text-align: right">+2,51%</td>
+			</tr>
+			<tr>
+					<td>IPV</td>
+					<td style="text-align: right">+3,28%</td>
+			</tr>
+			<tr>
+					<td>CTR</td>
+					<td style="text-align: right">+0,11 điểm phần trăm</td>
+			</tr>
+	</tbody>
+</table>
+<p>Trên toàn bộ Pailitao, mức tăng nhỏ hơn:</p>
+<table>
+	<thead>
+			<tr>
+					<th>Chỉ số</th>
+					<th style="text-align: right">Mức thay đổi</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>GMV</td>
+					<td style="text-align: right">+1,02%</td>
+			</tr>
+			<tr>
+					<td>Transaction Volume</td>
+					<td style="text-align: right">+0,53%</td>
+			</tr>
+			<tr>
+					<td>IPV</td>
+					<td style="text-align: right">+0,15%</td>
+			</tr>
+			<tr>
+					<td>CTR</td>
+					<td style="text-align: right">+0,01 điểm phần trăm</td>
+			</tr>
+	</tbody>
+</table>
+<p>Điều này cho thấy hiệu quả tập trung mạnh ở bề mặt sản phẩm phù hợp với visual search, thay vì lan đều ra toàn nền tảng.</p>
+<h2 id="generative-ranking">Generative ranking<a class="anchor ms-1" href="#generative-ranking"><i class="fas fa-link"></i></a></h2>
+<p>Ở tầng ranking của “PeiWoGuang”, paper báo cáo:</p>
+<table>
+	<thead>
+			<tr>
+					<th>Chỉ số</th>
+					<th style="text-align: right">Mức thay đổi</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>GMV</td>
+					<td style="text-align: right">+9,94%</td>
+			</tr>
+			<tr>
+					<td>Transaction Volume</td>
+					<td style="text-align: right">+4,47%</td>
+			</tr>
+			<tr>
+					<td>IPV</td>
+					<td style="text-align: right">+3,52%</td>
+			</tr>
+			<tr>
+					<td>IPV_UV</td>
+					<td style="text-align: right">+2,11%</td>
+			</tr>
+			<tr>
+					<td>CTR</td>
+					<td style="text-align: right">+0,11 điểm phần trăm</td>
+			</tr>
+	</tbody>
+</table>
+<p>Nhóm tác giả cộng hai deployment và đưa ra mức tăng tích lũy +13,61% GMV cùng +8,21% transaction volume trên “PeiWoGuang”. Hai con số này đúng bằng tổng số học của mức tăng retrieval và ranking.</p>
+<p>Nhưng từ góc nhìn thực nghiệm, chúng ta chưa biết hai A/B test được chạy tuần tự, đồng thời hay trên các tập traffic độc lập. Paper cũng chưa công bố thời gian thử nghiệm, số người dùng mỗi nhánh, khoảng tin cậy, p-value, cách kiểm soát novelty effect hay ảnh hưởng theo mùa.</p>
+<p>Phần kết luận gọi các kết quả là “statistically significant”, nhưng thông tin thống kê cần thiết để người đọc kiểm tra tuyên bố ấy không xuất hiện trong bản v1. Vì vậy, nên xem đây là bằng chứng production rất đáng chú ý, nhưng chưa phải một báo cáo A/B test hoàn chỉnh theo chuẩn học thuật.</p>
+<p>Một chi tiết khác cũng cần giữ lại: generative retrieval được dùng để bổ sung ứng viên cho các retrieval channel hiện có. Nó chưa thay thế toàn bộ pipeline truyền thống. Generative ranking cũng là một mô hình được fine-tune riêng cho tầng xếp hạng.</p>
+<p>Do đó, deployment thực tế hiện tại giống một kiến trúc lai hơn là một search engine hoàn toàn end-to-end nằm trong một model duy nhất.</p>
+<h1 id="kết-quả-offline-nói-lên-điều-gì">Kết quả offline nói lên điều gì?<a class="anchor ms-1" href="#kết-quả-offline-nói-lên-điều-gì"><i class="fas fa-link"></i></a></h1>
+<h2 id="khả-năng-hiểu-semantic-id">Khả năng hiểu Semantic ID<a class="anchor ms-1" href="#khả-năng-hiểu-semantic-id"><i class="fas fa-link"></i></a></h2>
+<p>Kết quả multimodal SID recognition:</p>
+<table>
+	<thead>
+			<tr>
+					<th>Chỉ số</th>
+					<th style="text-align: right">Kết quả</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>SID-1 Accuracy</td>
+					<td style="text-align: right">74,78%</td>
+			</tr>
+			<tr>
+					<td>SID-1/2 Accuracy</td>
+					<td style="text-align: right">26,95%</td>
+			</tr>
+			<tr>
+					<td>Full SID Match</td>
+					<td style="text-align: right">2,10%</td>
+			</tr>
+			<tr>
+					<td>Oracle Embedding Cosine</td>
+					<td style="text-align: right">0,7470</td>
+			</tr>
+			<tr>
+					<td>Retrieval@1</td>
+					<td style="text-align: right">2,10%</td>
+			</tr>
+			<tr>
+					<td>Retrieval@10</td>
+					<td style="text-align: right">4,43%</td>
+			</tr>
+	</tbody>
+</table>
+<p>Độ chính xác giảm rất nhanh khi yêu cầu sinh thêm tầng SID.</p>
+<p>Tầng đầu đạt gần 75%, nghĩa là mô hình thường xác định đúng vùng ngữ nghĩa rộng. Nhưng khớp đủ cả ba tầng chỉ còn 2,10%.</p>
+<p>Kết quả này không nhất thiết nói hệ thống vô dụng. Với catalog hàng tỷ item, việc sinh đúng nhánh đầu đã có thể giảm không gian tìm kiếm rất mạnh. Tuy nhiên, nó cho thấy continuous embedding và bước retrieval phía sau không phải phụ kiện trang trí; chúng là thành phần bắt buộc để bù cho độ chính xác thấp của full SID generation.</p>
+<h2 id="ablation-của-hybsid">Ablation của HybSID<a class="anchor ms-1" href="#ablation-của-hybsid"><i class="fas fa-link"></i></a></h2>
+<p>Khi bỏ continuous embedding:</p>
+<ul>
+<li>BLEU-4 của SID-to-caption giảm từ 0,1955 xuống 0,1212.</li>
+<li>Attribute exact match giảm từ 50,52% xuống 39,70%.</li>
+<li>Các chỉ số khớp SID gần như không thay đổi.</li>
+</ul>
+<p>Điều này gợi ý continuous embedding bổ sung thông tin ngữ nghĩa chi tiết, nhưng không trực tiếp giúp mô hình sinh ba mã rời rạc chính xác hơn.</p>
+<p>Khi bỏ discrete SID và tìm kiếm toàn cục bằng embedding:</p>
+<ul>
+<li>Retrieval@1 đạt 1,80%, so với 2,10% của HybSID.</li>
+<li>Retrieval@10 đạt 4,08%, so với 4,43% của HybSID.</li>
+</ul>
+<p>HybSID tốt hơn, nhưng chênh lệch tuyệt đối không lớn. Đây là bằng chứng ủng hộ thiết kế lai, song chưa đủ để kết luận discrete routing tạo bước nhảy mang tính áp đảo. Đánh giá latency, bộ nhớ index và throughput có thể mới là nơi discrete routing thể hiện lợi ích lớn, nhưng paper chưa công bố các chỉ số đó.</p>
+<h1 id="chain-of-thought-có-giúp-tìm-sản-phẩm-tốt-hơn-không">Chain-of-thought có giúp tìm sản phẩm tốt hơn không?<a class="anchor ms-1" href="#chain-of-thought-có-giúp-tìm-sản-phẩm-tốt-hơn-không"><i class="fas fa-link"></i></a></h1>
+<p>Trong matching product search:</p>
+<table>
+	<thead>
+			<tr>
+					<th>Cấu hình</th>
+					<th style="text-align: right">Recall@10</th>
+					<th style="text-align: right">NDCG@10</th>
+					<th style="text-align: right">SIF@10</th>
+					<th style="text-align: right">LIF@10</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>Không CoT</td>
+					<td style="text-align: right">0,8544</td>
+					<td style="text-align: right">0,8146</td>
+					<td style="text-align: right">55,0%</td>
+					<td style="text-align: right">80,1%</td>
+			</tr>
+			<tr>
+					<td>Có CoT</td>
+					<td style="text-align: right">0,8356</td>
+					<td style="text-align: right">0,8326</td>
+					<td style="text-align: right">58,6%</td>
+					<td style="text-align: right">82,6%</td>
+			</tr>
+	</tbody>
+</table>
+<p>CoT làm Recall@10 giảm, nhưng NDCG và instruction-following tăng.</p>
+<p>Có thể hiểu rằng reasoning khiến mô hình tìm ít rộng hơn nhưng sắp xếp kết quả phù hợp ý định tốt hơn. Nó bớt quăng lưới, đổi lại biết lựa cá.</p>
+<p>Tuy nhiên, chỉ số strict và loose instruction following được chấm bằng Gemini 3.1 Pro làm judge. Paper chưa công bố prompt chấm điểm, độ đồng thuận với chuyên gia, sai số giữa các lần chạy hay kiểm tra bias của judge. Vì vậy, các con số này nên được xem là model-based evaluation chứ chưa tương đương human evaluation độc lập.</p>
+<h1 id="đóng-góp-học-thuật-thực-sự-nằm-ở-đâu">Đóng góp học thuật thực sự nằm ở đâu?<a class="anchor ms-1" href="#đóng-góp-học-thuật-thực-sự-nằm-ở-đâu"><i class="fas fa-link"></i></a></h1>
+<p>Pailitao-MMSearch không phải paper đầu tiên về generative retrieval.</p>
+<p>Nó cũng không phát minh ra:</p>
+<ul>
+<li>Semantic ID.</li>
+<li>Residual quantization.</li>
+<li>Continual pre-training.</li>
+<li>Chain-of-thought.</li>
+<li>GRPO.</li>
+<li>On-policy distillation.</li>
+<li>Vision-language model.</li>
+</ul>
+<p>Đóng góp chính nằm ở cách ghép các thành phần thành một hệ thống search đa phương thức ở quy mô thương mại điện tử.</p>
+<p>Trong đó, HybSID là phần rõ ràng và thuyết phục nhất:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Discrete codes
+</span></span><span class="line"><span class="ln">2</span><span class="cl">    → định tuyến theo ngữ nghĩa
+</span></span><span class="line"><span class="ln">3</span><span class="cl">    → dễ sinh tự hồi quy
+</span></span><span class="line"><span class="ln">4</span><span class="cl">    → có khả năng chia sẻ cấu trúc giữa sản phẩm
+</span></span><span class="line"><span class="ln">5</span><span class="cl">
+</span></span><span class="line"><span class="ln">6</span><span class="cl">Continuous embedding
+</span></span><span class="line"><span class="ln">7</span><span class="cl">    → giữ chi tiết
+</span></span><span class="line"><span class="ln">8</span><span class="cl">    → phân biệt item trong cùng bucket
+</span></span><span class="line"><span class="ln">9</span><span class="cl">    → hỗ trợ nearest-neighbor retrieval
+</span></span></code></pre></div><p>Nó xử lý trực tiếp mâu thuẫn giữa hai loại biểu diễn:</p>
+<ul>
+<li>Biểu diễn rời rạc dễ tích hợp vào vocabulary nhưng mất chi tiết.</li>
+<li>Biểu diễn liên tục giàu thông tin nhưng khó sinh như token và thường cần index bên ngoài.</li>
+</ul>
+<p>OneSearch trước đó cũng nghiên cứu framework generative end-to-end cho tìm kiếm thương mại điện tử và dùng hierarchical quantization để giữ ngữ nghĩa cùng thuộc tính phân biệt. Pailitao-MMSearch tiến thêm một bước theo hướng multimodal native và giữ cả continuous embedding trong biểu diễn sản phẩm.</p>
+<h1 id="những-điểm-còn-thiếu-theo-chuẩn-một-paper-học-thuật-mạnh">Những điểm còn thiếu theo chuẩn một paper học thuật mạnh<a class="anchor ms-1" href="#những-điểm-còn-thiếu-theo-chuẩn-một-paper-học-thuật-mạnh"><i class="fas fa-link"></i></a></h1>
+<h2 id="thiếu-khả-năng-tái-lập">Thiếu khả năng tái lập<a class="anchor ms-1" href="#thiếu-khả-năng-tái-lập"><i class="fas fa-link"></i></a></h2>
+<p>Paper chưa cung cấp đầy đủ:</p>
+<ul>
+<li>Quy mô chính xác của production model.</li>
+<li>Số chiều product embedding.</li>
+<li>Cấu trúc HybProjection và HybDecoder.</li>
+<li>Giá trị $\lambda$, $\mu$, $\alpha_r$, $\beta_r$.</li>
+<li>Số expert và trọng số $w_k$.</li>
+<li>GRPO group size, clipping, rollout configuration.</li>
+<li>Loại ANN index và kích thước candidate bucket ở inference.</li>
+<li>Latency, throughput, GPU cost và chi phí serving.</li>
+<li>Cơ chế cập nhật SID khi catalog thay đổi.</li>
+<li>Cách xử lý sản phẩm mới chưa có hành vi.</li>
+</ul>
+<p>Với một industrial paper, việc không công bố dữ liệu là dễ hiểu. Nhưng nếu gọi đây là foundation model architecture, những chi tiết kiến trúc và protocol nói trên vẫn rất quan trọng để cộng đồng kiểm chứng.</p>
+<h2 id="ablation-chưa-bao-phủ-các-tuyên-bố-chính">Ablation chưa bao phủ các tuyên bố chính<a class="anchor ms-1" href="#ablation-chưa-bao-phủ-các-tuyên-bố-chính"><i class="fas fa-link"></i></a></h2>
+<p>Bản v1 mới có ablation tương đối rõ cho HybSID.</p>
+<p>Các kết quả định lượng riêng cho:</p>
+<ul>
+<li>Hybrid reasoning.</li>
+<li>Reinforcement learning.</li>
+<li>Multi-expert OPD.</li>
+</ul>
+<p>vẫn đang để trống và hẹn cập nhật.</p>
+<p>Do đó, chúng ta biết hệ thống hoàn chỉnh hoạt động tốt, nhưng chưa biết thành phần nào tạo ra bao nhiêu phần trăm cải thiện.</p>
+<p>Đây là khoảng cách giữa system result và causal evidence.</p>
+<h2 id="dữ-liệu-hành-vi-có-thể-mang-theo-exposure-bias">Dữ liệu hành vi có thể mang theo exposure bias<a class="anchor ms-1" href="#dữ-liệu-hành-vi-có-thể-mang-theo-exposure-bias"><i class="fas fa-link"></i></a></h2>
+<p>Click và transaction log không chỉ phản ánh sở thích. Chúng còn phản ánh những gì hệ thống cũ đã cho người dùng nhìn thấy.</p>
+<p>Một sản phẩm không được click có thể vì nó không phù hợp, nhưng cũng có thể vì nó bị xếp ở trang thứ mười bảy và chưa bao giờ được nhìn thấy.</p>
+<p>Nếu mô hình học mạnh từ trajectory cũ, nó có thể hấp thụ:</p>
+<ul>
+<li>Popularity bias.</li>
+<li>Position bias.</li>
+<li>Exposure bias.</li>
+<li>Bias từ chiến dịch quảng cáo.</li>
+<li>Bias từ tồn kho và phân phối.</li>
+</ul>
+<p>Paper có nhắc multi-reference reward để giảm việc coi một click là chân lý duy nhất, nhưng chưa trình bày cơ chế propensity correction, counterfactual learning hay debiasing rõ ràng.</p>
+<h2 id="catalog-không-đứng-yên">Catalog không đứng yên<a class="anchor ms-1" href="#catalog-không-đứng-yên"><i class="fas fa-link"></i></a></h2>
+<p>Một tỷ sản phẩm không phải một thư viện đá.</p>
+<p>Sản phẩm mới xuất hiện, listing cũ biến mất, người bán sửa tiêu đề, thay ảnh, đổi thuộc tính và chuyển ngành hàng. Nếu Semantic ID được xây từ catalog tại thời điểm huấn luyện, cần trả lời:</p>
+<ul>
+<li>Sản phẩm mới được gán SID thế nào?</li>
+<li>Khi embedding thay đổi, SID có đổi không?</li>
+<li>Nếu SID đổi, dữ liệu hành vi cũ còn dùng được không?</li>
+<li>Có cần huấn luyện lại vocabulary?</li>
+<li>Codebook được cập nhật online hay theo batch?</li>
+<li>Collision tăng dần theo thời gian ra sao?</li>
+</ul>
+<p>Đây là vấn đề sống còn của generative retrieval trong production, nhưng paper chưa đi sâu.</p>
+<h1 id="ý-nghĩa-lớn-hơn-catalog-bắt-đầu-trở-thành-ngôn-ngữ">Ý nghĩa lớn hơn: catalog bắt đầu trở thành ngôn ngữ<a class="anchor ms-1" href="#ý-nghĩa-lớn-hơn-catalog-bắt-đầu-trở-thành-ngôn-ngữ"><i class="fas fa-link"></i></a></h1>
+<p>Trước đây, LLM nói ngôn ngữ của con người, còn catalog nói ngôn ngữ của database.</p>
+<p>LLM sinh chữ.</p>
+<p>Search engine lấy ID.</p>
+<p>Vector database giữ embedding.</p>
+<p>Recommendation model giữ lịch sử hành vi.</p>
+<p>Mỗi hệ thống nói một thứ tiếng, đứng trong một căn phòng riêng và chuyền giấy cho nhau qua cửa sổ.</p>
+<p>Pailitao-MMSearch thử xây một ngôn ngữ chung, trong đó sản phẩm có thể xuất hiện trong cùng sequence với văn bản, hình ảnh và hành vi người dùng.</p>
+<p>Khi đó, lịch sử có thể trông giống:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Người dùng đã xem:
+</span></span><span class="line"><span class="ln">2</span><span class="cl">&lt;SID_1_41&gt; &lt;SID_2_712&gt; &lt;SID_3_90&gt; &lt;|emb_token|&gt;
+</span></span><span class="line"><span class="ln">3</span><span class="cl">
+</span></span><span class="line"><span class="ln">4</span><span class="cl">Sau đó tìm:
+</span></span><span class="line"><span class="ln">5</span><span class="cl">&#34;màu tối hơn, dùng được khi trời mưa&#34;
+</span></span><span class="line"><span class="ln">6</span><span class="cl">
+</span></span><span class="line"><span class="ln">7</span><span class="cl">Mô hình sinh:
+</span></span><span class="line"><span class="ln">8</span><span class="cl">&lt;SID_1_41&gt; &lt;SID_2_905&gt; &lt;SID_3_12&gt; &lt;|emb_token|&gt;
+</span></span></code></pre></div><p>Sản phẩm không còn chỉ là dòng dữ liệu được lấy ra sau cùng. Nó trở thành một đối tượng nằm bên trong quá trình reasoning.</p>
+<p>Đây có thể là nền móng cho agentic commerce. Một agent hiểu sâu không chỉ câu nói của khách mà còn hiểu taxonomy, quan hệ bổ trợ, hành vi chuyển đổi và không gian sản phẩm sẽ quyết định tốt hơn khi reformulate query, gọi tool hay tổng hợp danh sách tư vấn.</p>
+<p>Nhưng paper cũng đưa ra một nhận định đáng suy nghĩ: điểm nghẽn của agentic search có thể không nằm ở orchestration framework, mà nằm ở việc thiếu một foundation model thực sự hiểu domain thương mại điện tử. Một agent có mười cái tool nhưng không hiểu sản phẩm vẫn giống một người cầm mười chiếc chìa khóa mà không biết cánh cửa nào dẫn vào nhà kho.</p>
+<h1 id="tổng-kết">Tổng kết<a class="anchor ms-1" href="#tổng-kết"><i class="fas fa-link"></i></a></h1>
+<p>Pailitao-MMSearch là một industrial paper đáng đọc vì nó không dừng ở việc cho vision-language model nhìn ảnh rồi viết mô tả. Nó cố đưa toàn bộ catalog vào ngôn ngữ sinh của mô hình.</p>
+<p>Ý tưởng trung tâm là HybSID:</p>
+<ul>
+<li>Semantic ID rời rạc giúp định tuyến từ thô đến tinh.</li>
+<li>Continuous embedding giữ thông tin bị lượng tử hóa làm mất.</li>
+<li>Mô hình vừa có thể hiểu sản phẩm trong context, vừa sinh biểu diễn sản phẩm ở đầu ra.</li>
+<li>Retrieval được biến thành quá trình sinh định danh có điều kiện trên ảnh, văn bản và lịch sử hành vi.</li>
+</ul>
+<p>Hai-stage continual pre-training và on-policy distillation là hướng đi hợp lý, nhưng kết quả hiện tại chỉ cho thấy sự phục hồi một phần về instruction following, chưa đưa mô hình trở lại mức năng lực tổng quát của base model.</p>
+<p>Phần SFT, GRPO và multi-expert distillation tạo thành một pipeline rất tham vọng, nhưng bản v1 vẫn thiếu ablation để xác định đóng góp riêng của từng thành phần.</p>
+<p>Các kết quả A/B test cho thấy giá trị production đáng kể, đặc biệt trong bề mặt visual search chuyên biệt. Dù vậy, thiếu thời gian thử nghiệm, khoảng tin cậy, p-value, chi phí inference và chi tiết deployment khiến người đọc chưa thể đánh giá trọn vẹn hiệu quả theo chuẩn thực nghiệm học thuật.</p>
+<p>Nhìn rộng hơn, paper gợi ra một sự thay đổi quan trọng: search engine tương lai có thể không chỉ dùng LLM để hiểu query rồi gọi một hệ thống lấy hàng bên ngoài. Bản thân sản phẩm, hành vi và catalog có thể trở thành token trong ngôn ngữ nội tại của mô hình.</p>
+<p>Khi ấy, một chiếc váy không còn chỉ là một dòng trong database.</p>
+<p>Nó là ba token rời rạc, một vector liên tục, hàng nghìn tín hiệu hành vi, một vị trí trong không gian thương mại và một khả năng được sinh ra từ bộ não của search engine.</p>
+<p>Nghe hơi ngáo.</p>
+<p>Nhưng nhiều kiến trúc lớn thường bắt đầu bằng việc cho những thứ vốn không biết nói học cách trở thành ngôn ngữ.</p>
+<h1 id="tham-khảo">Tham khảo<a class="anchor ms-1" href="#tham-khảo"><i class="fas fa-link"></i></a></h1>
+<ul>
+<li><a href="https://arxiv.org/abs/2607.17499" target="_blank" rel="noopener noreferrer">https://arxiv.org/abs/2607.17499</a></li>
+<li><a href="https://arxiv.org/abs/2202.06991" target="_blank" rel="noopener noreferrer">https://arxiv.org/abs/2202.06991</a></li>
+<li><a href="https://arxiv.org/abs/2203.01941" target="_blank" rel="noopener noreferrer">https://arxiv.org/abs/2203.01941</a></li>
+<li><a href="https://arxiv.org/abs/2305.05065" target="_blank" rel="noopener noreferrer">https://arxiv.org/abs/2305.05065</a></li>
+<li><a href="https://arxiv.org/abs/2402.03300" target="_blank" rel="noopener noreferrer">https://arxiv.org/abs/2402.03300</a></li>
+<li><a href="https://arxiv.org/abs/2409.12191" target="_blank" rel="noopener noreferrer">https://arxiv.org/abs/2409.12191</a></li>
+<li><a href="https://arxiv.org/abs/2505.09388" target="_blank" rel="noopener noreferrer">https://arxiv.org/abs/2505.09388</a></li>
+<li><a href="https://arxiv.org/abs/2509.03236" target="_blank" rel="noopener noreferrer">https://arxiv.org/abs/2509.03236</a></li>
+<li><a href="https://arxiv.org/abs/2604.00626" target="_blank" rel="noopener noreferrer">https://arxiv.org/abs/2604.00626</a></li>
+</ul>
+</div></div>
+  <div class="card-footer"><div class="post-navs d-flex justify-content-evenly"><div class="post-nav post-prev">
+    <i class="fas fa-fw fa-chevron-left"></i>
+    <a href="https://www.phamduytung.com/blog/2026-07-28-grab-apache-iceberg-migration/">Grab chuyển Data Lake sang Apache Iceberg: Bài học không nằm ở việc đổi định dạng file
+</a>
+  </div></div></div>
+</article><div class="card component row post-comments" id="post-comments">
+  <div class="card-header">
+    <h2 class="card-title">Bình luận</h2>
+  </div>
+  <div class="card-body"><script src="https://utteranc.es/client.js"
+  repo="AlexBlack2202/utterances"
+  issue-term="pathname"
+  label="comment"
+  theme="github-dark"
+  crossorigin="anonymous"
+  async>
+</script></div>
+</div></div>
+</div><aside class="col-lg-3 col-md-4 sidebar d-flex">
+  <div class="container d-flex flex-column">
+    
+    <a href="https://www.buymeacoffee.com/alexblack28"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=🍎&slug=alexblack28&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" /></a><div class="post-toc row mb-4 card component" id="postTOC">
+  <div class="card-header">
+    <h2 class="card-title">Mục lục</h2>
+  </div>
+  <div class="card-body">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#không-có-sản-phẩm-nào-chỉ-là-một-con-số">Không có sản phẩm nào chỉ là một con số</a></li>
+    <li><a href="#paper-này-thực-sự-đang-nghiên-cứu-điều-gì">Paper này thực sự đang nghiên cứu điều gì?</a></li>
+    <li><a href="#từ-retrieval-truyền-thống-đến-generative-retrieval">Từ retrieval truyền thống đến generative retrieval</a>
+      <ul>
+        <li><a href="#retrieval-truyền-thống-làm-gì">Retrieval truyền thống làm gì?</a></li>
+        <li><a href="#generative-retrieval-làm-gì-khác">Generative retrieval làm gì khác?</a></li>
+      </ul>
+    </li>
+    <li><a href="#hybsid-địa-chỉ-nhà-cộng-với-dấu-vân-tay">HybSID: địa chỉ nhà cộng với dấu vân tay</a>
+      <ul>
+        <li><a href="#vì-sao-semantic-id-thuần-rời-rạc-chưa-đủ">Vì sao Semantic ID thuần rời rạc chưa đủ?</a></li>
+        <li><a href="#không-gian-mã-rất-lớn-nhưng-sức-chứa-thực-tế-lại-nhỏ-hơn-tưởng-tượng">Không gian mã rất lớn, nhưng sức chứa thực tế lại nhỏ hơn tưởng tượng</a></li>
+        <li><a href="#thêm-một-vector-liên-tục-vào-cuối-chuỗi">Thêm một vector liên tục vào cuối chuỗi</a></li>
+        <li><a href="#hàm-loss-của-hybsid">Hàm loss của HybSID</a></li>
+      </ul>
+    </li>
+    <li><a href="#continual-pre-training-dạy-mô-hình-đi-bán-hàng-mà-không-làm-nó-quên-nói-chuyện">Continual pre-training: dạy mô hình đi bán hàng mà không làm nó quên nói chuyện</a>
+      <ul>
+        <li><a href="#catastrophic-forgetting-là-gì">Catastrophic forgetting là gì?</a></li>
+        <li><a href="#giai-đoạn-1-bơm-kiến-thức-thương-mại-điện-tử">Giai đoạn 1: bơm kiến thức thương mại điện tử</a>
+          <ul>
+            <li><a href="#product-knowledge-alignment">Product Knowledge Alignment</a></li>
+            <li><a href="#user-behavior-alignment">User Behavior Alignment</a></li>
+          </ul>
+        </li>
+        <li><a href="#giai-đoạn-2-on-policy-distillation">Giai đoạn 2: On-Policy Distillation</a></li>
+        <li><a href="#nhưng-paper-có-thực-sự-khôi-phục-năng-lực-tổng-quát-không">Nhưng paper có thực sự “khôi phục” năng lực tổng quát không?</a></li>
+      </ul>
+    </li>
+    <li><a href="#post-training-lúc-mô-hình-học-cách-hiểu-ý-định-mua-hàng">Post-training: lúc mô hình học cách hiểu ý định mua hàng</a>
+      <ul>
+        <li><a href="#không-phải-query-nào-cũng-cần-suy-nghĩ">Không phải query nào cũng cần “suy nghĩ”</a></li>
+      </ul>
+    </li>
+    <li><a href="#reinforcement-learning-với-phần-thưởng-có-thể-kiểm-chứng">Reinforcement learning với phần thưởng có thể kiểm chứng</a></li>
+    <li><a href="#multi-expert-opd-gom-nhiều-ông-thầy-vào-một-học-sinh">Multi-Expert OPD: gom nhiều ông thầy vào một học sinh</a></li>
+    <li><a href="#thực-nghiệm-được-tổ-chức-như-thế-nào">Thực nghiệm được tổ chức như thế nào?</a>
+      <ul>
+        <li><a href="#quy-mô-huấn-luyện">Quy mô huấn luyện</a></li>
+      </ul>
+    </li>
+    <li><a href="#kết-quả-online-con-số-lớn-nhưng-cần-đọc-đúng-phạm-vi">Kết quả online: con số lớn nhưng cần đọc đúng phạm vi</a>
+      <ul>
+        <li><a href="#generative-retrieval">Generative retrieval</a></li>
+        <li><a href="#generative-ranking">Generative ranking</a></li>
+      </ul>
+    </li>
+    <li><a href="#kết-quả-offline-nói-lên-điều-gì">Kết quả offline nói lên điều gì?</a>
+      <ul>
+        <li><a href="#khả-năng-hiểu-semantic-id">Khả năng hiểu Semantic ID</a></li>
+        <li><a href="#ablation-của-hybsid">Ablation của HybSID</a></li>
+      </ul>
+    </li>
+    <li><a href="#chain-of-thought-có-giúp-tìm-sản-phẩm-tốt-hơn-không">Chain-of-thought có giúp tìm sản phẩm tốt hơn không?</a></li>
+    <li><a href="#đóng-góp-học-thuật-thực-sự-nằm-ở-đâu">Đóng góp học thuật thực sự nằm ở đâu?</a></li>
+    <li><a href="#những-điểm-còn-thiếu-theo-chuẩn-một-paper-học-thuật-mạnh">Những điểm còn thiếu theo chuẩn một paper học thuật mạnh</a>
+      <ul>
+        <li><a href="#thiếu-khả-năng-tái-lập">Thiếu khả năng tái lập</a></li>
+        <li><a href="#ablation-chưa-bao-phủ-các-tuyên-bố-chính">Ablation chưa bao phủ các tuyên bố chính</a></li>
+        <li><a href="#dữ-liệu-hành-vi-có-thể-mang-theo-exposure-bias">Dữ liệu hành vi có thể mang theo exposure bias</a></li>
+        <li><a href="#catalog-không-đứng-yên">Catalog không đứng yên</a></li>
+      </ul>
+    </li>
+    <li><a href="#ý-nghĩa-lớn-hơn-catalog-bắt-đầu-trở-thành-ngôn-ngữ">Ý nghĩa lớn hơn: catalog bắt đầu trở thành ngôn ngữ</a></li>
+    <li><a href="#tổng-kết">Tổng kết</a></li>
+    <li><a href="#tham-khảo">Tham khảo</a></li>
+  </ul>
+</nav>
+  </div>
+</div><section class="recent-posts row card component">
+  <div class="card-header">
+    <h2 class="card-title">Bài gần đây</h2>
+  </div>
+  <div class="card-body">
+    <ul class="post-list"><li>
+        <a href="https://www.phamduytung.com/blog/2026-07-29-multimodal-search/">Pailitao-MMSearch: Khi mỗi sản phẩm trở thành một chuỗi token trong bộ não tìm kiếm của Taobao
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-07-28-grab-apache-iceberg-migration/">Grab chuyển Data Lake sang Apache Iceberg: Bài học không nằm ở việc đổi định dạng file
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-07-28-kakeya-hong-wang-fields-medal/">Bài toán Kakeya: cây kim, căn phòng vô hình và Huy chương Fields của Vương Hồng
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-07-27-enterprise-ai-vendor-lock-in/">Doanh nghiệp giao hết bộ não cho một AI có thể không sống sót
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-07-26-ai-search-retail-catalog/">Khi Google không còn đưa người dùng đến website: Catalog bán lẻ phải thay đổi thế nào trong thời đại AI Search?
+</a>
+      </li></ul>
+  </div>
+</section><section class="series-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/series">series</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/series/kh%C3%B3a-h%E1%BB%8Dc-python-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học Python Căn Bản">
+            Khóa Học Python Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="https://www.phamduytung.com/series/kh%C3%B3a-h%E1%BB%8Dc-c&#43;&#43;-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học C&#43;&#43; Căn Bản">
+            Khóa Học C&#43;&#43; Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="https://www.phamduytung.com/series/machine-learning-dataset/" class="badge rounded post-taxonomy" title="Machine Learning Dataset">
+            Machine Learning Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a><a href="https://www.phamduytung.com/series/ch%E1%BB%A9ng-kho%C3%A1n-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Chứng Khoán Căn Bản">
+            Chứng Khoán Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">1</span></a></div>
+      </div>
+    </section><section class="tools-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/tools">tools</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/tools/tool-random/" class="badge rounded post-taxonomy" title="Tool Random">
+            Tool Random<span class="badge badge-sm text-white bg-accent ms-1">3</span></a></div>
+      </div>
+    </section><section class="categories-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/categories">categories</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/categories/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="https://www.phamduytung.com/categories/c&#43;&#43;/" class="badge rounded post-taxonomy" title="C&#43;&#43;">
+            C&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="https://www.phamduytung.com/categories/dataset/" class="badge rounded post-taxonomy" title="Dataset">
+            Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a></div>
+      </div>
+    </section><section class="tags-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/tags">tags</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/tags/machine-learning/" class="badge rounded post-taxonomy" title="Machine Learning">
+            Machine Learning<span class="badge badge-sm text-white bg-accent ms-1">26</span></a><a href="https://www.phamduytung.com/tags/deep-learning/" class="badge rounded post-taxonomy" title="Deep Learning">
+            Deep Learning<span class="badge badge-sm text-white bg-accent ms-1">23</span></a><a href="https://www.phamduytung.com/tags/computer-vision/" class="badge rounded post-taxonomy" title="Computer Vision">
+            Computer Vision<span class="badge badge-sm text-white bg-accent ms-1">16</span></a><a href="https://www.phamduytung.com/tags/llm/" class="badge rounded post-taxonomy" title="LLM">
+            LLM<span class="badge badge-sm text-white bg-accent ms-1">14</span></a><a href="https://www.phamduytung.com/tags/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">14</span></a><a href="https://www.phamduytung.com/tags/ai-agent/" class="badge rounded post-taxonomy" title="AI Agent">
+            AI Agent<span class="badge badge-sm text-white bg-accent ms-1">7</span></a><a href="https://www.phamduytung.com/tags/recommendation-system/" class="badge rounded post-taxonomy" title="Recommendation System">
+            Recommendation System<span class="badge badge-sm text-white bg-accent ms-1">7</span></a><a href="https://www.phamduytung.com/tags/system-design/" class="badge rounded post-taxonomy" title="System Design">
+            System Design<span class="badge badge-sm text-white bg-accent ms-1">7</span></a><a href="https://www.phamduytung.com/tags/time-series/" class="badge rounded post-taxonomy" title="Time Series">
+            Time Series<span class="badge badge-sm text-white bg-accent ms-1">6</span></a><a href="https://www.phamduytung.com/tags/uber-engineering/" class="badge rounded post-taxonomy" title="Uber Engineering">
+            Uber Engineering<span class="badge badge-sm text-white bg-accent ms-1">6</span></a></div>
+      </div>
+    </section>
+    
+  </div>
+</aside>
+</div>
+    </main><footer class="footer mt-auto py-3 text-center container"><ul class="nav justify-content-between footer-memu mb-3"><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Community
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-facebook"></i>Facebook Group
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://github.com/AlexBlack2202/alexblack2202.github.io" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-github"></i>GitHub
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/contact/"><i class="fas fa-fw fa-info-circle"></i>Contact Us
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/faq/"><i class="fas fa-fw fa-question-circle"></i>Câu hỏi thường gặp
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Docs
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="/team_of_services" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-users"></i>Điều khoản sử dụng
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/privacy" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-lock"></i>Chính sách bảo mật
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Features
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="/utils/gen_paswords/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-key"></i>Tạo password ngẫu nhiên
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Liên kết khác
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">Netlify
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">facebook
+</a>
+        </li></ul></li></ul>
+<div class="copyright mb-2">
+  Copyright © 2016-2026 Phạm Duy Tùng. All Rights Reserved.
+</div>
+<div class="powered-by mb-2">
+  Website chia sẻ kiến thức của Phạm Duy Tùng và Đặng Thị Hằng. Vui lòng liên hệ email alexblack2202@gmail.com nếu bạn có thông tin cần trao đổi.
+</div></footer>
+<script src="https://www.phamduytung.com/js/main.111d51a8c754010f8399ca010e552d803e2d5170b361f8886ad04ec6c21ca551.js" integrity="sha256-ER1RqMdUAQ&#43;DmcoBDlUtgD4tUXCzYfiIatBOxsIcpVE=" crossorigin="anonymous" defer></script><script src="https://www.phamduytung.com/js/icons.min.cb4c9958dbc49e29ac644e168e82db2d0de9a741a15751cc5bf2b0af21eb2845.js" integrity="sha256-y0yZWNvEnimsZE4WjoLbLQ3pp0GhV1HMW/KwryHrKEU=" crossorigin="anonymous" defer></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('https:\/\/www.phamduytung.com\/service-worker.js').then(function(reg) {
+      console.log('Successfully registered service worker', reg);
+    }).catch(function(err) {
+      console.warn('Error whilst registering service worker', err);
+    });
+  });
+}
+</script><script src="https://www.phamduytung.com/js/viewer.min.28bcf5233e406dae6715f46c8b9e8ca7c6cbf347e8678f5a2bebe5369c3270bb.js" integrity="sha256-KLz1Iz5Aba5nFfRsi56Mp8bL80foZ49aK&#43;vlNpwycLs=" crossorigin="anonymous" defer></script><script defer src="https://www.phamduytung.com/js/katex.min.8582b9feadf92a2a977ed303b97d7713cf2754ccf2b4eb60d8be7453a21042c2.js" integrity="sha256-hYK5/q35KiqXftMDuX13E88nVMzytOtg2L50U6IQQsI=" crossorigin="anonymous"></script>
+
+<script  data-ad-client="ca-pub-4644989745435991"  async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4644989745435991"
+     crossorigin="anonymous"></script><script data-cfasync="false" type="text/javascript" data-adel="atag" src="//acscdn.com/script/atg.js" czid="eul3gyjdmm"></script>
+  </body>
+</html>
