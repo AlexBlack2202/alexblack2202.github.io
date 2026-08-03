@@ -15,9 +15,9 @@
 	<meta itemprop="description" content="Phân tích học thuật Pailitao-MMSearch, mô hình tìm kiếm thương mại điện tử đa phương thức của Alibaba, từ Hybrid Semantic ID, continual pre-training, on-policy distillation đến generative retrieval và các giới hạn thực nghiệm còn bỏ ngỏ.">
 	<meta itemprop="datePublished" content="2026-07-29T00:00:00+07:00">
 	<meta itemprop="dateModified" content="2026-07-29T00:00:00+07:00">
-	<meta itemprop="wordCount" content="5970">
+	<meta itemprop="wordCount" content="1248">
 	<meta itemprop="image" content="https://www.phamduytung.com/images/posts/2026-07-29-multimodal-search/cover.jpg">
-	<meta itemprop="keywords" content="Multimodal-Search,Generative-Retrieval,Semantic-Id,E-Commerce,LLM"><meta property="og:url" content="https://www.phamduytung.com/blog/2026-07-29-multimodal-search/">
+	<meta itemprop="keywords" content="Multimodal-Search,Generative-Retrieval,Semantic-Id,E-Commerce,Llm"><meta property="og:url" content="https://www.phamduytung.com/blog/2026-07-29-multimodal-search/">
 	<meta property="og:site_name" content="Phạm Duy Tùng Machine Learning Blog">
 	<meta property="og:title" content="Pailitao-MMSearch: Khi mỗi sản phẩm trở thành một chuỗi token trong bộ não tìm kiếm của Taobao">
 	<meta property="og:description" content="Phân tích học thuật Pailitao-MMSearch, mô hình tìm kiếm thương mại điện tử đa phương thức của Alibaba, từ Hybrid Semantic ID, continual pre-training, on-policy distillation đến generative retrieval và các giới hạn thực nghiệm còn bỏ ngỏ.">
@@ -30,7 +30,7 @@
 		<meta property="article:tag" content="Generative-Retrieval">
 		<meta property="article:tag" content="Semantic-Id">
 		<meta property="article:tag" content="E-Commerce">
-		<meta property="article:tag" content="LLM">
+		<meta property="article:tag" content="Llm">
 		<meta property="og:image" content="https://www.phamduytung.com/images/posts/2026-07-29-multimodal-search/cover.jpg">
 
 	<meta name="twitter:card" content="summary_large_image">
@@ -213,8 +213,8 @@ Phạm Duy Tùng
   <span class="post-date" title="tạo ngày 2026-07-29 00:00:00 &#43;0700 &#43;07.">
     29/07/2026
   </span><span class="post-reading-time">
-    29 phút đọc
-  </span><span class="post-taxonomies"><a href="https://www.phamduytung.com/tags/multimodal-search/" class="badge post-taxonomy">multimodal-search</a><a href="https://www.phamduytung.com/tags/generative-retrieval/" class="badge post-taxonomy">generative-retrieval</a><a href="https://www.phamduytung.com/tags/semantic-id/" class="badge post-taxonomy">semantic-id</a><a href="https://www.phamduytung.com/tags/e-commerce/" class="badge post-taxonomy">e-commerce</a><a href="https://www.phamduytung.com/tags/llm/" class="badge post-taxonomy">LLM</a></span>
+    6 phút đọc
+  </span><span class="post-taxonomies"><a href="https://www.phamduytung.com/tags/multimodal-search/" class="badge post-taxonomy">multimodal-search</a><a href="https://www.phamduytung.com/tags/generative-retrieval/" class="badge post-taxonomy">generative-retrieval</a><a href="https://www.phamduytung.com/tags/semantic-id/" class="badge post-taxonomy">semantic-id</a><a href="https://www.phamduytung.com/tags/e-commerce/" class="badge post-taxonomy">e-commerce</a><a href="https://www.phamduytung.com/tags/llm/" class="badge post-taxonomy">llm</a></span>
 </div>
 <div class="post-content mb-3"><hr>
 <div class="toc">
@@ -330,9 +330,11 @@ Phạm Duy Tùng
 <p>$$
 \mathbf{q}=f_{\theta}(q)
 $$</p>
-<p>$$
-\mathbf{p}<em>{i}=g</em>{\phi}(p_i)
-$$</p>
+$$
+  
+\mathbf{p}_{i}=g_{\phi}(p_i)
+
+$$
 <p>Query và sản phẩm được biến thành hai vector. Hệ thống tìm sản phẩm có cosine similarity hoặc dot product lớn nhất:</p>
 <p>$$
 \operatorname{score}(q,p_i)=\mathbf{q}^{\top}\mathbf{p}_i
@@ -347,14 +349,16 @@ $$</p>
 <p>Trong đó chuỗi $z$ đại diện cho item cần tìm.</p>
 <p>Ý tưởng này có lịch sử từ Differentiable Search Index, nơi Transformer học ánh xạ query trực tiếp thành document ID. Những nghiên cứu sau đó như TIGER thay ID ngẫu nhiên bằng Semantic ID, tức chuỗi mã rời rạc mang ý nghĩa về nội dung và quan hệ giữa item.</p>
 <p>Với Pailitao-MMSearch, xác suất sinh một sản phẩm được phân rã tự hồi quy:</p>
-<p>$$
+$$
+  
 \begin{aligned}
-p_{\theta}\left(z\mid q,\mathcal{H}<em>{u}\right)
-&amp;=
-\prod</em>{j=1}^{|z|}
-p_{\theta}\left(z_j\mid z_{&lt;j},q,\mathcal{H}_{u}\right)
+p_{\theta}\left(z\mid q,\mathcal{H}_{u}\right)
+&=
+\prod_{j=1}^{|z|}
+p_{\theta}\left(z_j\mid z_{<j},q,\mathcal{H}_{u}\right)
 \end{aligned}
-$$</p>
+
+$$
 <p>Trong đó:</p>
 <ul>
 <li>$q$ là query gồm ảnh và văn bản.</li>
@@ -383,25 +387,29 @@ $$</p>
 </span></span></code></pre></div><p>Các token đầu biểu diễn ngữ nghĩa rộng. Token sau dần bổ sung chi tiết.</p>
 <p>Pailitao-MMSearch tạo Semantic ID bằng residual quantization với ba tầng. Trước hết, mỗi sản phẩm được mã hóa thành vector multimodal $\mathbf{v}_i$, chứa thông tin từ ảnh, tiêu đề và thuộc tính.</p>
 <p>Ở tầng thứ nhất, hệ thống chọn codeword gần $\mathbf{v}_i$ nhất:</p>
-<p>$$
+$$
+  
 \begin{aligned}
 c_{i,l}
-&amp;=
+&=
 \arg\min_{j\in[K]}
-\left|
-\mathbf{r}<em>{i}^{(l-1)} -
-\mathbf{s}</em>{j}^{(l)}
-\right|_2
+\left\|
+\mathbf{r}_{i}^{(l-1)} -
+\mathbf{s}_{j}^{(l)}
+\right\|_2
 \end{aligned}
-$$</p>
+
+$$
 <p>Sau đó lấy phần sai số còn lại:</p>
 <p>$$
 \mathbf{r}_{i}^{(0)}=\mathbf{v}_i
 $$</p>
-<p>$$
-\mathbf{r}<em>{i}^{(l)}
-=\mathbf{r}</em>{i}^{(l-1)}-\mathbf{s}<em>{c</em>{i,l}}^{(l)}
-$$</p>
+$$
+  
+\mathbf{r}_{i}^{(l)}
+=\mathbf{r}_{i}^{(l-1)}-\mathbf{s}_{c_{i,l}}^{(l)}
+
+$$
 <p>Tầng đầu mô tả phần lớn nhất của vector. Tầng sau không mã hóa lại từ đầu mà tiếp tục mã hóa phần sai số chưa được tầng trước giải thích.</p>
 <p>Nó giống như vẽ một con mèo.</p>
 <p>Người thứ nhất vẽ thân mèo. Người thứ hai nhìn vào phần còn thiếu rồi thêm tai. Người thứ ba thấy vẫn chưa đủ giống nên vẽ thêm ria mép. Ba người không vẽ ba con mèo; họ lần lượt sửa phần dư của cùng một con mèo.</p>
@@ -423,10 +431,12 @@ $$</p>
 <p>Đây chính là nút thắt mà HybSID muốn giải quyết.</p>
 <h2 id="thêm-một-vector-liên-tục-vào-cuối-chuỗi">Thêm một vector liên tục vào cuối chuỗi<a class="anchor ms-1" href="#thêm-một-vector-liên-tục-vào-cuối-chuỗi"><i class="fas fa-link"></i></a></h2>
 <p>Pailitao-MMSearch biểu diễn sản phẩm bằng:</p>
-<p>$$
+$$
+  
 \mathcal{z}(p_i)
 =\left(c_1^i,c_2^i,c_3^i,\mathbf{e}_i\right)
-$$</p>
+
+$$
 <p>Ba mã rời rạc dùng để tìm vùng sản phẩm phù hợp. Vector $\mathbf{e}_i$ dùng để phân biệt các sản phẩm nằm trong cùng vùng ấy.</p>
 <p>Mỗi sản phẩm vì thế có cả:</p>
 <ul>
@@ -437,10 +447,12 @@ $$</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">&lt;|emb_token|&gt;
 </span></span></code></pre></div><p>Khi token này xuất hiện ở đầu vào, một lớp <code>HybProjection</code> biến product embedding thành chiều không gian mà LLM hiểu được.</p>
 <p>Khi token này được mô hình sinh ra, hidden state tại vị trí đó đi qua <code>HybDecoder</code> để tái tạo một vector sản phẩm:</p>
-<p>$$
-\hat{\mathbf{e}}<em>i
-=\operatorname{HybDecoder}\left(\mathbf{h}</em>{\mathrm{emb}}\right)
-$$</p>
+$$
+  
+\hat{\mathbf{e}}_i
+=\operatorname{HybDecoder}\left(\mathbf{h}_{\mathrm{emb}}\right)
+
+$$
 <p>Sau đó vector được dùng để nearest-neighbor search trong bucket đã xác định bởi SID.</p>
 <p>Về mặt kiến trúc, đây là một thiết kế lai khá thực dụng. Mô hình không cố nhồi toàn bộ độ chính xác của một tỷ sản phẩm vào vài token rời rạc. Nó dùng token để định tuyến và dùng vector để phân giải chi tiết.</p>
 <h2 id="hàm-loss-của-hybsid">Hàm loss của HybSID<a class="anchor ms-1" href="#hàm-loss-của-hybsid"><i class="fas fa-link"></i></a></h2>
@@ -450,22 +462,24 @@ $$</p>
 <li>Tái tạo đúng vector liên tục.</li>
 </ol>
 <p>Hàm loss là:</p>
-<p>$$
+$$
+  
 \begin{aligned}
-\mathcal{L}<em>{\mathrm{hyb}}
-&amp;=
-\mathcal{L}</em>{\mathrm{CE}}
+\mathcal{L}_{\mathrm{hyb}}
+&=
+\mathcal{L}_{\mathrm{CE}}
 \left(
-\hat{c}^{(1:3)},c^{(1:3)<em>}
+\hat{c}^{(1:3)},c^{(1:3)*}
 \right)
 +
 \lambda
 \mathcal{L}_{\mathrm{emb}}
 \left(
-\hat{\mathbf{e}},\mathbf{e}^{</em>}
+\hat{\mathbf{e}},\mathbf{e}^{*}
 \right)
 \end{aligned}
-$$</p>
+
+$$
 <p>Trong đó:</p>
 <ul>
 <li>$\mathcal{L}_{\mathrm{CE}}$ là cross-entropy cho SID token.</li>
@@ -491,10 +505,12 @@ $$</p>
 </span></span></code></pre></div><p>Chiều thứ nhất buộc SID mang ý nghĩa có thể giải mã. Chiều thứ hai giúp mô hình ánh xạ biểu hiện bên ngoài của sản phẩm về đúng vùng định danh.</p>
 <h3 id="user-behavior-alignment">User Behavior Alignment<a class="anchor ms-1" href="#user-behavior-alignment"><i class="fas fa-link"></i></a></h3>
 <p>Mô hình còn học trên chuỗi hành vi:</p>
-<p>$$
-\mathcal{H}<em>u
-=(p</em>{u,1},p_{u,2},\ldots,p_{u,T})
-$$</p>
+$$
+  
+\mathcal{H}_u
+=(p_{u,1},p_{u,2},\ldots,p_{u,T})
+
+$$
 <p>Nó dự đoán sản phẩm tiếp theo, học quan hệ đồng xuất hiện và sự chuyển dịch sở thích giữa các phiên.</p>
 <p>Đây là chỗ Pailitao-MMSearch khác một vision-language model thông thường. Mô hình không chỉ học rằng hai sản phẩm nhìn giống nhau. Nó còn học rằng con người thường xem chúng cùng nhau, mua chúng cùng nhau hoặc chuyển từ món này sang món kia.</p>
 <p>Một lượng nhỏ dữ liệu hội thoại tổng quát cũng được trộn vào giai đoạn này như regularizer, nhưng kết quả thực nghiệm cho thấy biện pháp ấy không đủ để ngăn suy giảm năng lực tổng quát.</p>
@@ -507,11 +523,12 @@ y
 \pi_{\mathrm{s1}}(\cdot\mid x)
 $$</p>
 <p>Sau đó, tại những trạng thái mà student thực sự đi qua, phân phối token của student được kéo gần teacher bằng KL divergence:</p>
-<p>$$
+$$
+  
 \begin{aligned}
-\mathcal{L}<em>{\mathrm{stage2}}
-&amp;=
-\mathcal{L}</em>{\mathrm{task}}
+\mathcal{L}_{\mathrm{stage2}}
+&=
+\mathcal{L}_{\mathrm{task}}
 +
 \mu
 \mathbb{E}
@@ -519,13 +536,14 @@ $$</p>
 \sum_{t=1}^{|y|}
 D_{\mathrm{KL}}
 \left(
-\pi_{\mathrm{s1}}(\cdot\mid y_{&lt;t},x)
+\pi_{\mathrm{s1}}(\cdot\mid y_{<t},x)
 \parallel
-\pi_{\mathrm{base}}(\cdot\mid y_{&lt;t},x)
+\pi_{\mathrm{base}}(\cdot\mid y_{<t},x)
 \right)
 \right]
 \end{aligned}
-$$</p>
+
+$$
 <p>Knowledge distillation truyền thống thường cho student học trên dữ liệu hoặc trajectory cố định của teacher. On-policy distillation để student tự bước đi, tự đi vào những trạng thái hơi kỳ quặc mà nó có khả năng gặp khi inference, rồi nhờ teacher sửa ngay tại những trạng thái đó.</p>
 <p>Nó giống dạy một đứa trẻ đi xe đạp. Thay vì chỉ cho xem video người lớn chạy xe hoàn hảo, chúng ta để đứa trẻ tự đạp, chao qua trái, sắp đâm bụi cây, rồi sửa đúng tại vị trí mà nó vừa chạy tới.</p>
 <p>Đây là một hướng nghiên cứu đang được quan tâm vì nó giảm độ lệch giữa phân phối dữ liệu huấn luyện và phân phối trạng thái do student tạo ra khi vận hành.</p>
@@ -604,21 +622,23 @@ $$</p>
 <li>Sinh HybSID.</li>
 </ol>
 <p>Hàm loss SFT vẫn là negative log-likelihood thông thường:</p>
-<p>$$
+$$
+  
 \begin{aligned}
-\mathcal{L}<em>{\mathrm{sft}}
-&amp;=-
-\mathbb{E}</em>{(x,y)\sim\mathcal{D}<em>{\mathrm{sft}}}
+\mathcal{L}_{\mathrm{sft}}
+&=-
+\mathbb{E}_{(x,y)\sim\mathcal{D}_{\mathrm{sft}}}
 \left[
-\sum</em>{l=1}^{|y|}
+\sum_{l=1}^{|y|}
 \log
 P_{\theta}
 \left(
-y_l\mid y_{&lt;l},x
+y_l\mid y_{<l},x
 \right)
 \right]
 \end{aligned}
-$$</p>
+
+$$
 <p>Điểm thực dụng là reasoning mode được chỉ định rõ trong instruction dựa trên yêu cầu latency của từng kịch bản. Tức là bản v1 chưa trình bày một router tự học để quyết định query nào cần suy luận sâu; hệ thống bên ngoài vẫn chọn chế độ.</p>
 <p>Nói cách khác, bộ não đã biết nghĩ, nhưng vẫn cần một người đứng cạnh nói:</p>
 <blockquote>
@@ -662,11 +682,12 @@ $$</p>
 <li>SFT model giữ khả năng xử lý nhiều task.</li>
 </ul>
 <p>Multi-Expert On-Policy Distillation gom các năng lực này vào một student:</p>
-<p>$$
+$$
+  
 \begin{aligned}
-\mathcal{L}<em>{\mathrm{meopd}}
-&amp;=
-\mathcal{L}</em>{\mathrm{sft}}
+\mathcal{L}_{\mathrm{meopd}}
+&=
+\mathcal{L}_{\mathrm{sft}}
 +
 \mathbb{E}
 \left[
@@ -681,7 +702,8 @@ D_{\mathrm{KL}}
 \right)
 \right]
 \end{aligned}
-$$</p>
+
+$$
 <p>Về trực giác, student tự sinh trajectory rồi lần lượt hỏi nhiều giáo viên:</p>
 <blockquote>
 <p>Với trạng thái này, thầy thời trang nghĩ sao?</p>
@@ -1052,6 +1074,10 @@ $$</p>
     <i class="fas fa-fw fa-chevron-left"></i>
     <a href="https://www.phamduytung.com/blog/2026-07-28-grab-apache-iceberg-migration/">Grab chuyển Data Lake sang Apache Iceberg: Bài học không nằm ở việc đổi định dạng file
 </a>
+  </div><div class="post-nav post-next">
+    <a href="https://www.phamduytung.com/blog/2026-08-03-graphrag-vs-vector-rag/">Đừng biến mọi thứ thành đồ thị: Khi nào GraphRAG thật sự thắng Vector RAG?
+</a>
+    <i class="fas fa-fw fa-chevron-right"></i>
   </div></div></div>
 </article><div class="card component row post-comments" id="post-comments">
   <div class="card-header">
@@ -1151,6 +1177,9 @@ $$</p>
   </div>
   <div class="card-body">
     <ul class="post-list"><li>
+        <a href="https://www.phamduytung.com/blog/2026-08-03-graphrag-vs-vector-rag/">Đừng biến mọi thứ thành đồ thị: Khi nào GraphRAG thật sự thắng Vector RAG?
+</a>
+      </li><li>
         <a href="https://www.phamduytung.com/blog/2026-07-29-multimodal-search/">Pailitao-MMSearch: Khi mỗi sản phẩm trở thành một chuỗi token trong bộ não tìm kiếm của Taobao
 </a>
       </li><li>
@@ -1161,9 +1190,6 @@ $$</p>
 </a>
       </li><li>
         <a href="https://www.phamduytung.com/blog/2026-07-27-enterprise-ai-vendor-lock-in/">Doanh nghiệp giao hết bộ não cho một AI có thể không sống sót
-</a>
-      </li><li>
-        <a href="https://www.phamduytung.com/blog/2026-07-26-ai-search-retail-catalog/">Khi Google không còn đưa người dùng đến website: Catalog bán lẻ phải thay đổi thế nào trong thời đại AI Search?
 </a>
       </li></ul>
   </div>
@@ -1212,8 +1238,8 @@ $$</p>
         <div class="py-2"><a href="https://www.phamduytung.com/tags/machine-learning/" class="badge rounded post-taxonomy" title="Machine Learning">
             Machine Learning<span class="badge badge-sm text-white bg-accent ms-1">26</span></a><a href="https://www.phamduytung.com/tags/deep-learning/" class="badge rounded post-taxonomy" title="Deep Learning">
             Deep Learning<span class="badge badge-sm text-white bg-accent ms-1">23</span></a><a href="https://www.phamduytung.com/tags/computer-vision/" class="badge rounded post-taxonomy" title="Computer Vision">
-            Computer Vision<span class="badge badge-sm text-white bg-accent ms-1">16</span></a><a href="https://www.phamduytung.com/tags/llm/" class="badge rounded post-taxonomy" title="LLM">
-            LLM<span class="badge badge-sm text-white bg-accent ms-1">14</span></a><a href="https://www.phamduytung.com/tags/python/" class="badge rounded post-taxonomy" title="Python">
+            Computer Vision<span class="badge badge-sm text-white bg-accent ms-1">16</span></a><a href="https://www.phamduytung.com/tags/llm/" class="badge rounded post-taxonomy" title="Llm">
+            Llm<span class="badge badge-sm text-white bg-accent ms-1">15</span></a><a href="https://www.phamduytung.com/tags/python/" class="badge rounded post-taxonomy" title="Python">
             Python<span class="badge badge-sm text-white bg-accent ms-1">14</span></a><a href="https://www.phamduytung.com/tags/ai-agent/" class="badge rounded post-taxonomy" title="AI Agent">
             AI Agent<span class="badge badge-sm text-white bg-accent ms-1">7</span></a><a href="https://www.phamduytung.com/tags/recommendation-system/" class="badge rounded post-taxonomy" title="Recommendation System">
             Recommendation System<span class="badge badge-sm text-white bg-accent ms-1">7</span></a><a href="https://www.phamduytung.com/tags/system-design/" class="badge rounded post-taxonomy" title="System Design">

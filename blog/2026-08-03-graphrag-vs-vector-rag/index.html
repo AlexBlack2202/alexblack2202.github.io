@@ -1,0 +1,881 @@
+<!doctype html><html lang="vi" data-palette="brown"
+   data-mode="light">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Đừng biến mọi thứ thành đồ thị: Khi nào GraphRAG thật sự thắng Vector RAG? - Phạm Duy Tùng Machine Learning Blog</title>
+    <meta name="a.validate.02" content="1QZXZ8oi7g57H-GxBrBPkTYBydwii-Ic9iJu" /><link rel="apple-touch-icon" href="https://www.phamduytung.com/images/icons/icon-180x180.png" sizes="180x180">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/icon-32x32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/icon-16x16.png" sizes="16x16" type="image/png">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/favicon.ico">
+<link rel="manifest" href="https://www.phamduytung.com/manifest.json">
+<meta name="keywords" content="" />
+<meta name="description" content="GraphRAG không phải phiên bản cao cấp hơn của Vector RAG. Nó chỉ thật sự phát huy sức mạnh khi câu hỏi cần nối nhiều dữ kiện, hiểu quan hệ hoặc nhìn toàn bộ kho dữ liệu." /><meta name="robots" content="index, follow" />
+	<meta itemprop="name" content="Đừng biến mọi thứ thành đồ thị: Khi nào GraphRAG thật sự thắng Vector RAG?">
+	<meta itemprop="description" content="GraphRAG không phải phiên bản cao cấp hơn của Vector RAG. Nó chỉ thật sự phát huy sức mạnh khi câu hỏi cần nối nhiều dữ kiện, hiểu quan hệ hoặc nhìn toàn bộ kho dữ liệu.">
+	<meta itemprop="datePublished" content="2026-08-03T00:00:00+03:00">
+	<meta itemprop="dateModified" content="2026-08-03T00:00:00+03:00">
+	<meta itemprop="wordCount" content="3886">
+	<meta itemprop="image" content="https://www.phamduytung.com/images/posts/2026-08-03-graphrag-vs-vector-rag/cover.jpg">
+	<meta itemprop="keywords" content="GraphRAG,Rag,Knowledge Graph,Llm,AI Infrastructure"><meta property="og:url" content="https://www.phamduytung.com/blog/2026-08-03-graphrag-vs-vector-rag/">
+	<meta property="og:site_name" content="Phạm Duy Tùng Machine Learning Blog">
+	<meta property="og:title" content="Đừng biến mọi thứ thành đồ thị: Khi nào GraphRAG thật sự thắng Vector RAG?">
+	<meta property="og:description" content="GraphRAG không phải phiên bản cao cấp hơn của Vector RAG. Nó chỉ thật sự phát huy sức mạnh khi câu hỏi cần nối nhiều dữ kiện, hiểu quan hệ hoặc nhìn toàn bộ kho dữ liệu.">
+	<meta property="og:locale" content="vi_VN">
+	<meta property="og:type" content="article">
+		<meta property="article:section" content="blog">
+		<meta property="article:published_time" content="2026-08-03T00:00:00+03:00">
+		<meta property="article:modified_time" content="2026-08-03T00:00:00+03:00">
+		<meta property="article:tag" content="GraphRAG">
+		<meta property="article:tag" content="Rag">
+		<meta property="article:tag" content="Knowledge Graph">
+		<meta property="article:tag" content="Llm">
+		<meta property="article:tag" content="AI Infrastructure">
+		<meta property="og:image" content="https://www.phamduytung.com/images/posts/2026-08-03-graphrag-vs-vector-rag/cover.jpg">
+
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:image" content="https://www.phamduytung.com/images/posts/2026-08-03-graphrag-vs-vector-rag/cover.jpg">
+	<meta name="twitter:title" content="Đừng biến mọi thứ thành đồ thị: Khi nào GraphRAG thật sự thắng Vector RAG?">
+	<meta name="twitter:description" content="GraphRAG không phải phiên bản cao cấp hơn của Vector RAG. Nó chỉ thật sự phát huy sức mạnh khi câu hỏi cần nối nhiều dữ kiện, hiểu quan hệ hoặc nhìn toàn bộ kho dữ liệu.">
+<link rel="stylesheet" href="https://www.phamduytung.com/css/main.min.7dd8c8ad44fe5c0f292dd635ae28981312b940a5894df3049d2a6e2fa2f43327.css" integrity="sha256-fdjIrUT&#43;XA8pLdY1riiYExK5QKWJTfMEnSpuL6L0Myc=" crossorigin="anonymous"><link rel="stylesheet" href="https://www.phamduytung.com/css/katex.min.4d6aa053ca8a5675016fa2c9c48ee5359bfaafb8295184458af9d64abce84c47.css" integrity="sha256-TWqgU8qKVnUBb6LJxI7lNZv6r7gpUYRFivnWSrzoTEc=" crossorigin="anonymous">
+<link rel="stylesheet" href="https://www.phamduytung.com/css/viewer.min.e882eb3a023412b73bb741b4604a1222a9f13aa7783c828d26d066ab8642bd51.css" integrity="sha256-6ILrOgI0Erc7t0G0YEoSIqnxOqd4PIKNJtBmq4ZCvVE=" crossorigin="anonymous"><link rel="canonical" href="https://www.phamduytung.com/blog/2026-08-03-graphrag-vs-vector-rag/"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Phạm Duy Tùng"},"dateModified":"2026-08-03T00:00:00+03:00","datePublished":"2026-08-03T00:00:00+03:00","description":"GraphRAG không phải phiên bản cao cấp hơn của Vector RAG. Nó chỉ thật sự phát huy sức mạnh khi câu hỏi cần nối nhiều dữ kiện, hiểu quan hệ hoặc nhìn toàn bộ kho dữ liệu.","headline":"Đừng biến mọi thứ thành đồ thị: Khi nào GraphRAG thật sự thắng Vector RAG?","image":["https://www.phamduytung.com/images/posts/2026-08-03-graphrag-vs-vector-rag/cover.jpg"],"inLanguage":"vi","keywords":"GraphRAG, RAG, Knowledge Graph, LLM, AI Infrastructure","mainEntityOfPage":{"@id":"https://www.phamduytung.com/blog/2026-08-03-graphrag-vs-vector-rag/","@type":"WebPage"},"publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://www.phamduytung.com/images/logo.png"},"name":"Phạm Duy Tùng Machine Learning Blog"},"url":"https://www.phamduytung.com/blog/2026-08-03-graphrag-vs-vector-rag/"}</script></head>
+  <body><script>const items=["mode","palette"];items.forEach(function(e){const t=localStorage.getItem("hbs-"+e);t&&document.body.parentElement.setAttribute("data-"+e,t)})</script><header><nav class="navbar top-app-bar top-app-bar-expand-lg fixed-top">
+  <div class="container">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <i class="fas fa-bars"></i>
+    </button><a class="navbar-brand flex-grow-1 flex-lg-grow-0 text-center text-lg-start mx-auto me-lg-3" href="https://www.phamduytung.com/"><img class="logo" alt="Logo" src="https://www.phamduytung.com/images/logo.webp" loading="lazy"  title="Logo"
+   width="32" height="32"
+   />
+Phạm Duy Tùng
+    </a>
+    <div class="offcanvas offcanvas-bottom surface" tabindex="-1" id="offcanvasSocialShare" aria-labelledby="offcanvasSocialShare">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Share</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body">
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Twitter Share Button"
+      target="_blank" href="https://twitter.com/intent/tweet?title=%c4%90%e1%bb%abng%20bi%e1%ba%bfn%20m%e1%bb%8di%20th%e1%bb%a9%20th%c3%a0nh%20%c4%91%e1%bb%93%20th%e1%bb%8b%3a%20Khi%20n%c3%a0o%20GraphRAG%20th%e1%ba%adt%20s%e1%bb%b1%20th%e1%ba%afng%20Vector%20RAG%3f&url=https%3a%2f%2fwww.phamduytung.com%2fblog%2f2026-08-03-graphrag-vs-vector-rag%2f">
+      <i class="fab fa-fw fa-twitter"></i> Twitter
+    </a>
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Facebook Share Button"
+      target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.phamduytung.com%2fblog%2f2026-08-03-graphrag-vs-vector-rag%2f">
+      <i class="fab fa-fw fa-facebook-f"></i> Facebook
+    </a>
+  </div>
+</div>
+    <button class="navbar-settings" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSettings"
+  aria-controls="offcanvasSettings" aria-label="Toggle settings">
+  <i class="fas fa-ellipsis-v"></i>
+</button>
+
+<div class="offcanvas offcanvas-end surface h-100" tabindex="-1" id="offcanvasSettings" aria-labelledby="offcanvasSettings">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Cài đặt</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body d-flex flex-column">
+
+
+
+<section class="setting">
+  <form class="font-size-switcher-form row">
+    <div class="col-auto">
+      <label for="fontSize" class="form-label"><i class="fas fa-fw fa-font"></i> Cỡ chữ</label>
+    </div>
+    <div class="col-auto ms-auto">
+      <input type="range" class="form-range" min="-2" max="2" id="fontSize">
+    </div>
+  </form>
+</section>
+
+
+
+<section class="setting actions d-flex justify-content-around mt-auto overflow-auto">
+  <a role="button" class="action action-go-back" href="javascript: window.history.back();">
+    <span class="action-icon"><i class="fas fa-2x fa-arrow-left"></i></span> Quay lại
+  </a>
+  <a role="button" class="action action-reload-page">
+    <span class="action-icon"><i class="fas fa-2x fa-redo-alt"></i></span> Tải lại
+  </a>
+  <a role="button" class="action action-copy-url">
+    <span class="action-icon"><i class="fas fa-2x fa-link"></i></span> Sao chép URL
+  </a><a class="action action-social-share" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSocialShare"
+    aria-controls="offcanvasSocialShare" aria-label="Toggle social share">
+    <span class="action-icon"><i class="fas fa-2x fa-share-alt"></i></span> Chia sẻ
+  </a></section>
+
+</div>
+</div>
+
+    <div class="collapse navbar-collapse" tabindex="-1" id="navbarSupportedContent" aria-labelledby="navbarSupportedContent">
+      <form class="search-bar my-1" action="https://www.phamduytung.com/search">
+  <div class="input-group input-group-sm">
+    <span class="btn btn-search disabled position-absolute left-0"><i class="fas fa-fw fa-search"></i></span>
+    <input class="form-control rounded-pill" name="q" type="search" aria-label="Search">
+  </div>
+</form>
+      <ul class="navbar-nav ms-auto"><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/series/">
+            <i class="fas fa-fw fa-columns"></i>Courses
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/tools/">
+            <i class="fas fa-fw fa-folder"></i>Tools
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/categories/">
+            <i class="fas fa-fw fa-folder"></i>Categories
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/archives/">
+            <i class="fas fa-fw fa-file-archive"></i>Archives
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/tags/">
+            <i class="fas fa-fw fa-tags"></i>Tags
+          </a>
+        </li><li class="nav-item dropdown">
+          <a class="nav-link" id="navbarDropdownSupport" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-fw fa-comments"></i>Community
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdownSupport"><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Facebook Group
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://github.com/AlexBlack2202/alexblack2202.github.io" target="_blank" rel="noopener noreferrer">
+                GitHub
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/contact/">
+                Contact
+              </a>
+            </li><li><hr class="dropdown-divider"></li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/faq/">
+                Câu hỏi thường gặp
+              </a>
+            </li></ul>
+        </li></ul>
+    </div>
+  </div>
+</nav>
+</header>
+<main role="main" class="container" style="line-height:1.7em">
+      <div class="row content">
+<div class="col-lg-9 col-md-8">
+  <div class="container"><nav class="row card component" aria-label="breadcrumb">
+  <div class="card-body">
+    <ol class="breadcrumb "><li class="breadcrumb-item"><a href="https://www.phamduytung.com/">Trang chủ</a></li><li class="breadcrumb-item"><a href="https://www.phamduytung.com/blog/">Blogs</a></li><li class="breadcrumb-item active">Đừng biến mọi thứ thành đồ thị: Khi nào GraphRAG thật sự thắng Vector RAG?</li></ol>
+  </div>
+</nav>
+<div class="post-panel-wrapper">
+  <div class="d-flex flex-column component rounded post-panel">
+    
+    <a class="action action-panel-toggler" role="button" title="Panel toggler">
+      <i class="fas fa-fw fa-chevron-circle-down"></i>
+    </a>
+    <a id="sidebarToggler" class="action d-none d-lg-block" role="button" title="Sidebar toggler">
+  <i class="fas fa-fw fa-expand-alt" data-fa-transform="rotate-45"></i>
+</a>
+
+    
+
+    
+    
+    <a class="action" href="#post-comments" role="button" aria-label="Comments" title="Comments">
+  <i class="fas fa-fw fa-comments"></i>
+</a>
+    <a class="action" href="#postTOC" aria-controls="Table of contents" role="button" title="Table of contents">
+  <i class="fas fa-fw fa-list-alt"></i>
+</a>
+    
+  </div>
+</div>
+<article class="row card component mb-4 post">
+  <div class="card-header "><div class="bgcover" style="background-image:url(https://www.phamduytung.com/images/posts/2026-08-03-graphrag-vs-vector-rag/cover.jpg)" aria-label="Đừng biến mọi thứ thành đồ thị: Khi nào GraphRAG thật sự thắng Vector RAG?">
+      <div class="bgtrans">
+          <h1>Đừng biến mọi thứ thành đồ thị: Khi nào GraphRAG thật sự thắng Vector RAG?
+</h1>
+      </div>
+  </div>
+</div>
+  <div class="card-body"><div class="post-meta">
+  <span class="post-date" title="tạo ngày 2026-08-03 04:00:00 &#43;0700 &#43;07.">
+    03/08/2026
+  </span><span class="post-reading-time">
+    19 phút đọc
+  </span><span class="post-taxonomies"><a href="https://www.phamduytung.com/tags/graphrag/" class="badge post-taxonomy">GraphRAG</a><a href="https://www.phamduytung.com/tags/rag/" class="badge post-taxonomy">rag</a><a href="https://www.phamduytung.com/tags/knowledge-graph/" class="badge post-taxonomy">Knowledge Graph</a><a href="https://www.phamduytung.com/tags/llm/" class="badge post-taxonomy">llm</a><a href="https://www.phamduytung.com/tags/ai-infrastructure/" class="badge post-taxonomy">AI Infrastructure</a></span>
+</div>
+<div class="post-content mb-3"><hr>
+<div class="toc">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#đặt-vấn-đề">Đặt vấn đề</a></li>
+    <li><a href="#vector-rag-thực-sự-đang-làm-gì">Vector RAG thực sự đang làm gì?</a></li>
+    <li><a href="#khi-các-mảnh-giấy-cần-biết-nhau">Khi các mảnh giấy cần biết nhau</a></li>
+    <li><a href="#graphrag-thay-đổi-điều-gì">GraphRAG thay đổi điều gì?</a></li>
+    <li><a href="#khi-nào-graphrag-thật-sự-thắng">Khi nào GraphRAG thật sự thắng?</a>
+      <ul>
+        <li><a href="#câu-hỏi-multi-hop">Câu hỏi multi-hop</a></li>
+        <li><a href="#câu-hỏi-nhìn-toàn-bộ-kho-dữ-liệu">Câu hỏi nhìn toàn bộ kho dữ liệu</a></li>
+        <li><a href="#câu-hỏi-yêu-cầu-so-sánh-thời-gian-và-quan-hệ">Câu hỏi yêu cầu so sánh, thời gian và quan hệ</a></li>
+      </ul>
+    </li>
+    <li><a href="#khi-nào-vector-rag-vẫn-tốt-hơn">Khi nào Vector RAG vẫn tốt hơn?</a>
+      <ul>
+        <li><a href="#tra-cứu-một-sự-kiện-cụ-thể">Tra cứu một sự kiện cụ thể</a></li>
+        <li><a href="#dữ-liệu-nhỏ-và-ít-quan-hệ">Dữ liệu nhỏ và ít quan hệ</a></li>
+        <li><a href="#dữ-liệu-thay-đổi-liên-tục">Dữ liệu thay đổi liên tục</a></li>
+      </ul>
+    </li>
+    <li><a href="#cái-giá-thật-sự-của-graphrag">Cái giá thật sự của GraphRAG</a>
+      <ul>
+        <li><a href="#chi-phí-xây-graph">Chi phí xây graph</a></li>
+        <li><a href="#context-có-thể-phình-ra-khủng-khiếp">Context có thể phình ra khủng khiếp</a></li>
+        <li><a href="#graph-sai-thì-retrieval-cũng-sai">Graph sai thì retrieval cũng sai</a></li>
+      </ul>
+    </li>
+    <li><a href="#giải-pháp-thực-tế-đừng-chọn-tôn-giáo-hãy-xây-router">Giải pháp thực tế: đừng chọn tôn giáo, hãy xây router</a>
+      <ul>
+        <li><a href="#đường-1-vector-rag">Đường 1: Vector RAG</a></li>
+        <li><a href="#đường-2-graphrag">Đường 2: GraphRAG</a></li>
+        <li><a href="#đường-3-hybrid-retrieval">Đường 3: Hybrid retrieval</a></li>
+      </ul>
+    </li>
+    <li><a href="#ví-dụ-thiết-kế-cho-hệ-thống-doanh-nghiệp">Ví dụ thiết kế cho hệ thống doanh nghiệp</a>
+      <ul>
+        <li><a href="#loại-1-tìm-một-dữ-kiện">Loại 1: Tìm một dữ kiện</a></li>
+        <li><a href="#loại-2-tìm-tài-liệu-tương-tự">Loại 2: Tìm tài liệu tương tự</a></li>
+        <li><a href="#loại-3-nối-nhiều-sự-kiện">Loại 3: Nối nhiều sự kiện</a></li>
+        <li><a href="#loại-4-nhìn-toàn-cục">Loại 4: Nhìn toàn cục</a></li>
+      </ul>
+    </li>
+    <li><a href="#nên-đánh-giá-graphrag-như-thế-nào">Nên đánh giá GraphRAG như thế nào?</a></li>
+    <li><a href="#tổng-kết">Tổng kết</a></li>
+    <li><a href="#tham-khảo">Tham khảo</a></li>
+  </ul>
+</nav>
+  </div>
+<h1 id="đặt-vấn-đề">Đặt vấn đề<a class="anchor ms-1" href="#đặt-vấn-đề"><i class="fas fa-link"></i></a></h1>
+<p>Giả sử chúng ta có một tủ hồ sơ khổng lồ.</p>
+<p>Trong tủ có hóa đơn, biên bản họp, phản hồi khách hàng, tài liệu kỹ thuật, email nội bộ, lịch sử sự cố và vài nghìn file PDF được đặt tên theo một hệ thống bí ẩn mà người tạo ra nó có lẽ cũng đã quên.</p>
+<p>Bây giờ, một người hỏi:</p>
+<blockquote>
+<p>Chính sách đổi trả của sản phẩm A trong tháng 7 là gì?</p>
+</blockquote>
+<p>Đây là một câu hỏi khá hiền lành. Ta chỉ cần tìm đúng tài liệu, lấy đúng đoạn văn rồi đưa cho mô hình ngôn ngữ đọc.</p>
+<p>Vector RAG làm việc này rất tốt.</p>
+<p>Nhưng nếu người đó hỏi:</p>
+<blockquote>
+<p>Vì sao số lượng khiếu nại về sản phẩm A tăng trong quý III, những nhà cung cấp nào có liên quan và sự cố này bắt đầu từ thời điểm nào?</p>
+</blockquote>
+<p>Lúc này, câu trả lời không còn nằm gọn trong một đoạn văn.</p>
+<p>Một file nói về số lượng khiếu nại. Một email khác nhắc đến nhà cung cấp. Một biên bản họp ghi nhận việc thay đổi linh kiện. Một báo cáo vận hành từ hai tháng trước mô tả dấu hiệu đầu tiên. Mỗi mảnh thông tin đứng riêng đều đúng, nhưng không mảnh nào chứa toàn bộ câu trả lời.</p>
+<p>Đây là lúc Vector RAG bắt đầu đi loanh quanh như một người cầm đèn pin trong căn phòng tối: nó soi rất rõ từng chỗ, nhưng không nhìn thấy sơ đồ của cả căn nhà.</p>
+<p>GraphRAG xuất hiện để giải quyết vấn đề đó.</p>
+<p>Tuy nhiên, vì một lý do nào đó mà ngành công nghệ rất thích làm mọi thứ trở nên hoành tráng, nhiều hệ thống bắt đầu xây knowledge graph cho toàn bộ dữ liệu, kể cả khi người dùng chỉ hỏi một câu đơn giản như “số điện thoại trong hợp đồng là gì”.</p>
+<p>Bài viết của Dattaraj Rao trên VentureBeat đặt ra một lời cảnh tỉnh khá thẳng thắn: đừng biến mọi dữ liệu thành graph; hãy chỉ dùng GraphRAG khi hình dạng của câu hỏi thật sự cần đến quan hệ.</p>
+<h1 id="vector-rag-thực-sự-đang-làm-gì">Vector RAG thực sự đang làm gì?<a class="anchor ms-1" href="#vector-rag-thực-sự-đang-làm-gì"><i class="fas fa-link"></i></a></h1>
+<p>Một hệ thống Vector RAG thông thường có thể được hình dung qua bốn bước:</p>
+<ol>
+<li>Chia tài liệu thành các đoạn nhỏ, gọi là chunk.</li>
+<li>Biến mỗi chunk thành một vector embedding.</li>
+<li>Biến câu hỏi của người dùng thành một vector khác.</li>
+<li>Tìm những chunk có vector gần câu hỏi nhất rồi đưa chúng vào LLM.</li>
+</ol>
+<p>Nếu gọi vector câu hỏi là $q$, vector của một đoạn tài liệu là $d_i$, hệ thống thường xếp hạng tài liệu bằng độ tương đồng cosine:</p>
+<p>$$
+\text{similarity}(q,d_i) =
+\frac{q \cdot d_i}
+{\lVert q \rVert \lVert d_i \rVert}
+$$</p>
+<p>Nghe thì có vẻ hơi đáng sợ, nhưng bản chất chỉ là:</p>
+<blockquote>
+<p>Câu hỏi này có “mùi ý nghĩa” giống đoạn văn nào nhất?</p>
+</blockquote>
+<p>Giả sử người dùng hỏi:</p>
+<blockquote>
+<p>Máy lạnh báo lỗi E5 có nghĩa là gì?</p>
+</blockquote>
+<p>Vector search sẽ tìm những đoạn có các từ và ý nghĩa liên quan đến “máy lạnh”, “E5”, “lỗi”, “mã lỗi” hoặc “khắc phục”.</p>
+<p>Nếu tài liệu có một đoạn ghi rõ:</p>
+<blockquote>
+<p>Mã E5 xuất hiện khi cảm biến nhiệt độ dàn lạnh gặp vấn đề.</p>
+</blockquote>
+<p>Thì mọi thứ rất đẹp. Retriever lấy đúng đoạn, LLM viết lại thành câu trả lời dễ hiểu, xong thuật toán, quá dễ.</p>
+<p>Vector RAG đặc biệt phù hợp với các câu hỏi:</p>
+<ul>
+<li>Tìm một điều khoản cụ thể.</li>
+<li>Tra cứu một mã lỗi.</li>
+<li>Tìm hướng dẫn sử dụng.</li>
+<li>Hỏi giá trị của một thuộc tính.</li>
+<li>Tìm đoạn văn có nội dung tương tự.</li>
+<li>Trả lời câu hỏi mà bằng chứng nằm trong một hoặc vài đoạn gần nhau.</li>
+</ul>
+<p>Một nghiên cứu so sánh có kiểm soát giữa RAG và nhiều họ GraphRAG cho thấy RAG truyền thống thường mạnh hơn ở những câu hỏi single-hop, thiên về sự kiện cụ thể và chi tiết nhỏ. Ngay cả khi bổ sung reranker hoặc iterative retrieval, lợi thế này vẫn còn.</p>
+<p>Vấn đề không nằm ở việc vector search yếu.</p>
+<p>Vấn đề nằm ở chỗ chúng ta bắt đầu yêu cầu nó làm một công việc mà nó không được sinh ra để làm.</p>
+<h1 id="khi-các-mảnh-giấy-cần-biết-nhau">Khi các mảnh giấy cần biết nhau<a class="anchor ms-1" href="#khi-các-mảnh-giấy-cần-biết-nhau"><i class="fas fa-link"></i></a></h1>
+<p>Hãy tưởng tượng có ba mảnh giấy:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Mảnh 1:
+</span></span><span class="line"><span class="ln">2</span><span class="cl">Nhà cung cấp Bình Minh giao lô linh kiện X vào tháng 5.
+</span></span><span class="line"><span class="ln">3</span><span class="cl">
+</span></span><span class="line"><span class="ln">4</span><span class="cl">Mảnh 2:
+</span></span><span class="line"><span class="ln">5</span><span class="cl">Lô linh kiện X được sử dụng trong dòng sản phẩm A.
+</span></span><span class="line"><span class="ln">6</span><span class="cl">
+</span></span><span class="line"><span class="ln">7</span><span class="cl">Mảnh 3:
+</span></span><span class="line"><span class="ln">8</span><span class="cl">Dòng sản phẩm A bắt đầu có tỷ lệ lỗi tăng mạnh từ tháng 7.
+</span></span></code></pre></div><p>Nếu hỏi:</p>
+<blockquote>
+<p>Nhà cung cấp nào có thể liên quan đến việc tỷ lệ lỗi của sản phẩm A tăng?</p>
+</blockquote>
+<p>Không mảnh nào chứa nguyên câu trả lời.</p>
+<p>Muốn trả lời, ta phải đi qua một chuỗi quan hệ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Bình Minh
+</span></span><span class="line"><span class="ln">2</span><span class="cl">    -&gt; giao
+</span></span><span class="line"><span class="ln">3</span><span class="cl">linh kiện X
+</span></span><span class="line"><span class="ln">4</span><span class="cl">    -&gt; được sử dụng trong
+</span></span><span class="line"><span class="ln">5</span><span class="cl">sản phẩm A
+</span></span><span class="line"><span class="ln">6</span><span class="cl">    -&gt; có tỷ lệ lỗi tăng
+</span></span><span class="line"><span class="ln">7</span><span class="cl">tháng 7
+</span></span></code></pre></div><p>Đây là một câu hỏi multi-hop.</p>
+<p>“Hop” có thể hiểu đơn giản là một bước nhảy từ một dữ kiện sang một dữ kiện khác.</p>
+<p>Vector RAG có thể lấy được mảnh 3 vì nó rất giống câu hỏi. Nó cũng có thể lấy mảnh 2 nếu may mắn. Nhưng mảnh 1 không nhất thiết có độ tương đồng cao với câu hỏi vì trong đó không hề xuất hiện từ “lỗi” hay “sản phẩm A”.</p>
+<p>Vector search nhìn thấy những hòn đảo giống câu hỏi.</p>
+<p>GraphRAG cố xây những cây cầu giữa các hòn đảo ấy.</p>
+<h1 id="graphrag-thay-đổi-điều-gì">GraphRAG thay đổi điều gì?<a class="anchor ms-1" href="#graphrag-thay-đổi-điều-gì"><i class="fas fa-link"></i></a></h1>
+<p>GraphRAG không chỉ lưu các đoạn văn độc lập. Trong quá trình indexing, hệ thống cố gắng nhận diện:</p>
+<ul>
+<li>Thực thể (entity): người, công ty, sản phẩm, linh kiện, địa điểm, sự kiện.</li>
+<li>Quan hệ (relation): sản xuất, sở hữu, cung cấp, ảnh hưởng, xảy ra trước, thuộc về.</li>
+<li>Thuộc tính: thời gian, trạng thái, số lượng, mô tả.</li>
+<li>Cụm hoặc cộng đồng: các thực thể có liên hệ chặt chẽ với nhau.</li>
+</ul>
+<p>Một knowledge graph đơn giản có thể gồm các bộ ba:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">(Bình Minh, cung cấp, linh kiện X)
+</span></span><span class="line"><span class="ln">2</span><span class="cl">(linh kiện X, được dùng trong, sản phẩm A)
+</span></span><span class="line"><span class="ln">3</span><span class="cl">(sản phẩm A, xuất hiện lỗi, E5)
+</span></span><span class="line"><span class="ln">4</span><span class="cl">(lỗi E5, tăng mạnh từ, tháng 7)
+</span></span></code></pre></div><p>Khi có câu hỏi, hệ thống không chỉ tìm đoạn văn gần nhất. Nó còn có thể bắt đầu từ một thực thể rồi đi qua các cạnh của graph để tìm những sự kiện liên quan.</p>
+<p>Microsoft GraphRAG còn xây các cộng đồng trong graph, tạo tóm tắt cho từng cộng đồng rồi sử dụng chúng để trả lời những câu hỏi mang tính toàn cục. HippoRAG lại kết hợp knowledge graph với Personalized PageRank để lan truyền mức độ liên quan qua các thực thể và tìm lại những đoạn văn gốc phù hợp.</p>
+<p>Điểm quan trọng là GraphRAG không phải một thuật toán duy nhất.</p>
+<p>Tên gọi này đang bao phủ nhiều cách tiếp cận khác nhau:</p>
+<ul>
+<li>Knowledge graph dựa trên entity và relation.</li>
+<li>Graph dùng để hướng dẫn lấy lại chunk.</li>
+<li>Community graph phục vụ câu hỏi toàn cục.</li>
+<li>Cấu trúc cây tóm tắt như RAPTOR.</li>
+<li>Graph kết hợp PageRank như HippoRAG.</li>
+<li>Graph được xây toàn bộ khi indexing.</li>
+<li>Graph được xây một phần hoặc chỉ mở rộng khi có truy vấn.</li>
+</ul>
+<p>Vì vậy, nói “GraphRAG tốt hơn RAG” cũng mơ hồ giống như nói “xe tải tốt hơn xe máy”.</p>
+<p>Tốt hơn để chở ba tấn gạo thì đúng.</p>
+<p>Tốt hơn để chạy ra đầu hẻm mua bánh mì thì chưa chắc.</p>
+<h1 id="khi-nào-graphrag-thật-sự-thắng">Khi nào GraphRAG thật sự thắng?<a class="anchor ms-1" href="#khi-nào-graphrag-thật-sự-thắng"><i class="fas fa-link"></i></a></h1>
+<h2 id="câu-hỏi-multi-hop">Câu hỏi multi-hop<a class="anchor ms-1" href="#câu-hỏi-multi-hop"><i class="fas fa-link"></i></a></h2>
+<p>GraphRAG phát huy tác dụng khi bằng chứng nằm rải rác trong nhiều tài liệu và phải được nối với nhau qua một hoặc nhiều thực thể trung gian.</p>
+<p>Ví dụ:</p>
+<blockquote>
+<p>Công ty nào cung cấp linh kiện cho sản phẩm bị thu hồi, và nhà máy nào đã sử dụng lô linh kiện đó?</p>
+</blockquote>
+<p>Để trả lời, hệ thống có thể phải nối:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Sản phẩm
+</span></span><span class="line"><span class="ln">2</span><span class="cl">-&gt; sự kiện thu hồi
+</span></span><span class="line"><span class="ln">3</span><span class="cl">-&gt; lô linh kiện
+</span></span><span class="line"><span class="ln">4</span><span class="cl">-&gt; nhà cung cấp
+</span></span><span class="line"><span class="ln">5</span><span class="cl">-&gt; nhà máy sử dụng
+</span></span></code></pre></div><p>Nghiên cứu HippoRAG báo cáo mức cải thiện lên đến 20% trên các bài toán hỏi đáp multi-hop. Phương pháp này thực hiện graph-guided retrieval trong một bước nhưng đạt kết quả tương đương hoặc tốt hơn một số phương pháp iterative retrieval, đồng thời được báo cáo rẻ hơn 10–30 lần và nhanh hơn 6–13 lần trong thiết lập thử nghiệm của tác giả.</p>
+<p>Một nghiên cứu hệ thống khác cũng tìm thấy cùng một hình dạng kết quả: RAG mạnh ở câu hỏi chi tiết, còn HippoRAG2 và GraphRAG dạng local thường mạnh hơn trên HotPotQA và MultiHop-RAG, nơi câu trả lời cần kết hợp nhiều bằng chứng.</p>
+<h2 id="câu-hỏi-nhìn-toàn-bộ-kho-dữ-liệu">Câu hỏi nhìn toàn bộ kho dữ liệu<a class="anchor ms-1" href="#câu-hỏi-nhìn-toàn-bộ-kho-dữ-liệu"><i class="fas fa-link"></i></a></h2>
+<p>Giả sử có 100.000 phản hồi khách hàng.</p>
+<p>Người dùng không hỏi:</p>
+<blockquote>
+<p>Khách hàng Nguyễn Văn A phàn nàn điều gì?</p>
+</blockquote>
+<p>Mà hỏi:</p>
+<blockquote>
+<p>Những nguyên nhân lớn nhất khiến khách hàng không hài lòng trong sáu tháng qua là gì, và chúng có liên hệ với nhau như thế nào?</p>
+</blockquote>
+<p>Không chunk nào chứa câu trả lời.</p>
+<p>Ngay cả khi lấy top 10, top 20 hoặc top 100 chunk, ta vẫn chỉ có một nhúm cát nhỏ được múc ra từ cả bãi biển. Những chunk được lấy thường là các đoạn có từ ngữ gần câu hỏi nhất, chứ chưa chắc đại diện cho toàn bộ phân bố chủ đề.</p>
+<p>Community-based GraphRAG giải quyết việc này bằng cách:</p>
+<ol>
+<li>Xây graph từ dữ liệu.</li>
+<li>Phát hiện các cộng đồng có liên hệ chặt chẽ.</li>
+<li>Tóm tắt từng cộng đồng.</li>
+<li>Tổng hợp các bản tóm tắt thành câu trả lời toàn cục.</li>
+</ol>
+<p>Trong nghiên cứu GraphRAG ban đầu của Microsoft, phương pháp graph giành ưu thế rõ rệt so với naïve RAG trên các câu hỏi global sense-making, đặc biệt ở tiêu chí độ bao quát và tính đa dạng của câu trả lời. Tuy nhiên, các kết quả dùng LLM-as-a-Judge cần được đọc thận trọng vì cách sắp xếp câu trả lời trước và sau có thể làm thay đổi đánh giá.</p>
+<h2 id="câu-hỏi-yêu-cầu-so-sánh-thời-gian-và-quan-hệ">Câu hỏi yêu cầu so sánh, thời gian và quan hệ<a class="anchor ms-1" href="#câu-hỏi-yêu-cầu-so-sánh-thời-gian-và-quan-hệ"><i class="fas fa-link"></i></a></h2>
+<p>GraphRAG cũng phù hợp với các câu hỏi có cấu trúc như:</p>
+<ul>
+<li>So sánh nhiều nhóm thực thể.</li>
+<li>Theo dõi sự kiện theo thời gian.</li>
+<li>Tìm nguyên nhân và hệ quả.</li>
+<li>Xác định đường đi giữa hai thực thể.</li>
+<li>Tổng hợp nhiều góc nhìn trong toàn bộ corpus.</li>
+</ul>
+<p>Trong benchmark MultiHop-RAG, GraphRAG có lợi thế rõ hơn ở các câu hỏi comparison và temporal. Nhưng global search có thể mất chi tiết, đặc biệt khi câu hỏi cần một bằng chứng nhỏ và chính xác.</p>
+<p>Graph nhìn thấy hình dạng của khu rừng.</p>
+<p>Đổi lại, nó đôi khi không đọc rõ dòng chữ nhỏ được khắc trên một chiếc lá.</p>
+<h1 id="khi-nào-vector-rag-vẫn-tốt-hơn">Khi nào Vector RAG vẫn tốt hơn?<a class="anchor ms-1" href="#khi-nào-vector-rag-vẫn-tốt-hơn"><i class="fas fa-link"></i></a></h1>
+<h2 id="tra-cứu-một-sự-kiện-cụ-thể">Tra cứu một sự kiện cụ thể<a class="anchor ms-1" href="#tra-cứu-một-sự-kiện-cụ-thể"><i class="fas fa-link"></i></a></h2>
+<p>Nếu câu hỏi có thể được trả lời bằng một đoạn văn, graph thường không mang lại nhiều giá trị.</p>
+<p>Ví dụ:</p>
+<ul>
+<li>Thời hạn bảo hành của sản phẩm A là bao lâu?</li>
+<li>Đơn hàng 12345 đang ở trạng thái nào?</li>
+<li>Mã lỗi E5 nghĩa là gì?</li>
+<li>Hợp đồng bắt đầu từ ngày nào?</li>
+<li>Cách đặt lại mật khẩu ra sao?</li>
+</ul>
+<p>GraphRAG-Bench cho thấy trên tập dữ liệu tiểu thuyết, RAG có reranker đạt accuracy 60,92 cho bài toán fact retrieval, trong khi HippoRAG2 đạt 60,14 và Microsoft GraphRAG thấp hơn đáng kể. Sự khác biệt giữa RAG và phương pháp graph tốt nhất trong nhóm này gần như không đủ để biện minh cho một kiến trúc phức tạp hơn.</p>
+<h2 id="dữ-liệu-nhỏ-và-ít-quan-hệ">Dữ liệu nhỏ và ít quan hệ<a class="anchor ms-1" href="#dữ-liệu-nhỏ-và-ít-quan-hệ"><i class="fas fa-link"></i></a></h2>
+<p>Nếu corpus chỉ có vài trăm tài liệu độc lập, việc xây graph có thể giống như xây đường cao tốc tám làn để đi từ phòng khách xuống nhà bếp.</p>
+<p>GraphRAG cần thêm nhiều thành phần:</p>
+<ul>
+<li>Entity extraction.</li>
+<li>Relation extraction.</li>
+<li>Entity resolution.</li>
+<li>Graph storage.</li>
+<li>Community detection.</li>
+<li>Graph traversal.</li>
+<li>Cơ chế cập nhật graph.</li>
+<li>Kiểm tra chất lượng node và edge.</li>
+</ul>
+<p>Mỗi thành phần là một cánh cửa mới để lỗi bước vào.</p>
+<p>Tên công ty bị tách thành hai entity.</p>
+<p>Hai người trùng tên bị gộp thành một.</p>
+<p>Quan hệ “không cung cấp” bị trích xuất thành “cung cấp”.</p>
+<p>Sự kiện cũ và mới bị nối nhầm.</p>
+<p>Graph lúc đó trông rất thông minh, đầy node, đầy edge, zoom ra lấp lánh như bản đồ các vì sao. Nhưng một vì sao nối nhầm đường có thể kéo cả câu trả lời đi sang một vũ trụ khác.</p>
+<h2 id="dữ-liệu-thay-đổi-liên-tục">Dữ liệu thay đổi liên tục<a class="anchor ms-1" href="#dữ-liệu-thay-đổi-liên-tục"><i class="fas fa-link"></i></a></h2>
+<p>Vector index tương đối dễ cập nhật:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Tài liệu mới
+</span></span><span class="line"><span class="ln">2</span><span class="cl">-&gt; chia chunk
+</span></span><span class="line"><span class="ln">3</span><span class="cl">-&gt; tạo embedding
+</span></span><span class="line"><span class="ln">4</span><span class="cl">-&gt; đưa vào index
+</span></span></code></pre></div><p>Với GraphRAG, một tài liệu mới có thể làm thay đổi:</p>
+<ul>
+<li>Danh sách thực thể.</li>
+<li>Quan hệ giữa các thực thể.</li>
+<li>Cộng đồng trong graph.</li>
+<li>Tóm tắt của cộng đồng.</li>
+<li>Thứ hạng của node.</li>
+<li>Đường đi dùng khi retrieval.</li>
+</ul>
+<p>Do đó, GraphRAG không chỉ là câu chuyện “thêm Neo4j vào hệ thống”.</p>
+<p>Nó là một bài toán quản trị tri thức đang sống, mà tri thức sống thì có thói quen lớn lên, đổi tên, mâu thuẫn với chính nó và thỉnh thoảng làm gãy pipeline lúc ba giờ sáng.</p>
+<h1 id="cái-giá-thật-sự-của-graphrag">Cái giá thật sự của GraphRAG<a class="anchor ms-1" href="#cái-giá-thật-sự-của-graphrag"><i class="fas fa-link"></i></a></h1>
+<h2 id="chi-phí-xây-graph">Chi phí xây graph<a class="anchor ms-1" href="#chi-phí-xây-graph"><i class="fas fa-link"></i></a></h2>
+<p>Vector RAG chỉ cần embedding model đọc các chunk.</p>
+<p>GraphRAG thường cần LLM đọc tài liệu để trích xuất entity, relation, claim và mô tả. Nếu corpus lớn, số lần gọi model có thể tăng rất nhanh.</p>
+<p>Chất lượng graph cũng phụ thuộc mạnh vào model được dùng để xây graph. Trong một thí nghiệm trên MultiHop-RAG, graph được xây bằng GPT-4o cho accuracy tổng thể 75,08, cao hơn mức 71,17 khi dùng GPT-4o-mini và 65,77 của RAG không xây graph. Nhưng model xây graph mạnh hơn đồng nghĩa với chi phí indexing cao hơn.</p>
+<p>Graph không tự mọc lên từ đất.</p>
+<p>Có một đội quân GPU phải đọc tài liệu, bóc từng cái tên, đoán từng mối quan hệ rồi đổ chúng vào một cấu trúc mà ta hy vọng là gần với sự thật.</p>
+<h2 id="context-có-thể-phình-ra-khủng-khiếp">Context có thể phình ra khủng khiếp<a class="anchor ms-1" href="#context-có-thể-phình-ra-khủng-khiếp"><i class="fas fa-link"></i></a></h2>
+<p>Một lầm tưởng phổ biến là graph giúp context luôn gọn.</p>
+<p>Graph có thể giúp tìm quan hệ tốt hơn, nhưng nó cũng có thể kéo theo:</p>
+<ul>
+<li>Node.</li>
+<li>Edge.</li>
+<li>Mô tả entity.</li>
+<li>Community summary.</li>
+<li>Đoạn văn gốc.</li>
+<li>Đường dẫn nhiều hop.</li>
+<li>Thông tin lân cận.</li>
+</ul>
+<p>GraphRAG-Bench ghi nhận Vector RAG chỉ dùng khoảng 879–954 token trung bình trong thiết lập thử nghiệm, trong khi một số biến thể Microsoft GraphRAG và LightRAG tạo context lớn hơn hàng chục đến hàng trăm lần. HippoRAG2 giữ context gần 1.000 token, cho thấy hiệu quả phụ thuộc rất lớn vào cách triển khai chứ không chỉ vào việc “có graph hay không”.</p>
+<p>Nhiều node hơn không đồng nghĩa với nhiều sự thật hơn.</p>
+<p>Đôi khi nó chỉ có nghĩa là LLM phải bơi qua một bể chữ sâu hơn.</p>
+<h2 id="graph-sai-thì-retrieval-cũng-sai">Graph sai thì retrieval cũng sai<a class="anchor ms-1" href="#graph-sai-thì-retrieval-cũng-sai"><i class="fas fa-link"></i></a></h2>
+<p>Trong nghiên cứu so sánh RAG và GraphRAG, knowledge graph được xây tự động chỉ bao phủ khoảng 65% entity cần thiết để trả lời trên một số benchmark. Những dữ kiện không được trích xuất vào graph gần như biến mất khỏi con đường retrieval dựa hoàn toàn vào graph.</p>
+<p>Đây là lý do graph-only thường nguy hiểm.</p>
+<p>Nếu vector search bỏ sót một đoạn, ta có thể tăng recall, dùng hybrid search hoặc reranker.</p>
+<p>Nếu graph không hề chứa entity cần thiết, traversal có chăm chỉ đến đâu cũng chỉ chạy vòng quanh trong một bản đồ thiếu mất thành phố.</p>
+<h1 id="giải-pháp-thực-tế-đừng-chọn-tôn-giáo-hãy-xây-router">Giải pháp thực tế: đừng chọn tôn giáo, hãy xây router<a class="anchor ms-1" href="#giải-pháp-thực-tế-đừng-chọn-tôn-giáo-hãy-xây-router"><i class="fas fa-link"></i></a></h1>
+<p>Kết luận hữu ích nhất không phải:</p>
+<blockquote>
+<p>Vector RAG tốt hơn.</p>
+</blockquote>
+<p>Cũng không phải:</p>
+<blockquote>
+<p>GraphRAG tốt hơn.</p>
+</blockquote>
+<p>Mà là:</p>
+<blockquote>
+<p>Mỗi câu hỏi cần một cơ chế retrieval khác nhau.</p>
+</blockquote>
+<p>Một kiến trúc thực tế có thể gồm ba đường đi.</p>
+<h2 id="đường-1-vector-rag">Đường 1: Vector RAG<a class="anchor ms-1" href="#đường-1-vector-rag"><i class="fas fa-link"></i></a></h2>
+<p>Dành cho:</p>
+<ul>
+<li>Tra cứu fact.</li>
+<li>Tìm đoạn văn cụ thể.</li>
+<li>Câu hỏi single-hop.</li>
+<li>Câu hỏi cần latency thấp.</li>
+<li>Dữ liệu mới cập nhật liên tục.</li>
+</ul>
+<h2 id="đường-2-graphrag">Đường 2: GraphRAG<a class="anchor ms-1" href="#đường-2-graphrag"><i class="fas fa-link"></i></a></h2>
+<p>Dành cho:</p>
+<ul>
+<li>Multi-hop reasoning.</li>
+<li>Quan hệ giữa nhiều thực thể.</li>
+<li>Câu hỏi nguyên nhân – hệ quả.</li>
+<li>Tổng hợp theo dòng thời gian.</li>
+<li>Global sense-making.</li>
+<li>Khám phá mẫu trên toàn corpus.</li>
+</ul>
+<h2 id="đường-3-hybrid-retrieval">Đường 3: Hybrid retrieval<a class="anchor ms-1" href="#đường-3-hybrid-retrieval"><i class="fas fa-link"></i></a></h2>
+<p>Dành cho những câu hỏi đứng giữa hai thế giới.</p>
+<p>Hệ thống có thể:</p>
+<ol>
+<li>Dùng vector search để lấy các chunk khởi đầu.</li>
+<li>Trích xuất entity từ những chunk này.</li>
+<li>Mở rộng sang các node lân cận trong graph.</li>
+<li>Lấy lại đoạn văn gốc gắn với các node.</li>
+<li>Gộp và rerank toàn bộ bằng chứng.</li>
+<li>Đưa context cuối cùng vào LLM.</li>
+</ol>
+<p>Pseudo-code đơn giản:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="k">def</span> <span class="nf">retrieve</span><span class="p">(</span><span class="n">query</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">    <span class="n">query_type</span> <span class="o">=</span> <span class="n">classify_query</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">    <span class="k">if</span> <span class="n">query_type</span> <span class="o">==</span> <span class="s2">&#34;fact&#34;</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">        <span class="k">return</span> <span class="n">vector_search</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">    <span class="k">if</span> <span class="n">query_type</span> <span class="o">==</span> <span class="s2">&#34;multi_hop&#34;</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">        <span class="k">return</span> <span class="n">graph_search</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">
+</span></span><span class="line"><span class="ln">10</span><span class="cl">    <span class="n">vector_docs</span> <span class="o">=</span> <span class="n">vector_search</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl">    <span class="n">graph_docs</span> <span class="o">=</span> <span class="n">graph_expand</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">vector_docs</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl">
+</span></span><span class="line"><span class="ln">13</span><span class="cl">    <span class="k">return</span> <span class="n">rerank</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">vector_docs</span> <span class="o">+</span> <span class="n">graph_docs</span><span class="p">)</span>
+</span></span></code></pre></div><p>Trong thực tế, query router có thể dựa trên:</p>
+<ul>
+<li>Bộ rule đơn giản.</li>
+<li>Một model phân loại nhỏ.</li>
+<li>LLM.</li>
+<li>Điểm phức tạp của câu hỏi.</li>
+<li>Số entity xuất hiện.</li>
+<li>Các từ như “vì sao”, “liên quan”, “so sánh”, “qua các năm”.</li>
+<li>Lịch sử đánh giá trên dữ liệu production.</li>
+</ul>
+<p>EA-GraphRAG, một nghiên cứu năm 2026, cũng đi theo hướng này: câu hỏi đơn giản được chuyển sang dense RAG, câu hỏi phức tạp được chuyển sang graph retrieval, còn vùng không chắc chắn dùng cơ chế fusion. Theo nhóm tác giả, việc áp dụng GraphRAG cứng nhắc cho mọi truy vấn là nguyên nhân khiến hệ thống vừa chậm vừa có thể kém chính xác hơn RAG thường.</p>
+<p>Một nghiên cứu khác về các kiến trúc RAG production cũng cảnh báo rằng retrieval rộng hơn không tự động tạo ra câu trả lời tốt hơn. Context engineering phù hợp có thể giảm 19–53% token trong các kịch bản GraphRAG và Agentic RAG được thử nghiệm.</p>
+<h1 id="ví-dụ-thiết-kế-cho-hệ-thống-doanh-nghiệp">Ví dụ thiết kế cho hệ thống doanh nghiệp<a class="anchor ms-1" href="#ví-dụ-thiết-kế-cho-hệ-thống-doanh-nghiệp"><i class="fas fa-link"></i></a></h1>
+<p>Giả sử ta xây một trợ lý AI cho kho dữ liệu vận hành.</p>
+<p>Người dùng có thể hỏi bốn loại câu.</p>
+<h2 id="loại-1-tìm-một-dữ-kiện">Loại 1: Tìm một dữ kiện<a class="anchor ms-1" href="#loại-1-tìm-một-dữ-kiện"><i class="fas fa-link"></i></a></h2>
+<blockquote>
+<p>Sự cố INC-20260721 được đóng lúc mấy giờ?</p>
+</blockquote>
+<p>Dùng keyword search hoặc Vector RAG.</p>
+<p>Graph không cần thức dậy.</p>
+<h2 id="loại-2-tìm-tài-liệu-tương-tự">Loại 2: Tìm tài liệu tương tự<a class="anchor ms-1" href="#loại-2-tìm-tài-liệu-tương-tự"><i class="fas fa-link"></i></a></h2>
+<blockquote>
+<p>Có sự cố nào trước đây giống lỗi timeout kết nối cơ sở dữ liệu này không?</p>
+</blockquote>
+<p>Dùng hybrid lexical + vector search, sau đó rerank.</p>
+<h2 id="loại-3-nối-nhiều-sự-kiện">Loại 3: Nối nhiều sự kiện<a class="anchor ms-1" href="#loại-3-nối-nhiều-sự-kiện"><i class="fas fa-link"></i></a></h2>
+<blockquote>
+<p>Những service nào bị ảnh hưởng bởi phiên bản thư viện X, ai triển khai và sự cố bắt đầu sau lần release nào?</p>
+</blockquote>
+<p>Dùng graph expansion từ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">thư viện
+</span></span><span class="line"><span class="ln">2</span><span class="cl">-&gt; service
+</span></span><span class="line"><span class="ln">3</span><span class="cl">-&gt; phiên bản triển khai
+</span></span><span class="line"><span class="ln">4</span><span class="cl">-&gt; release
+</span></span><span class="line"><span class="ln">5</span><span class="cl">-&gt; người thực hiện
+</span></span><span class="line"><span class="ln">6</span><span class="cl">-&gt; incident
+</span></span></code></pre></div><h2 id="loại-4-nhìn-toàn-cục">Loại 4: Nhìn toàn cục<a class="anchor ms-1" href="#loại-4-nhìn-toàn-cục"><i class="fas fa-link"></i></a></h2>
+<blockquote>
+<p>Trong sáu tháng qua, những nhóm nguyên nhân nào thường dẫn đến sự cố nghiêm trọng và chúng liên quan đến hệ thống nào?</p>
+</blockquote>
+<p>Dùng community retrieval hoặc pipeline tổng hợp phân cấp.</p>
+<p>Một hệ thống tốt không ép cả bốn câu hỏi đi qua cùng một cái máy.</p>
+<p>Nó giống một bệnh viện: đau đầu nhẹ không cần gọi cả phòng phẫu thuật, nhưng tai nạn đa chấn thương cũng không thể xử lý bằng một viên thuốc cảm.</p>
+<h1 id="nên-đánh-giá-graphrag-như-thế-nào">Nên đánh giá GraphRAG như thế nào?<a class="anchor ms-1" href="#nên-đánh-giá-graphrag-như-thế-nào"><i class="fas fa-link"></i></a></h1>
+<p>Đừng chỉ lấy 20 câu hỏi đẹp rồi gọi LLM chấm xem câu trả lời nào “hay hơn”.</p>
+<p>Hãy chia evaluation dataset theo hình dạng truy vấn:</p>
+<ul>
+<li>Single-hop factual.</li>
+<li>Multi-hop relational.</li>
+<li>Comparison.</li>
+<li>Temporal.</li>
+<li>Global summarization.</li>
+<li>Unanswerable.</li>
+<li>Dữ liệu mới cập nhật.</li>
+<li>Câu hỏi có entity mơ hồ.</li>
+</ul>
+<p>Sau đó đo riêng:</p>
+<ul>
+<li>Retrieval recall.</li>
+<li>Evidence coverage.</li>
+<li>Answer accuracy.</li>
+<li>Faithfulness.</li>
+<li>Tỷ lệ trả lời sai khi thiếu bằng chứng.</li>
+<li>Latency p50 và p95.</li>
+<li>Token đầu vào.</li>
+<li>Chi phí indexing.</li>
+<li>Chi phí cập nhật.</li>
+<li>Tỷ lệ entity và relation được trích xuất đúng.</li>
+</ul>
+<p>Đặc biệt phải có nhóm câu hỏi không đủ dữ liệu.</p>
+<p>Một hệ thống retrieval lấy được rất nhiều thứ chưa chắc là hệ thống tốt. Đôi khi nó chỉ đang gom đủ rác để LLM tự chế ra một câu chuyện nghe hợp lý.</p>
+<p>Nghiên cứu hệ thống về RAG và GraphRAG phát hiện rằng một số phương pháp iterative retrieval cải thiện kết quả trên multi-hop nhưng lại giảm mạnh khả năng từ chối ở các câu hỏi không có câu trả lời. Retrieval càng chạy hăng, mô hình đôi khi càng cảm thấy mình phải nói một điều gì đó.</p>
+<h1 id="tổng-kết">Tổng kết<a class="anchor ms-1" href="#tổng-kết"><i class="fas fa-link"></i></a></h1>
+<p>Vector RAG tìm những đoạn văn giống câu hỏi.</p>
+<p>GraphRAG tìm những mối quan hệ cần thiết để tạo thành câu trả lời.</p>
+<p>Hai việc này không giống nhau.</p>
+<p>GraphRAG có thể thắng rõ rệt khi câu hỏi cần nối nhiều tài liệu, theo dõi quan hệ giữa các thực thể, phân tích theo thời gian hoặc nhìn toàn bộ corpus. Nhưng với câu hỏi factual đơn giản, Vector RAG thường chính xác, nhanh, rẻ và dễ vận hành hơn.</p>
+<p>Do đó, kiến trúc hợp lý không phải là vẽ một knowledge graph thật lớn rồi bắt mọi câu hỏi chui qua đó.</p>
+<p>Kiến trúc hợp lý là bắt đầu bằng RAG đơn giản, đo nơi nó thất bại, phân loại hình dạng của những thất bại ấy, sau đó chỉ đưa graph vào đúng chỗ mà quan hệ thực sự tạo ra giá trị.</p>
+<p>Graph không phải phép thuật.</p>
+<p>Nó chỉ là một tấm bản đồ.</p>
+<p>Mà tấm bản đồ dù đẹp đến đâu cũng vô dụng nếu người dùng chỉ đang hỏi chiếc chìa khóa nằm trong ngăn kéo nào.</p>
+<p>Cảm ơn các bạn đã quan tâm và theo dõi bài viết, hẹn gặp lại ở các bài viết tiếp theo.</p>
+<h1 id="tham-khảo">Tham khảo<a class="anchor ms-1" href="#tham-khảo"><i class="fas fa-link"></i></a></h1>
+<ul>
+<li><a href="https://venturebeat.com/orchestration/stop-graphing-everything-when-graphrag-actually-beats-vector-rag" target="_blank" rel="noopener noreferrer">Stop graphing everything: When GraphRAG actually beats vector RAG</a></li>
+<li><a href="https://keras2kubernetes.substack.com/p/classic-rag-vs-graph-enhanced-rag" target="_blank" rel="noopener noreferrer">Classic RAG vs Graph-enhanced RAG</a></li>
+<li><a href="https://arxiv.org/abs/2502.11371" target="_blank" rel="noopener noreferrer">RAG vs. GraphRAG: A Systematic Evaluation and Key Insights</a></li>
+<li><a href="https://arxiv.org/abs/2506.05690" target="_blank" rel="noopener noreferrer">When to Use Graphs in RAG: A Comprehensive Analysis for Graph Retrieval-Augmented Generation</a></li>
+<li><a href="https://arxiv.org/abs/2405.14831" target="_blank" rel="noopener noreferrer">HippoRAG: Neurobiologically Inspired Long-Term Memory for Large Language Models</a></li>
+<li><a href="https://arxiv.org/abs/2602.03578" target="_blank" rel="noopener noreferrer">Use Graph When It Needs: Efficiently and Adaptively Integrating Retrieval-Augmented Generation with Graphs</a></li>
+<li><a href="https://arxiv.org/abs/2606.25656" target="_blank" rel="noopener noreferrer">Is GraphRAG Needed? From Basic RAG to Graph-/Agentic Solutions with Context Optimization</a></li>
+</ul>
+</div></div>
+  <div class="card-footer"><div class="post-navs d-flex justify-content-evenly"><div class="post-nav post-prev">
+    <i class="fas fa-fw fa-chevron-left"></i>
+    <a href="https://www.phamduytung.com/blog/2026-07-29-multimodal-search/">Pailitao-MMSearch: Khi mỗi sản phẩm trở thành một chuỗi token trong bộ não tìm kiếm của Taobao
+</a>
+  </div></div></div>
+</article><div class="card component row post-comments" id="post-comments">
+  <div class="card-header">
+    <h2 class="card-title">Bình luận</h2>
+  </div>
+  <div class="card-body"><script src="https://utteranc.es/client.js"
+  repo="AlexBlack2202/utterances"
+  issue-term="pathname"
+  label="comment"
+  theme="github-dark"
+  crossorigin="anonymous"
+  async>
+</script></div>
+</div></div>
+</div><aside class="col-lg-3 col-md-4 sidebar d-flex">
+  <div class="container d-flex flex-column">
+    
+    <a href="https://www.buymeacoffee.com/alexblack28"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=🍎&slug=alexblack28&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" /></a><div class="post-toc row mb-4 card component" id="postTOC">
+  <div class="card-header">
+    <h2 class="card-title">Mục lục</h2>
+  </div>
+  <div class="card-body">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#đặt-vấn-đề">Đặt vấn đề</a></li>
+    <li><a href="#vector-rag-thực-sự-đang-làm-gì">Vector RAG thực sự đang làm gì?</a></li>
+    <li><a href="#khi-các-mảnh-giấy-cần-biết-nhau">Khi các mảnh giấy cần biết nhau</a></li>
+    <li><a href="#graphrag-thay-đổi-điều-gì">GraphRAG thay đổi điều gì?</a></li>
+    <li><a href="#khi-nào-graphrag-thật-sự-thắng">Khi nào GraphRAG thật sự thắng?</a>
+      <ul>
+        <li><a href="#câu-hỏi-multi-hop">Câu hỏi multi-hop</a></li>
+        <li><a href="#câu-hỏi-nhìn-toàn-bộ-kho-dữ-liệu">Câu hỏi nhìn toàn bộ kho dữ liệu</a></li>
+        <li><a href="#câu-hỏi-yêu-cầu-so-sánh-thời-gian-và-quan-hệ">Câu hỏi yêu cầu so sánh, thời gian và quan hệ</a></li>
+      </ul>
+    </li>
+    <li><a href="#khi-nào-vector-rag-vẫn-tốt-hơn">Khi nào Vector RAG vẫn tốt hơn?</a>
+      <ul>
+        <li><a href="#tra-cứu-một-sự-kiện-cụ-thể">Tra cứu một sự kiện cụ thể</a></li>
+        <li><a href="#dữ-liệu-nhỏ-và-ít-quan-hệ">Dữ liệu nhỏ và ít quan hệ</a></li>
+        <li><a href="#dữ-liệu-thay-đổi-liên-tục">Dữ liệu thay đổi liên tục</a></li>
+      </ul>
+    </li>
+    <li><a href="#cái-giá-thật-sự-của-graphrag">Cái giá thật sự của GraphRAG</a>
+      <ul>
+        <li><a href="#chi-phí-xây-graph">Chi phí xây graph</a></li>
+        <li><a href="#context-có-thể-phình-ra-khủng-khiếp">Context có thể phình ra khủng khiếp</a></li>
+        <li><a href="#graph-sai-thì-retrieval-cũng-sai">Graph sai thì retrieval cũng sai</a></li>
+      </ul>
+    </li>
+    <li><a href="#giải-pháp-thực-tế-đừng-chọn-tôn-giáo-hãy-xây-router">Giải pháp thực tế: đừng chọn tôn giáo, hãy xây router</a>
+      <ul>
+        <li><a href="#đường-1-vector-rag">Đường 1: Vector RAG</a></li>
+        <li><a href="#đường-2-graphrag">Đường 2: GraphRAG</a></li>
+        <li><a href="#đường-3-hybrid-retrieval">Đường 3: Hybrid retrieval</a></li>
+      </ul>
+    </li>
+    <li><a href="#ví-dụ-thiết-kế-cho-hệ-thống-doanh-nghiệp">Ví dụ thiết kế cho hệ thống doanh nghiệp</a>
+      <ul>
+        <li><a href="#loại-1-tìm-một-dữ-kiện">Loại 1: Tìm một dữ kiện</a></li>
+        <li><a href="#loại-2-tìm-tài-liệu-tương-tự">Loại 2: Tìm tài liệu tương tự</a></li>
+        <li><a href="#loại-3-nối-nhiều-sự-kiện">Loại 3: Nối nhiều sự kiện</a></li>
+        <li><a href="#loại-4-nhìn-toàn-cục">Loại 4: Nhìn toàn cục</a></li>
+      </ul>
+    </li>
+    <li><a href="#nên-đánh-giá-graphrag-như-thế-nào">Nên đánh giá GraphRAG như thế nào?</a></li>
+    <li><a href="#tổng-kết">Tổng kết</a></li>
+    <li><a href="#tham-khảo">Tham khảo</a></li>
+  </ul>
+</nav>
+  </div>
+</div><section class="recent-posts row card component">
+  <div class="card-header">
+    <h2 class="card-title">Bài gần đây</h2>
+  </div>
+  <div class="card-body">
+    <ul class="post-list"><li>
+        <a href="https://www.phamduytung.com/blog/2026-08-03-graphrag-vs-vector-rag/">Đừng biến mọi thứ thành đồ thị: Khi nào GraphRAG thật sự thắng Vector RAG?
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-07-29-multimodal-search/">Pailitao-MMSearch: Khi mỗi sản phẩm trở thành một chuỗi token trong bộ não tìm kiếm của Taobao
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-07-28-grab-apache-iceberg-migration/">Grab chuyển Data Lake sang Apache Iceberg: Bài học không nằm ở việc đổi định dạng file
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-07-28-kakeya-hong-wang-fields-medal/">Bài toán Kakeya: cây kim, căn phòng vô hình và Huy chương Fields của Vương Hồng
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-07-27-enterprise-ai-vendor-lock-in/">Doanh nghiệp giao hết bộ não cho một AI có thể không sống sót
+</a>
+      </li></ul>
+  </div>
+</section><section class="series-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/series">series</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/series/kh%C3%B3a-h%E1%BB%8Dc-python-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học Python Căn Bản">
+            Khóa Học Python Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="https://www.phamduytung.com/series/kh%C3%B3a-h%E1%BB%8Dc-c&#43;&#43;-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học C&#43;&#43; Căn Bản">
+            Khóa Học C&#43;&#43; Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="https://www.phamduytung.com/series/machine-learning-dataset/" class="badge rounded post-taxonomy" title="Machine Learning Dataset">
+            Machine Learning Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a><a href="https://www.phamduytung.com/series/ch%E1%BB%A9ng-kho%C3%A1n-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Chứng Khoán Căn Bản">
+            Chứng Khoán Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">1</span></a></div>
+      </div>
+    </section><section class="tools-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/tools">tools</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/tools/tool-random/" class="badge rounded post-taxonomy" title="Tool Random">
+            Tool Random<span class="badge badge-sm text-white bg-accent ms-1">3</span></a></div>
+      </div>
+    </section><section class="categories-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/categories">categories</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/categories/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="https://www.phamduytung.com/categories/c&#43;&#43;/" class="badge rounded post-taxonomy" title="C&#43;&#43;">
+            C&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="https://www.phamduytung.com/categories/dataset/" class="badge rounded post-taxonomy" title="Dataset">
+            Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a></div>
+      </div>
+    </section><section class="tags-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/tags">tags</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/tags/machine-learning/" class="badge rounded post-taxonomy" title="Machine Learning">
+            Machine Learning<span class="badge badge-sm text-white bg-accent ms-1">26</span></a><a href="https://www.phamduytung.com/tags/deep-learning/" class="badge rounded post-taxonomy" title="Deep Learning">
+            Deep Learning<span class="badge badge-sm text-white bg-accent ms-1">23</span></a><a href="https://www.phamduytung.com/tags/computer-vision/" class="badge rounded post-taxonomy" title="Computer Vision">
+            Computer Vision<span class="badge badge-sm text-white bg-accent ms-1">16</span></a><a href="https://www.phamduytung.com/tags/llm/" class="badge rounded post-taxonomy" title="Llm">
+            Llm<span class="badge badge-sm text-white bg-accent ms-1">15</span></a><a href="https://www.phamduytung.com/tags/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">14</span></a><a href="https://www.phamduytung.com/tags/ai-agent/" class="badge rounded post-taxonomy" title="AI Agent">
+            AI Agent<span class="badge badge-sm text-white bg-accent ms-1">7</span></a><a href="https://www.phamduytung.com/tags/recommendation-system/" class="badge rounded post-taxonomy" title="Recommendation System">
+            Recommendation System<span class="badge badge-sm text-white bg-accent ms-1">7</span></a><a href="https://www.phamduytung.com/tags/system-design/" class="badge rounded post-taxonomy" title="System Design">
+            System Design<span class="badge badge-sm text-white bg-accent ms-1">7</span></a><a href="https://www.phamduytung.com/tags/time-series/" class="badge rounded post-taxonomy" title="Time Series">
+            Time Series<span class="badge badge-sm text-white bg-accent ms-1">6</span></a><a href="https://www.phamduytung.com/tags/uber-engineering/" class="badge rounded post-taxonomy" title="Uber Engineering">
+            Uber Engineering<span class="badge badge-sm text-white bg-accent ms-1">6</span></a></div>
+      </div>
+    </section>
+    
+  </div>
+</aside>
+</div>
+    </main><footer class="footer mt-auto py-3 text-center container"><ul class="nav justify-content-between footer-memu mb-3"><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Community
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-facebook"></i>Facebook Group
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://github.com/AlexBlack2202/alexblack2202.github.io" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-github"></i>GitHub
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/contact/"><i class="fas fa-fw fa-info-circle"></i>Contact Us
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/faq/"><i class="fas fa-fw fa-question-circle"></i>Câu hỏi thường gặp
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Docs
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="/team_of_services" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-users"></i>Điều khoản sử dụng
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/privacy" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-lock"></i>Chính sách bảo mật
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Features
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="/utils/gen_paswords/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-key"></i>Tạo password ngẫu nhiên
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Liên kết khác
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">Netlify
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">facebook
+</a>
+        </li></ul></li></ul>
+<div class="copyright mb-2">
+  Copyright © 2016-2026 Phạm Duy Tùng. All Rights Reserved.
+</div>
+<div class="powered-by mb-2">
+  Website chia sẻ kiến thức của Phạm Duy Tùng và Đặng Thị Hằng. Vui lòng liên hệ email alexblack2202@gmail.com nếu bạn có thông tin cần trao đổi.
+</div></footer>
+<script src="https://www.phamduytung.com/js/main.111d51a8c754010f8399ca010e552d803e2d5170b361f8886ad04ec6c21ca551.js" integrity="sha256-ER1RqMdUAQ&#43;DmcoBDlUtgD4tUXCzYfiIatBOxsIcpVE=" crossorigin="anonymous" defer></script><script src="https://www.phamduytung.com/js/icons.min.cb4c9958dbc49e29ac644e168e82db2d0de9a741a15751cc5bf2b0af21eb2845.js" integrity="sha256-y0yZWNvEnimsZE4WjoLbLQ3pp0GhV1HMW/KwryHrKEU=" crossorigin="anonymous" defer></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('https:\/\/www.phamduytung.com\/service-worker.js').then(function(reg) {
+      console.log('Successfully registered service worker', reg);
+    }).catch(function(err) {
+      console.warn('Error whilst registering service worker', err);
+    });
+  });
+}
+</script><script src="https://www.phamduytung.com/js/viewer.min.28bcf5233e406dae6715f46c8b9e8ca7c6cbf347e8678f5a2bebe5369c3270bb.js" integrity="sha256-KLz1Iz5Aba5nFfRsi56Mp8bL80foZ49aK&#43;vlNpwycLs=" crossorigin="anonymous" defer></script><script defer src="https://www.phamduytung.com/js/katex.min.8582b9feadf92a2a977ed303b97d7713cf2754ccf2b4eb60d8be7453a21042c2.js" integrity="sha256-hYK5/q35KiqXftMDuX13E88nVMzytOtg2L50U6IQQsI=" crossorigin="anonymous"></script>
+
+<script  data-ad-client="ca-pub-4644989745435991"  async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4644989745435991"
+     crossorigin="anonymous"></script><script data-cfasync="false" type="text/javascript" data-adel="atag" src="//acscdn.com/script/atg.js" czid="eul3gyjdmm"></script>
+  </body>
+</html>
