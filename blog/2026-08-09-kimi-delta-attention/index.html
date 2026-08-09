@@ -1,0 +1,1042 @@
+<!doctype html><html lang="vi" data-palette="brown"
+   data-mode="light">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Kimi Delta Attention: Khi AI học cách nhớ như một cái bảng trắng thay vì ôm cả nhà kho - Phạm Duy Tùng Machine Learning Blog</title>
+    <meta name="a.validate.02" content="1QZXZ8oi7g57H-GxBrBPkTYBydwii-Ic9iJu" /><link rel="apple-touch-icon" href="https://www.phamduytung.com/images/icons/icon-180x180.png" sizes="180x180">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/icon-32x32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/icon-16x16.png" sizes="16x16" type="image/png">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/favicon.ico">
+<link rel="manifest" href="https://www.phamduytung.com/manifest.json">
+<meta name="keywords" content="" />
+<meta name="description" content="Kimi Delta Attention (KDA) là cơ chế linear attention đứng sau Kimi Linear và Kimi K3. Thay vì giữ toàn bộ KV cache ngày càng phình ra theo context, KDA nén quá khứ vào một trạng thái cố định, liên tục đọc, sửa, quên và ghi lại bộ nhớ bằng delta rule." /><meta name="robots" content="index, follow" />
+	<meta itemprop="name" content="Kimi Delta Attention: Khi AI học cách nhớ như một cái bảng trắng thay vì ôm cả nhà kho">
+	<meta itemprop="description" content="Kimi Delta Attention (KDA) là cơ chế linear attention đứng sau Kimi Linear và Kimi K3. Thay vì giữ toàn bộ KV cache ngày càng phình ra theo context, KDA nén quá khứ vào một trạng thái cố định, liên tục đọc, sửa, quên và ghi lại bộ nhớ bằng delta rule.">
+	<meta itemprop="datePublished" content="2026-08-09T00:00:00+07:00">
+	<meta itemprop="dateModified" content="2026-08-09T00:00:00+07:00">
+	<meta itemprop="wordCount" content="4014">
+	<meta itemprop="image" content="https://www.phamduytung.com/images/posts/2026-08-09-kimi-delta-attention/cover-pearl-glass.png">
+	<meta itemprop="keywords" content="Kimi Delta Attention,Linear Attention,LLM,Kimi K3,Transformer"><meta property="og:url" content="https://www.phamduytung.com/blog/2026-08-09-kimi-delta-attention/">
+	<meta property="og:site_name" content="Phạm Duy Tùng Machine Learning Blog">
+	<meta property="og:title" content="Kimi Delta Attention: Khi AI học cách nhớ như một cái bảng trắng thay vì ôm cả nhà kho">
+	<meta property="og:description" content="Kimi Delta Attention (KDA) là cơ chế linear attention đứng sau Kimi Linear và Kimi K3. Thay vì giữ toàn bộ KV cache ngày càng phình ra theo context, KDA nén quá khứ vào một trạng thái cố định, liên tục đọc, sửa, quên và ghi lại bộ nhớ bằng delta rule.">
+	<meta property="og:locale" content="vi_VN">
+	<meta property="og:type" content="article">
+		<meta property="article:section" content="blog">
+		<meta property="article:published_time" content="2026-08-09T00:00:00+07:00">
+		<meta property="article:modified_time" content="2026-08-09T00:00:00+07:00">
+		<meta property="article:tag" content="Kimi Delta Attention">
+		<meta property="article:tag" content="Linear Attention">
+		<meta property="article:tag" content="LLM">
+		<meta property="article:tag" content="Kimi K3">
+		<meta property="article:tag" content="Transformer">
+		<meta property="og:image" content="https://www.phamduytung.com/images/posts/2026-08-09-kimi-delta-attention/cover-pearl-glass.png">
+
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:image" content="https://www.phamduytung.com/images/posts/2026-08-09-kimi-delta-attention/cover-pearl-glass.png">
+	<meta name="twitter:title" content="Kimi Delta Attention: Khi AI học cách nhớ như một cái bảng trắng thay vì ôm cả nhà kho">
+	<meta name="twitter:description" content="Kimi Delta Attention (KDA) là cơ chế linear attention đứng sau Kimi Linear và Kimi K3. Thay vì giữ toàn bộ KV cache ngày càng phình ra theo context, KDA nén quá khứ vào một trạng thái cố định, liên tục đọc, sửa, quên và ghi lại bộ nhớ bằng delta rule.">
+<link rel="stylesheet" href="https://www.phamduytung.com/css/main.min.b0c1cbac9b623898b99bc3fccc2a09b35f812c6bd39f419020c06b9be74cd77d.css" integrity="sha256-sMHLrJtiOJi5m8P8zCoJs1&#43;BLGvTn0GQIMBrm&#43;dM130=" crossorigin="anonymous"><link rel="stylesheet" href="https://www.phamduytung.com/css/katex.min.4d6aa053ca8a5675016fa2c9c48ee5359bfaafb8295184458af9d64abce84c47.css" integrity="sha256-TWqgU8qKVnUBb6LJxI7lNZv6r7gpUYRFivnWSrzoTEc=" crossorigin="anonymous">
+<link rel="stylesheet" href="https://www.phamduytung.com/css/viewer.min.e882eb3a023412b73bb741b4604a1222a9f13aa7783c828d26d066ab8642bd51.css" integrity="sha256-6ILrOgI0Erc7t0G0YEoSIqnxOqd4PIKNJtBmq4ZCvVE=" crossorigin="anonymous"><link rel="canonical" href="https://www.phamduytung.com/blog/2026-08-09-kimi-delta-attention/">
+<meta name="theme-color" content="#f7f5ff"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Phạm Duy Tùng"},"dateModified":"2026-08-09T00:00:00+07:00","datePublished":"2026-08-09T00:00:00+07:00","description":"Kimi Delta Attention (KDA) là cơ chế linear attention đứng sau Kimi Linear và Kimi K3. Thay vì giữ toàn bộ KV cache ngày càng phình ra theo context, KDA nén quá khứ vào một trạng thái cố định, liên tục đọc, sửa, quên và ghi lại bộ nhớ bằng delta rule.","headline":"Kimi Delta Attention: Khi AI học cách nhớ như một cái bảng trắng thay vì ôm cả nhà kho","image":["https://www.phamduytung.com/images/posts/2026-08-09-kimi-delta-attention/cover-pearl-glass.png"],"inLanguage":"vi","keywords":"Kimi Delta Attention, Linear Attention, LLM, Kimi K3, Transformer","mainEntityOfPage":{"@id":"https://www.phamduytung.com/blog/2026-08-09-kimi-delta-attention/","@type":"WebPage"},"publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://www.phamduytung.com/images/logo.png"},"name":"Phạm Duy Tùng Machine Learning Blog"},"url":"https://www.phamduytung.com/blog/2026-08-09-kimi-delta-attention/"}</script></head>
+  <body><script>const items=["mode","palette"];items.forEach(function(e){const t=localStorage.getItem("hbs-"+e);t&&document.body.parentElement.setAttribute("data-"+e,t)})</script><header><nav class="navbar top-app-bar top-app-bar-expand-lg fixed-top">
+  <div class="container pearl-navbar__inner">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Mở menu">
+      <i class="fas fa-bars"></i>
+    </button>
+
+    <a class="navbar-brand pearl-brand flex-grow-1 flex-lg-grow-0" href="https://www.phamduytung.com/">
+      <span class="pearl-brand__mark" aria-hidden="true">PT</span>
+      <span class="pearl-brand__copy">
+        <strong>Phạm Duy Tùng</strong>
+        <small>AI · DATA · SYSTEMS</small>
+      </span>
+    </a>
+
+    <div class="offcanvas offcanvas-bottom surface" tabindex="-1" id="offcanvasSocialShare" aria-labelledby="offcanvasSocialShare">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Share</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body">
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Twitter Share Button"
+      target="_blank" href="https://twitter.com/intent/tweet?title=Kimi%20Delta%20Attention%3a%20Khi%20AI%20h%e1%bb%8dc%20c%c3%a1ch%20nh%e1%bb%9b%20nh%c6%b0%20m%e1%bb%99t%20c%c3%a1i%20b%e1%ba%a3ng%20tr%e1%ba%afng%20thay%20v%c3%ac%20%c3%b4m%20c%e1%ba%a3%20nh%c3%a0%20kho&url=https%3a%2f%2fwww.phamduytung.com%2fblog%2f2026-08-09-kimi-delta-attention%2f">
+      <i class="fab fa-fw fa-twitter"></i> Twitter
+    </a>
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Facebook Share Button"
+      target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.phamduytung.com%2fblog%2f2026-08-09-kimi-delta-attention%2f">
+      <i class="fab fa-fw fa-facebook-f"></i> Facebook
+    </a>
+  </div>
+</div>
+    <button class="navbar-settings" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSettings"
+  aria-controls="offcanvasSettings" aria-label="Toggle settings">
+  <i class="fas fa-ellipsis-v"></i>
+</button>
+
+<div class="offcanvas offcanvas-end surface h-100" tabindex="-1" id="offcanvasSettings" aria-labelledby="offcanvasSettings">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Cài đặt</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body d-flex flex-column">
+
+
+
+<section class="setting">
+  <form class="font-size-switcher-form row">
+    <div class="col-auto">
+      <label for="fontSize" class="form-label"><i class="fas fa-fw fa-font"></i> Cỡ chữ</label>
+    </div>
+    <div class="col-auto ms-auto">
+      <input type="range" class="form-range" min="-2" max="2" id="fontSize">
+    </div>
+  </form>
+</section>
+
+
+
+<section class="setting actions d-flex justify-content-around mt-auto overflow-auto">
+  <a role="button" class="action action-go-back" href="javascript: window.history.back();">
+    <span class="action-icon"><i class="fas fa-2x fa-arrow-left"></i></span> Quay lại
+  </a>
+  <a role="button" class="action action-reload-page">
+    <span class="action-icon"><i class="fas fa-2x fa-redo-alt"></i></span> Tải lại
+  </a>
+  <a role="button" class="action action-copy-url">
+    <span class="action-icon"><i class="fas fa-2x fa-link"></i></span> Sao chép URL
+  </a><a class="action action-social-share" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSocialShare"
+    aria-controls="offcanvasSocialShare" aria-label="Toggle social share">
+    <span class="action-icon"><i class="fas fa-2x fa-share-alt"></i></span> Chia sẻ
+  </a></section>
+
+</div>
+</div>
+
+    <div class="collapse navbar-collapse" tabindex="-1" id="navbarSupportedContent" aria-labelledby="navbarSupportedContent">
+      <form class="search-bar my-1" action="https://www.phamduytung.com/search">
+  <div class="input-group input-group-sm">
+    <span class="btn btn-search disabled position-absolute left-0"><i class="fas fa-fw fa-search"></i></span>
+    <input class="form-control rounded-pill" name="q" type="search" aria-label="Search">
+  </div>
+</form>
+      <ul class="navbar-nav ms-auto"><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/series/">
+            <i class="fas fa-fw fa-columns"></i>Courses
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/tools/">
+            <i class="fas fa-fw fa-folder"></i>Tools
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/categories/">
+            <i class="fas fa-fw fa-folder"></i>Categories
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/archives/">
+            <i class="fas fa-fw fa-file-archive"></i>Archives
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/tags/">
+            <i class="fas fa-fw fa-tags"></i>Tags
+          </a>
+        </li><li class="nav-item dropdown">
+          <a class="nav-link" id="navbarDropdownSupport" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-fw fa-comments"></i>Community
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdownSupport"><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Facebook Group
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://github.com/AlexBlack2202/alexblack2202.github.io" target="_blank" rel="noopener noreferrer">
+                GitHub
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/contact/">
+                Contact
+              </a>
+            </li><li><hr class="dropdown-divider"></li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/faq/">
+                Câu hỏi thường gặp
+              </a>
+            </li></ul>
+        </li></ul>
+    </div>
+  </div>
+</nav>
+</header>
+<main role="main" class="container" style="line-height:1.7em">
+      <div class="row content">
+<div class="col-lg-9 col-md-8">
+  <div class="container"><nav class="row card component" aria-label="breadcrumb">
+  <div class="card-body">
+    <ol class="breadcrumb "><li class="breadcrumb-item"><a href="https://www.phamduytung.com/">Trang chủ</a></li><li class="breadcrumb-item"><a href="https://www.phamduytung.com/blog/">Blogs</a></li><li class="breadcrumb-item active">Kimi Delta Attention: Khi AI học cách nhớ như một cái bảng trắng thay vì ôm cả nhà kho</li></ol>
+  </div>
+</nav>
+<div class="post-panel-wrapper">
+  <div class="d-flex flex-column component rounded post-panel">
+    
+    <a class="action action-panel-toggler" role="button" title="Panel toggler">
+      <i class="fas fa-fw fa-chevron-circle-down"></i>
+    </a>
+    <a id="sidebarToggler" class="action d-none d-lg-block" role="button" title="Sidebar toggler">
+  <i class="fas fa-fw fa-expand-alt" data-fa-transform="rotate-45"></i>
+</a>
+
+    
+
+    
+    
+    <a class="action" href="#post-comments" role="button" aria-label="Comments" title="Comments">
+  <i class="fas fa-fw fa-comments"></i>
+</a>
+    <a class="action" href="#postTOC" aria-controls="Table of contents" role="button" title="Table of contents">
+  <i class="fas fa-fw fa-list-alt"></i>
+</a>
+    
+  </div>
+</div>
+<article class="row card component mb-4 post">
+  <div class="card-header "><div class="bgcover" style="background-image:url(https://www.phamduytung.com/images/posts/2026-08-09-kimi-delta-attention/cover-pearl-glass.png)" aria-label="Kimi Delta Attention: Khi AI học cách nhớ như một cái bảng trắng thay vì ôm cả nhà kho">
+      <div class="bgtrans">
+          <h1>Kimi Delta Attention: Khi AI học cách nhớ như một cái bảng trắng thay vì ôm cả nhà kho
+</h1>
+      </div>
+  </div>
+</div>
+  <div class="card-body"><div class="post-meta">
+  <span class="post-date" title="tạo ngày 2026-08-09 00:00:00 &#43;0700 &#43;07.">
+    09/08/2026
+  </span><span class="post-reading-time">
+    19 phút đọc
+  </span><span class="post-taxonomies"><a href="https://www.phamduytung.com/tags/kimi-delta-attention/" class="badge post-taxonomy">Kimi Delta Attention</a><a href="https://www.phamduytung.com/tags/linear-attention/" class="badge post-taxonomy">Linear Attention</a><a href="https://www.phamduytung.com/tags/llm/" class="badge post-taxonomy">LLM</a><a href="https://www.phamduytung.com/tags/kimi-k3/" class="badge post-taxonomy">Kimi K3</a><a href="https://www.phamduytung.com/tags/transformer/" class="badge post-taxonomy">Transformer</a></span>
+</div>
+<div class="post-content mb-3"><hr>
+<div class="toc">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#một-triệu-token-không-hề-ảo">Một triệu token không hề “ảo”</a></li>
+    <li><a href="#attention-giống-một-đứa-trẻ-không-chịu-vứt-giấy-nháp">Attention giống một đứa trẻ không chịu vứt giấy nháp</a></li>
+    <li><a href="#kv-cache-cái-nhà-kho-cứ-dài-ra-mãi">KV cache: cái nhà kho cứ dài ra mãi</a></li>
+    <li><a href="#linear-attention-đừng-giữ-cả-lịch-sử-hãy-giữ-một-bản-tóm-tắt-đang-sống">Linear Attention: đừng giữ cả lịch sử, hãy giữ một bản tóm tắt đang sống</a></li>
+    <li><a href="#vấn-đề-của-một-cái-bảng-trắng-ghi-mãi-rồi-nó-thành-cháo">Vấn đề của một cái bảng trắng: ghi mãi rồi nó thành cháo</a></li>
+    <li><a href="#delta-rule-trước-khi-ghi-hãy-xem-mình-đang-nhớ-sai-cái-gì">Delta Rule: trước khi ghi, hãy xem mình đang nhớ sai cái gì</a></li>
+    <li><a href="#gated-deltanet-trí-nhớ-cần-một-cái-nút-quên">Gated DeltaNet: trí nhớ cần một cái nút quên</a></li>
+    <li><a href="#kimi-delta-attention-mỗi-phần-của-ký-ức-được-quyền-quên-khác-nhau">Kimi Delta Attention: mỗi phần của ký ức được quyền quên khác nhau</a></li>
+    <li><a href="#full-attention-và-kda-khác-nhau-ở-triết-lý-nhớ">Full Attention và KDA khác nhau ở triết lý nhớ</a></li>
+    <li><a href="#tại-sao-kimi-không-bỏ-full-attention-hoàn-toàn">Tại sao Kimi không bỏ full attention hoàn toàn?</a></li>
+    <li><a href="#kda-không-chỉ-là-công-thức-toán-nó-còn-phải-chạy-được-trên-gpu">KDA không chỉ là công thức toán, nó còn phải chạy được trên GPU</a></li>
+    <li><a href="#rồi-kimi-k3-xuất-hiện">Rồi Kimi K3 xuất hiện</a></li>
+    <li><a href="#nhưng-kda-không-phải-phép-thuật">Nhưng KDA không phải phép thuật</a>
+      <ul>
+        <li><a href="#bộ-nhớ-bị-nén">Bộ nhớ bị nén</a></li>
+        <li><a href="#quên-cũng-có-thể-quên-nhầm">Quên cũng có thể quên nhầm</a></li>
+        <li><a href="#delta-rule-vẫn-còn-coupling">Delta Rule vẫn còn coupling</a></li>
+      </ul>
+    </li>
+    <li><a href="#một-ví-dụ-nhỏ">Một ví dụ nhỏ</a></li>
+    <li><a href="#điều-thú-vị-nhất-của-kda-không-phải-chữ-linear">Điều thú vị nhất của KDA không phải chữ Linear</a></li>
+    <li><a href="#có-thể-kda-báo-trước-một-hướng-đi-lớn-hơn">Có thể KDA báo trước một hướng đi lớn hơn</a></li>
+    <li><a href="#tổng-kết">Tổng kết</a></li>
+    <li><a href="#tham-khảo">Tham khảo</a></li>
+  </ul>
+</nav>
+  </div>
+<h1 id="một-triệu-token-không-hề-ảo">Một triệu token không hề “ảo”<a class="anchor ms-1" href="#một-triệu-token-không-hề-ảo"><i class="fas fa-link"></i></a></h1>
+<p>Giả sử bạn đang nói chuyện với một AI.</p>
+<p>Bạn gửi cho nó 10 dòng code.</p>
+<p>Rồi 100 dòng.</p>
+<p>Rồi nguyên repository.</p>
+<p>Rồi vài trăm file log.</p>
+<p>Rồi một đống tài liệu dài tới mức nếu đem in ra giấy chắc đủ kê chân một cái bàn đang bị cập kênh.</p>
+<p>Trên màn hình, mọi thứ vẫn rất nhẹ nhàng.</p>
+<p>Bạn chỉ thấy một ô chat.</p>
+<p>Một con trỏ nhấp nháy.</p>
+<p>Một nút Send.</p>
+<p>Nhưng bên dưới cái nút Send ấy không có gì là hoàn toàn ảo.</p>
+<p>Một triệu token không phải một triệu linh hồn bay lơ lửng trong cloud.</p>
+<p>Chúng trở thành tensor thật.</p>
+<p>Tensor nằm trong bộ nhớ thật.</p>
+<p>Bộ nhớ nằm trên những con chip thật.</p>
+<p>Những con chip đó phải đọc dữ liệu, nhân ma trận, truyền hàng tỷ byte qua những đường bus có giới hạn băng thông rất thật.</p>
+<p>Và đây chính là lúc một trong những thứ đẹp nhất của Transformer bắt đầu trở thành một trong những thứ phiền nhất của nó:</p>
+<p><strong>Attention nhớ quá nhiều.</strong></p>
+<p>Kimi Delta Attention, hay <strong>KDA</strong>, được Moonshot AI xây dựng để xử lý chính bài toán này. Nó là thành phần trung tâm của kiến trúc Kimi Linear và sau đó tiếp tục trở thành một trong những nền móng của Kimi K3 — mô hình 2.8 nghìn tỷ tham số với 104 tỷ tham số được kích hoạt mỗi token và context window lên tới 1 triệu token. (<a href="https://arxiv.org/abs/2607.24653" title="[2607.24653] Kimi K3: Open Frontier Intelligence" target="_blank" rel="noopener noreferrer">arXiv</a>)</p>
+<p>Nhưng để hiểu KDA, trước tiên chúng ta phải hiểu tại sao một con AI lại cần một cái nhà kho khổng lồ chỉ để nhớ những gì vừa đọc.</p>
+<h1 id="attention-giống-một-đứa-trẻ-không-chịu-vứt-giấy-nháp">Attention giống một đứa trẻ không chịu vứt giấy nháp<a class="anchor ms-1" href="#attention-giống-một-đứa-trẻ-không-chịu-vứt-giấy-nháp"><i class="fas fa-link"></i></a></h1>
+<p>Giả sử một đứa trẻ ngồi học toán.</p>
+<p>Mỗi lần cô giáo nói một câu, nó ghi câu đó lên một tờ giấy.</p>
+<p>Câu thứ nhất:</p>
+<blockquote>
+<p>Nam có 5 quả táo.</p>
+</blockquote>
+<p>Nó giữ tờ giấy.</p>
+<p>Câu thứ hai:</p>
+<blockquote>
+<p>Nam cho Lan 2 quả.</p>
+</blockquote>
+<p>Nó lại lấy thêm một tờ giấy.</p>
+<p>Câu thứ ba, câu thứ tư, câu thứ năm&hellip;</p>
+<p>Nó không vứt bất cứ thứ gì.</p>
+<p>Đến cuối buổi học, muốn trả lời câu hỏi:</p>
+<blockquote>
+<p>Nam còn bao nhiêu quả táo?</p>
+</blockquote>
+<p>Nó chạy qua <strong>toàn bộ đống giấy</strong>, xem tờ nào liên quan rồi mới trả lời.</p>
+<p>Đó là một cách lúa hóa khá sát với self-attention.</p>
+<p>Mỗi token tạo ra ba thứ quen thuộc:</p>
+<ul>
+<li>Query</li>
+<li>Key</li>
+<li>Value</li>
+</ul>
+<p>Có thể hình dung đơn giản:</p>
+<ul>
+<li><strong>Key</strong>: cái nhãn dán trên tờ giấy.</li>
+<li><strong>Value</strong>: nội dung được viết trên tờ giấy.</li>
+<li><strong>Query</strong>: câu hỏi hiện tại đang muốn tìm loại giấy nào.</li>
+</ul>
+<p>Khi sinh token tiếp theo, Transformer lấy Query hiện tại đi so với các Key trong quá khứ, tìm ra những phần quan trọng, sau đó lấy các Value tương ứng ra sử dụng.</p>
+<p>Ý tưởng này cực kỳ mạnh.</p>
+<p>Token hiện tại có thể trực tiếp nhìn về token rất xa trong quá khứ.</p>
+<p>Không cần chuyền ký ức qua từng bước giống RNN cổ điển.</p>
+<p>Nhưng vấn đề cũng nằm ngay trong chữ <strong>toàn bộ</strong>.</p>
+<p>Context dài ra bao nhiêu thì quá khứ cần giữ lại cũng dài ra bấy nhiêu.</p>
+<p>Trong inference autoregressive, hệ thống thường giữ các Key và Value đã tính trong một vùng bộ nhớ gọi là <strong>KV cache</strong>.</p>
+<p>10 token thì chẳng có gì đáng nói.</p>
+<p>10.000 token bắt đầu đáng nói.</p>
+<p>100.000 token thì GPU bắt đầu nhíu mày.</p>
+<p>1.000.000 token thì câu chuyện trở thành một bài toán kiến trúc hệ thống.</p>
+<h1 id="kv-cache-cái-nhà-kho-cứ-dài-ra-mãi">KV cache: cái nhà kho cứ dài ra mãi<a class="anchor ms-1" href="#kv-cache-cái-nhà-kho-cứ-dài-ra-mãi"><i class="fas fa-link"></i></a></h1>
+<p>Với full attention truyền thống, số token tăng lên kéo theo hai vấn đề khác nhau.</p>
+<p>Thứ nhất là <strong>tính toán attention</strong>.</p>
+<p>Nếu xét một phép self-attention đầy đủ trên chuỗi dài $N$, ma trận attention có kích thước gần với:</p>
+<p>$$
+N \times N
+$$</p>
+<p>Do đó chi phí tính toán truyền thống có thành phần tăng theo:</p>
+<p>$$
+O(N^2)
+$$</p>
+<p>Gấp đôi chiều dài sequence không có nghĩa là chỉ làm gấp đôi công việc.</p>
+<p>Trong phần attention đầy đủ, nó có thể tiến gần tới gấp bốn.</p>
+<p>Thứ hai là <strong>KV cache khi decode</strong>.</p>
+<p>Khi model sinh token thứ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">1
+</span></span><span class="line"><span class="ln">2</span><span class="cl">2
+</span></span><span class="line"><span class="ln">3</span><span class="cl">3
+</span></span><span class="line"><span class="ln">4</span><span class="cl">4
+</span></span><span class="line"><span class="ln">5</span><span class="cl">...
+</span></span><span class="line"><span class="ln">6</span><span class="cl">999999
+</span></span><span class="line"><span class="ln">7</span><span class="cl">1000000
+</span></span></code></pre></div><p>nó không muốn tính lại Key và Value của 999.999 token trước.</p>
+<p>Vì vậy nó giữ chúng lại.</p>
+<p>Context càng dài, KV cache càng lớn.</p>
+<p>Tức là bộ nhớ dành cho quá khứ tăng gần tuyến tính theo chiều dài sequence.</p>
+<p>Đây chính là thứ các kiến trúc linear attention muốn thay đổi.</p>
+<p>Thay vì:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">quá khứ
+</span></span><span class="line"><span class="ln">2</span><span class="cl">→ giữ token 1
+</span></span><span class="line"><span class="ln">3</span><span class="cl">→ giữ token 2
+</span></span><span class="line"><span class="ln">4</span><span class="cl">→ giữ token 3
+</span></span><span class="line"><span class="ln">5</span><span class="cl">→ ...
+</span></span><span class="line"><span class="ln">6</span><span class="cl">→ giữ token thứ 1.000.000
+</span></span></code></pre></div><p>ta thử làm chuyện nghe hơi kỳ quặc hơn:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">quá khứ
+</span></span><span class="line"><span class="ln">2</span><span class="cl">→ nén thành một trạng thái S
+</span></span><span class="line"><span class="ln">3</span><span class="cl">→ token mới tới
+</span></span><span class="line"><span class="ln">4</span><span class="cl">→ sửa S
+</span></span><span class="line"><span class="ln">5</span><span class="cl">→ token mới tới
+</span></span><span class="line"><span class="ln">6</span><span class="cl">→ sửa S
+</span></span><span class="line"><span class="ln">7</span><span class="cl">→ token mới tới
+</span></span><span class="line"><span class="ln">8</span><span class="cl">→ lại sửa S
+</span></span></code></pre></div><p>Không còn một nhà kho dài vô tận.</p>
+<p>Chỉ còn một cái bảng trắng.</p>
+<h1 id="linear-attention-đừng-giữ-cả-lịch-sử-hãy-giữ-một-bản-tóm-tắt-đang-sống">Linear Attention: đừng giữ cả lịch sử, hãy giữ một bản tóm tắt đang sống<a class="anchor ms-1" href="#linear-attention-đừng-giữ-cả-lịch-sử-hãy-giữ-một-bản-tóm-tắt-đang-sống"><i class="fas fa-link"></i></a></h1>
+<p>Ý tưởng chung của recurrent linear attention là biến quá khứ thành một <strong>state</strong> có kích thước cố định.</p>
+<p>Gọi state đó là:</p>
+<p>$$
+S_t
+$$</p>
+<p>Tại thời điểm $t$, model có:</p>
+<ul>
+<li>key $k_t$</li>
+<li>value $v_t$</li>
+<li>query $q_t$</li>
+</ul>
+<p>Một linear attention đơn giản có thể cập nhật:</p>
+<p>$$
+S_t = S_{t-1} + k_t v_t^T
+$$</p>
+<p>và đọc:</p>
+<p>$$
+o_t = S_t^T q_t
+$$</p>
+<p>Nhìn công thức hơi đáng sợ nhưng câu chuyện rất đơn giản.</p>
+<p>Token mới tới.</p>
+<p>Nó không được bỏ nguyên xi vào nhà kho.</p>
+<p>Thông tin của nó được <strong>trộn vào cái bảng nhớ hiện tại</strong>.</p>
+<p>Muốn lấy thông tin ra thì Query đọc từ cái bảng đó.</p>
+<p>Kích thước $S$ không phụ thuộc trực tiếp vào việc chúng ta đã đọc 1.000 hay 1.000.000 token.</p>
+<p>Đây là lý do linear attention có thể được biểu diễn dưới dạng một RNN với matrix-valued hidden state và tránh KV cache tăng không ngừng như full attention. (<a href="https://arxiv.org/abs/2406.06484" title="[2406.06484] Parallelizing Linear Transformers with the Delta Rule over Sequence Length" target="_blank" rel="noopener noreferrer">arXiv</a>)</p>
+<p>Nghe ngon.</p>
+<p>Xong thuật toán.</p>
+<p>Quá dễ.</p>
+<p>Tất nhiên là không.</p>
+<p>Nếu dễ vậy thì Transformer đã về hưu từ lâu.</p>
+<h1 id="vấn-đề-của-một-cái-bảng-trắng-ghi-mãi-rồi-nó-thành-cháo">Vấn đề của một cái bảng trắng: ghi mãi rồi nó thành cháo<a class="anchor ms-1" href="#vấn-đề-của-một-cái-bảng-trắng-ghi-mãi-rồi-nó-thành-cháo"><i class="fas fa-link"></i></a></h1>
+<p>Hãy tưởng tượng cái bảng trắng trong lớp học.</p>
+<p>Buổi sáng viết:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Nam có 5 quả táo
+</span></span></code></pre></div><p>Một lúc sau viết:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Lan có 3 quả cam
+</span></span></code></pre></div><p>Rồi:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Nam đưa Lan 2 quả táo
+</span></span></code></pre></div><p>Rồi:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Lan đi mua sữa
+</span></span></code></pre></div><p>Rồi:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Nam đổi tên thành Bình
+</span></span></code></pre></div><p>Nếu cứ cộng mọi thứ lên bảng mà không xóa, không sửa và không biết chỗ nào đã lỗi thời, cuối ngày cái bảng sẽ giống một tô mì.</p>
+<p>Đó cũng là một trong những khó khăn của linear attention.</p>
+<p>Bộ nhớ có kích thước hữu hạn.</p>
+<p>Nó phải chứa một dòng thông tin gần như vô hạn.</p>
+<p>Vấn đề không còn chỉ là:</p>
+<blockquote>
+<p>Làm sao ghi?</p>
+</blockquote>
+<p>Mà là:</p>
+<blockquote>
+<p><strong>Ghi cái mới vào thì phải xử lý cái cũ như thế nào?</strong></p>
+</blockquote>
+<p>Đây là nơi <strong>Delta Rule</strong> xuất hiện.</p>
+<h1 id="delta-rule-trước-khi-ghi-hãy-xem-mình-đang-nhớ-sai-cái-gì">Delta Rule: trước khi ghi, hãy xem mình đang nhớ sai cái gì<a class="anchor ms-1" href="#delta-rule-trước-khi-ghi-hãy-xem-mình-đang-nhớ-sai-cái-gì"><i class="fas fa-link"></i></a></h1>
+<p>Giả sử trong trí nhớ hiện tại:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Nam → 5 quả táo
+</span></span></code></pre></div><p>Sau đó ta nhận được thông tin mới:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Nam → 3 quả táo
+</span></span></code></pre></div><p>Một cách ngây thơ là cộng thêm:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Nam → 5
+</span></span><span class="line"><span class="ln">2</span><span class="cl">Nam → 3
+</span></span></code></pre></div><p>Và hy vọng tương lai tự hiểu.</p>
+<p>Delta Rule làm một việc thông minh hơn.</p>
+<p>Nó hỏi bộ nhớ trước:</p>
+<blockquote>
+<p>Hiện tại nếu tôi tra &ldquo;Nam&rdquo;, anh trả lời bao nhiêu?</p>
+</blockquote>
+<p>Giả sử state trả lời:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">5
+</span></span></code></pre></div><p>Nhưng target mới là:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">3
+</span></span></code></pre></div><p>Ta có sai số:</p>
+<p>$$
+\Delta = 3 - 5 = -2
+$$</p>
+<p>Thay vì viết thêm nguyên một bản ghi mới, model sử dụng sai số đó để <strong>sửa bộ nhớ hiện tại</strong>.</p>
+<p>Trong dạng đơn giản:</p>
+<p>$$
+\delta_t = v_t - S_{t-1}^T k_t
+$$</p>
+<p>sau đó:</p>
+<p>$$
+S_t = S_{t-1} + \beta_t k_t \delta_t^T
+$$</p>
+<p>Trong đó $\beta_t$ kiểm soát mức độ mạnh yếu của lần sửa.</p>
+<p>Nói bằng tiếng người:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">đọc ký ức hiện tại
+</span></span><span class="line"><span class="ln">2</span><span class="cl">→ xem nó sai bao nhiêu
+</span></span><span class="line"><span class="ln">3</span><span class="cl">→ sửa phần sai
+</span></span><span class="line"><span class="ln">4</span><span class="cl">→ đưa ký ức tiến gần thông tin mới
+</span></span></code></pre></div><p>DeltaNet vì vậy có thể được nhìn như một dạng <strong>associative memory tự sửa chính mình</strong>, thay vì một cái thùng chỉ biết nhét thêm dữ liệu. Các nghiên cứu về DeltaNet mô tả phép cập nhật này như một bước online gradient descent trên bài toán ánh xạ key sang value. (<a href="https://arxiv.org/abs/2406.06484" title="[2406.06484] Parallelizing Linear Transformers with the Delta Rule over Sequence Length" target="_blank" rel="noopener noreferrer">arXiv</a>)</p>
+<p>Nhưng vẫn còn một vấn đề.</p>
+<p>Con người không chỉ biết sửa.</p>
+<p>Con người còn biết <strong>quên</strong>.</p>
+<h1 id="gated-deltanet-trí-nhớ-cần-một-cái-nút-quên">Gated DeltaNet: trí nhớ cần một cái nút quên<a class="anchor ms-1" href="#gated-deltanet-trí-nhớ-cần-một-cái-nút-quên"><i class="fas fa-link"></i></a></h1>
+<p>Giả sử hôm qua tôi nói:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Tôi đang ở Hà Nội.
+</span></span></code></pre></div><p>Hôm nay tôi nói:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Tôi đã bay vào TP.HCM.
+</span></span></code></pre></div><p>Thông tin hôm qua không sai.</p>
+<p>Nó chỉ <strong>hết hạn</strong>.</p>
+<p>Đây là thứ mà một hệ thống memory cần xử lý.</p>
+<p>Gated DeltaNet bổ sung một forget gate, có thể hình dung như:</p>
+<p>$$
+\alpha_t
+$$</p>
+<p>với:</p>
+<p>$$
+0 &lt; \alpha_t &lt; 1
+$$</p>
+<p>Một dạng cập nhật có thể viết:</p>
+<p>$$
+S_t =
+\alpha_t
+(I-\beta_t k_tk_t^T)
+S_{t-1}
++
+\beta_t k_tv_t^T
+$$</p>
+<p>Nếu:</p>
+<p>$$
+\alpha_t \approx 1
+$$</p>
+<p>thì ký ức cũ gần như được giữ lại.</p>
+<p>Nếu:</p>
+<p>$$
+\alpha_t \approx 0
+$$</p>
+<p>thì quá khứ bị quên rất mạnh.</p>
+<p>Nhưng ở đây lại xuất hiện một chi tiết thú vị.</p>
+<p>Gated DeltaNet dùng một mức decay tương đối thô ở phạm vi head.</p>
+<p>Tưởng tượng một cái bảng có 64 cột nhưng chúng ta chỉ có một nút:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">QUÊN
+</span></span></code></pre></div><p>Bấm nó xuống thì 64 cột cùng mờ đi.</p>
+<p>Nhưng trong thực tế, có thể:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">cột tên người      → cần nhớ
+</span></span><span class="line"><span class="ln">2</span><span class="cl">cột địa điểm       → cần quên
+</span></span><span class="line"><span class="ln">3</span><span class="cl">cột thời gian      → quên một chút
+</span></span><span class="line"><span class="ln">4</span><span class="cl">cột chủ đề         → giữ gần nguyên
+</span></span></code></pre></div><p>Tại sao tất cả phải quên với cùng một tốc độ?</p>
+<p>Kimi Delta Attention thay đổi chính điểm này.</p>
+<h1 id="kimi-delta-attention-mỗi-phần-của-ký-ức-được-quyền-quên-khác-nhau">Kimi Delta Attention: mỗi phần của ký ức được quyền quên khác nhau<a class="anchor ms-1" href="#kimi-delta-attention-mỗi-phần-của-ký-ức-được-quyền-quên-khác-nhau"><i class="fas fa-link"></i></a></h1>
+<p>Điểm quan trọng nhất của KDA nghe khá nhỏ:</p>
+<p><strong>thay forget gate dạng scalar bằng channel-wise decay.</strong></p>
+<p>Thay vì:</p>
+<p>$$
+\alpha_t
+$$</p>
+<p>ta có một vector:</p>
+<p>$$
+\boldsymbol{\alpha}_t
+$$</p>
+<p>và tạo một ma trận đường chéo:</p>
+<p>$$
+D_t = \operatorname{Diag}(\boldsymbol{\alpha}_t)
+$$</p>
+<p>Khi đó một cách biểu diễn KDA là:</p>
+<p>$$
+S_t =
+(I-\beta_t k_tk_t^T)
+D_tS_{t-1}
++
+\beta_t k_tv_t^T
+$$</p>
+<p>(<a href="https://arxiv.org/abs/2510.26692" title="[2510.26692] Kimi Linear: An Expressive, Efficient Attention Architecture" target="_blank" rel="noopener noreferrer">arXiv</a>)</p>
+<p>Công thức nhìn như con nhện bò qua bàn phím.</p>
+<p>Nhưng ý tưởng lại rất đẹp.</p>
+<p>Hãy tưởng tượng memory state có nhiều ngăn:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">[ngăn 1] [ngăn 2] [ngăn 3] [ngăn 4] ...
+</span></span></code></pre></div><p>KDA có thể học:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">ngăn 1: giữ 99%
+</span></span><span class="line"><span class="ln">2</span><span class="cl">ngăn 2: giữ 71%
+</span></span><span class="line"><span class="ln">3</span><span class="cl">ngăn 3: giữ 12%
+</span></span><span class="line"><span class="ln">4</span><span class="cl">ngăn 4: giữ 94%
+</span></span></code></pre></div><p>thay vì:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">mọi ngăn: giữ 71%
+</span></span></code></pre></div><p>Đó là <strong>fine-grained gating</strong>.</p>
+<p>Paper Kimi Linear mô tả KDA là phần mở rộng của Gated DeltaNet, trong đó cơ chế gating được làm chi tiết hơn để sử dụng hiệu quả hơn bộ nhớ RNN hữu hạn. (<a href="https://arxiv.org/abs/2510.26692" title="[2510.26692] Kimi Linear: An Expressive, Efficient Attention Architecture" target="_blank" rel="noopener noreferrer">arXiv</a>)</p>
+<p>Nói cách khác, KDA không tạo ra trí nhớ vô hạn.</p>
+<p>Nó làm một việc khó hơn:</p>
+<blockquote>
+<p><strong>học cách sống với một trí nhớ hữu hạn.</strong></p>
+</blockquote>
+<p>Và đó có lẽ mới là phần thú vị nhất.</p>
+<h1 id="full-attention-và-kda-khác-nhau-ở-triết-lý-nhớ">Full Attention và KDA khác nhau ở triết lý nhớ<a class="anchor ms-1" href="#full-attention-và-kda-khác-nhau-ở-triết-lý-nhớ"><i class="fas fa-link"></i></a></h1>
+<p>Ta có thể hình dung hai thế giới.</p>
+<p>Full Attention:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Tôi không biết sau này cần gì.
+</span></span><span class="line"><span class="ln">2</span><span class="cl">Vậy nên tôi giữ gần như mọi thứ.
+</span></span></code></pre></div><p>KDA:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Tôi không thể giữ mọi thứ.
+</span></span><span class="line"><span class="ln">2</span><span class="cl">Vậy tôi phải học cách nén,
+</span></span><span class="line"><span class="ln">3</span><span class="cl">học cách sửa,
+</span></span><span class="line"><span class="ln">4</span><span class="cl">học cái gì nên giữ,
+</span></span><span class="line"><span class="ln">5</span><span class="cl">và học cái gì phải quên.
+</span></span></code></pre></div><p>Một bên giống thư viện.</p>
+<p>Một bên giống trí nhớ.</p>
+<p>Thư viện có thể giữ nguyên cuốn sách số 73.428 trên kệ rồi 10 năm sau lấy đúng nó xuống.</p>
+<p>Trí nhớ con người thì không như vậy.</p>
+<p>Chúng ta không lưu nguyên xi hình ảnh bữa cơm trưa ngày 17 tháng trước ở dạng PNG 8K.</p>
+<p>Não giữ lại một trạng thái đã được nghiền, trộn, quên, nhấn mạnh và tái cấu trúc.</p>
+<p>KDA tất nhiên không phải bộ não người.</p>
+<p>Nhưng về mặt trực giác, cách quản lý thông tin của nó gần với ý tưởng <strong>memory state động</strong> hơn là một kho dữ liệu chỉ append.</p>
+<h1 id="tại-sao-kimi-không-bỏ-full-attention-hoàn-toàn">Tại sao Kimi không bỏ full attention hoàn toàn?<a class="anchor ms-1" href="#tại-sao-kimi-không-bỏ-full-attention-hoàn-toàn"><i class="fas fa-link"></i></a></h1>
+<p>Đây là một chi tiết rất đáng chú ý.</p>
+<p>Nếu KDA ngon như vậy, tại sao không thay tất cả attention bằng KDA?</p>
+<p>Bởi vì nén luôn có cái giá của nén.</p>
+<p>Giả sử tôi đưa cho bạn 10.000 trang sách và yêu cầu:</p>
+<blockquote>
+<p>Hãy tóm tắt tất cả vào một tờ A4.</p>
+</blockquote>
+<p>Bạn hoàn toàn có thể làm.</p>
+<p>Nhưng sau đó tôi hỏi:</p>
+<blockquote>
+<p>Ở trang 7.431, dòng thứ 12, tác giả dùng từ gì?</p>
+</blockquote>
+<p>Khả năng cao chúng ta có chuyện để nói.</p>
+<p>Full attention có một sức mạnh rất khó thay thế:</p>
+<p><strong>truy cập trực tiếp quá khứ.</strong></p>
+<p>KDA thì ép lịch sử đi qua một state hữu hạn.</p>
+<p>Vì vậy Kimi Linear sử dụng kiến trúc <strong>hybrid</strong>.</p>
+<p>Moonshot công bố tỷ lệ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">3 KDA
+</span></span><span class="line"><span class="ln">2</span><span class="cl">:
+</span></span><span class="line"><span class="ln">3</span><span class="cl">1 MLA
+</span></span></code></pre></div><p>tức khoảng ba lớp KDA xen với một lớp global Multi-Head Latent Attention.</p>
+<p>KDA xử lý phần lớn sequence theo cách tuyến tính và tiết kiệm bộ nhớ.</p>
+<p>MLA thỉnh thoảng xuất hiện như một cửa sổ để model quay lại nhìn trực tiếp toàn bộ context.</p>
+<p>Theo báo cáo Kimi Linear, kiến trúc này có thể giảm KV cache tới khoảng <strong>75%</strong> và trong benchmark của nhóm nghiên cứu đạt tốc độ decode cao hơn tới khoảng <strong>6 lần</strong> ở context 1 triệu token so với kiến trúc MLA đầy đủ trong cấu hình so sánh của họ. (<a href="https://arxiv.org/abs/2510.26692" title="[2510.26692] Kimi Linear: An Expressive, Efficient Attention Architecture" target="_blank" rel="noopener noreferrer">arXiv</a>)</p>
+<p>Đây là một thiết kế rất thực dụng.</p>
+<p>Không cực đoan kiểu:</p>
+<blockquote>
+<p>Linear Attention sẽ tiêu diệt Transformer.</p>
+</blockquote>
+<p>Mà giống:</p>
+<blockquote>
+<p>Cái gì đắt thì dùng ít lại. Cái gì rẻ thì bắt nó gánh phần lớn công việc.</p>
+</blockquote>
+<h1 id="kda-không-chỉ-là-công-thức-toán-nó-còn-phải-chạy-được-trên-gpu">KDA không chỉ là công thức toán, nó còn phải chạy được trên GPU<a class="anchor ms-1" href="#kda-không-chỉ-là-công-thức-toán-nó-còn-phải-chạy-được-trên-gpu"><i class="fas fa-link"></i></a></h1>
+<p>Có một căn bệnh khá phổ biến trong machine learning research.</p>
+<p>Paper viết:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">O(N)
+</span></span></code></pre></div><p>Mọi người vỗ tay.</p>
+<p>Đem lên GPU chạy:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">chậm hơn O(N²)
+</span></span></code></pre></div><p>Mọi người đi ngủ.</p>
+<p>Lý do là Big-O không kể cho ta nghe toàn bộ câu chuyện vật lý.</p>
+<p>GPU thích:</p>
+<ul>
+<li>phép toán lớn,</li>
+<li>song song,</li>
+<li>truy cập memory liên tục,</li>
+<li>kernel được tối ưu tốt.</li>
+</ul>
+<p>GPU ghét:</p>
+<ul>
+<li>hàng triệu phép cập nhật nhỏ tuần tự,</li>
+<li>branching,</li>
+<li>memory access lung tung,</li>
+<li>kernel launch lắt nhắt.</li>
+</ul>
+<p>Trong dạng recurrent thuần túy:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">S1
+</span></span><span class="line"><span class="ln">2</span><span class="cl">→ S2
+</span></span><span class="line"><span class="ln">3</span><span class="cl">→ S3
+</span></span><span class="line"><span class="ln">4</span><span class="cl">→ S4
+</span></span><span class="line"><span class="ln">5</span><span class="cl">→ ...
+</span></span></code></pre></div><p>ta lại tạo ra dependency theo thời gian.</p>
+<p>Token sau cần state của token trước.</p>
+<p>Một CPU có thể nhìn chuyện này rồi nói:</p>
+<blockquote>
+<p>Bình thường mà.</p>
+</blockquote>
+<p>Một GPU có hàng nghìn core nhìn vào sẽ hỏi:</p>
+<blockquote>
+<p>Rồi mấy đứa còn lại ngồi uống trà hả?</p>
+</blockquote>
+<p>Vì vậy phần quan trọng của Kimi Linear không chỉ là recurrence.</p>
+<p>Moonshot còn xây dựng <strong>chunkwise algorithm</strong> và kernel chuyên dụng để song song hóa quá trình training, sử dụng cấu trúc transition kiểu Diagonal-Plus-Low-Rank nhằm giảm chi phí tính toán mà vẫn giữ được tính chất của delta rule. (<a href="https://arxiv.org/abs/2510.26692" title="[2510.26692] Kimi Linear: An Expressive, Efficient Attention Architecture" target="_blank" rel="noopener noreferrer">arXiv</a>)</p>
+<p>Đây là chỗ machine learning chạm thẳng vào system engineering.</p>
+<p>Một công thức toán có thể đẹp.</p>
+<p>Nhưng muốn biến nó thành LLM hàng nghìn tỷ tham số, nó phải đi qua:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">toán học
+</span></span><span class="line"><span class="ln">2</span><span class="cl">→ tensor layout
+</span></span><span class="line"><span class="ln">3</span><span class="cl">→ kernel
+</span></span><span class="line"><span class="ln">4</span><span class="cl">→ GPU
+</span></span><span class="line"><span class="ln">5</span><span class="cl">→ HBM
+</span></span><span class="line"><span class="ln">6</span><span class="cl">→ interconnect
+</span></span><span class="line"><span class="ln">7</span><span class="cl">→ distributed training
+</span></span><span class="line"><span class="ln">8</span><span class="cl">→ inference engine
+</span></span></code></pre></div><p>Không có đoạn nào là ảo.</p>
+<h1 id="rồi-kimi-k3-xuất-hiện">Rồi Kimi K3 xuất hiện<a class="anchor ms-1" href="#rồi-kimi-k3-xuất-hiện"><i class="fas fa-link"></i></a></h1>
+<p>Kimi Linear ban đầu là nơi Moonshot chứng minh KDA có thể hoạt động ở quy mô lớn.</p>
+<p>Đến Kimi K3, ý tưởng đó được đẩy xa hơn.</p>
+<p>Kimi K3 có:</p>
+<ul>
+<li>khoảng 2.8 nghìn tỷ tham số tổng cộng,</li>
+<li>khoảng 104 tỷ tham số active mỗi token,</li>
+<li>16 expert được kích hoạt trong tổng số 896 routed experts,</li>
+<li>native multimodal,</li>
+<li>context window 1 triệu token.</li>
+</ul>
+<p>Kiến trúc của K3 tiếp tục sử dụng <strong>Kimi Delta Attention</strong> cùng <strong>Attention Residuals</strong> để cải thiện dòng thông tin theo cả chiều sequence lẫn chiều sâu model. (<a href="https://arxiv.org/abs/2607.24653" title="[2607.24653] Kimi K3: Open Frontier Intelligence" target="_blank" rel="noopener noreferrer">arXiv</a>)</p>
+<p>Điều đáng chú ý không phải KDA tự mình tạo ra K3.</p>
+<p>K3 còn có MoE, quantization-aware training, hệ thống expert parallel, Attention Residuals và cả một đống engineering phía dưới.</p>
+<p>Nhưng việc Moonshot tiếp tục đặt KDA ở trung tâm của một model 2.8T cho thấy linear attention không còn chỉ là một món đồ chơi học thuật kiểu:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">chạy thử trên model 125M
+</span></span><span class="line"><span class="ln">2</span><span class="cl">→ biểu đồ đẹp
+</span></span><span class="line"><span class="ln">3</span><span class="cl">→ hết paper
+</span></span></code></pre></div><p>Nó đã bước vào một kiến trúc frontier model thực sự.</p>
+<h1 id="nhưng-kda-không-phải-phép-thuật">Nhưng KDA không phải phép thuật<a class="anchor ms-1" href="#nhưng-kda-không-phải-phép-thuật"><i class="fas fa-link"></i></a></h1>
+<p>Ở đây cần đập nhẹ một cái thắng.</p>
+<p>KDA giải quyết rất tốt một loại vấn đề, nhưng không biến memory hữu hạn thành memory vô hạn.</p>
+<p>Đó là điều bất khả thi nếu ta muốn giữ toàn bộ thông tin chính xác tuyệt đối.</p>
+<p>KDA vẫn có những trade-off.</p>
+<h2 id="bộ-nhớ-bị-nén">Bộ nhớ bị nén<a class="anchor ms-1" href="#bộ-nhớ-bị-nén"><i class="fas fa-link"></i></a></h2>
+<p>Full attention giữ các Key và Value riêng biệt của quá khứ.</p>
+<p>KDA ép lịch sử vào state cố định.</p>
+<p>Khi nhiều thông tin cạnh tranh nhau, interference vẫn có thể xảy ra.</p>
+<h2 id="quên-cũng-có-thể-quên-nhầm">Quên cũng có thể quên nhầm<a class="anchor ms-1" href="#quên-cũng-có-thể-quên-nhầm"><i class="fas fa-link"></i></a></h2>
+<p>Channel-wise decay giúp việc forgetting chi tiết hơn.</p>
+<p>Nhưng model vẫn phải <strong>học</strong> nên quên gì.</p>
+<p>Không có ông thần nào ngồi trong GPU chỉ tay:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">cái này quan trọng
+</span></span><span class="line"><span class="ln">2</span><span class="cl">cái kia bỏ
+</span></span></code></pre></div><h2 id="delta-rule-vẫn-còn-coupling">Delta Rule vẫn còn coupling<a class="anchor ms-1" href="#delta-rule-vẫn-còn-coupling"><i class="fas fa-link"></i></a></h2>
+<p>Trong KDA hiện tại, hệ số $\beta_t$ vẫn tham gia vào cả phần corrective erase và write.</p>
+<p>Các nghiên cứu tiếp theo như Gated DeltaNet-2 đã chỉ ra hạn chế này và đề xuất tách điều khiển erase và write thành các gate khác nhau. (<a href="https://arxiv.org/abs/2605.22791" title="[2605.22791] Gated DeltaNet-2: Decoupling Erase and Write in Linear Attention" target="_blank" rel="noopener noreferrer">arXiv</a>)</p>
+<p>Điều đó khá thú vị.</p>
+<p>KDA không phải điểm kết thúc.</p>
+<p>Nó là một bước trong quá trình tiến hóa của một câu hỏi lớn hơn:</p>
+<blockquote>
+<p>Nếu AI chỉ có một lượng memory hữu hạn, nó nên quản lý memory đó như thế nào?</p>
+</blockquote>
+<h1 id="một-ví-dụ-nhỏ">Một ví dụ nhỏ<a class="anchor ms-1" href="#một-ví-dụ-nhỏ"><i class="fas fa-link"></i></a></h1>
+<p>Giả sử memory của một model chỉ có ba channel tượng trưng:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">A = con người
+</span></span><span class="line"><span class="ln">2</span><span class="cl">B = địa điểm
+</span></span><span class="line"><span class="ln">3</span><span class="cl">C = thời gian
+</span></span></code></pre></div><p>State hiện tại đại khái chứa:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Tùng
+</span></span><span class="line"><span class="ln">2</span><span class="cl">Hà Nội
+</span></span><span class="line"><span class="ln">3</span><span class="cl">hôm qua
+</span></span></code></pre></div><p>Token mới nói:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Tùng đang ở TP.HCM hôm nay.
+</span></span></code></pre></div><p>Một forget gate kiểu coarse có thể tạo:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">alpha = 0.7
+</span></span></code></pre></div><p>Tức là:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">con người  × 0.7
+</span></span><span class="line"><span class="ln">2</span><span class="cl">địa điểm   × 0.7
+</span></span><span class="line"><span class="ln">3</span><span class="cl">thời gian  × 0.7
+</span></span></code></pre></div><p>Nhưng thứ cần thay đổi mạnh thực ra chỉ là địa điểm và thời gian.</p>
+<p>KDA có thể học một vector kiểu:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">alpha =
+</span></span><span class="line"><span class="ln">2</span><span class="cl">[
+</span></span><span class="line"><span class="ln">3</span><span class="cl">    0.99,   # tên người: giữ
+</span></span><span class="line"><span class="ln">4</span><span class="cl">    0.10,   # địa điểm: quên mạnh
+</span></span><span class="line"><span class="ln">5</span><span class="cl">    0.05    # thời gian: quên mạnh
+</span></span><span class="line"><span class="ln">6</span><span class="cl">]
+</span></span></code></pre></div><p>Sau decay:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Tùng      → gần như nguyên
+</span></span><span class="line"><span class="ln">2</span><span class="cl">Hà Nội    → mờ đi
+</span></span><span class="line"><span class="ln">3</span><span class="cl">hôm qua   → gần biến mất
+</span></span></code></pre></div><p>Sau đó delta update ghi:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">TP.HCM
+</span></span><span class="line"><span class="ln">2</span><span class="cl">hôm nay
+</span></span></code></pre></div><p>Đây không phải cách implement thực tế theo nghĩa các channel thật sự tương ứng trực tiếp với &ldquo;người&rdquo;, &ldquo;địa điểm&rdquo;, &ldquo;thời gian&rdquo;.</p>
+<p>Neural network không chia tensor đẹp đẽ cho chúng ta như Excel.</p>
+<p>Ví dụ trên chỉ để hình dung bản chất:</p>
+<p><strong>mỗi chiều của memory có thể có tốc độ decay khác nhau.</strong></p>
+<h1 id="điều-thú-vị-nhất-của-kda-không-phải-chữ-linear">Điều thú vị nhất của KDA không phải chữ Linear<a class="anchor ms-1" href="#điều-thú-vị-nhất-của-kda-không-phải-chữ-linear"><i class="fas fa-link"></i></a></h1>
+<p>Nếu chỉ nhìn benchmark, ta dễ tóm KDA thành:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">attention nhanh hơn
+</span></span><span class="line"><span class="ln">2</span><span class="cl">KV cache nhỏ hơn
+</span></span><span class="line"><span class="ln">3</span><span class="cl">context dài hơn
+</span></span></code></pre></div><p>Đúng.</p>
+<p>Nhưng hơi phí.</p>
+<p>Theo mình, điều thú vị hơn nằm ở một chuyển dịch tư duy.</p>
+<p>Transformer cổ điển phần nào giải quyết memory bằng cách nói:</p>
+<blockquote>
+<p>Không biết cái gì sẽ quan trọng, vậy giữ quá khứ lại.</p>
+</blockquote>
+<p>KDA nói:</p>
+<blockquote>
+<p>Không thể giữ quá khứ mãi, vậy phải học cách quản lý quá khứ.</p>
+</blockquote>
+<p>Đây là hai triết lý hoàn toàn khác nhau.</p>
+<p>Một bên dùng <strong>storage</strong>.</p>
+<p>Một bên dùng <strong>state</strong>.</p>
+<p>Một bên mua thêm nhà kho.</p>
+<p>Một bên học cách dọn nhà.</p>
+<p>Và lịch sử ngành máy tính có một trò khá buồn cười.</p>
+<p>Mỗi lần hardware lớn lên, chúng ta lại nghĩ:</p>
+<blockquote>
+<p>Cuối cùng memory đủ rồi.</p>
+</blockquote>
+<p>Rồi software lập tức nghĩ ra cách ăn hết nó.</p>
+<p>RAM tăng.</p>
+<p>Dataset tăng.</p>
+<p>VRAM tăng.</p>
+<p>Model tăng.</p>
+<p>Context tăng.</p>
+<p>KV cache tăng.</p>
+<p>Cuối cùng chúng ta lại đứng trước cái máy có hàng trăm GB HBM và hỏi:</p>
+<blockquote>
+<p>Có cách nào dùng ít memory hơn không?</p>
+</blockquote>
+<p>Con người quả là một loài rất kiên định.</p>
+<h1 id="có-thể-kda-báo-trước-một-hướng-đi-lớn-hơn">Có thể KDA báo trước một hướng đi lớn hơn<a class="anchor ms-1" href="#có-thể-kda-báo-trước-một-hướng-đi-lớn-hơn"><i class="fas fa-link"></i></a></h1>
+<p>Trong nhiều năm, phần lớn LLM dựa vào một nguyên tắc tương đối đơn giản:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">context dài hơn
+</span></span><span class="line"><span class="ln">2</span><span class="cl">→ giữ nhiều token hơn
+</span></span><span class="line"><span class="ln">3</span><span class="cl">→ attention trên nhiều token hơn
+</span></span></code></pre></div><p>Nhưng context đang tiến từ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">4K
+</span></span><span class="line"><span class="ln">2</span><span class="cl">32K
+</span></span><span class="line"><span class="ln">3</span><span class="cl">128K
+</span></span><span class="line"><span class="ln">4</span><span class="cl">1M
+</span></span><span class="line"><span class="ln">5</span><span class="cl">...
+</span></span></code></pre></div><p>Nếu tiếp tục tư duy mọi thông tin đều phải nằm nguyên xi trong KV cache, chi phí vật lý sẽ ngày càng khó chịu.</p>
+<p>Có thể tương lai sẽ không chỉ là:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">context lớn hơn
+</span></span></code></pre></div><p>mà là:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">memory thông minh hơn
+</span></span></code></pre></div><p>Một model có thể có nhiều tầng nhớ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">local attention
+</span></span><span class="line"><span class="ln">2</span><span class="cl">        ↓
+</span></span><span class="line"><span class="ln">3</span><span class="cl">recurrent state
+</span></span><span class="line"><span class="ln">4</span><span class="cl">        ↓
+</span></span><span class="line"><span class="ln">5</span><span class="cl">compressed memory
+</span></span><span class="line"><span class="ln">6</span><span class="cl">        ↓
+</span></span><span class="line"><span class="ln">7</span><span class="cl">retrieval
+</span></span><span class="line"><span class="ln">8</span><span class="cl">        ↓
+</span></span><span class="line"><span class="ln">9</span><span class="cl">external storage
+</span></span></code></pre></div><p>Thông tin vài giây trước được giữ rất rõ.</p>
+<p>Thông tin vài phút trước bị nén.</p>
+<p>Thông tin vài ngày trước chuyển sang external memory.</p>
+<p>Thông tin không còn hữu ích bị quên.</p>
+<p>Nghe hơi giống con người.</p>
+<p>Chúng ta cũng không nhớ từng pixel của mọi thứ từng nhìn thấy.</p>
+<p>Nếu nhớ như vậy có khi 5 tuổi đã hết RAM.</p>
+<h1 id="tổng-kết">Tổng kết<a class="anchor ms-1" href="#tổng-kết"><i class="fas fa-link"></i></a></h1>
+<p>Kimi Delta Attention không đơn giản là một phiên bản attention có Big-O đẹp hơn.</p>
+<p>Ý tưởng của nó có thể tóm lại thành bốn bước:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">đọc memory
+</span></span><span class="line"><span class="ln">2</span><span class="cl">→ quên có chọn lọc
+</span></span><span class="line"><span class="ln">3</span><span class="cl">→ sửa phần đang sai
+</span></span><span class="line"><span class="ln">4</span><span class="cl">→ ghi thông tin mới
+</span></span></code></pre></div><p>Thay vì giữ một KV cache tăng mãi theo sequence, KDA sử dụng một recurrent state có kích thước cố định theo chiều dài context. So với Gated DeltaNet, nó làm forget gate chi tiết hơn bằng channel-wise decay, cho phép các chiều của memory quên với tốc độ khác nhau.</p>
+<p>Kimi Linear sau đó kết hợp KDA với global MLA theo kiến trúc hybrid, dùng linear attention cho phần lớn công việc nhưng vẫn giữ các lớp full attention để truy cập trực tiếp quá khứ khi cần. (<a href="https://arxiv.org/abs/2510.26692" title="[2510.26692] Kimi Linear: An Expressive, Efficient Attention Architecture" target="_blank" rel="noopener noreferrer">arXiv</a>) Moonshot tiếp tục mang KDA vào Kimi K3 ở quy mô 2.8 nghìn tỷ tham số và context 1 triệu token. (<a href="https://arxiv.org/abs/2607.24653" title="[2607.24653] Kimi K3: Open Frontier Intelligence" target="_blank" rel="noopener noreferrer">arXiv</a>)</p>
+<p>Có một nghịch lý khá đẹp ở đây.</p>
+<p>Chúng ta thường nghĩ trí thông minh đến từ khả năng <strong>nhớ nhiều hơn</strong>.</p>
+<p>Nhưng đôi khi, thứ làm một hệ thống thông minh hơn lại là khả năng biết:</p>
+<p><strong>cái gì đáng nhớ, cái gì phải sửa, và cái gì nên quên đi.</strong></p>
+<p>Cảm ơn các bạn đã quan tâm và theo dõi bài viết, hẹn gặp lại ở các bài viết tiếp theo.</p>
+<h1 id="tham-khảo">Tham khảo<a class="anchor ms-1" href="#tham-khảo"><i class="fas fa-link"></i></a></h1>
+<ul>
+<li><a href="https://arxiv.org/abs/2510.26692" target="_blank" rel="noopener noreferrer">Kimi Linear: An Expressive, Efficient Attention Architecture</a></li>
+<li><a href="https://github.com/MoonshotAI/Kimi-Linear" target="_blank" rel="noopener noreferrer">MoonshotAI/Kimi-Linear</a></li>
+<li><a href="https://arxiv.org/abs/2607.24653" target="_blank" rel="noopener noreferrer">Kimi K3: Open Frontier Intelligence</a></li>
+<li><a href="https://www.kimi.com/blog/kimi-k3" target="_blank" rel="noopener noreferrer">Kimi K3 Technical Blog</a></li>
+<li><a href="https://arxiv.org/abs/2412.06464" target="_blank" rel="noopener noreferrer">Gated Delta Networks: Improving Mamba2 with Delta Rule</a></li>
+<li><a href="https://arxiv.org/abs/2406.06484" target="_blank" rel="noopener noreferrer">Parallelizing Linear Transformers with the Delta Rule over Sequence Length</a></li>
+<li><a href="https://arxiv.org/abs/2605.22791" target="_blank" rel="noopener noreferrer">Gated DeltaNet-2: Decoupling Erase and Write in Linear Attention</a></li>
+</ul>
+</div></div>
+  <div class="card-footer"><div class="post-navs d-flex justify-content-evenly"><div class="post-nav post-prev">
+    <i class="fas fa-fw fa-chevron-left"></i>
+    <a href="https://www.phamduytung.com/blog/2026-08-08-trends-ai-agent-root-cause-analysis/">Khi log biết tự điều tra: TReNDS dùng AI Agent để tìm Root Cause trong chưa đầy một phút
+</a>
+  </div><div class="post-nav post-next">
+    <a href="https://www.phamduytung.com/blog/2026-08-09-cloudflare-os-ai-agent-enterprise/">Cloudflare OS: Khi AI Agent bắt đầu cần một hệ điều hành riêng cho doanh nghiệp
+</a>
+    <i class="fas fa-fw fa-chevron-right"></i>
+  </div></div></div>
+</article><div class="card component row post-comments" id="post-comments">
+  <div class="card-header">
+    <h2 class="card-title">Bình luận</h2>
+  </div>
+  <div class="card-body"><script src="https://utteranc.es/client.js"
+  repo="AlexBlack2202/utterances"
+  issue-term="pathname"
+  label="comment"
+  theme="github-dark"
+  crossorigin="anonymous"
+  async>
+</script></div>
+</div></div>
+</div><aside class="col-lg-3 col-md-4 sidebar d-flex">
+  <div class="container d-flex flex-column">
+    
+    <a href="https://www.buymeacoffee.com/alexblack28"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=🍎&slug=alexblack28&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" /></a><div class="post-toc row mb-4 card component" id="postTOC">
+  <div class="card-header">
+    <h2 class="card-title">Mục lục</h2>
+  </div>
+  <div class="card-body">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#một-triệu-token-không-hề-ảo">Một triệu token không hề “ảo”</a></li>
+    <li><a href="#attention-giống-một-đứa-trẻ-không-chịu-vứt-giấy-nháp">Attention giống một đứa trẻ không chịu vứt giấy nháp</a></li>
+    <li><a href="#kv-cache-cái-nhà-kho-cứ-dài-ra-mãi">KV cache: cái nhà kho cứ dài ra mãi</a></li>
+    <li><a href="#linear-attention-đừng-giữ-cả-lịch-sử-hãy-giữ-một-bản-tóm-tắt-đang-sống">Linear Attention: đừng giữ cả lịch sử, hãy giữ một bản tóm tắt đang sống</a></li>
+    <li><a href="#vấn-đề-của-một-cái-bảng-trắng-ghi-mãi-rồi-nó-thành-cháo">Vấn đề của một cái bảng trắng: ghi mãi rồi nó thành cháo</a></li>
+    <li><a href="#delta-rule-trước-khi-ghi-hãy-xem-mình-đang-nhớ-sai-cái-gì">Delta Rule: trước khi ghi, hãy xem mình đang nhớ sai cái gì</a></li>
+    <li><a href="#gated-deltanet-trí-nhớ-cần-một-cái-nút-quên">Gated DeltaNet: trí nhớ cần một cái nút quên</a></li>
+    <li><a href="#kimi-delta-attention-mỗi-phần-của-ký-ức-được-quyền-quên-khác-nhau">Kimi Delta Attention: mỗi phần của ký ức được quyền quên khác nhau</a></li>
+    <li><a href="#full-attention-và-kda-khác-nhau-ở-triết-lý-nhớ">Full Attention và KDA khác nhau ở triết lý nhớ</a></li>
+    <li><a href="#tại-sao-kimi-không-bỏ-full-attention-hoàn-toàn">Tại sao Kimi không bỏ full attention hoàn toàn?</a></li>
+    <li><a href="#kda-không-chỉ-là-công-thức-toán-nó-còn-phải-chạy-được-trên-gpu">KDA không chỉ là công thức toán, nó còn phải chạy được trên GPU</a></li>
+    <li><a href="#rồi-kimi-k3-xuất-hiện">Rồi Kimi K3 xuất hiện</a></li>
+    <li><a href="#nhưng-kda-không-phải-phép-thuật">Nhưng KDA không phải phép thuật</a>
+      <ul>
+        <li><a href="#bộ-nhớ-bị-nén">Bộ nhớ bị nén</a></li>
+        <li><a href="#quên-cũng-có-thể-quên-nhầm">Quên cũng có thể quên nhầm</a></li>
+        <li><a href="#delta-rule-vẫn-còn-coupling">Delta Rule vẫn còn coupling</a></li>
+      </ul>
+    </li>
+    <li><a href="#một-ví-dụ-nhỏ">Một ví dụ nhỏ</a></li>
+    <li><a href="#điều-thú-vị-nhất-của-kda-không-phải-chữ-linear">Điều thú vị nhất của KDA không phải chữ Linear</a></li>
+    <li><a href="#có-thể-kda-báo-trước-một-hướng-đi-lớn-hơn">Có thể KDA báo trước một hướng đi lớn hơn</a></li>
+    <li><a href="#tổng-kết">Tổng kết</a></li>
+    <li><a href="#tham-khảo">Tham khảo</a></li>
+  </ul>
+</nav>
+  </div>
+</div><section class="recent-posts row card component">
+  <div class="card-header">
+    <h2 class="card-title">Bài gần đây</h2>
+  </div>
+  <div class="card-body">
+    <ul class="post-list"><li>
+        <a href="https://www.phamduytung.com/blog/2026-08-09-kimi-delta-attention/">Kimi Delta Attention: Khi AI học cách nhớ như một cái bảng trắng thay vì ôm cả nhà kho
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-08-09-cloudflare-os-ai-agent-enterprise/">Cloudflare OS: Khi AI Agent bắt đầu cần một hệ điều hành riêng cho doanh nghiệp
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-08-09-airllm-layer-streaming-4gb-vram/">AirLLM: Nhét một mô hình 2.8 nghìn tỷ tham số qua khe cửa 4GB VRAM
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-08-08-trends-ai-agent-root-cause-analysis/">Khi log biết tự điều tra: TReNDS dùng AI Agent để tìm Root Cause trong chưa đầy một phút
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-08-07-kitesurf-agent-first-browser/">Kitesurf: Khi trình duyệt không còn được xây cho con người
+</a>
+      </li></ul>
+  </div>
+</section><section class="series-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/series">series</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/series/kh%C3%B3a-h%E1%BB%8Dc-python-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học Python Căn Bản">
+            Khóa Học Python Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="https://www.phamduytung.com/series/kh%C3%B3a-h%E1%BB%8Dc-c&#43;&#43;-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học C&#43;&#43; Căn Bản">
+            Khóa Học C&#43;&#43; Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="https://www.phamduytung.com/series/machine-learning-dataset/" class="badge rounded post-taxonomy" title="Machine Learning Dataset">
+            Machine Learning Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a><a href="https://www.phamduytung.com/series/ch%E1%BB%A9ng-kho%C3%A1n-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Chứng Khoán Căn Bản">
+            Chứng Khoán Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">1</span></a></div>
+      </div>
+    </section><section class="tools-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/tools">tools</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/tools/tool-random/" class="badge rounded post-taxonomy" title="Tool Random">
+            Tool Random<span class="badge badge-sm text-white bg-accent ms-1">3</span></a></div>
+      </div>
+    </section><section class="categories-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/categories">categories</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/categories/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="https://www.phamduytung.com/categories/c&#43;&#43;/" class="badge rounded post-taxonomy" title="C&#43;&#43;">
+            C&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="https://www.phamduytung.com/categories/dataset/" class="badge rounded post-taxonomy" title="Dataset">
+            Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a></div>
+      </div>
+    </section><section class="tags-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/tags">tags</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/tags/machine-learning/" class="badge rounded post-taxonomy" title="Machine Learning">
+            Machine Learning<span class="badge badge-sm text-white bg-accent ms-1">26</span></a><a href="https://www.phamduytung.com/tags/deep-learning/" class="badge rounded post-taxonomy" title="Deep Learning">
+            Deep Learning<span class="badge badge-sm text-white bg-accent ms-1">23</span></a><a href="https://www.phamduytung.com/tags/llm/" class="badge rounded post-taxonomy" title="LLM">
+            LLM<span class="badge badge-sm text-white bg-accent ms-1">17</span></a><a href="https://www.phamduytung.com/tags/computer-vision/" class="badge rounded post-taxonomy" title="Computer Vision">
+            Computer Vision<span class="badge badge-sm text-white bg-accent ms-1">16</span></a><a href="https://www.phamduytung.com/tags/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">14</span></a><a href="https://www.phamduytung.com/tags/ai-agent/" class="badge rounded post-taxonomy" title="AI Agent">
+            AI Agent<span class="badge badge-sm text-white bg-accent ms-1">10</span></a><a href="https://www.phamduytung.com/tags/recommendation-system/" class="badge rounded post-taxonomy" title="Recommendation System">
+            Recommendation System<span class="badge badge-sm text-white bg-accent ms-1">7</span></a><a href="https://www.phamduytung.com/tags/system-design/" class="badge rounded post-taxonomy" title="System Design">
+            System Design<span class="badge badge-sm text-white bg-accent ms-1">7</span></a><a href="https://www.phamduytung.com/tags/time-series/" class="badge rounded post-taxonomy" title="Time Series">
+            Time Series<span class="badge badge-sm text-white bg-accent ms-1">6</span></a><a href="https://www.phamduytung.com/tags/uber-engineering/" class="badge rounded post-taxonomy" title="Uber Engineering">
+            Uber Engineering<span class="badge badge-sm text-white bg-accent ms-1">6</span></a></div>
+      </div>
+    </section>
+    
+  </div>
+</aside>
+</div>
+    </main><footer class="footer mt-auto py-3 text-center container"><ul class="nav justify-content-between footer-memu mb-3"><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Community
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-facebook"></i>Facebook Group
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://github.com/AlexBlack2202/alexblack2202.github.io" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-github"></i>GitHub
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/contact/"><i class="fas fa-fw fa-info-circle"></i>Contact Us
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/faq/"><i class="fas fa-fw fa-question-circle"></i>Câu hỏi thường gặp
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Docs
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="/team_of_services" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-users"></i>Điều khoản sử dụng
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/privacy" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-lock"></i>Chính sách bảo mật
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Features
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="/utils/gen_paswords/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-key"></i>Tạo password ngẫu nhiên
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Liên kết khác
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">Netlify
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">facebook
+</a>
+        </li></ul></li></ul>
+<div class="copyright mb-2">
+  Copyright © 2016-2026 Phạm Duy Tùng. All Rights Reserved.
+</div>
+<div class="powered-by mb-2">
+  Website chia sẻ kiến thức của Phạm Duy Tùng và Đặng Thị Hằng. Vui lòng liên hệ email alexblack2202@gmail.com nếu bạn có thông tin cần trao đổi.
+</div></footer>
+<script src="https://www.phamduytung.com/js/main.111d51a8c754010f8399ca010e552d803e2d5170b361f8886ad04ec6c21ca551.js" integrity="sha256-ER1RqMdUAQ&#43;DmcoBDlUtgD4tUXCzYfiIatBOxsIcpVE=" crossorigin="anonymous" defer></script><script src="https://www.phamduytung.com/js/icons.min.cb4c9958dbc49e29ac644e168e82db2d0de9a741a15751cc5bf2b0af21eb2845.js" integrity="sha256-y0yZWNvEnimsZE4WjoLbLQ3pp0GhV1HMW/KwryHrKEU=" crossorigin="anonymous" defer></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('https:\/\/www.phamduytung.com\/service-worker.js').then(function(reg) {
+      console.log('Successfully registered service worker', reg);
+    }).catch(function(err) {
+      console.warn('Error whilst registering service worker', err);
+    });
+  });
+}
+</script><script src="https://www.phamduytung.com/js/viewer.min.28bcf5233e406dae6715f46c8b9e8ca7c6cbf347e8678f5a2bebe5369c3270bb.js" integrity="sha256-KLz1Iz5Aba5nFfRsi56Mp8bL80foZ49aK&#43;vlNpwycLs=" crossorigin="anonymous" defer></script><script defer src="https://www.phamduytung.com/js/katex.min.8582b9feadf92a2a977ed303b97d7713cf2754ccf2b4eb60d8be7453a21042c2.js" integrity="sha256-hYK5/q35KiqXftMDuX13E88nVMzytOtg2L50U6IQQsI=" crossorigin="anonymous"></script>
+
+<script  data-ad-client="ca-pub-4644989745435991"  async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4644989745435991"
+     crossorigin="anonymous"></script><script data-cfasync="false" type="text/javascript" data-adel="atag" src="//acscdn.com/script/atg.js" czid="eul3gyjdmm"></script>
+  </body>
+</html>

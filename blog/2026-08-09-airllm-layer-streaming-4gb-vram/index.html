@@ -1,0 +1,1116 @@
+<!doctype html><html lang="vi" data-palette="brown"
+   data-mode="light">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>AirLLM: Nhét một mô hình 2.8 nghìn tỷ tham số qua khe cửa 4GB VRAM - Phạm Duy Tùng Machine Learning Blog</title>
+    <meta name="a.validate.02" content="1QZXZ8oi7g57H-GxBrBPkTYBydwii-Ic9iJu" /><link rel="apple-touch-icon" href="https://www.phamduytung.com/images/icons/icon-180x180.png" sizes="180x180">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/icon-32x32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/icon-16x16.png" sizes="16x16" type="image/png">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/favicon.ico">
+<link rel="manifest" href="https://www.phamduytung.com/manifest.json">
+<meta name="keywords" content="" />
+<meta name="description" content="AirLLM không làm mô hình nhỏ đi. Nó biến GPU thành một căn phòng nhỏ, chỉ đưa từng layer hoặc từng expert vào tính toán rồi lập tức đẩy ra ngoài. Đổi lại, VRAM giảm cực mạnh nhưng disk I/O và latency trở thành cái giá phải trả." /><meta name="robots" content="index, follow" />
+	<meta itemprop="name" content="AirLLM: Nhét một mô hình 2.8 nghìn tỷ tham số qua khe cửa 4GB VRAM">
+	<meta itemprop="description" content="AirLLM không làm mô hình nhỏ đi. Nó biến GPU thành một căn phòng nhỏ, chỉ đưa từng layer hoặc từng expert vào tính toán rồi lập tức đẩy ra ngoài. Đổi lại, VRAM giảm cực mạnh nhưng disk I/O và latency trở thành cái giá phải trả.">
+	<meta itemprop="datePublished" content="2026-08-09T00:00:00+07:00">
+	<meta itemprop="dateModified" content="2026-08-09T00:00:00+07:00">
+	<meta itemprop="wordCount" content="3876">
+	<meta itemprop="image" content="https://www.phamduytung.com/images/posts/2026-08-09-airllm-layer-streaming-4gb-vram/cover-pearl-glass.png">
+	<meta itemprop="keywords" content="LLM,AirLLM,Gpu,Inference,Model Serving"><meta property="og:url" content="https://www.phamduytung.com/blog/2026-08-09-airllm-layer-streaming-4gb-vram/">
+	<meta property="og:site_name" content="Phạm Duy Tùng Machine Learning Blog">
+	<meta property="og:title" content="AirLLM: Nhét một mô hình 2.8 nghìn tỷ tham số qua khe cửa 4GB VRAM">
+	<meta property="og:description" content="AirLLM không làm mô hình nhỏ đi. Nó biến GPU thành một căn phòng nhỏ, chỉ đưa từng layer hoặc từng expert vào tính toán rồi lập tức đẩy ra ngoài. Đổi lại, VRAM giảm cực mạnh nhưng disk I/O và latency trở thành cái giá phải trả.">
+	<meta property="og:locale" content="vi_VN">
+	<meta property="og:type" content="article">
+		<meta property="article:section" content="blog">
+		<meta property="article:published_time" content="2026-08-09T00:00:00+07:00">
+		<meta property="article:modified_time" content="2026-08-09T00:00:00+07:00">
+		<meta property="article:tag" content="LLM">
+		<meta property="article:tag" content="AirLLM">
+		<meta property="article:tag" content="Gpu">
+		<meta property="article:tag" content="Inference">
+		<meta property="article:tag" content="Model Serving">
+		<meta property="og:image" content="https://www.phamduytung.com/images/posts/2026-08-09-airllm-layer-streaming-4gb-vram/cover-pearl-glass.png">
+
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:image" content="https://www.phamduytung.com/images/posts/2026-08-09-airllm-layer-streaming-4gb-vram/cover-pearl-glass.png">
+	<meta name="twitter:title" content="AirLLM: Nhét một mô hình 2.8 nghìn tỷ tham số qua khe cửa 4GB VRAM">
+	<meta name="twitter:description" content="AirLLM không làm mô hình nhỏ đi. Nó biến GPU thành một căn phòng nhỏ, chỉ đưa từng layer hoặc từng expert vào tính toán rồi lập tức đẩy ra ngoài. Đổi lại, VRAM giảm cực mạnh nhưng disk I/O và latency trở thành cái giá phải trả.">
+<link rel="stylesheet" href="https://www.phamduytung.com/css/main.min.b0c1cbac9b623898b99bc3fccc2a09b35f812c6bd39f419020c06b9be74cd77d.css" integrity="sha256-sMHLrJtiOJi5m8P8zCoJs1&#43;BLGvTn0GQIMBrm&#43;dM130=" crossorigin="anonymous"><link rel="stylesheet" href="https://www.phamduytung.com/css/katex.min.4d6aa053ca8a5675016fa2c9c48ee5359bfaafb8295184458af9d64abce84c47.css" integrity="sha256-TWqgU8qKVnUBb6LJxI7lNZv6r7gpUYRFivnWSrzoTEc=" crossorigin="anonymous">
+<link rel="stylesheet" href="https://www.phamduytung.com/css/viewer.min.e882eb3a023412b73bb741b4604a1222a9f13aa7783c828d26d066ab8642bd51.css" integrity="sha256-6ILrOgI0Erc7t0G0YEoSIqnxOqd4PIKNJtBmq4ZCvVE=" crossorigin="anonymous"><link rel="canonical" href="https://www.phamduytung.com/blog/2026-08-09-airllm-layer-streaming-4gb-vram/">
+<meta name="theme-color" content="#f7f5ff"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Phạm Duy Tùng"},"dateModified":"2026-08-09T00:00:00+07:00","datePublished":"2026-08-09T00:00:00+07:00","description":"AirLLM không làm mô hình nhỏ đi. Nó biến GPU thành một căn phòng nhỏ, chỉ đưa từng layer hoặc từng expert vào tính toán rồi lập tức đẩy ra ngoài. Đổi lại, VRAM giảm cực mạnh nhưng disk I/O và latency trở thành cái giá phải trả.","headline":"AirLLM: Nhét một mô hình 2.8 nghìn tỷ tham số qua khe cửa 4GB VRAM","image":["https://www.phamduytung.com/images/posts/2026-08-09-airllm-layer-streaming-4gb-vram/cover-pearl-glass.png"],"inLanguage":"vi","keywords":"LLM, AirLLM, GPU, Inference, Model Serving","mainEntityOfPage":{"@id":"https://www.phamduytung.com/blog/2026-08-09-airllm-layer-streaming-4gb-vram/","@type":"WebPage"},"publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://www.phamduytung.com/images/logo.png"},"name":"Phạm Duy Tùng Machine Learning Blog"},"url":"https://www.phamduytung.com/blog/2026-08-09-airllm-layer-streaming-4gb-vram/"}</script></head>
+  <body><script>const items=["mode","palette"];items.forEach(function(e){const t=localStorage.getItem("hbs-"+e);t&&document.body.parentElement.setAttribute("data-"+e,t)})</script><header><nav class="navbar top-app-bar top-app-bar-expand-lg fixed-top">
+  <div class="container pearl-navbar__inner">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Mở menu">
+      <i class="fas fa-bars"></i>
+    </button>
+
+    <a class="navbar-brand pearl-brand flex-grow-1 flex-lg-grow-0" href="https://www.phamduytung.com/">
+      <span class="pearl-brand__mark" aria-hidden="true">PT</span>
+      <span class="pearl-brand__copy">
+        <strong>Phạm Duy Tùng</strong>
+        <small>AI · DATA · SYSTEMS</small>
+      </span>
+    </a>
+
+    <div class="offcanvas offcanvas-bottom surface" tabindex="-1" id="offcanvasSocialShare" aria-labelledby="offcanvasSocialShare">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Share</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body">
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Twitter Share Button"
+      target="_blank" href="https://twitter.com/intent/tweet?title=AirLLM%3a%20Nh%c3%a9t%20m%e1%bb%99t%20m%c3%b4%20h%c3%acnh%202.8%20ngh%c3%acn%20t%e1%bb%b7%20tham%20s%e1%bb%91%20qua%20khe%20c%e1%bb%ada%204GB%20VRAM&url=https%3a%2f%2fwww.phamduytung.com%2fblog%2f2026-08-09-airllm-layer-streaming-4gb-vram%2f">
+      <i class="fab fa-fw fa-twitter"></i> Twitter
+    </a>
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Facebook Share Button"
+      target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.phamduytung.com%2fblog%2f2026-08-09-airllm-layer-streaming-4gb-vram%2f">
+      <i class="fab fa-fw fa-facebook-f"></i> Facebook
+    </a>
+  </div>
+</div>
+    <button class="navbar-settings" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSettings"
+  aria-controls="offcanvasSettings" aria-label="Toggle settings">
+  <i class="fas fa-ellipsis-v"></i>
+</button>
+
+<div class="offcanvas offcanvas-end surface h-100" tabindex="-1" id="offcanvasSettings" aria-labelledby="offcanvasSettings">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Cài đặt</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body d-flex flex-column">
+
+
+
+<section class="setting">
+  <form class="font-size-switcher-form row">
+    <div class="col-auto">
+      <label for="fontSize" class="form-label"><i class="fas fa-fw fa-font"></i> Cỡ chữ</label>
+    </div>
+    <div class="col-auto ms-auto">
+      <input type="range" class="form-range" min="-2" max="2" id="fontSize">
+    </div>
+  </form>
+</section>
+
+
+
+<section class="setting actions d-flex justify-content-around mt-auto overflow-auto">
+  <a role="button" class="action action-go-back" href="javascript: window.history.back();">
+    <span class="action-icon"><i class="fas fa-2x fa-arrow-left"></i></span> Quay lại
+  </a>
+  <a role="button" class="action action-reload-page">
+    <span class="action-icon"><i class="fas fa-2x fa-redo-alt"></i></span> Tải lại
+  </a>
+  <a role="button" class="action action-copy-url">
+    <span class="action-icon"><i class="fas fa-2x fa-link"></i></span> Sao chép URL
+  </a><a class="action action-social-share" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSocialShare"
+    aria-controls="offcanvasSocialShare" aria-label="Toggle social share">
+    <span class="action-icon"><i class="fas fa-2x fa-share-alt"></i></span> Chia sẻ
+  </a></section>
+
+</div>
+</div>
+
+    <div class="collapse navbar-collapse" tabindex="-1" id="navbarSupportedContent" aria-labelledby="navbarSupportedContent">
+      <form class="search-bar my-1" action="https://www.phamduytung.com/search">
+  <div class="input-group input-group-sm">
+    <span class="btn btn-search disabled position-absolute left-0"><i class="fas fa-fw fa-search"></i></span>
+    <input class="form-control rounded-pill" name="q" type="search" aria-label="Search">
+  </div>
+</form>
+      <ul class="navbar-nav ms-auto"><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/series/">
+            <i class="fas fa-fw fa-columns"></i>Courses
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/tools/">
+            <i class="fas fa-fw fa-folder"></i>Tools
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/categories/">
+            <i class="fas fa-fw fa-folder"></i>Categories
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/archives/">
+            <i class="fas fa-fw fa-file-archive"></i>Archives
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/tags/">
+            <i class="fas fa-fw fa-tags"></i>Tags
+          </a>
+        </li><li class="nav-item dropdown">
+          <a class="nav-link" id="navbarDropdownSupport" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-fw fa-comments"></i>Community
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdownSupport"><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Facebook Group
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://github.com/AlexBlack2202/alexblack2202.github.io" target="_blank" rel="noopener noreferrer">
+                GitHub
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/contact/">
+                Contact
+              </a>
+            </li><li><hr class="dropdown-divider"></li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/faq/">
+                Câu hỏi thường gặp
+              </a>
+            </li></ul>
+        </li></ul>
+    </div>
+  </div>
+</nav>
+</header>
+<main role="main" class="container" style="line-height:1.7em">
+      <div class="row content">
+<div class="col-lg-9 col-md-8">
+  <div class="container"><nav class="row card component" aria-label="breadcrumb">
+  <div class="card-body">
+    <ol class="breadcrumb "><li class="breadcrumb-item"><a href="https://www.phamduytung.com/">Trang chủ</a></li><li class="breadcrumb-item"><a href="https://www.phamduytung.com/blog/">Blogs</a></li><li class="breadcrumb-item active">AirLLM: Nhét một mô hình 2.8 nghìn tỷ tham số qua khe cửa 4GB VRAM</li></ol>
+  </div>
+</nav>
+<div class="post-panel-wrapper">
+  <div class="d-flex flex-column component rounded post-panel">
+    
+    <a class="action action-panel-toggler" role="button" title="Panel toggler">
+      <i class="fas fa-fw fa-chevron-circle-down"></i>
+    </a>
+    <a id="sidebarToggler" class="action d-none d-lg-block" role="button" title="Sidebar toggler">
+  <i class="fas fa-fw fa-expand-alt" data-fa-transform="rotate-45"></i>
+</a>
+
+    
+
+    
+    
+    <a class="action" href="#post-comments" role="button" aria-label="Comments" title="Comments">
+  <i class="fas fa-fw fa-comments"></i>
+</a>
+    <a class="action" href="#postTOC" aria-controls="Table of contents" role="button" title="Table of contents">
+  <i class="fas fa-fw fa-list-alt"></i>
+</a>
+    
+  </div>
+</div>
+<article class="row card component mb-4 post">
+  <div class="card-header "><div class="bgcover" style="background-image:url(https://www.phamduytung.com/images/posts/2026-08-09-airllm-layer-streaming-4gb-vram/cover-pearl-glass.png)" aria-label="AirLLM: Nhét một mô hình 2.8 nghìn tỷ tham số qua khe cửa 4GB VRAM">
+      <div class="bgtrans">
+          <h1>AirLLM: Nhét một mô hình 2.8 nghìn tỷ tham số qua khe cửa 4GB VRAM
+</h1>
+      </div>
+  </div>
+</div>
+  <div class="card-body"><div class="post-meta">
+  <span class="post-date" title="tạo ngày 2026-08-09 00:00:00 &#43;0700 &#43;07.">
+    09/08/2026
+  </span><span class="post-reading-time">
+    19 phút đọc
+  </span><span class="post-taxonomies"><a href="https://www.phamduytung.com/tags/llm/" class="badge post-taxonomy">LLM</a><a href="https://www.phamduytung.com/tags/airllm/" class="badge post-taxonomy">AirLLM</a><a href="https://www.phamduytung.com/tags/gpu/" class="badge post-taxonomy">gpu</a><a href="https://www.phamduytung.com/tags/inference/" class="badge post-taxonomy">Inference</a><a href="https://www.phamduytung.com/tags/model-serving/" class="badge post-taxonomy">Model Serving</a></span>
+</div>
+<div class="post-content mb-3"><hr>
+<div class="toc">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#không-phải-cái-gì-không-nằm-trong-ram-cũng-biến-mất">Không phải cái gì không nằm trong RAM cũng biến mất</a></li>
+    <li><a href="#airllm-là-gì">AirLLM là gì?</a></li>
+    <li><a href="#bình-thường-llm-ăn-vram-như-thế-nào">Bình thường LLM ăn VRAM như thế nào?</a></li>
+    <li><a href="#ý-tưởng-của-airllm-layer-wise-streaming">Ý tưởng của AirLLM: layer-wise streaming</a></li>
+    <li><a href="#nhưng-dữ-liệu-phải-chạy-một-vòng-rất-xa">Nhưng dữ liệu phải chạy một vòng rất xa</a></li>
+    <li><a href="#prefetch-trong-lúc-gpu-ăn-món-này-bếp-chuẩn-bị-món-tiếp-theo">Prefetch: trong lúc GPU ăn món này, bếp chuẩn bị món tiếp theo</a></li>
+    <li><a href="#kimi-k3-khiến-airllm-phải-tiến-thêm-một-bước">Kimi K3 khiến AirLLM phải tiến thêm một bước</a></li>
+    <li><a href="#per-expert-streaming">Per-expert streaming</a></li>
+    <li><a href="#28t-parameter-chạy-trong-372gb-vram-có-thật-không">2.8T parameter chạy trong 3.72GB VRAM có thật không?</a></li>
+    <li><a href="#vậy-4gb-ở-đây-thực-sự-có-nghĩa-là-gì">Vậy 4GB ở đây thực sự có nghĩa là gì?</a></li>
+    <li><a href="#airllm-rất-giống-virtual-memory">AirLLM rất giống virtual memory</a></li>
+    <li><a href="#tại-sao-airllm-không-giống-vllm">Tại sao AirLLM không giống vLLM?</a></li>
+    <li><a href="#compression-có-cứu-được-tốc-độ-không">Compression có cứu được tốc độ không?</a></li>
+    <li><a href="#airllm-phù-hợp-với-bài-toán-nào">AirLLM phù hợp với bài toán nào?</a>
+      <ul>
+        <li><a href="#1-thử-model-mà-phần-cứng-không-đủ-chứa">1. Thử model mà phần cứng không đủ chứa</a></li>
+        <li><a href="#2-nghiên-cứu-model-khổng-lồ-trên-workstation">2. Nghiên cứu model khổng lồ trên workstation</a></li>
+        <li><a href="#3-batch-job-không-nhạy-latency">3. Batch job không nhạy latency</a></li>
+      </ul>
+    </li>
+    <li><a href="#và-khi-nào-không-nên-dùng">Và khi nào không nên dùng?</a>
+      <ul>
+        <li><a href="#api-realtime">API realtime</a></li>
+        <li><a href="#serving-nhiều-concurrent-user">Serving nhiều concurrent user</a></li>
+        <li><a href="#khi-model-đã-fit-trong-vram">Khi model đã fit trong VRAM</a></li>
+      </ul>
+    </li>
+    <li><a href="#một-điểm-rất-hay-trong-airllm-3x-không-tự-viết-lại-transformer">Một điểm rất hay trong AirLLM 3.x: không tự viết lại Transformer</a></li>
+    <li><a href="#bài-học-lớn-hơn-airllm">Bài học lớn hơn AirLLM</a></li>
+    <li><a href="#nhưng-vật-lý-cuối-cùng-vẫn-thu-tiền">Nhưng vật lý cuối cùng vẫn thu tiền</a></li>
+    <li><a href="#tổng-kết">Tổng kết</a>
+      <ul>
+        <li><a href="#tham-khảo">Tham khảo</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+<h1 id="không-phải-cái-gì-không-nằm-trong-ram-cũng-biến-mất">Không phải cái gì không nằm trong RAM cũng biến mất<a class="anchor ms-1" href="#không-phải-cái-gì-không-nằm-trong-ram-cũng-biến-mất"><i class="fas fa-link"></i></a></h1>
+<p>Giả sử nhà bạn có một cái bàn rộng đúng một mét.</p>
+<p>Bây giờ có người chở tới một bộ Lego dài 100 mét và bảo:</p>
+<blockquote>
+<p>Hãy ráp nó trên cái bàn này.</p>
+</blockquote>
+<p>Phản ứng bình thường là:</p>
+<p>Không thể.</p>
+<p>Cái bàn một mét thì làm sao chứa bộ Lego dài 100 mét?</p>
+<p>Nhưng một đứa trẻ sáu tuổi có thể nghĩ theo cách khác.</p>
+<p>Nó không đem cả bộ Lego lên bàn.</p>
+<p>Nó lấy hộp số 1 ra, ráp xong, cất xuống đất.</p>
+<p>Lấy hộp số 2 lên.</p>
+<p>Ráp.</p>
+<p>Cất xuống.</p>
+<p>Rồi hộp số 3.</p>
+<p>Cứ thế cho tới hộp số 100.</p>
+<p>Cái bàn chưa bao giờ chứa toàn bộ bộ Lego.</p>
+<p>Nó chỉ chứa <strong>phần đang được xử lý ở thời điểm hiện tại</strong>.</p>
+<p>AirLLM làm một chuyện khá giống như vậy với Large Language Model.</p>
+<p>Thông thường, muốn chạy một mô hình lớn, chúng ta nghĩ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Model weights
+</span></span><span class="line"><span class="ln">2</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln">3</span><span class="cl">GPU VRAM
+</span></span><span class="line"><span class="ln">4</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln">5</span><span class="cl">Inference
+</span></span></code></pre></div><p>Model 70B dùng BF16 thì riêng weights đã có kích thước xấp xỉ:</p>
+<p>$$
+70 \times 10^9 \times 2 \approx 140GB
+$$</p>
+<p>Nhìn vào GPU 24GB, 48GB hay 80GB, chúng ta bắt đầu cộng trừ nhân chia số card.</p>
+<p>Nhưng AirLLM hỏi một câu hơi ngáo:</p>
+<p><strong>Ai bảo phải nhét toàn bộ model vào GPU cùng một lúc?</strong></p>
+<p>Thế là bài toán đổi thành:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">SSD
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl"> ↓
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">CPU RAM
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl"> ↓
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">GPU
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl"> ↓
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">tính một layer
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl"> ↓
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">ném layer đó ra
+</span></span><span class="line"><span class="ln">10</span><span class="cl"> ↓
+</span></span><span class="line"><span class="ln">11</span><span class="cl">load layer tiếp theo
+</span></span></code></pre></div><p>Đây là tư tưởng quan trọng nhất của AirLLM.</p>
+<p>Nó không làm con voi nhỏ lại.</p>
+<p>Nó bắt con voi đi qua cửa <strong>từng khúc một</strong>.</p>
+<p>Nghe hơi bạo lực, nhưng về mặt kỹ thuật lại khá hợp lý.</p>
+<h1 id="airllm-là-gì">AirLLM là gì?<a class="anchor ms-1" href="#airllm-là-gì"><i class="fas fa-link"></i></a></h1>
+<p>AirLLM là một thư viện Python tập trung vào một mục tiêu rất cụ thể:</p>
+<p><strong>giảm lượng GPU VRAM cần thiết để inference các mô hình cực lớn.</strong></p>
+<p>Repository hiện tại quảng bá những con số khá kinh khủng:</p>
+<ul>
+<li>Llama 70B có thể chạy với khoảng 4GB VRAM.</li>
+<li>Llama 3.1 405B khoảng 8GB.</li>
+<li>DeepSeek-V3 671B khoảng 12GB.</li>
+<li>Qwen3-235B khoảng 3GB.</li>
+<li>Kimi K3 2.8T đã được chạy thử với peak VRAM khoảng 3.72GB.</li>
+</ul>
+<p>Nhìn bảng đó lần đầu rất dễ sinh ra một suy nghĩ nguy hiểm:</p>
+<blockquote>
+<p>Vậy từ nay khỏi mua GPU lớn?</p>
+</blockquote>
+<p>Không.</p>
+<p>AirLLM giải quyết bài toán <strong>capacity</strong>, chứ không làm biến mất định luật vật lý.</p>
+<p>Weights vẫn phải nằm ở đâu đó.</p>
+<p>Nếu không nằm trong VRAM thì nó nằm trên RAM.</p>
+<p>Nếu không nằm trên RAM thì nằm trên SSD.</p>
+<p>Nếu model có checkpoint 1.5TB thì ổ đĩa của bạn vẫn phải chứa hơn 1.5TB dữ liệu.</p>
+<p>Không có gì là hoàn toàn ảo.</p>
+<p>Một parameter dù được gọi bằng những cái tên rất đẹp như neural network, tensor hay artificial intelligence, cuối cùng vẫn phải biến thành những bit thật nằm trên transistor thật, chạy qua controller thật, qua PCIe thật, rồi cuối cùng đập vào hàng tỷ transistor bên trong GPU.</p>
+<p>AirLLM không xóa khối vật chất đó.</p>
+<p>Nó chỉ <strong>thay đổi thời điểm khối vật chất ấy xuất hiện trong GPU</strong>.</p>
+<h1 id="bình-thường-llm-ăn-vram-như-thế-nào">Bình thường LLM ăn VRAM như thế nào?<a class="anchor ms-1" href="#bình-thường-llm-ăn-vram-như-thế-nào"><i class="fas fa-link"></i></a></h1>
+<p>Giả sử chúng ta có một Transformer đơn giản gồm 80 layer.</p>
+<p>Có thể tưởng tượng nó như một dây chuyền:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">Token
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">  ↓
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">Embedding
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">  ↓
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">Layer 0
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">  ↓
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">Layer 1
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">  ↓
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">Layer 2
+</span></span><span class="line"><span class="ln">10</span><span class="cl">  ↓
+</span></span><span class="line"><span class="ln">11</span><span class="cl">...
+</span></span><span class="line"><span class="ln">12</span><span class="cl">  ↓
+</span></span><span class="line"><span class="ln">13</span><span class="cl">Layer 79
+</span></span><span class="line"><span class="ln">14</span><span class="cl">  ↓
+</span></span><span class="line"><span class="ln">15</span><span class="cl">LM Head
+</span></span><span class="line"><span class="ln">16</span><span class="cl">  ↓
+</span></span><span class="line"><span class="ln">17</span><span class="cl">Token tiếp theo
+</span></span></code></pre></div><p>Khi chạy kiểu truyền thống, weights của 80 layer thường được giữ sẵn trong GPU.</p>
+<p>Khi token đi tới Layer 37, Layer 37 đã ngồi đó chờ.</p>
+<p>GPU chỉ việc lấy dữ liệu và tính.</p>
+<p>Đây là cách nhanh.</p>
+<p>Nhưng rất tốn VRAM.</p>
+<p>AirLLM nhìn vào chuỗi này và phát hiện một chuyện hiển nhiên đến mức đôi khi chúng ta không để ý:</p>
+<p>Khi đang tính Layer 37 thì chúng ta đâu cần weights của Layer 62 ngay lúc đó.</p>
+<p>Vậy tại sao phải bắt Layer 62 ngồi chiếm ghế trong VRAM?</p>
+<h1 id="ý-tưởng-của-airllm-layer-wise-streaming">Ý tưởng của AirLLM: layer-wise streaming<a class="anchor ms-1" href="#ý-tưởng-của-airllm-layer-wise-streaming"><i class="fas fa-link"></i></a></h1>
+<p>Phiên bản hiện tại của AirLLM dựng model bằng <code>init_empty_weights()</code> của Hugging Face Accelerate.</p>
+<p>Các parameter ban đầu được tạo trên <strong>meta device</strong>.</p>
+<p>Meta tensor là một thứ khá vui.</p>
+<p>Nó biết:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">shape = [8192, 8192]
+</span></span><span class="line"><span class="ln">2</span><span class="cl">dtype = bfloat16
+</span></span></code></pre></div><p>nhưng không thực sự giữ 134MB dữ liệu tương ứng.</p>
+<p>Nói đơn giản:</p>
+<p>Nó giống bản vẽ của một cái tủ.</p>
+<p>Biết cái tủ rộng bao nhiêu, cao bao nhiêu, có mấy ngăn.</p>
+<p>Nhưng cái tủ chưa được đóng bằng gỗ.</p>
+<p>Nhờ vậy AirLLM có thể tạo cấu trúc của một model cực lớn mà chưa phải nhét toàn bộ weights vào RAM hay VRAM.</p>
+<p>Sau đó AirLLM gắn các <code>forward hook</code> vào:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">embedding
+</span></span><span class="line"><span class="ln">2</span><span class="cl">decoder layer 0
+</span></span><span class="line"><span class="ln">3</span><span class="cl">decoder layer 1
+</span></span><span class="line"><span class="ln">4</span><span class="cl">...
+</span></span><span class="line"><span class="ln">5</span><span class="cl">decoder layer N
+</span></span><span class="line"><span class="ln">6</span><span class="cl">final norm
+</span></span><span class="line"><span class="ln">7</span><span class="cl">lm_head
+</span></span></code></pre></div><p>Trước khi một layer chạy:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">forward_pre_hook()
+</span></span></code></pre></div><p>AirLLM làm:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">disk
+</span></span><span class="line"><span class="ln">2</span><span class="cl">  ↓
+</span></span><span class="line"><span class="ln">3</span><span class="cl">CPU
+</span></span><span class="line"><span class="ln">4</span><span class="cl">  ↓
+</span></span><span class="line"><span class="ln">5</span><span class="cl">GPU
+</span></span></code></pre></div><p>Load weights của layer đó.</p>
+<p>GPU tính toán.</p>
+<p>Sau khi chạy xong:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">forward_hook()
+</span></span></code></pre></div><p>weights lại bị chuyển về:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">meta
+</span></span></code></pre></div><p>và bộ nhớ được dọn.</p>
+<p>Luồng thực tế trở thành:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">SSD
+</span></span><span class="line"><span class="ln">2</span><span class="cl">
+</span></span><span class="line"><span class="ln">3</span><span class="cl"> ├─ Layer 0 ──→ GPU ──→ compute ──→ bỏ
+</span></span><span class="line"><span class="ln">4</span><span class="cl"> ├─ Layer 1 ──→ GPU ──→ compute ──→ bỏ
+</span></span><span class="line"><span class="ln">5</span><span class="cl"> ├─ Layer 2 ──→ GPU ──→ compute ──→ bỏ
+</span></span><span class="line"><span class="ln">6</span><span class="cl"> │
+</span></span><span class="line"><span class="ln">7</span><span class="cl"> └─ Layer N ──→ GPU ──→ compute ──→ bỏ
+</span></span></code></pre></div><p>Do đó lượng VRAM dành cho weights gần với:</p>
+<p>$$
+VRAM \approx \max(Size(layer_i))
+$$</p>
+<p>thay vì:</p>
+<p>$$
+VRAM \approx \sum_i Size(layer_i)
+$$</p>
+<p>Đây là lý do một model hàng trăm GB có thể chạy trên GPU vài GB.</p>
+<h1 id="nhưng-dữ-liệu-phải-chạy-một-vòng-rất-xa">Nhưng dữ liệu phải chạy một vòng rất xa<a class="anchor ms-1" href="#nhưng-dữ-liệu-phải-chạy-một-vòng-rất-xa"><i class="fas fa-link"></i></a></h1>
+<p>Ở đây bắt đầu có chuyện.</p>
+<p>Trong inference truyền thống:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">VRAM
+</span></span><span class="line"><span class="ln">2</span><span class="cl">  ↓
+</span></span><span class="line"><span class="ln">3</span><span class="cl">GPU compute
+</span></span></code></pre></div><p>Weights đã nằm sát GPU.</p>
+<p>AirLLM biến nó thành:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">SSD
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl"> ↓
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">filesystem
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl"> ↓
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">CPU memory
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl"> ↓
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">PCIe
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl"> ↓
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">VRAM
+</span></span><span class="line"><span class="ln">10</span><span class="cl"> ↓
+</span></span><span class="line"><span class="ln">11</span><span class="cl">GPU compute
+</span></span></code></pre></div><p>Và chuyện này không chỉ xảy ra một lần.</p>
+<p>Muốn sinh token tiếp theo, Transformer lại phải đi qua các layer.</p>
+<p>Rồi token tiếp theo nữa.</p>
+<p>Rồi token tiếp theo nữa.</p>
+<p>Giả sử một Dense model có 140GB weights.</p>
+<p>Nếu mỗi token thực tế phải đọc một lượng dữ liệu gần 140GB và SSD của chúng ta đạt 7GB/s, thì chỉ riêng giới hạn lý tưởng của storage đã là:</p>
+<p>$$
+140 / 7 = 20\text{ giây}
+$$</p>
+<p>cho mỗi lượt đọc toàn bộ weights.</p>
+<p>Đây còn là thế giới thần tiên nơi:</p>
+<ul>
+<li>SSD luôn đạt đúng 7GB/s.</li>
+<li>Không có filesystem overhead.</li>
+<li>Không có CPU overhead.</li>
+<li>Không mất thời gian copy CPU → GPU.</li>
+<li>GPU tính toán mất 0 giây.</li>
+<li>Không có contention.</li>
+<li>Không có tensor conversion.</li>
+</ul>
+<p>Thế giới thật không dễ thương vậy.</p>
+<p>Và đây là bản chất của AirLLM:</p>
+<blockquote>
+<p>Nó biến vấn đề thiếu VRAM thành vấn đề I/O.</p>
+</blockquote>
+<p>Chúng ta cứu được bộ nhớ.</p>
+<p>Nhưng dòng sông dữ liệu bắt đầu chảy dữ dội từ SSD lên RAM, từ RAM qua PCIe, rồi vào GPU, token này nối token khác.</p>
+<p>Không có bữa trưa miễn phí.</p>
+<h1 id="prefetch-trong-lúc-gpu-ăn-món-này-bếp-chuẩn-bị-món-tiếp-theo">Prefetch: trong lúc GPU ăn món này, bếp chuẩn bị món tiếp theo<a class="anchor ms-1" href="#prefetch-trong-lúc-gpu-ăn-món-này-bếp-chuẩn-bị-món-tiếp-theo"><i class="fas fa-link"></i></a></h1>
+<p>AirLLM có thêm một kỹ thuật khá hợp lý: <strong>prefetching</strong>.</p>
+<p>Giả sử GPU đang tính Layer 20.</p>
+<p>Thay vì chờ Layer 20 tính xong rồi mới bắt đầu đọc Layer 21 từ SSD, một thread khác có thể chuẩn bị Layer 21 trước.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">GPU:
+</span></span><span class="line"><span class="ln">2</span><span class="cl">Layer 20 ───────── compute ─────────&gt;
+</span></span><span class="line"><span class="ln">3</span><span class="cl">
+</span></span><span class="line"><span class="ln">4</span><span class="cl">CPU/SSD:
+</span></span><span class="line"><span class="ln">5</span><span class="cl">          Layer 21 ─── load ───────&gt;
+</span></span></code></pre></div><p>Khi Layer 20 xong, Layer 21 có khả năng đã nằm sẵn trong CPU memory.</p>
+<p>Hai công việc được overlap.</p>
+<p>Repository từng ghi nhận prefetch giúp cải thiện tốc độ khoảng 10% trong một số trường hợp.</p>
+<p>Code hiện tại còn cẩn thận với <strong>pinned memory</strong>.</p>
+<p>Nếu layer không quá lớn, dữ liệu có thể được đặt trong page-locked memory để tăng tốc copy CPU → GPU.</p>
+<p>Nhưng pinned memory cũng là đồ thật.</p>
+<p>Nó bị khóa lại và hệ điều hành không thể tùy ý swap đi.</p>
+<p>Với những layer MoE khổng lồ 17GB, prefetch hai layer có thể khóa hơn 30GB RAM.</p>
+<p>Vì vậy AirLLM hiện giới hạn pinned layer ở khoảng 2GB.</p>
+<p>Đây là một chi tiết rất nhỏ trong code nhưng cho thấy bài toán cuối cùng vẫn quay lại vật lý:</p>
+<p><strong>muốn nhanh hơn thì phải để dữ liệu ở gần nơi tính toán hơn.</strong></p>
+<h1 id="kimi-k3-khiến-airllm-phải-tiến-thêm-một-bước">Kimi K3 khiến AirLLM phải tiến thêm một bước<a class="anchor ms-1" href="#kimi-k3-khiến-airllm-phải-tiến-thêm-một-bước"><i class="fas fa-link"></i></a></h1>
+<p>Layer streaming khá hợp với Dense Transformer.</p>
+<p>Nhưng tới các mô hình Mixture of Experts (MoE), mọi thứ thú vị hơn.</p>
+<p>Giả sử một MoE layer có 256 expert.</p>
+<p>Nhưng với một token, router chỉ chọn 8 expert.</p>
+<p>Ta có:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">256 experts
+</span></span><span class="line"><span class="ln">2</span><span class="cl">      ↓ router
+</span></span><span class="line"><span class="ln">3</span><span class="cl">
+</span></span><span class="line"><span class="ln">4</span><span class="cl"> [3] [17] [61] [88] [102] [140] [201] [250]
+</span></span><span class="line"><span class="ln">5</span><span class="cl">
+</span></span><span class="line"><span class="ln">6</span><span class="cl">chỉ 8 expert được chạy
+</span></span></code></pre></div><p>Nếu AirLLM load nguyên layer chứa cả 256 expert thì rất phí.</p>
+<p>Và với Kimi K3, không chỉ phí.</p>
+<p>Nó còn có thể <strong>không fit nổi</strong>.</p>
+<p>Theo PR bổ sung Kimi K3 cho AirLLM, một layer của model này có khoảng:</p>
+<ul>
+<li>~17GB dữ liệu ở dạng packed.</li>
+<li>~56GB sau khi expand.</li>
+</ul>
+<p>Trong khi thử nghiệm được thực hiện trên RTX 6000 Ada 48GB.</p>
+<p>Load nguyên layer đã không được rồi.</p>
+<p>Thế là AirLLM xuống thêm một tầng.</p>
+<p>Không còn:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">load layer
+</span></span></code></pre></div><p>mà thành:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">load expert
+</span></span></code></pre></div><h1 id="per-expert-streaming">Per-expert streaming<a class="anchor ms-1" href="#per-expert-streaming"><i class="fas fa-link"></i></a></h1>
+<p>Code hiện tại tìm các tensor thuộc từng expert trong file <code>safetensors</code>.</p>
+<p>Sau đó mỗi expert lại được gắn <code>forward hook</code>.</p>
+<p>Khi router quyết định:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Token này cần Expert 27
+</span></span></code></pre></div><p>AirLLM mới:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">SSD
+</span></span><span class="line"><span class="ln">2</span><span class="cl"> ↓
+</span></span><span class="line"><span class="ln">3</span><span class="cl">đọc tensor của Expert 27
+</span></span><span class="line"><span class="ln">4</span><span class="cl"> ↓
+</span></span><span class="line"><span class="ln">5</span><span class="cl">GPU
+</span></span><span class="line"><span class="ln">6</span><span class="cl"> ↓
+</span></span><span class="line"><span class="ln">7</span><span class="cl">compute
+</span></span><span class="line"><span class="ln">8</span><span class="cl"> ↓
+</span></span><span class="line"><span class="ln">9</span><span class="cl">thả Expert 27 ra
+</span></span></code></pre></div><p>Expert 28 không được chọn?</p>
+<p>Không load.</p>
+<p>Expert 29 không được chọn?</p>
+<p>Cũng không load.</p>
+<p>Đây là điểm mà định dạng <code>safetensors</code> trở nên rất hữu ích.</p>
+<p>AirLLM có thể seek và đọc <strong>một nhóm tensor cụ thể</strong>, không cần đọc cả file layer khổng lồ.</p>
+<p>Về trực giác:</p>
+<p>Một thư viện có 10.000 cuốn sách.</p>
+<p>Bạn cần trang 73 của cuốn số 8.291.</p>
+<p>Cách ngây thơ:</p>
+<blockquote>
+<p>Chở cả thư viện tới nhà.</p>
+</blockquote>
+<p>Cách đỡ ngáo hơn:</p>
+<blockquote>
+<p>Lấy đúng cuốn sách đó.</p>
+</blockquote>
+<p>AirLLM với per-expert streaming còn cực đoan hơn:</p>
+<blockquote>
+<p>Xé đúng vài trang cần đọc đem sang.</p>
+</blockquote>
+<p>Đọc xong đem trả.</p>
+<p>Theo PR #316, AirLLM đã gắn streaming cho hơn 82.000 expert trải trên 92 layer của Kimi K3.</p>
+<p>Đây là lý do model 2.8T có thể có peak VRAM rất nhỏ mặc dù tổng checkpoint khổng lồ.</p>
+<h1 id="28t-parameter-chạy-trong-372gb-vram-có-thật-không">2.8T parameter chạy trong 3.72GB VRAM có thật không?<a class="anchor ms-1" href="#28t-parameter-chạy-trong-372gb-vram-có-thật-không"><i class="fas fa-link"></i></a></h1>
+<p>Có một benchmark rất đáng chú ý trong PR #316.</p>
+<p>Tác giả thử toàn bộ checkpoint Kimi K3 khoảng 1.56TB trên một RTX 6000 Ada 48GB.</p>
+<p>Kết quả được báo cáo:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Peak VRAM sau init:       0.83 GB
+</span></span><span class="line"><span class="ln">2</span><span class="cl">Peak VRAM khi generate:   3.72 GB
+</span></span><span class="line"><span class="ln">3</span><span class="cl">
+</span></span><span class="line"><span class="ln">4</span><span class="cl">4 token:
+</span></span><span class="line"><span class="ln">5</span><span class="cl">1168 giây
+</span></span><span class="line"><span class="ln">6</span><span class="cl">
+</span></span><span class="line"><span class="ln">7</span><span class="cl">≈ 292 giây/token
+</span></span></code></pre></div><p>Đọc tới đây chúng ta sẽ hiểu hai câu sau <strong>đồng thời đều đúng</strong>:</p>
+<blockquote>
+<p>Kimi K3 2.8T có thể chạy với chưa tới 4GB VRAM.</p>
+</blockquote>
+<p>và:</p>
+<blockquote>
+<p>Đây không phải cách hợp lý để dựng chatbot production cần trả lời ngay lập tức.</p>
+</blockquote>
+<p>292 giây/token nghĩa là gần 5 phút để sinh <strong>một token</strong> trong benchmark đó.</p>
+<p>Một câu trả lời 100 token, nếu tốc độ tương tự, có thể ngồi ngắm mây rất lâu.</p>
+<p>Xong inference, quá dễ.</p>
+<p>Chỉ là lúc đó khách hàng có thể đã đi ngủ.</p>
+<p>Đây không phải lỗi trong ý tưởng AirLLM.</p>
+<p>Đó chính là trade-off mà thiết kế này chấp nhận.</p>
+<p>AirLLM tối ưu cho:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">&#34;Model có chạy được không?&#34;
+</span></span></code></pre></div><p>nhiều hơn:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">&#34;Model phục vụ 10.000 request đồng thời được không?&#34;
+</span></span></code></pre></div><h1 id="vậy-4gb-ở-đây-thực-sự-có-nghĩa-là-gì">Vậy 4GB ở đây thực sự có nghĩa là gì?<a class="anchor ms-1" href="#vậy-4gb-ở-đây-thực-sự-có-nghĩa-là-gì"><i class="fas fa-link"></i></a></h1>
+<p>Đây là chỗ rất dễ hiểu nhầm khi đọc headline.</p>
+<p><code>4GB VRAM</code> không có nghĩa:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">2.8T parameters
+</span></span><span class="line"><span class="ln">2</span><span class="cl">      ↓
+</span></span><span class="line"><span class="ln">3</span><span class="cl">nén bằng phép thuật
+</span></span><span class="line"><span class="ln">4</span><span class="cl">      ↓
+</span></span><span class="line"><span class="ln">5</span><span class="cl">3.72GB dữ liệu
+</span></span></code></pre></div><p>Checkpoint Kimi K3 trong thử nghiệm vẫn khoảng <strong>1.56TB</strong>.</p>
+<p>AirLLM đơn giản là không đưa 1.56TB đó vào GPU cùng một lúc.</p>
+<p>Ta có thể viết:</p>
+<p>$$
+Total\ Model\ Size \gg Peak\ GPU\ Memory
+$$</p>
+<p>bởi vì lifetime của từng weight trên GPU rất ngắn.</p>
+<p>Nó xuất hiện.</p>
+<p>Được sử dụng.</p>
+<p>Rồi biến mất.</p>
+<p>Giống một đoàn tàu dài 20km đi qua một nhà ga dài 200m.</p>
+<p>Không có thời điểm nào cả đoàn tàu nằm trong nhà ga.</p>
+<p>Nhưng toàn bộ đoàn tàu vẫn đi qua đó.</p>
+<p>Đấy là khác biệt cực kỳ quan trọng.</p>
+<h1 id="airllm-rất-giống-virtual-memory">AirLLM rất giống virtual memory<a class="anchor ms-1" href="#airllm-rất-giống-virtual-memory"><i class="fas fa-link"></i></a></h1>
+<p>Nếu đã học hệ điều hành, cách suy nghĩ này khá quen.</p>
+<p>RAM nhỏ hơn không gian địa chỉ của chương trình.</p>
+<p>Hệ điều hành có thể:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">disk
+</span></span><span class="line"><span class="ln">2</span><span class="cl"> ↓
+</span></span><span class="line"><span class="ln">3</span><span class="cl">page in
+</span></span><span class="line"><span class="ln">4</span><span class="cl"> ↓
+</span></span><span class="line"><span class="ln">5</span><span class="cl">RAM
+</span></span><span class="line"><span class="ln">6</span><span class="cl"> ↓
+</span></span><span class="line"><span class="ln">7</span><span class="cl">CPU sử dụng
+</span></span><span class="line"><span class="ln">8</span><span class="cl"> ↓
+</span></span><span class="line"><span class="ln">9</span><span class="cl">page out
+</span></span></code></pre></div><p>AirLLM có thể xem như một dạng application-level paging cho weights:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">SSD
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl"> ↓
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">weight shard
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl"> ↓
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">CPU
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl"> ↓
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">GPU
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl"> ↓
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">compute
+</span></span><span class="line"><span class="ln">10</span><span class="cl"> ↓
+</span></span><span class="line"><span class="ln">11</span><span class="cl">evict
+</span></span></code></pre></div><p>Một bên paging memory page.</p>
+<p>Một bên paging neural-network weights.</p>
+<p>Và cả hai đều chịu chung một định luật:</p>
+<p><strong>page fault quá nhiều thì hệ thống chậm khủng khiếp.</strong></p>
+<p>Trong hệ điều hành, chúng ta gọi hiện tượng dữ liệu cứ phải chạy qua chạy lại giữa RAM và disk là thrashing.</p>
+<p>Trong inference kiểu AirLLM, nếu compute rất nhanh nhưng cứ phải chờ SSD đọc layer tiếp theo, GPU cũng ngồi chơi.</p>
+<p>GPU trị giá hàng nghìn đô lúc đó trở thành một ông thợ cực khỏe nhưng cứ mỗi lần đóng một cái đinh lại phải chờ xe tải chở cái búa tiếp theo tới.</p>
+<h1 id="tại-sao-airllm-không-giống-vllm">Tại sao AirLLM không giống vLLM?<a class="anchor ms-1" href="#tại-sao-airllm-không-giống-vllm"><i class="fas fa-link"></i></a></h1>
+<p>Hai project giải quyết hai vấn đề rất khác.</p>
+<p>vLLM thường hướng tới:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">weights nằm sẵn trên GPU
+</span></span><span class="line"><span class="ln">2</span><span class="cl">          ↓
+</span></span><span class="line"><span class="ln">3</span><span class="cl">continuous batching
+</span></span><span class="line"><span class="ln">4</span><span class="cl">          ↓
+</span></span><span class="line"><span class="ln">5</span><span class="cl">KV cache management
+</span></span><span class="line"><span class="ln">6</span><span class="cl">          ↓
+</span></span><span class="line"><span class="ln">7</span><span class="cl">nhiều request
+</span></span><span class="line"><span class="ln">8</span><span class="cl">          ↓
+</span></span><span class="line"><span class="ln">9</span><span class="cl">throughput cao
+</span></span></code></pre></div><p>AirLLM hướng tới:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">model lớn hơn VRAM rất nhiều
+</span></span><span class="line"><span class="ln">2</span><span class="cl">          ↓
+</span></span><span class="line"><span class="ln">3</span><span class="cl">stream weights
+</span></span><span class="line"><span class="ln">4</span><span class="cl">          ↓
+</span></span><span class="line"><span class="ln">5</span><span class="cl">chấp nhận latency lớn
+</span></span><span class="line"><span class="ln">6</span><span class="cl">          ↓
+</span></span><span class="line"><span class="ln">7</span><span class="cl">vẫn chạy được
+</span></span></code></pre></div><p>Có thể tóm gọn:</p>
+<table>
+	<thead>
+			<tr>
+					<th></th>
+					<th>AirLLM</th>
+					<th>vLLM</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>Mục tiêu chính</td>
+					<td>Giảm memory requirement</td>
+					<td>Serving hiệu năng cao</td>
+			</tr>
+			<tr>
+					<td>Weights</td>
+					<td>Stream vào GPU</td>
+					<td>Thường resident trên GPU</td>
+			</tr>
+			<tr>
+					<td>Disk I/O khi inference</td>
+					<td>Rất quan trọng</td>
+					<td>Không phải đường nóng chính</td>
+			</tr>
+			<tr>
+					<td>Latency</td>
+					<td>Có thể rất cao</td>
+					<td>Tối ưu mạnh</td>
+			</tr>
+			<tr>
+					<td>Concurrent requests</td>
+					<td>Không phải thế mạnh</td>
+					<td>Thế mạnh</td>
+			</tr>
+			<tr>
+					<td>Model lớn hơn VRAM nhiều lần</td>
+					<td>Có</td>
+					<td>Không phải mục tiêu chính</td>
+			</tr>
+	</tbody>
+</table>
+<p>Vì vậy mình sẽ không dùng AirLLM để thay vLLM cho API production chỉ vì thấy dòng chữ <code>70B on 4GB</code>.</p>
+<p>Hai con dao khác nhau.</p>
+<p>Một con dùng thái thịt.</p>
+<p>Một con dùng chặt cây.</p>
+<p>Cầm nhầm vẫn cắt được thứ gì đó, nhưng khá mệt.</p>
+<h1 id="compression-có-cứu-được-tốc-độ-không">Compression có cứu được tốc độ không?<a class="anchor ms-1" href="#compression-có-cứu-được-tốc-độ-không"><i class="fas fa-link"></i></a></h1>
+<p>AirLLM còn hỗ trợ lưu layer ở dạng 4-bit hoặc 8-bit.</p>
+<p>Ý tưởng rất dễ hiểu.</p>
+<p>Nếu bottleneck là:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">SSD → RAM
+</span></span></code></pre></div><p>thì thay vì đọc 1GB:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">đọc 250MB
+</span></span><span class="line"><span class="ln">2</span><span class="cl">→ giải nén
+</span></span><span class="line"><span class="ln">3</span><span class="cl">→ tính toán
+</span></span></code></pre></div><p>có thể nhanh hơn.</p>
+<p>README của project từng quảng bá mức tăng tốc lên tới khoảng 3 lần nhờ block-wise compression.</p>
+<p>Nhưng đây là phần nên đọc cẩn thận.</p>
+<p>Một issue năm 2026 (#330) benchmark Qwen2.5-32B trên hệ thống có storage nhanh lại ghi nhận kết quả ngược:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Không compression: 13.3 s/token
+</span></span><span class="line"><span class="ln">2</span><span class="cl">8-bit:             50.5 s/token
+</span></span><span class="line"><span class="ln">3</span><span class="cl">4-bit:            106.7 s/token
+</span></span></code></pre></div><p>Lý do được người benchmark chỉ ra khá hợp lý:</p>
+<p>Khi SSD đủ nhanh, bottleneck không còn đơn giản là số byte đọc từ disk.</p>
+<p>Chi phí dequantization mỗi layer có thể lớn hơn phần thời gian tiết kiệm được từ I/O.</p>
+<p>Điều này cho chúng ta một bài học quan trọng.</p>
+<p>Không có optimization nào tồn tại trong chân không.</p>
+<p>Năm 2023:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">storage chậm
+</span></span><span class="line"><span class="ln">2</span><span class="cl">→ giảm byte đọc
+</span></span><span class="line"><span class="ln">3</span><span class="cl">→ thắng
+</span></span></code></pre></div><p>Một hệ thống khác:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">NVMe nhanh
+</span></span><span class="line"><span class="ln">2</span><span class="cl">→ I/O rẻ hơn
+</span></span><span class="line"><span class="ln">3</span><span class="cl">→ dequantization trở thành bottleneck
+</span></span><span class="line"><span class="ln">4</span><span class="cl">→ compression có thể thua
+</span></span></code></pre></div><p>Do đó nếu triển khai AirLLM thật, nên benchmark trên <strong>chính máy của mình</strong> thay vì lấy con số README làm định luật Newton thứ tư.</p>
+<h1 id="airllm-phù-hợp-với-bài-toán-nào">AirLLM phù hợp với bài toán nào?<a class="anchor ms-1" href="#airllm-phù-hợp-với-bài-toán-nào"><i class="fas fa-link"></i></a></h1>
+<p>Theo mình, AirLLM rất thú vị trong vài trường hợp.</p>
+<h2 id="1-thử-model-mà-phần-cứng-không-đủ-chứa">1. Thử model mà phần cứng không đủ chứa<a class="anchor ms-1" href="#1-thử-model-mà-phần-cứng-không-đủ-chứa"><i class="fas fa-link"></i></a></h2>
+<p>Đây là use case rõ ràng nhất.</p>
+<p>Bạn có một GPU 24GB hoặc 48GB nhưng muốn:</p>
+<ul>
+<li>kiểm tra tokenizer;</li>
+<li>chạy một số prompt;</li>
+<li>nghiên cứu output;</li>
+<li>debug compatibility;</li>
+<li>thử một checkpoint cực lớn;</li>
+<li>chạy offline task không yêu cầu realtime.</li>
+</ul>
+<p>Thay vì lập tức thuê 8 GPU, AirLLM có thể cho phép model <strong>chạy được trước</strong>.</p>
+<p>Chậm vẫn hơn không chạy được.</p>
+<h2 id="2-nghiên-cứu-model-khổng-lồ-trên-workstation">2. Nghiên cứu model khổng lồ trên workstation<a class="anchor ms-1" href="#2-nghiên-cứu-model-khổng-lồ-trên-workstation"><i class="fas fa-link"></i></a></h2>
+<p>Có những lúc chúng ta không cần 100 token/s.</p>
+<p>Chúng ta chỉ muốn biết:</p>
+<blockquote>
+<p>Model này có trả lời đúng bài toán của mình không?</p>
+</blockquote>
+<p>Nếu chỉ cần vài sample, việc mất vài phút cho một token có thể vẫn chấp nhận được hơn việc dựng cả cluster.</p>
+<h2 id="3-batch-job-không-nhạy-latency">3. Batch job không nhạy latency<a class="anchor ms-1" href="#3-batch-job-không-nhạy-latency"><i class="fas fa-link"></i></a></h2>
+<p>Ví dụ một job chạy ban đêm, xử lý rất ít request nhưng yêu cầu model lớn.</p>
+<p>AirLLM có thể đáng xem xét.</p>
+<p>Tuy nhiên vẫn phải benchmark throughput tổng thể.</p>
+<p>Chậm 10 lần còn có thể chấp nhận.</p>
+<p>Chậm vài trăm lần lại là câu chuyện khác.</p>
+<h1 id="và-khi-nào-không-nên-dùng">Và khi nào không nên dùng?<a class="anchor ms-1" href="#và-khi-nào-không-nên-dùng"><i class="fas fa-link"></i></a></h1>
+<h2 id="api-realtime">API realtime<a class="anchor ms-1" href="#api-realtime"><i class="fas fa-link"></i></a></h2>
+<p>Nếu khách hàng đang ngồi trước màn hình chờ chatbot trả lời, vài chục giây/token đã là rất khó sử dụng.</p>
+<p>292 giây/token thì thôi.</p>
+<h2 id="serving-nhiều-concurrent-user">Serving nhiều concurrent user<a class="anchor ms-1" href="#serving-nhiều-concurrent-user"><i class="fas fa-link"></i></a></h2>
+<p>Layer streaming vốn đã tạo traffic storage rất lớn.</p>
+<p>Nếu hàng chục request cùng kéo weight lên xuống độc lập, bài toán lập tức trở nên phức tạp.</p>
+<p>Lúc này giữ model resident trên GPU và batching request thường hợp lý hơn nhiều.</p>
+<h2 id="khi-model-đã-fit-trong-vram">Khi model đã fit trong VRAM<a class="anchor ms-1" href="#khi-model-đã-fit-trong-vram"><i class="fas fa-link"></i></a></h2>
+<p>Nếu model vừa GPU thì việc liên tục load/offload layer có thể chỉ làm mọi thứ chậm đi.</p>
+<p>Cái bàn đã đủ rộng thì đừng cứ ráp một miếng Lego rồi cất xuống đất.</p>
+<h1 id="một-điểm-rất-hay-trong-airllm-3x-không-tự-viết-lại-transformer">Một điểm rất hay trong AirLLM 3.x: không tự viết lại Transformer<a class="anchor ms-1" href="#một-điểm-rất-hay-trong-airllm-3x-không-tự-viết-lại-transformer"><i class="fas fa-link"></i></a></h1>
+<p>Những phiên bản hệ thống kiểu này thường gặp một vấn đề.</p>
+<p>Llama có forward kiểu Llama.</p>
+<p>Qwen có chi tiết riêng.</p>
+<p>DeepSeek có MoE riêng.</p>
+<p>Model mới xuất hiện lại có Rotary Embedding, attention implementation, cache API hoặc remote code khác.</p>
+<p>Nếu AirLLM tự implement:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln">1</span><span class="cl"><span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">layers</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl">    <span class="o">...</span>
+</span></span></code></pre></div><p>rồi tự tái tạo toàn bộ logic attention, KV cache và generation, code sẽ rất nhanh trở thành một vườn thú.</p>
+<p>Phiên bản hiện tại chọn cách khá đẹp.</p>
+<p>Nó để <code>transformers</code> điều khiển forward pass bình thường.</p>
+<p>AirLLM chỉ chen vào lifecycle của weights bằng hook:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">Transformers:
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">&#34;Chuẩn bị chạy layer 22&#34;
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">AirLLM:
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">&#34;Khoan, để tôi đi lấy weights.&#34;
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">Transformers:
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">&#34;Chạy.&#34;
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">
+</span></span><span class="line"><span class="ln">10</span><span class="cl">AirLLM:
+</span></span><span class="line"><span class="ln">11</span><span class="cl">&#34;Xong rồi hả? Trả VRAM đây.&#34;
+</span></span></code></pre></div><p>Nhờ vậy architecture mới mà Hugging Face đã hỗ trợ có khả năng chạy với ít code đặc thù hơn.</p>
+<p>Đây là một quyết định thiết kế mình đánh giá khá hay.</p>
+<p>Không giành luôn công việc của framework.</p>
+<p>Chỉ can thiệp đúng chỗ mình cần.</p>
+<h1 id="bài-học-lớn-hơn-airllm">Bài học lớn hơn AirLLM<a class="anchor ms-1" href="#bài-học-lớn-hơn-airllm"><i class="fas fa-link"></i></a></h1>
+<p>Điều thú vị nhất của AirLLM với mình không phải con số 4GB.</p>
+<p>Nó là một lời nhắc về cách chúng ta nhìn hardware.</p>
+<p>Chúng ta thường nghĩ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Model 140GB
+</span></span><span class="line"><span class="ln">2</span><span class="cl">GPU 80GB
+</span></span><span class="line"><span class="ln">3</span><span class="cl">
+</span></span><span class="line"><span class="ln">4</span><span class="cl">→ không chạy được
+</span></span></code></pre></div><p>Nhưng câu nói chính xác hơn phải là:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Model cần 140GB storage.
+</span></span><span class="line"><span class="ln">2</span><span class="cl">
+</span></span><span class="line"><span class="ln">3</span><span class="cl">Tại một thời điểm,
+</span></span><span class="line"><span class="ln">4</span><span class="cl">bao nhiêu byte thực sự cần nằm trên GPU?
+</span></span></code></pre></div><p>Hai câu này hoàn toàn khác nhau.</p>
+<p>Ý tưởng này xuất hiện ở rất nhiều nơi trong lịch sử máy tính.</p>
+<p>RAM không đủ:</p>
+<p>→ virtual memory.</p>
+<p>Dataset không vừa RAM:</p>
+<p>→ streaming, chunking, batch processing.</p>
+<p>Database không vừa memory:</p>
+<p>→ buffer pool.</p>
+<p>File khổng lồ:</p>
+<p>→ mmap.</p>
+<p>Model không vừa GPU:</p>
+<p>→ tensor parallel, pipeline parallel, CPU offload, NVMe offload, layer streaming.</p>
+<p>Vấn đề không phải lúc nào cũng là:</p>
+<blockquote>
+<p>Làm sao chứa tất cả?</p>
+</blockquote>
+<p>Đôi khi câu hỏi đúng phải là:</p>
+<blockquote>
+<p>Tại sao phải chứa tất cả cùng lúc?</p>
+</blockquote>
+<h1 id="nhưng-vật-lý-cuối-cùng-vẫn-thu-tiền">Nhưng vật lý cuối cùng vẫn thu tiền<a class="anchor ms-1" href="#nhưng-vật-lý-cuối-cùng-vẫn-thu-tiền"><i class="fas fa-link"></i></a></h1>
+<p>Một token hiện lên trên màn hình trông rất nhẹ.</p>
+<p>Nó chỉ là vài chữ.</p>
+<p>Nhưng phía sau AirLLM, để chữ đó xuất hiện, một quá trình rất vật lý đang diễn ra.</p>
+<p>SSD controller tìm những block dữ liệu.</p>
+<p>Hàng tỷ bit bị kéo khỏi NAND flash.</p>
+<p>Dữ liệu chạy qua bus vào RAM.</p>
+<p>CPU chuẩn bị tensor.</p>
+<p>PCIe đẩy hàng GB dữ liệu về GPU.</p>
+<p>Transistor trong GPU bật tắt hàng tỷ lần.</p>
+<p>Layer hoàn thành.</p>
+<p>Weights bị vứt khỏi VRAM.</p>
+<p>Rồi layer kế tiếp tới.</p>
+<p>Rồi layer kế tiếp.</p>
+<p>Một vòng như thế kết thúc.</p>
+<p>Transformer sinh được một token.</p>
+<p>Sau đó cả đoàn tàu lại chạy từ đầu cho token tiếp theo.</p>
+<p>Thứ chúng ta gọi là Artificial Intelligence nghe rất giống một khái niệm nằm trong mây.</p>
+<p>Nhưng kéo nó xuống đủ sâu, cuối cùng chỉ còn:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">electron
+</span></span><span class="line"><span class="ln">2</span><span class="cl">memory
+</span></span><span class="line"><span class="ln">3</span><span class="cl">bandwidth
+</span></span><span class="line"><span class="ln">4</span><span class="cl">heat
+</span></span><span class="line"><span class="ln">5</span><span class="cl">time
+</span></span></code></pre></div><p>AirLLM không chiến thắng vật lý.</p>
+<p>Nó thương lượng lại hợp đồng với vật lý.</p>
+<p>Thay vì trả bằng VRAM, nó trả bằng SSD capacity, bandwidth và latency.</p>
+<p>Và đôi khi đó là một cuộc trao đổi rất đáng giá.</p>
+<h1 id="tổng-kết">Tổng kết<a class="anchor ms-1" href="#tổng-kết"><i class="fas fa-link"></i></a></h1>
+<p>AirLLM có một ý tưởng cốt lõi rất đơn giản:</p>
+<p><strong>không cần giữ toàn bộ model trong GPU nếu tại một thời điểm chỉ đang tính một phần của model.</strong></p>
+<p>Với Dense model:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">load layer
+</span></span><span class="line"><span class="ln">2</span><span class="cl">→ compute
+</span></span><span class="line"><span class="ln">3</span><span class="cl">→ unload
+</span></span></code></pre></div><p>Với sparse MoE:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">router chọn expert
+</span></span><span class="line"><span class="ln">2</span><span class="cl">→ load đúng expert
+</span></span><span class="line"><span class="ln">3</span><span class="cl">→ compute
+</span></span><span class="line"><span class="ln">4</span><span class="cl">→ unload
+</span></span></code></pre></div><p>Nhờ đó peak VRAM có thể nhỏ hơn tổng kích thước model hàng chục, hàng trăm, thậm chí hàng nghìn lần.</p>
+<p>Nhưng đừng đọc câu:</p>
+<blockquote>
+<p>Kimi K3 2.8T chạy với 3.72GB VRAM.</p>
+</blockquote>
+<p>rồi dừng ở đó.</p>
+<p>Hãy đọc thêm dòng ngay bên dưới:</p>
+<blockquote>
+<p>Benchmark đó mất khoảng 292 giây cho mỗi token và bị giới hạn bởi disk I/O.</p>
+</blockquote>
+<p>Hai con số đó phải luôn đi cùng nhau.</p>
+<p>AirLLM vì thế không phải phép thuật biến GPU 4GB thành H100.</p>
+<p>Nó giống virtual memory dành cho neural network hơn.</p>
+<p>Một cách lấy thứ rất lớn, chia thành những mảnh đủ nhỏ, rồi lần lượt đưa từng mảnh qua một cánh cửa hẹp.</p>
+<p>Con voi vẫn nặng vài tấn.</p>
+<p>Cánh cửa vẫn chỉ rộng một mét.</p>
+<p>Chúng ta chỉ vừa tìm ra cách cho nó đi qua.</p>
+<h2 id="tham-khảo">Tham khảo<a class="anchor ms-1" href="#tham-khảo"><i class="fas fa-link"></i></a></h2>
+<ul>
+<li><a href="https://github.com/lyogavin/airllm" target="_blank" rel="noopener noreferrer">https://github.com/lyogavin/airllm</a></li>
+<li><a href="https://github.com/lyogavin/airllm/blob/main/air_llm/airllm/airllm_base.py" target="_blank" rel="noopener noreferrer">https://github.com/lyogavin/airllm/blob/main/air_llm/airllm/airllm_base.py</a></li>
+<li><a href="https://github.com/lyogavin/airllm/blob/main/air_llm/airllm/utils.py" target="_blank" rel="noopener noreferrer">https://github.com/lyogavin/airllm/blob/main/air_llm/airllm/utils.py</a></li>
+<li><a href="https://github.com/lyogavin/airllm/pull/316" target="_blank" rel="noopener noreferrer">https://github.com/lyogavin/airllm/pull/316</a></li>
+<li><a href="https://github.com/lyogavin/airllm/issues/330" target="_blank" rel="noopener noreferrer">https://github.com/lyogavin/airllm/issues/330</a></li>
+<li><a href="https://arxiv.org/abs/2212.09720" target="_blank" rel="noopener noreferrer">https://arxiv.org/abs/2212.09720</a></li>
+</ul>
+</div></div>
+  <div class="card-footer"><div class="post-navs d-flex justify-content-evenly"><div class="post-nav post-prev">
+    <i class="fas fa-fw fa-chevron-left"></i>
+    <a href="https://www.phamduytung.com/blog/2026-08-09-cloudflare-os-ai-agent-enterprise/">Cloudflare OS: Khi AI Agent bắt đầu cần một hệ điều hành riêng cho doanh nghiệp
+</a>
+  </div></div></div>
+</article><div class="card component row post-comments" id="post-comments">
+  <div class="card-header">
+    <h2 class="card-title">Bình luận</h2>
+  </div>
+  <div class="card-body"><script src="https://utteranc.es/client.js"
+  repo="AlexBlack2202/utterances"
+  issue-term="pathname"
+  label="comment"
+  theme="github-dark"
+  crossorigin="anonymous"
+  async>
+</script></div>
+</div></div>
+</div><aside class="col-lg-3 col-md-4 sidebar d-flex">
+  <div class="container d-flex flex-column">
+    
+    <a href="https://www.buymeacoffee.com/alexblack28"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=🍎&slug=alexblack28&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" /></a><div class="post-toc row mb-4 card component" id="postTOC">
+  <div class="card-header">
+    <h2 class="card-title">Mục lục</h2>
+  </div>
+  <div class="card-body">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#không-phải-cái-gì-không-nằm-trong-ram-cũng-biến-mất">Không phải cái gì không nằm trong RAM cũng biến mất</a></li>
+    <li><a href="#airllm-là-gì">AirLLM là gì?</a></li>
+    <li><a href="#bình-thường-llm-ăn-vram-như-thế-nào">Bình thường LLM ăn VRAM như thế nào?</a></li>
+    <li><a href="#ý-tưởng-của-airllm-layer-wise-streaming">Ý tưởng của AirLLM: layer-wise streaming</a></li>
+    <li><a href="#nhưng-dữ-liệu-phải-chạy-một-vòng-rất-xa">Nhưng dữ liệu phải chạy một vòng rất xa</a></li>
+    <li><a href="#prefetch-trong-lúc-gpu-ăn-món-này-bếp-chuẩn-bị-món-tiếp-theo">Prefetch: trong lúc GPU ăn món này, bếp chuẩn bị món tiếp theo</a></li>
+    <li><a href="#kimi-k3-khiến-airllm-phải-tiến-thêm-một-bước">Kimi K3 khiến AirLLM phải tiến thêm một bước</a></li>
+    <li><a href="#per-expert-streaming">Per-expert streaming</a></li>
+    <li><a href="#28t-parameter-chạy-trong-372gb-vram-có-thật-không">2.8T parameter chạy trong 3.72GB VRAM có thật không?</a></li>
+    <li><a href="#vậy-4gb-ở-đây-thực-sự-có-nghĩa-là-gì">Vậy 4GB ở đây thực sự có nghĩa là gì?</a></li>
+    <li><a href="#airllm-rất-giống-virtual-memory">AirLLM rất giống virtual memory</a></li>
+    <li><a href="#tại-sao-airllm-không-giống-vllm">Tại sao AirLLM không giống vLLM?</a></li>
+    <li><a href="#compression-có-cứu-được-tốc-độ-không">Compression có cứu được tốc độ không?</a></li>
+    <li><a href="#airllm-phù-hợp-với-bài-toán-nào">AirLLM phù hợp với bài toán nào?</a>
+      <ul>
+        <li><a href="#1-thử-model-mà-phần-cứng-không-đủ-chứa">1. Thử model mà phần cứng không đủ chứa</a></li>
+        <li><a href="#2-nghiên-cứu-model-khổng-lồ-trên-workstation">2. Nghiên cứu model khổng lồ trên workstation</a></li>
+        <li><a href="#3-batch-job-không-nhạy-latency">3. Batch job không nhạy latency</a></li>
+      </ul>
+    </li>
+    <li><a href="#và-khi-nào-không-nên-dùng">Và khi nào không nên dùng?</a>
+      <ul>
+        <li><a href="#api-realtime">API realtime</a></li>
+        <li><a href="#serving-nhiều-concurrent-user">Serving nhiều concurrent user</a></li>
+        <li><a href="#khi-model-đã-fit-trong-vram">Khi model đã fit trong VRAM</a></li>
+      </ul>
+    </li>
+    <li><a href="#một-điểm-rất-hay-trong-airllm-3x-không-tự-viết-lại-transformer">Một điểm rất hay trong AirLLM 3.x: không tự viết lại Transformer</a></li>
+    <li><a href="#bài-học-lớn-hơn-airllm">Bài học lớn hơn AirLLM</a></li>
+    <li><a href="#nhưng-vật-lý-cuối-cùng-vẫn-thu-tiền">Nhưng vật lý cuối cùng vẫn thu tiền</a></li>
+    <li><a href="#tổng-kết">Tổng kết</a>
+      <ul>
+        <li><a href="#tham-khảo">Tham khảo</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </div>
+</div><section class="recent-posts row card component">
+  <div class="card-header">
+    <h2 class="card-title">Bài gần đây</h2>
+  </div>
+  <div class="card-body">
+    <ul class="post-list"><li>
+        <a href="https://www.phamduytung.com/blog/2026-08-09-kimi-delta-attention/">Kimi Delta Attention: Khi AI học cách nhớ như một cái bảng trắng thay vì ôm cả nhà kho
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-08-09-cloudflare-os-ai-agent-enterprise/">Cloudflare OS: Khi AI Agent bắt đầu cần một hệ điều hành riêng cho doanh nghiệp
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-08-09-airllm-layer-streaming-4gb-vram/">AirLLM: Nhét một mô hình 2.8 nghìn tỷ tham số qua khe cửa 4GB VRAM
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-08-08-trends-ai-agent-root-cause-analysis/">Khi log biết tự điều tra: TReNDS dùng AI Agent để tìm Root Cause trong chưa đầy một phút
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-08-07-kitesurf-agent-first-browser/">Kitesurf: Khi trình duyệt không còn được xây cho con người
+</a>
+      </li></ul>
+  </div>
+</section><section class="series-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/series">series</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/series/kh%C3%B3a-h%E1%BB%8Dc-python-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học Python Căn Bản">
+            Khóa Học Python Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="https://www.phamduytung.com/series/kh%C3%B3a-h%E1%BB%8Dc-c&#43;&#43;-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học C&#43;&#43; Căn Bản">
+            Khóa Học C&#43;&#43; Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="https://www.phamduytung.com/series/machine-learning-dataset/" class="badge rounded post-taxonomy" title="Machine Learning Dataset">
+            Machine Learning Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a><a href="https://www.phamduytung.com/series/ch%E1%BB%A9ng-kho%C3%A1n-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Chứng Khoán Căn Bản">
+            Chứng Khoán Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">1</span></a></div>
+      </div>
+    </section><section class="tools-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/tools">tools</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/tools/tool-random/" class="badge rounded post-taxonomy" title="Tool Random">
+            Tool Random<span class="badge badge-sm text-white bg-accent ms-1">3</span></a></div>
+      </div>
+    </section><section class="categories-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/categories">categories</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/categories/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="https://www.phamduytung.com/categories/c&#43;&#43;/" class="badge rounded post-taxonomy" title="C&#43;&#43;">
+            C&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="https://www.phamduytung.com/categories/dataset/" class="badge rounded post-taxonomy" title="Dataset">
+            Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a></div>
+      </div>
+    </section><section class="tags-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/tags">tags</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/tags/machine-learning/" class="badge rounded post-taxonomy" title="Machine Learning">
+            Machine Learning<span class="badge badge-sm text-white bg-accent ms-1">26</span></a><a href="https://www.phamduytung.com/tags/deep-learning/" class="badge rounded post-taxonomy" title="Deep Learning">
+            Deep Learning<span class="badge badge-sm text-white bg-accent ms-1">23</span></a><a href="https://www.phamduytung.com/tags/llm/" class="badge rounded post-taxonomy" title="LLM">
+            LLM<span class="badge badge-sm text-white bg-accent ms-1">17</span></a><a href="https://www.phamduytung.com/tags/computer-vision/" class="badge rounded post-taxonomy" title="Computer Vision">
+            Computer Vision<span class="badge badge-sm text-white bg-accent ms-1">16</span></a><a href="https://www.phamduytung.com/tags/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">14</span></a><a href="https://www.phamduytung.com/tags/ai-agent/" class="badge rounded post-taxonomy" title="AI Agent">
+            AI Agent<span class="badge badge-sm text-white bg-accent ms-1">10</span></a><a href="https://www.phamduytung.com/tags/recommendation-system/" class="badge rounded post-taxonomy" title="Recommendation System">
+            Recommendation System<span class="badge badge-sm text-white bg-accent ms-1">7</span></a><a href="https://www.phamduytung.com/tags/system-design/" class="badge rounded post-taxonomy" title="System Design">
+            System Design<span class="badge badge-sm text-white bg-accent ms-1">7</span></a><a href="https://www.phamduytung.com/tags/time-series/" class="badge rounded post-taxonomy" title="Time Series">
+            Time Series<span class="badge badge-sm text-white bg-accent ms-1">6</span></a><a href="https://www.phamduytung.com/tags/uber-engineering/" class="badge rounded post-taxonomy" title="Uber Engineering">
+            Uber Engineering<span class="badge badge-sm text-white bg-accent ms-1">6</span></a></div>
+      </div>
+    </section>
+    
+  </div>
+</aside>
+</div>
+    </main><footer class="footer mt-auto py-3 text-center container"><ul class="nav justify-content-between footer-memu mb-3"><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Community
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-facebook"></i>Facebook Group
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://github.com/AlexBlack2202/alexblack2202.github.io" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-github"></i>GitHub
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/contact/"><i class="fas fa-fw fa-info-circle"></i>Contact Us
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/faq/"><i class="fas fa-fw fa-question-circle"></i>Câu hỏi thường gặp
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Docs
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="/team_of_services" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-users"></i>Điều khoản sử dụng
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/privacy" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-lock"></i>Chính sách bảo mật
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Features
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="/utils/gen_paswords/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-key"></i>Tạo password ngẫu nhiên
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Liên kết khác
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">Netlify
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">facebook
+</a>
+        </li></ul></li></ul>
+<div class="copyright mb-2">
+  Copyright © 2016-2026 Phạm Duy Tùng. All Rights Reserved.
+</div>
+<div class="powered-by mb-2">
+  Website chia sẻ kiến thức của Phạm Duy Tùng và Đặng Thị Hằng. Vui lòng liên hệ email alexblack2202@gmail.com nếu bạn có thông tin cần trao đổi.
+</div></footer>
+<script src="https://www.phamduytung.com/js/main.111d51a8c754010f8399ca010e552d803e2d5170b361f8886ad04ec6c21ca551.js" integrity="sha256-ER1RqMdUAQ&#43;DmcoBDlUtgD4tUXCzYfiIatBOxsIcpVE=" crossorigin="anonymous" defer></script><script src="https://www.phamduytung.com/js/icons.min.cb4c9958dbc49e29ac644e168e82db2d0de9a741a15751cc5bf2b0af21eb2845.js" integrity="sha256-y0yZWNvEnimsZE4WjoLbLQ3pp0GhV1HMW/KwryHrKEU=" crossorigin="anonymous" defer></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('https:\/\/www.phamduytung.com\/service-worker.js').then(function(reg) {
+      console.log('Successfully registered service worker', reg);
+    }).catch(function(err) {
+      console.warn('Error whilst registering service worker', err);
+    });
+  });
+}
+</script><script src="https://www.phamduytung.com/js/viewer.min.28bcf5233e406dae6715f46c8b9e8ca7c6cbf347e8678f5a2bebe5369c3270bb.js" integrity="sha256-KLz1Iz5Aba5nFfRsi56Mp8bL80foZ49aK&#43;vlNpwycLs=" crossorigin="anonymous" defer></script><script defer src="https://www.phamduytung.com/js/katex.min.8582b9feadf92a2a977ed303b97d7713cf2754ccf2b4eb60d8be7453a21042c2.js" integrity="sha256-hYK5/q35KiqXftMDuX13E88nVMzytOtg2L50U6IQQsI=" crossorigin="anonymous"></script>
+
+<script  data-ad-client="ca-pub-4644989745435991"  async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4644989745435991"
+     crossorigin="anonymous"></script><script data-cfasync="false" type="text/javascript" data-adel="atag" src="//acscdn.com/script/atg.js" czid="eul3gyjdmm"></script>
+  </body>
+</html>

@@ -1,0 +1,1356 @@
+<!doctype html><html lang="vi" data-palette="brown"
+   data-mode="light">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Khi log biết tự điều tra: TReNDS dùng AI Agent để tìm Root Cause trong chưa đầy một phút - Phạm Duy Tùng Machine Learning Blog</title>
+    <meta name="a.validate.02" content="1QZXZ8oi7g57H-GxBrBPkTYBydwii-Ic9iJu" /><link rel="apple-touch-icon" href="https://www.phamduytung.com/images/icons/icon-180x180.png" sizes="180x180">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/icon-32x32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/icon-16x16.png" sizes="16x16" type="image/png">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/favicon.ico">
+<link rel="manifest" href="https://www.phamduytung.com/manifest.json">
+<meta name="keywords" content="" />
+<meta name="description" content="TReNDS biến log production thành một hệ thống điều tra tự động: phát hiện lỗi, đọc log xung quanh, mở source code, lần theo stack trace và đề xuất cách sửa bằng Amazon Bedrock và Strands Agents." /><meta name="robots" content="index, follow" />
+	<meta itemprop="name" content="Khi log biết tự điều tra: TReNDS dùng AI Agent để tìm Root Cause trong chưa đầy một phút">
+	<meta itemprop="description" content="TReNDS biến log production thành một hệ thống điều tra tự động: phát hiện lỗi, đọc log xung quanh, mở source code, lần theo stack trace và đề xuất cách sửa bằng Amazon Bedrock và Strands Agents.">
+	<meta itemprop="datePublished" content="2026-08-08T00:00:00+03:00">
+	<meta itemprop="dateModified" content="2026-08-08T00:00:00+03:00">
+	<meta itemprop="wordCount" content="4582">
+	<meta itemprop="image" content="https://www.phamduytung.com/images/posts/2026-08-08-trends-ai-agent-root-cause-analysis/cover-pearl-glass.png">
+	<meta itemprop="keywords" content="AI Agent,Root Cause Analysis,Amazon Bedrock,SRE,Observability"><meta property="og:url" content="https://www.phamduytung.com/blog/2026-08-08-trends-ai-agent-root-cause-analysis/">
+	<meta property="og:site_name" content="Phạm Duy Tùng Machine Learning Blog">
+	<meta property="og:title" content="Khi log biết tự điều tra: TReNDS dùng AI Agent để tìm Root Cause trong chưa đầy một phút">
+	<meta property="og:description" content="TReNDS biến log production thành một hệ thống điều tra tự động: phát hiện lỗi, đọc log xung quanh, mở source code, lần theo stack trace và đề xuất cách sửa bằng Amazon Bedrock và Strands Agents.">
+	<meta property="og:locale" content="vi_VN">
+	<meta property="og:type" content="article">
+		<meta property="article:section" content="blog">
+		<meta property="article:published_time" content="2026-08-08T00:00:00+03:00">
+		<meta property="article:modified_time" content="2026-08-08T00:00:00+03:00">
+		<meta property="article:tag" content="AI Agent">
+		<meta property="article:tag" content="Root Cause Analysis">
+		<meta property="article:tag" content="Amazon Bedrock">
+		<meta property="article:tag" content="SRE">
+		<meta property="article:tag" content="Observability">
+		<meta property="og:image" content="https://www.phamduytung.com/images/posts/2026-08-08-trends-ai-agent-root-cause-analysis/cover-pearl-glass.png">
+
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:image" content="https://www.phamduytung.com/images/posts/2026-08-08-trends-ai-agent-root-cause-analysis/cover-pearl-glass.png">
+	<meta name="twitter:title" content="Khi log biết tự điều tra: TReNDS dùng AI Agent để tìm Root Cause trong chưa đầy một phút">
+	<meta name="twitter:description" content="TReNDS biến log production thành một hệ thống điều tra tự động: phát hiện lỗi, đọc log xung quanh, mở source code, lần theo stack trace và đề xuất cách sửa bằng Amazon Bedrock và Strands Agents.">
+<link rel="stylesheet" href="https://www.phamduytung.com/css/main.min.b0c1cbac9b623898b99bc3fccc2a09b35f812c6bd39f419020c06b9be74cd77d.css" integrity="sha256-sMHLrJtiOJi5m8P8zCoJs1&#43;BLGvTn0GQIMBrm&#43;dM130=" crossorigin="anonymous"><link rel="stylesheet" href="https://www.phamduytung.com/css/katex.min.4d6aa053ca8a5675016fa2c9c48ee5359bfaafb8295184458af9d64abce84c47.css" integrity="sha256-TWqgU8qKVnUBb6LJxI7lNZv6r7gpUYRFivnWSrzoTEc=" crossorigin="anonymous">
+<link rel="stylesheet" href="https://www.phamduytung.com/css/viewer.min.e882eb3a023412b73bb741b4604a1222a9f13aa7783c828d26d066ab8642bd51.css" integrity="sha256-6ILrOgI0Erc7t0G0YEoSIqnxOqd4PIKNJtBmq4ZCvVE=" crossorigin="anonymous"><link rel="canonical" href="https://www.phamduytung.com/blog/2026-08-08-trends-ai-agent-root-cause-analysis/">
+<meta name="theme-color" content="#f7f5ff"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Phạm Duy Tùng"},"dateModified":"2026-08-08T00:00:00+03:00","datePublished":"2026-08-08T00:00:00+03:00","description":"TReNDS biến log production thành một hệ thống điều tra tự động: phát hiện lỗi, đọc log xung quanh, mở source code, lần theo stack trace và đề xuất cách sửa bằng Amazon Bedrock và Strands Agents.","headline":"Khi log biết tự điều tra: TReNDS dùng AI Agent để tìm Root Cause trong chưa đầy một phút","image":["https://www.phamduytung.com/images/posts/2026-08-08-trends-ai-agent-root-cause-analysis/cover-pearl-glass.png"],"inLanguage":"vi","keywords":"AI Agent, Root Cause Analysis, Amazon Bedrock, SRE, Observability","mainEntityOfPage":{"@id":"https://www.phamduytung.com/blog/2026-08-08-trends-ai-agent-root-cause-analysis/","@type":"WebPage"},"publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://www.phamduytung.com/images/logo.png"},"name":"Phạm Duy Tùng Machine Learning Blog"},"url":"https://www.phamduytung.com/blog/2026-08-08-trends-ai-agent-root-cause-analysis/"}</script></head>
+  <body><script>const items=["mode","palette"];items.forEach(function(e){const t=localStorage.getItem("hbs-"+e);t&&document.body.parentElement.setAttribute("data-"+e,t)})</script><header><nav class="navbar top-app-bar top-app-bar-expand-lg fixed-top">
+  <div class="container pearl-navbar__inner">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Mở menu">
+      <i class="fas fa-bars"></i>
+    </button>
+
+    <a class="navbar-brand pearl-brand flex-grow-1 flex-lg-grow-0" href="https://www.phamduytung.com/">
+      <span class="pearl-brand__mark" aria-hidden="true">PT</span>
+      <span class="pearl-brand__copy">
+        <strong>Phạm Duy Tùng</strong>
+        <small>AI · DATA · SYSTEMS</small>
+      </span>
+    </a>
+
+    <div class="offcanvas offcanvas-bottom surface" tabindex="-1" id="offcanvasSocialShare" aria-labelledby="offcanvasSocialShare">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Share</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body">
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Twitter Share Button"
+      target="_blank" href="https://twitter.com/intent/tweet?title=Khi%20log%20bi%e1%ba%bft%20t%e1%bb%b1%20%c4%91i%e1%bb%81u%20tra%3a%20TReNDS%20d%c3%b9ng%20AI%20Agent%20%c4%91%e1%bb%83%20t%c3%acm%20Root%20Cause%20trong%20ch%c6%b0a%20%c4%91%e1%ba%a7y%20m%e1%bb%99t%20ph%c3%bat&url=https%3a%2f%2fwww.phamduytung.com%2fblog%2f2026-08-08-trends-ai-agent-root-cause-analysis%2f">
+      <i class="fab fa-fw fa-twitter"></i> Twitter
+    </a>
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Facebook Share Button"
+      target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.phamduytung.com%2fblog%2f2026-08-08-trends-ai-agent-root-cause-analysis%2f">
+      <i class="fab fa-fw fa-facebook-f"></i> Facebook
+    </a>
+  </div>
+</div>
+    <button class="navbar-settings" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSettings"
+  aria-controls="offcanvasSettings" aria-label="Toggle settings">
+  <i class="fas fa-ellipsis-v"></i>
+</button>
+
+<div class="offcanvas offcanvas-end surface h-100" tabindex="-1" id="offcanvasSettings" aria-labelledby="offcanvasSettings">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Cài đặt</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body d-flex flex-column">
+
+
+
+<section class="setting">
+  <form class="font-size-switcher-form row">
+    <div class="col-auto">
+      <label for="fontSize" class="form-label"><i class="fas fa-fw fa-font"></i> Cỡ chữ</label>
+    </div>
+    <div class="col-auto ms-auto">
+      <input type="range" class="form-range" min="-2" max="2" id="fontSize">
+    </div>
+  </form>
+</section>
+
+
+
+<section class="setting actions d-flex justify-content-around mt-auto overflow-auto">
+  <a role="button" class="action action-go-back" href="javascript: window.history.back();">
+    <span class="action-icon"><i class="fas fa-2x fa-arrow-left"></i></span> Quay lại
+  </a>
+  <a role="button" class="action action-reload-page">
+    <span class="action-icon"><i class="fas fa-2x fa-redo-alt"></i></span> Tải lại
+  </a>
+  <a role="button" class="action action-copy-url">
+    <span class="action-icon"><i class="fas fa-2x fa-link"></i></span> Sao chép URL
+  </a><a class="action action-social-share" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSocialShare"
+    aria-controls="offcanvasSocialShare" aria-label="Toggle social share">
+    <span class="action-icon"><i class="fas fa-2x fa-share-alt"></i></span> Chia sẻ
+  </a></section>
+
+</div>
+</div>
+
+    <div class="collapse navbar-collapse" tabindex="-1" id="navbarSupportedContent" aria-labelledby="navbarSupportedContent">
+      <form class="search-bar my-1" action="https://www.phamduytung.com/search">
+  <div class="input-group input-group-sm">
+    <span class="btn btn-search disabled position-absolute left-0"><i class="fas fa-fw fa-search"></i></span>
+    <input class="form-control rounded-pill" name="q" type="search" aria-label="Search">
+  </div>
+</form>
+      <ul class="navbar-nav ms-auto"><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/series/">
+            <i class="fas fa-fw fa-columns"></i>Courses
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/tools/">
+            <i class="fas fa-fw fa-folder"></i>Tools
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/categories/">
+            <i class="fas fa-fw fa-folder"></i>Categories
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/archives/">
+            <i class="fas fa-fw fa-file-archive"></i>Archives
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/tags/">
+            <i class="fas fa-fw fa-tags"></i>Tags
+          </a>
+        </li><li class="nav-item dropdown">
+          <a class="nav-link" id="navbarDropdownSupport" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-fw fa-comments"></i>Community
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdownSupport"><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Facebook Group
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://github.com/AlexBlack2202/alexblack2202.github.io" target="_blank" rel="noopener noreferrer">
+                GitHub
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/contact/">
+                Contact
+              </a>
+            </li><li><hr class="dropdown-divider"></li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/faq/">
+                Câu hỏi thường gặp
+              </a>
+            </li></ul>
+        </li></ul>
+    </div>
+  </div>
+</nav>
+</header>
+<main role="main" class="container" style="line-height:1.7em">
+      <div class="row content">
+<div class="col-lg-9 col-md-8">
+  <div class="container"><nav class="row card component" aria-label="breadcrumb">
+  <div class="card-body">
+    <ol class="breadcrumb "><li class="breadcrumb-item"><a href="https://www.phamduytung.com/">Trang chủ</a></li><li class="breadcrumb-item"><a href="https://www.phamduytung.com/blog/">Blogs</a></li><li class="breadcrumb-item active">Khi log biết tự điều tra: TReNDS dùng AI Agent để tìm Root Cause trong chưa đầy một phút</li></ol>
+  </div>
+</nav>
+<div class="post-panel-wrapper">
+  <div class="d-flex flex-column component rounded post-panel">
+    
+    <a class="action action-panel-toggler" role="button" title="Panel toggler">
+      <i class="fas fa-fw fa-chevron-circle-down"></i>
+    </a>
+    <a id="sidebarToggler" class="action d-none d-lg-block" role="button" title="Sidebar toggler">
+  <i class="fas fa-fw fa-expand-alt" data-fa-transform="rotate-45"></i>
+</a>
+
+    
+
+    
+    
+    <a class="action" href="#post-comments" role="button" aria-label="Comments" title="Comments">
+  <i class="fas fa-fw fa-comments"></i>
+</a>
+    <a class="action" href="#postTOC" aria-controls="Table of contents" role="button" title="Table of contents">
+  <i class="fas fa-fw fa-list-alt"></i>
+</a>
+    
+  </div>
+</div>
+<article class="row card component mb-4 post">
+  <div class="card-header "><div class="bgcover" style="background-image:url(https://www.phamduytung.com/images/posts/2026-08-08-trends-ai-agent-root-cause-analysis/cover-pearl-glass.png)" aria-label="Khi log biết tự điều tra: TReNDS dùng AI Agent để tìm Root Cause trong chưa đầy một phút">
+      <div class="bgtrans">
+          <h1>Khi log biết tự điều tra: TReNDS dùng AI Agent để tìm Root Cause trong chưa đầy một phút
+</h1>
+      </div>
+  </div>
+</div>
+  <div class="card-body"><div class="post-meta">
+  <span class="post-date" title="tạo ngày 2026-08-08 04:00:00 &#43;0700 &#43;07.">
+    08/08/2026
+  </span><span class="post-reading-time">
+    22 phút đọc
+  </span><span class="post-taxonomies"><a href="https://www.phamduytung.com/tags/ai-agent/" class="badge post-taxonomy">AI Agent</a><a href="https://www.phamduytung.com/tags/root-cause-analysis/" class="badge post-taxonomy">Root Cause Analysis</a><a href="https://www.phamduytung.com/tags/amazon-bedrock/" class="badge post-taxonomy">Amazon Bedrock</a><a href="https://www.phamduytung.com/tags/sre/" class="badge post-taxonomy">SRE</a><a href="https://www.phamduytung.com/tags/observability/" class="badge post-taxonomy">Observability</a></span>
+</div>
+<div class="post-content mb-3"><hr>
+<div class="toc">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#một-dòng-error-thực-ra-không-hề-nhỏ">Một dòng ERROR thực ra không hề nhỏ</a></li>
+    <li><a href="#alert-và-điều-tra-là-hai-việc-khác-nhau">Alert và điều tra là hai việc khác nhau</a></li>
+    <li><a href="#đừng-đưa-log-cho-llm-hãy-đưa-cho-nó-một-chiếc-kính-lúp">Đừng đưa log cho LLM, hãy đưa cho nó một chiếc kính lúp</a></li>
+    <li><a href="#agent-không-phải-một-prompt-dài">Agent không phải một prompt dài</a></li>
+    <li><a href="#chiếc-đèn-pin-đầu-tiên-lấy-thêm-log">Chiếc đèn pin đầu tiên: lấy thêm log</a></li>
+    <li><a href="#chiếc-đèn-pin-thứ-hai-mở-source-code">Chiếc đèn pin thứ hai: mở source code</a></li>
+    <li><a href="#agent-có-thể-lần-theo-code-như-một-kỹ-sư">Agent có thể lần theo code như một kỹ sư</a></li>
+    <li><a href="#system-prompt-thực-ra-khá-đơn-giản">System Prompt thực ra khá đơn giản</a></li>
+    <li><a href="#tại-sao-tool-càng-nhỏ-càng-tốt">Tại sao tool càng nhỏ càng tốt?</a></li>
+    <li><a href="#một-incident-từ-đầu-tới-cuối">Một incident từ đầu tới cuối</a>
+      <ul>
+        <li><a href="#bước-1-cloudwatch-bắt-được-lỗi">Bước 1: CloudWatch bắt được lỗi</a></li>
+        <li><a href="#bước-2-lambda-giải-mã-event">Bước 2: Lambda giải mã event</a></li>
+        <li><a href="#bước-3-agent-bắt-đầu-điều-tra">Bước 3: Agent bắt đầu điều tra</a></li>
+        <li><a href="#bước-4-agent-mở-source-code">Bước 4: Agent mở source code</a></li>
+        <li><a href="#bước-5-agent-tìm-thêm">Bước 5: Agent tìm thêm</a></li>
+        <li><a href="#bước-6-kết-luận">Bước 6: Kết luận</a></li>
+        <li><a href="#bước-7-sns-gửi-thông-báo">Bước 7: SNS gửi thông báo</a></li>
+      </ul>
+    </li>
+    <li><a href="#từ-30-phút-xuống-dưới-60-giây">Từ 30 phút xuống dưới 60 giây</a></li>
+    <li><a href="#nhưng-có-một-vấn-đề-rất-đời-thường-cùng-một-lỗi-có-thể-la-hét-10000-lần">Nhưng có một vấn đề rất đời thường: cùng một lỗi có thể la hét 10.000 lần</a></li>
+    <li><a href="#có-thể-fingerprint-lỗi-như-thế-nào">Có thể fingerprint lỗi như thế nào?</a></li>
+    <li><a href="#không-phải-error-nào-cũng-cần-sonnet">Không phải error nào cũng cần Sonnet</a></li>
+    <li><a href="#bước-tiếp-theo-sẽ-là-runbook">Bước tiếp theo sẽ là Runbook</a></li>
+    <li><a href="#và-rồi-đến-github-issue-thậm-chí-pull-request">Và rồi đến GitHub Issue, thậm chí Pull Request</a></li>
+    <li><a href="#nếu-tự-xây-một-hệ-thống-tương-tự-mình-sẽ-chia-thành-6-lớp">Nếu tự xây một hệ thống tương tự, mình sẽ chia thành 6 lớp</a>
+      <ul>
+        <li><a href="#lớp-1-detection">Lớp 1: Detection</a></li>
+        <li><a href="#lớp-2-incident-normalization">Lớp 2: Incident normalization</a></li>
+        <li><a href="#lớp-3-context-retrieval">Lớp 3: Context retrieval</a></li>
+        <li><a href="#lớp-4-reasoning">Lớp 4: Reasoning</a></li>
+        <li><a href="#lớp-5-action">Lớp 5: Action</a></li>
+        <li><a href="#lớp-6-learning">Lớp 6: Learning</a></li>
+      </ul>
+    </li>
+    <li><a href="#một-thứ-mình-sẽ-thêm-trace">Một thứ mình sẽ thêm: trace</a></li>
+    <li><a href="#điều-đáng-học-nhất-không-phải-amazon-bedrock">Điều đáng học nhất không phải Amazon Bedrock</a></li>
+    <li><a href="#từ-observability-sang-investigability">Từ observability sang investigability</a></li>
+    <li><a href="#tổng-kết">Tổng kết</a></li>
+    <li><a href="#tham-khảo">Tham khảo</a></li>
+  </ul>
+</nav>
+  </div>
+<h1 id="một-dòng-error-thực-ra-không-hề-nhỏ">Một dòng ERROR thực ra không hề nhỏ<a class="anchor ms-1" href="#một-dòng-error-thực-ra-không-hề-nhỏ"><i class="fas fa-link"></i></a></h1>
+<p>Không có lỗi nào chỉ là một dòng chữ màu đỏ.</p>
+<p>Giả sử lúc 2 giờ 13 phút sáng, một service đang chạy bình thường bỗng ném ra:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">NullPointerException at OrderService.java:142
+</span></span></code></pre></div><p>Nếu nhìn bằng mắt người bình thường, đây chỉ là vài chục ký tự.</p>
+<p>Nhưng phía sau mấy chục ký tự ấy có thể là cả một đoàn tàu vừa trật bánh.</p>
+<p>Một request đi vào load balancer, chạy qua API, nhảy sang một service khác, gọi database, chạm Redis, gọi một API thanh toán, nhận về một giá trị kỳ quặc, rồi ở đâu đó trong hàng nghìn dòng code có một anh lập trình viên — rất có thể là chính chúng ta sáu tháng trước — quên kiểm tra <code>null</code>.</p>
+<p>Server không biết buồn.</p>
+<p>Nó chỉ viết:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">ERROR
+</span></span></code></pre></div><p>rồi tiếp tục sống.</p>
+<p>Con người mới là người phải đau khổ.</p>
+<p>Kỹ sư nhận alert, mở CloudWatch, tìm đúng log stream, kéo lên vài chục dòng, kéo xuống vài chục dòng, đọc stack trace, mở GitHub, tìm file, tìm dòng code, xem hàm này gọi hàm nào, rồi cố dựng lại trong đầu:</p>
+<blockquote>
+<p>Chuyện quái gì vừa xảy ra?</p>
+</blockquote>
+<p>Đó chính là <strong>Root Cause Analysis (RCA)</strong>.</p>
+<p>Monitoring thường trả lời được:</p>
+<blockquote>
+<p>Cái gì đang cháy?</p>
+</blockquote>
+<p>Nhưng RCA phải trả lời một câu khó hơn:</p>
+<blockquote>
+<p>Vì sao nó cháy?</p>
+</blockquote>
+<p>Ngày 7/8/2026, AWS đăng một case study khá thú vị của TReNDS Center về cách họ biến quá trình này thành một pipeline gần như tự động bằng Amazon CloudWatch, Lambda, Amazon Bedrock và Strands Agents SDK. Hệ thống đang được TReNDS sử dụng trong production. (<a href="https://aws.amazon.com/blogs/machine-learning/how-trends-automates-root-cause-analysis-with-amazon-bedrock/?utm_source=chatgpt.com" title="How TReNDS automates root-cause analysis with Amazon Bedrock | Artificial Intelligence" target="_blank" rel="noopener noreferrer">Amazon Web Services, Inc.</a>)</p>
+<p>Điều đáng nói không nằm ở việc họ &ldquo;đưa log cho LLM đọc&rdquo;.</p>
+<p>Nếu chỉ làm thế thì khá chán.</p>
+<p>Điểm thú vị là họ cho AI <strong>quyền đi điều tra</strong>.</p>
+<h1 id="alert-và-điều-tra-là-hai-việc-khác-nhau">Alert và điều tra là hai việc khác nhau<a class="anchor ms-1" href="#alert-và-điều-tra-là-hai-việc-khác-nhau"><i class="fas fa-link"></i></a></h1>
+<p>TReNDS, viết tắt của Center for Translational Research in Neuroimaging and Data Science, vận hành nhiều ứng dụng nghiên cứu và API trên Amazon EKS. Log từ các workload được Fluent Bit chuyển vào Amazon CloudWatch. Hạ tầng này đã chạy trên AWS từ năm 2019. (<a href="https://aws.amazon.com/blogs/machine-learning/how-trends-automates-root-cause-analysis-with-amazon-bedrock/?utm_source=chatgpt.com" title="How TReNDS automates root-cause analysis with Amazon Bedrock | Artificial Intelligence" target="_blank" rel="noopener noreferrer">Amazon Web Services, Inc.</a>)</p>
+<p>Monitoring của họ vốn không thiếu.</p>
+<p>Khi hệ thống lỗi, họ biết.</p>
+<p>Nhưng biết một căn nhà đang cháy và biết cái ổ điện nào đã phát tia lửa là hai chuyện rất khác nhau.</p>
+<p>Quy trình cũ đại khái như thế này:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">Alert
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">  ↓
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">Engineer mở CloudWatch
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">  ↓
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">Tìm stack trace
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">  ↓
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">Đọc log trước và sau lỗi
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">  ↓
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">Mở GitHub
+</span></span><span class="line"><span class="ln">10</span><span class="cl">  ↓
+</span></span><span class="line"><span class="ln">11</span><span class="cl">Tìm file liên quan
+</span></span><span class="line"><span class="ln">12</span><span class="cl">  ↓
+</span></span><span class="line"><span class="ln">13</span><span class="cl">Đọc code
+</span></span><span class="line"><span class="ln">14</span><span class="cl">  ↓
+</span></span><span class="line"><span class="ln">15</span><span class="cl">Lần theo execution path
+</span></span><span class="line"><span class="ln">16</span><span class="cl">  ↓
+</span></span><span class="line"><span class="ln">17</span><span class="cl">Đưa ra giả thuyết
+</span></span><span class="line"><span class="ln">18</span><span class="cl">  ↓
+</span></span><span class="line"><span class="ln">19</span><span class="cl">Root Cause
+</span></span></code></pre></div><p>Theo TReNDS, những lỗi tương đối đơn giản cũng có thể mất khoảng <strong>15–30 phút điều tra</strong>. Những lỗi liên quan nhiều service có thể lâu hơn đáng kể. (<a href="https://aws.amazon.com/blogs/machine-learning/how-trends-automates-root-cause-analysis-with-amazon-bedrock/?utm_source=chatgpt.com" title="How TReNDS automates root-cause analysis with Amazon Bedrock | Artificial Intelligence" target="_blank" rel="noopener noreferrer">Amazon Web Services, Inc.</a>)</p>
+<p>Vấn đề nằm ở chỗ phần lớn 15–30 phút đó không phải lúc nào cũng cần một bộ não thiên tài.</p>
+<p>Kỹ sư đang làm những việc rất cơ học:</p>
+<ul>
+<li>lấy thêm log;</li>
+<li>tìm file;</li>
+<li>mở đúng dòng;</li>
+<li>đọc stack trace;</li>
+<li>tìm hàm được gọi;</li>
+<li>tìm error message trong repository;</li>
+<li>nối các mẩu thông tin lại với nhau.</li>
+</ul>
+<p>Nói hơi kỳ một chút, chúng ta đang dùng một kỹ sư có nhiều năm kinh nghiệm như một con trỏ chuột biết suy nghĩ.</p>
+<p>Và đây là nơi AI Agent bắt đầu hợp lý.</p>
+<h1 id="đừng-đưa-log-cho-llm-hãy-đưa-cho-nó-một-chiếc-kính-lúp">Đừng đưa log cho LLM, hãy đưa cho nó một chiếc kính lúp<a class="anchor ms-1" href="#đừng-đưa-log-cho-llm-hãy-đưa-cho-nó-một-chiếc-kính-lúp"><i class="fas fa-link"></i></a></h1>
+<p>Có một cách rất đơn giản để dùng AI cho incident:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">ERROR
+</span></span><span class="line"><span class="ln">2</span><span class="cl">  ↓
+</span></span><span class="line"><span class="ln">3</span><span class="cl">LLM
+</span></span><span class="line"><span class="ln">4</span><span class="cl">  ↓
+</span></span><span class="line"><span class="ln">5</span><span class="cl">&#34;Nguyên nhân có thể là...&#34;
+</span></span></code></pre></div><p>Cách này nhìn rất thông minh trong demo.</p>
+<p>Nhưng ở production thì có một vấn đề.</p>
+<p>LLM chỉ biết những gì chúng ta đưa vào prompt.</p>
+<p>Nếu prompt chỉ có:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">NullPointerException at OrderService.java:142
+</span></span></code></pre></div><p>thì nó cũng giống một bác sĩ chỉ được nghe:</p>
+<blockquote>
+<p>Bệnh nhân đau bụng.</p>
+</blockquote>
+<p>Sau đó phải đoán bệnh.</p>
+<p>Có thể đoán đúng.</p>
+<p>Cũng có thể bệnh nhân chỉ ăn sáu tô bún bò.</p>
+<p>TReNDS chọn kiến trúc khác.</p>
+<p>Họ cho model các <strong>tool</strong> để nó tự đi lấy bằng chứng.</p>
+<p>Kiến trúc tổng quát:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">Application
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">Amazon EKS
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">Fluent Bit
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">CloudWatch Logs
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">Subscription Filter
+</span></span><span class="line"><span class="ln">10</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln">11</span><span class="cl">AWS Lambda
+</span></span><span class="line"><span class="ln">12</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln">13</span><span class="cl">Strands Agent
+</span></span><span class="line"><span class="ln">14</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln">15</span><span class="cl">Amazon Bedrock
+</span></span><span class="line"><span class="ln">16</span><span class="cl">   ↙        ↘
+</span></span><span class="line"><span class="ln">17</span><span class="cl">Logs       GitHub
+</span></span><span class="line"><span class="ln">18</span><span class="cl">context    source code
+</span></span><span class="line"><span class="ln">19</span><span class="cl">    ↘       ↙
+</span></span><span class="line"><span class="ln">20</span><span class="cl">   Reasoning
+</span></span><span class="line"><span class="ln">21</span><span class="cl">       ↓
+</span></span><span class="line"><span class="ln">22</span><span class="cl">Root Cause Analysis
+</span></span><span class="line"><span class="ln">23</span><span class="cl">       ↓
+</span></span><span class="line"><span class="ln">24</span><span class="cl">Amazon SNS
+</span></span><span class="line"><span class="ln">25</span><span class="cl">       ↓
+</span></span><span class="line"><span class="ln">26</span><span class="cl">Email / Slack
+</span></span></code></pre></div><p>CloudWatch subscription filter theo dõi những pattern như:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">ERROR
+</span></span><span class="line"><span class="ln">2</span><span class="cl">Exception
+</span></span><span class="line"><span class="ln">3</span><span class="cl">FATAL
+</span></span><span class="line"><span class="ln">4</span><span class="cl">CRITICAL
+</span></span></code></pre></div><p>Khi một event phù hợp xuất hiện, dữ liệu được chuyển sang Lambda. Subscription filter của CloudWatch được thiết kế để chuyển các log event phù hợp sang các destination như Lambda hoặc Kinesis gần thời gian thực. (<a href="https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/SubscriptionFilters.html?utm_source=chatgpt.com" title="Log group-level subscription filters - Amazon CloudWatch Logs" target="_blank" rel="noopener noreferrer">AWS Documentation</a>)</p>
+<p>Lambda sau đó khởi chạy một Strands Agent sử dụng model trên Amazon Bedrock.</p>
+<p>Nhưng đây mới chỉ là lúc cuộc điều tra bắt đầu.</p>
+<h1 id="agent-không-phải-một-prompt-dài">Agent không phải một prompt dài<a class="anchor ms-1" href="#agent-không-phải-một-prompt-dài"><i class="fas fa-link"></i></a></h1>
+<p>Một trong những ý mình thích nhất trong kiến trúc này là họ không cố nhét cả thế giới vào context window.</p>
+<p>Agent được cung cấp một số công cụ.</p>
+<p>Ví dụ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">fetch_log_context()
+</span></span><span class="line"><span class="ln">2</span><span class="cl">fetch_source_code()
+</span></span><span class="line"><span class="ln">3</span><span class="cl">search_github_code()
+</span></span></code></pre></div><p>Rồi model tự quyết định lúc nào cần dùng cái gì.</p>
+<p>Trong Strands, một Python function bình thường có thể được biến thành tool bằng decorator <code>@tool</code>. Docstring và type hint được dùng để mô tả chức năng cũng như schema tham số cho model. (<a href="https://strandsagents.com/docs/user-guide/concepts/tools/?utm_source=chatgpt.com" title="Tools Overview - Strands Agents" target="_blank" rel="noopener noreferrer">Strands Agents SDK</a>)</p>
+<p>Ví dụ đơn giản:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="kn">from</span> <span class="nn">strands</span> <span class="kn">import</span> <span class="n">tool</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl"><span class="nd">@tool</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl"><span class="k">def</span> <span class="nf">fetch_source_code</span><span class="p">(</span><span class="n">file_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">repo</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">    <span class="s2">&#34;&#34;&#34;
+</span></span></span><span class="line"><span class="ln"> 6</span><span class="cl"><span class="s2">    Lấy source code từ repository.
+</span></span></span><span class="line"><span class="ln"> 7</span><span class="cl"><span class="s2">
+</span></span></span><span class="line"><span class="ln"> 8</span><span class="cl"><span class="s2">    Args:
+</span></span></span><span class="line"><span class="ln"> 9</span><span class="cl"><span class="s2">        file_path: đường dẫn file cần đọc
+</span></span></span><span class="line"><span class="ln">10</span><span class="cl"><span class="s2">        repo: repository cần truy cập
+</span></span></span><span class="line"><span class="ln">11</span><span class="cl"><span class="s2">    &#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl">    <span class="o">...</span>
+</span></span></code></pre></div><p>Nhìn thì chẳng có gì ghê gớm.</p>
+<p>Nhưng sự thay đổi nằm ở quyền chủ động.</p>
+<p>Thay vì chương trình viết cứng:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln">1</span><span class="cl"><span class="n">read_log</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="n">read_file_a</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="n">read_file_b</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">4</span><span class="cl"><span class="n">search_keyword</span><span class="p">()</span>
+</span></span></code></pre></div><p>ta nói:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Đây là lỗi.
+</span></span><span class="line"><span class="ln">2</span><span class="cl">
+</span></span><span class="line"><span class="ln">3</span><span class="cl">Đây là những công cụ anh có.
+</span></span><span class="line"><span class="ln">4</span><span class="cl">
+</span></span><span class="line"><span class="ln">5</span><span class="cl">Điều tra đi.
+</span></span></code></pre></div><p>Model trở thành nơi quyết định <strong>bước tiếp theo của quá trình điều tra</strong>.</p>
+<p>Đây chính là khác biệt giữa một workflow cố định và agentic workflow.</p>
+<h1 id="chiếc-đèn-pin-đầu-tiên-lấy-thêm-log">Chiếc đèn pin đầu tiên: lấy thêm log<a class="anchor ms-1" href="#chiếc-đèn-pin-đầu-tiên-lấy-thêm-log"><i class="fas fa-link"></i></a></h1>
+<p>Một dòng error thường không đủ.</p>
+<p>Giả sử log có dạng:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">10:21:01 Received payment request
+</span></span><span class="line"><span class="ln">2</span><span class="cl">10:21:02 Calling payment gateway
+</span></span><span class="line"><span class="ln">3</span><span class="cl">10:21:04 Gateway timeout
+</span></span><span class="line"><span class="ln">4</span><span class="cl">10:21:04 Retry failed
+</span></span><span class="line"><span class="ln">5</span><span class="cl">10:21:05 payment_response=None
+</span></span><span class="line"><span class="ln">6</span><span class="cl">10:21:05 NullPointerException
+</span></span></code></pre></div><p>Nếu chúng ta chỉ gửi dòng cuối:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">NullPointerException
+</span></span></code></pre></div><p>model nhìn thấy cái xác nhưng không nhìn thấy hiện trường.</p>
+<p>TReNDS vì thế xây một tool để lấy log xung quanh thời điểm xảy ra lỗi.</p>
+<p>Đại khái:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln">1</span><span class="cl"><span class="nd">@tool</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="k">def</span> <span class="nf">fetch_log_context</span><span class="p">(</span>
+</span></span><span class="line"><span class="ln">3</span><span class="cl">    <span class="n">log_group</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">4</span><span class="cl">    <span class="n">log_stream</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">5</span><span class="cl">    <span class="n">timestamp</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">6</span><span class="cl">    <span class="n">window_seconds</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">30</span>
+</span></span><span class="line"><span class="ln">7</span><span class="cl"><span class="p">):</span>
+</span></span><span class="line"><span class="ln">8</span><span class="cl">    <span class="o">...</span>
+</span></span></code></pre></div><p>Agent có thể lấy khoảng thời gian trước và sau error, ví dụ ±30 giây.</p>
+<p>Quan trọng hơn, họ giới hạn truy vấn trong <strong>cùng log stream</strong>.</p>
+<p>Điều đó giúp tránh một nồi lẩu log từ hàng chục container chạy song song.</p>
+<p>Khi ấy AI có thể nhìn thấy một chuỗi sự kiện tương đối sạch:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">request
+</span></span><span class="line"><span class="ln">2</span><span class="cl">↓
+</span></span><span class="line"><span class="ln">3</span><span class="cl">warning
+</span></span><span class="line"><span class="ln">4</span><span class="cl">↓
+</span></span><span class="line"><span class="ln">5</span><span class="cl">timeout
+</span></span><span class="line"><span class="ln">6</span><span class="cl">↓
+</span></span><span class="line"><span class="ln">7</span><span class="cl">retry
+</span></span><span class="line"><span class="ln">8</span><span class="cl">↓
+</span></span><span class="line"><span class="ln">9</span><span class="cl">exception
+</span></span></code></pre></div><p>Từ một tấm ảnh chụp cái xác, nó bắt đầu có camera an ninh.</p>
+<p>Theo kiến trúc TReNDS, CloudWatch event chứa thông tin <code>logStream</code>, cho phép agent lấy thêm những dòng log của đúng container đã phát sinh lỗi. (<a href="https://aws.amazon.com/blogs/machine-learning/how-trends-automates-root-cause-analysis-with-amazon-bedrock/?utm_source=chatgpt.com" title="How TReNDS automates root-cause analysis with Amazon Bedrock | Artificial Intelligence" target="_blank" rel="noopener noreferrer">Amazon Web Services, Inc.</a>)</p>
+<h1 id="chiếc-đèn-pin-thứ-hai-mở-source-code">Chiếc đèn pin thứ hai: mở source code<a class="anchor ms-1" href="#chiếc-đèn-pin-thứ-hai-mở-source-code"><i class="fas fa-link"></i></a></h1>
+<p>Đây mới là đoạn mình thấy đáng học nhất.</p>
+<p>Stack trace nói:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">OrderService.java:142
+</span></span></code></pre></div><p>Agent không ngồi tưởng tượng dòng 142 có gì.</p>
+<p>Nó gọi:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">fetch_source_code(
+</span></span><span class="line"><span class="ln">2</span><span class="cl">    &#34;src/services/OrderService.java&#34;
+</span></span><span class="line"><span class="ln">3</span><span class="cl">)
+</span></span></code></pre></div><p>Sau đó đọc code thật.</p>
+<p>Ví dụ nó tìm thấy:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="ln">1</span><span class="cl"><span class="n">PaymentResponse</span><span class="w"> </span><span class="n">response</span><span class="w"> </span><span class="o">=</span><span class="w">
+</span></span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="w">    </span><span class="n">paymentGateway</span><span class="p">.</span><span class="na">charge</span><span class="p">(</span><span class="n">order</span><span class="p">);</span><span class="w">
+</span></span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="w">
+</span></span></span><span class="line"><span class="ln">4</span><span class="cl"><span class="n">String</span><span class="w"> </span><span class="n">transactionId</span><span class="w"> </span><span class="o">=</span><span class="w">
+</span></span></span><span class="line"><span class="ln">5</span><span class="cl"><span class="w">    </span><span class="n">response</span><span class="p">.</span><span class="na">getTransactionId</span><span class="p">();</span><span class="w">
+</span></span></span></code></pre></div><p>Trong log trước đó lại có:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">payment_response=None
+</span></span></code></pre></div><p>Bây giờ câu chuyện gần như tự nối lại:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Payment gateway timeout
+</span></span><span class="line"><span class="ln">2</span><span class="cl">        ↓
+</span></span><span class="line"><span class="ln">3</span><span class="cl">charge() trả null
+</span></span><span class="line"><span class="ln">4</span><span class="cl">        ↓
+</span></span><span class="line"><span class="ln">5</span><span class="cl">response không được kiểm tra
+</span></span><span class="line"><span class="ln">6</span><span class="cl">        ↓
+</span></span><span class="line"><span class="ln">7</span><span class="cl">getTransactionId()
+</span></span><span class="line"><span class="ln">8</span><span class="cl">        ↓
+</span></span><span class="line"><span class="ln">9</span><span class="cl">NullPointerException
+</span></span></code></pre></div><p>Đây không còn là:</p>
+<blockquote>
+<p>AI đoán nguyên nhân lỗi.</p>
+</blockquote>
+<p>Mà gần hơn với:</p>
+<blockquote>
+<p>AI thu thập bằng chứng rồi suy luận nguyên nhân lỗi.</p>
+</blockquote>
+<p>Hai câu nhìn khá giống nhau.</p>
+<p>Nhưng về mặt engineering, chúng cách nhau rất xa.</p>
+<h1 id="agent-có-thể-lần-theo-code-như-một-kỹ-sư">Agent có thể lần theo code như một kỹ sư<a class="anchor ms-1" href="#agent-có-thể-lần-theo-code-như-một-kỹ-sư"><i class="fas fa-link"></i></a></h1>
+<p>Giả sử dòng lỗi nằm ở:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">checkout.py
+</span></span></code></pre></div><p>Agent mở file và thấy:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln">1</span><span class="cl"><span class="n">payment</span> <span class="o">=</span> <span class="n">process_payment</span><span class="p">(</span><span class="n">order</span><span class="p">)</span>
+</span></span></code></pre></div><p>Nó chưa có câu trả lời.</p>
+<p>Nó tiếp tục tìm <code>process_payment()</code>.</p>
+<p>Sau đó phát hiện:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln">1</span><span class="cl"><span class="k">return</span> <span class="n">payment_gateway</span><span class="o">.</span><span class="n">charge</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+</span></span></code></pre></div><p>Nó lại mở implementation của <code>payment_gateway</code>.</p>
+<p>Rồi có thể phát hiện bug nằm sâu hơn.</p>
+<p>Con đường điều tra lúc này có thể là:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">Stack trace
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">   ↓
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">checkout.py
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">   ↓
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">process_payment()
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">   ↓
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">payment_gateway.py
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">   ↓
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">retry()
+</span></span><span class="line"><span class="ln">10</span><span class="cl">   ↓
+</span></span><span class="line"><span class="ln">11</span><span class="cl">HTTP timeout
+</span></span><span class="line"><span class="ln">12</span><span class="cl">   ↓
+</span></span><span class="line"><span class="ln">13</span><span class="cl">None
+</span></span><span class="line"><span class="ln">14</span><span class="cl">   ↓
+</span></span><span class="line"><span class="ln">15</span><span class="cl">missing null check
+</span></span></code></pre></div><p>Điểm quan trọng là con đường này <strong>không cần được lập trình viên viết trước</strong>.</p>
+<p>Theo AWS, nếu việc đọc file đầu tiên cho thấy lỗi nằm trong shared utility hoặc dependency khác, agent có thể tiếp tục lần theo chuỗi đó. Nếu stack trace không đủ thông tin, agent cũng có thể tìm error string trong codebase. (<a href="https://aws.amazon.com/blogs/machine-learning/how-trends-automates-root-cause-analysis-with-amazon-bedrock/?utm_source=chatgpt.com" title="How TReNDS automates root-cause analysis with Amazon Bedrock | Artificial Intelligence" target="_blank" rel="noopener noreferrer">Amazon Web Services, Inc.</a>)</p>
+<p>Đó là thứ workflow kiểu:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">if error A → làm B
+</span></span><span class="line"><span class="ln">2</span><span class="cl">if error C → làm D
+</span></span></code></pre></div><p>rất khó bao phủ hết.</p>
+<p>Production có một tài năng đặc biệt.</p>
+<p>Nó luôn tìm ra loại lỗi mà chúng ta chưa viết <code>if</code>.</p>
+<h1 id="system-prompt-thực-ra-khá-đơn-giản">System Prompt thực ra khá đơn giản<a class="anchor ms-1" href="#system-prompt-thực-ra-khá-đơn-giản"><i class="fas fa-link"></i></a></h1>
+<p>Một điều khác đáng chú ý là system prompt của TReNDS không phải một cuốn kinh dài 14 trang.</p>
+<p>Tinh thần của nó chỉ là:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">Bạn là một Senior Site Reliability Engineer.
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">1. Xác định root cause từ stack trace.
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">2. Đọc source code liên quan.
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">3. Trả về:
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">- Severity
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">- Root cause
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">- Source code liên quan
+</span></span><span class="line"><span class="ln">10</span><span class="cl">- Suggested fix
+</span></span><span class="line"><span class="ln">11</span><span class="cl">- Những vùng khác có thể bị ảnh hưởng
+</span></span></code></pre></div><p>Chiến lược điều tra không bị hard-code.</p>
+<p>Prompt quy định:</p>
+<blockquote>
+<p>Tôi muốn kết quả trông như thế nào.</p>
+</blockquote>
+<p>Tool quy định:</p>
+<blockquote>
+<p>Anh có thể làm gì.</p>
+</blockquote>
+<p>Model quyết định:</p>
+<blockquote>
+<p>Tôi nên làm gì tiếp theo.</p>
+</blockquote>
+<p>Đây là một cách chia trách nhiệm khá đẹp:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">Prompt
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">→ mục tiêu + luật chơi
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">Tools
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">→ khả năng tác động vào thế giới
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">LLM
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">→ suy luận + lựa chọn hành động
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">
+</span></span><span class="line"><span class="ln">10</span><span class="cl">Code truyền thống
+</span></span><span class="line"><span class="ln">11</span><span class="cl">→ authentication + permission + validation + execution
+</span></span></code></pre></div><p>Một agent production tốt không phải là LLM được quyền làm mọi thứ.</p>
+<p>Nó là LLM đứng giữa những cánh cửa rất nhỏ.</p>
+<p>Mỗi cánh cửa chỉ mở đúng một việc.</p>
+<h1 id="tại-sao-tool-càng-nhỏ-càng-tốt">Tại sao tool càng nhỏ càng tốt?<a class="anchor ms-1" href="#tại-sao-tool-càng-nhỏ-càng-tốt"><i class="fas fa-link"></i></a></h1>
+<p>Hãy tưởng tượng ta cho agent một tool:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">execute_anything(command)
+</span></span></code></pre></div><p>Thế là xong.</p>
+<p>Agent quyền năng như Thanos.</p>
+<p>Và đội security bắt đầu mất ngủ.</p>
+<p>Một thiết kế hợp lý hơn là:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">fetch_log_context()
+</span></span><span class="line"><span class="ln">2</span><span class="cl">fetch_source_code()
+</span></span><span class="line"><span class="ln">3</span><span class="cl">search_repository()
+</span></span><span class="line"><span class="ln">4</span><span class="cl">query_metrics()
+</span></span><span class="line"><span class="ln">5</span><span class="cl">get_deployment_info()
+</span></span></code></pre></div><p>Mỗi tool có input rõ ràng.</p>
+<p>Mỗi tool có permission rõ ràng.</p>
+<p>Agent được tự do <strong>suy nghĩ</strong>, nhưng khả năng <strong>hành động</strong> vẫn bị giới hạn bởi hệ thống.</p>
+<p>Đây là nguyên tắc rất quan trọng khi đưa agent vào production:</p>
+<blockquote>
+<p>Đừng cố kiểm soát mọi suy nghĩ của model. Hãy kiểm soát những thứ nó có thể chạm vào.</p>
+</blockquote>
+<p>Strands hỗ trợ custom Python functions, MCP server và các loại tool khác để xây lớp khả năng này cho agent. (<a href="https://strandsagents.com/docs/user-guide/concepts/tools/?utm_source=chatgpt.com" title="Tools Overview - Strands Agents" target="_blank" rel="noopener noreferrer">Strands Agents SDK</a>)</p>
+<h1 id="một-incident-từ-đầu-tới-cuối">Một incident từ đầu tới cuối<a class="anchor ms-1" href="#một-incident-từ-đầu-tới-cuối"><i class="fas fa-link"></i></a></h1>
+<p>Giả sử lúc 10:21 hệ thống xuất hiện:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">ERROR
+</span></span><span class="line"><span class="ln">2</span><span class="cl">NullPointerException
+</span></span><span class="line"><span class="ln">3</span><span class="cl">OrderService.java:142
+</span></span></code></pre></div><h2 id="bước-1-cloudwatch-bắt-được-lỗi">Bước 1: CloudWatch bắt được lỗi<a class="anchor ms-1" href="#bước-1-cloudwatch-bắt-được-lỗi"><i class="fas fa-link"></i></a></h2>
+<p>Subscription filter phát hiện:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">ERROR
+</span></span></code></pre></div><p>và gửi event sang Lambda.</p>
+<h2 id="bước-2-lambda-giải-mã-event">Bước 2: Lambda giải mã event<a class="anchor ms-1" href="#bước-2-lambda-giải-mã-event"><i class="fas fa-link"></i></a></h2>
+<p>CloudWatch gửi payload dạng gzip nén và base64 encode.</p>
+<p>Lambda lấy ra:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">log_group
+</span></span><span class="line"><span class="ln">2</span><span class="cl">log_stream
+</span></span><span class="line"><span class="ln">3</span><span class="cl">timestamp
+</span></span><span class="line"><span class="ln">4</span><span class="cl">error_message
+</span></span></code></pre></div><h2 id="bước-3-agent-bắt-đầu-điều-tra">Bước 3: Agent bắt đầu điều tra<a class="anchor ms-1" href="#bước-3-agent-bắt-đầu-điều-tra"><i class="fas fa-link"></i></a></h2>
+<p>Model thấy:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">OrderService.java:142
+</span></span></code></pre></div><p>Nó gọi:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">fetch_log_context()
+</span></span></code></pre></div><p>và nhận:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Payment gateway timeout
+</span></span><span class="line"><span class="ln">2</span><span class="cl">Retry failed
+</span></span><span class="line"><span class="ln">3</span><span class="cl">payment_response=None
+</span></span><span class="line"><span class="ln">4</span><span class="cl">NullPointerException
+</span></span></code></pre></div><h2 id="bước-4-agent-mở-source-code">Bước 4: Agent mở source code<a class="anchor ms-1" href="#bước-4-agent-mở-source-code"><i class="fas fa-link"></i></a></h2>
+<p>Nó gọi:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">fetch_source_code(
+</span></span><span class="line"><span class="ln">2</span><span class="cl">    &#34;OrderService.java&#34;
+</span></span><span class="line"><span class="ln">3</span><span class="cl">)
+</span></span></code></pre></div><p>và tìm thấy:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-java" data-lang="java"><span class="line"><span class="ln">1</span><span class="cl"><span class="n">response</span><span class="p">.</span><span class="na">getTransactionId</span><span class="p">()</span><span class="w">
+</span></span></span></code></pre></div><p>mà không có kiểm tra <code>response == null</code>.</p>
+<h2 id="bước-5-agent-tìm-thêm">Bước 5: Agent tìm thêm<a class="anchor ms-1" href="#bước-5-agent-tìm-thêm"><i class="fas fa-link"></i></a></h2>
+<p>Có thể nó search repository và phát hiện:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">RefundService.java:89
+</span></span></code></pre></div><p>cũng có pattern tương tự.</p>
+<h2 id="bước-6-kết-luận">Bước 6: Kết luận<a class="anchor ms-1" href="#bước-6-kết-luận"><i class="fas fa-link"></i></a></h2>
+<p>Kết quả gửi về có dạng:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">Severity: HIGH
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">Root Cause:
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">Payment gateway có thể trả null khi timeout.
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">OrderService không kiểm tra null trước khi
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">gọi getTransactionId().
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">Suggested Fix:
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">Thêm null check và xử lý retry/fallback.
+</span></span><span class="line"><span class="ln">10</span><span class="cl">
+</span></span><span class="line"><span class="ln">11</span><span class="cl">Related Areas:
+</span></span><span class="line"><span class="ln">12</span><span class="cl">RefundService có pattern tương tự.
+</span></span></code></pre></div><h2 id="bước-7-sns-gửi-thông-báo">Bước 7: SNS gửi thông báo<a class="anchor ms-1" href="#bước-7-sns-gửi-thông-báo"><i class="fas fa-link"></i></a></h2>
+<p>Kết quả cuối cùng có thể được fan-out qua email hoặc Slack. Đây chính là flow production được TReNDS mô tả. (<a href="https://aws.amazon.com/blogs/machine-learning/how-trends-automates-root-cause-analysis-with-amazon-bedrock/?utm_source=chatgpt.com" title="How TReNDS automates root-cause analysis with Amazon Bedrock | Artificial Intelligence" target="_blank" rel="noopener noreferrer">Amazon Web Services, Inc.</a>)</p>
+<p>Kỹ sư mở điện thoại lên.</p>
+<p>Thay vì:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">PRODUCTION ERROR!!!
+</span></span></code></pre></div><p>họ nhận được:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">Production lỗi.
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">Nó lỗi ở đây.
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">Khả năng cao vì cái này.
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">Đây là đoạn code.
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">Có thể sửa như thế này.
+</span></span><span class="line"><span class="ln">10</span><span class="cl">
+</span></span><span class="line"><span class="ln">11</span><span class="cl">À, file kia cũng có nguy cơ tương tự.
+</span></span></code></pre></div><p>Alert bỗng nhiên từ một tiếng chuông báo cháy biến thành một anh kỹ sư trực đêm đã chạy xuống tầng hầm xem thử khói phát ra từ đâu.</p>
+<h1 id="từ-30-phút-xuống-dưới-60-giây">Từ 30 phút xuống dưới 60 giây<a class="anchor ms-1" href="#từ-30-phút-xuống-dưới-60-giây"><i class="fas fa-link"></i></a></h1>
+<p>Theo TReNDS, sau khi triển khai hệ thống, thời gian investigation giảm từ khoảng <strong>15–30 phút xuống dưới 60 giây</strong>. (<a href="https://aws.amazon.com/blogs/machine-learning/how-trends-automates-root-cause-analysis-with-amazon-bedrock/?utm_source=chatgpt.com" title="How TReNDS automates root-cause analysis with Amazon Bedrock | Artificial Intelligence" target="_blank" rel="noopener noreferrer">Amazon Web Services, Inc.</a>)</p>
+<p>Đây là con số đáng chú ý.</p>
+<p>Nhưng mình nghĩ điều quan trọng hơn không phải:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">30 phút → 1 phút
+</span></span></code></pre></div><p>Mà là bản chất của 29 phút biến mất.</p>
+<p>Trước đây:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Engineer
+</span></span><span class="line"><span class="ln">2</span><span class="cl">├── tìm log
+</span></span><span class="line"><span class="ln">3</span><span class="cl">├── tìm context
+</span></span><span class="line"><span class="ln">4</span><span class="cl">├── tìm source
+</span></span><span class="line"><span class="ln">5</span><span class="cl">├── đọc file
+</span></span><span class="line"><span class="ln">6</span><span class="cl">├── search repository
+</span></span><span class="line"><span class="ln">7</span><span class="cl">└── nối thông tin
+</span></span></code></pre></div><p>Sau này:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">Agent
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">├── tìm log
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">├── tìm context
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">├── tìm source
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">├── đọc file
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">├── search repository
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">└── nối thông tin
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">Engineer
+</span></span><span class="line"><span class="ln">10</span><span class="cl">└── kiểm tra kết luận
+</span></span></code></pre></div><p>Con người được đẩy lên một tầng abstraction cao hơn.</p>
+<p>Giống compiler đã giải phóng chúng ta khỏi việc tự viết assembly cho từng phép cộng.</p>
+<p>Agent không nhất thiết thay kỹ sư SRE.</p>
+<p>Nó lấy bớt phần <strong>đi bộ giữa các hệ thống</strong> ra khỏi công việc của SRE.</p>
+<h1 id="nhưng-có-một-vấn-đề-rất-đời-thường-cùng-một-lỗi-có-thể-la-hét-10000-lần">Nhưng có một vấn đề rất đời thường: cùng một lỗi có thể la hét 10.000 lần<a class="anchor ms-1" href="#nhưng-có-một-vấn-đề-rất-đời-thường-cùng-một-lỗi-có-thể-la-hét-10000-lần"><i class="fas fa-link"></i></a></h1>
+<p>Production có một thói quen xấu.</p>
+<p>Một bug xảy ra không nhất thiết gửi một error.</p>
+<p>Nó có thể gửi:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">ERROR
+</span></span><span class="line"><span class="ln">2</span><span class="cl">ERROR
+</span></span><span class="line"><span class="ln">3</span><span class="cl">ERROR
+</span></span><span class="line"><span class="ln">4</span><span class="cl">ERROR
+</span></span><span class="line"><span class="ln">5</span><span class="cl">ERROR
+</span></span><span class="line"><span class="ln">6</span><span class="cl">ERROR
+</span></span><span class="line"><span class="ln">7</span><span class="cl">...
+</span></span></code></pre></div><p>Nếu mỗi <code>ERROR</code> gọi một LLM Agent, chúng ta vừa phát minh ra một cỗ máy đổi exception thành hóa đơn.</p>
+<p>TReNDS giải quyết chuyện này bằng deduplication sử dụng DynamoDB: sau release, nếu cùng code path tiếp tục tạo ra error lặp lại, chỉ occurrence đầu tiên cần kích hoạt phân tích; các lần sau được lọc đi. (<a href="https://aws.amazon.com/blogs/machine-learning/how-trends-automates-root-cause-analysis-with-amazon-bedrock/?utm_source=chatgpt.com" title="How TReNDS automates root-cause analysis with Amazon Bedrock | Artificial Intelligence" target="_blank" rel="noopener noreferrer">Amazon Web Services, Inc.</a>)</p>
+<p>Ý tưởng này cực kỳ quan trọng.</p>
+<p>Agentic architecture không nên là:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Event
+</span></span><span class="line"><span class="ln">2</span><span class="cl">→ LLM
+</span></span></code></pre></div><p>Mà nên gần với:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">Event
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">   ↓
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">Filter
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">   ↓
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">Normalize
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">   ↓
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">Fingerprint
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">   ↓
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">Deduplicate
+</span></span><span class="line"><span class="ln">10</span><span class="cl">   ↓
+</span></span><span class="line"><span class="ln">11</span><span class="cl">Priority
+</span></span><span class="line"><span class="ln">12</span><span class="cl">   ↓
+</span></span><span class="line"><span class="ln">13</span><span class="cl">Agent
+</span></span></code></pre></div><p>Không phải mọi tiếng động trong nhà đều cần gọi Sherlock Holmes.</p>
+<p>Có lúc chỉ là con mèo làm rơi cái muỗng.</p>
+<h1 id="có-thể-fingerprint-lỗi-như-thế-nào">Có thể fingerprint lỗi như thế nào?<a class="anchor ms-1" href="#có-thể-fingerprint-lỗi-như-thế-nào"><i class="fas fa-link"></i></a></h1>
+<p>Giả sử hệ thống nhận:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">NullPointerException
+</span></span><span class="line"><span class="ln">2</span><span class="cl">OrderService.java:142
+</span></span><span class="line"><span class="ln">3</span><span class="cl">request_id=abc123
+</span></span><span class="line"><span class="ln">4</span><span class="cl">user_id=7788
+</span></span></code></pre></div><p>và vài giây sau:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">NullPointerException
+</span></span><span class="line"><span class="ln">2</span><span class="cl">OrderService.java:142
+</span></span><span class="line"><span class="ln">3</span><span class="cl">request_id=def456
+</span></span><span class="line"><span class="ln">4</span><span class="cl">user_id=9981
+</span></span></code></pre></div><p>Request khác nhau.</p>
+<p>User khác nhau.</p>
+<p>Nhưng về bản chất có thể cùng một lỗi.</p>
+<p>Ta có thể normalize thành:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">NullPointerException
+</span></span><span class="line"><span class="ln">2</span><span class="cl">OrderService.java:142
+</span></span></code></pre></div><p>rồi tạo fingerprint:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln">1</span><span class="cl"><span class="kn">import</span> <span class="nn">hashlib</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl">
+</span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="k">def</span> <span class="nf">incident_fingerprint</span><span class="p">(</span><span class="n">error_type</span><span class="p">,</span> <span class="n">file</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">4</span><span class="cl">    <span class="n">text</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span><span class="n">error_type</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">file</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">line</span><span class="si">}</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="ln">5</span><span class="cl">    <span class="k">return</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">sha256</span><span class="p">(</span><span class="n">text</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
+</span></span></code></pre></div><p>Sau đó:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">fingerprint
+</span></span><span class="line"><span class="ln">2</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln">3</span><span class="cl">DynamoDB / Redis
+</span></span><span class="line"><span class="ln">4</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln">5</span><span class="cl">đã phân tích?
+</span></span><span class="line"><span class="ln">6</span><span class="cl"> ┌──┴──┐
+</span></span><span class="line"><span class="ln">7</span><span class="cl">yes    no
+</span></span><span class="line"><span class="ln">8</span><span class="cl"> ↓      ↓
+</span></span><span class="line"><span class="ln">9</span><span class="cl">skip   Agent
+</span></span></code></pre></div><p>Trong production thực tế chắc chắn phức tạp hơn.</p>
+<p>Nhưng ý chính vẫn vậy:</p>
+<blockquote>
+<p>AI đắt nhất khi chúng ta bắt nó suy nghĩ lại thứ nó vừa suy nghĩ xong.</p>
+</blockquote>
+<h1 id="không-phải-error-nào-cũng-cần-sonnet">Không phải error nào cũng cần Sonnet<a class="anchor ms-1" href="#không-phải-error-nào-cũng-cần-sonnet"><i class="fas fa-link"></i></a></h1>
+<p>TReNDS cũng thử nhiều model khác nhau trên Amazon Bedrock và đánh giá chúng dựa trên các tiêu chí như khả năng reasoning về code, độ tin cậy khi sử dụng tool, latency và chi phí. Họ chọn Claude Sonnet làm model chính cho workload này. (<a href="https://aws.amazon.com/blogs/machine-learning/how-trends-automates-root-cause-analysis-with-amazon-bedrock/?utm_source=chatgpt.com" title="How TReNDS automates root-cause analysis with Amazon Bedrock | Artificial Intelligence" target="_blank" rel="noopener noreferrer">Amazon Web Services, Inc.</a>)</p>
+<p>Nhưng phần thú vị hơn nằm ở hướng phát triển tiếp theo.</p>
+<p>Không nhất thiết:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">mọi lỗi
+</span></span><span class="line"><span class="ln">2</span><span class="cl">   ↓
+</span></span><span class="line"><span class="ln">3</span><span class="cl">model mạnh
+</span></span></code></pre></div><p>Ta có thể làm:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">                    ┌→ known / simple → model nhỏ
+</span></span><span class="line"><span class="ln">2</span><span class="cl">ERROR → classifier ─┤
+</span></span><span class="line"><span class="ln">3</span><span class="cl">                    └→ complex / novel → model mạnh
+</span></span></code></pre></div><p>Ví dụ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Connection timeout
+</span></span><span class="line"><span class="ln">2</span><span class="cl">Known pattern
+</span></span><span class="line"><span class="ln">3</span><span class="cl">Confidence = 0.99
+</span></span></code></pre></div><p>không nhất thiết phải triệu hồi một model reasoning lớn.</p>
+<p>Trong khi:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">race condition
+</span></span><span class="line"><span class="ln">2</span><span class="cl">+
+</span></span><span class="line"><span class="ln">3</span><span class="cl">3 services
+</span></span><span class="line"><span class="ln">4</span><span class="cl">+
+</span></span><span class="line"><span class="ln">5</span><span class="cl">distributed transaction
+</span></span><span class="line"><span class="ln">6</span><span class="cl">+
+</span></span><span class="line"><span class="ln">7</span><span class="cl">6 files
+</span></span></code></pre></div><p>lại là chuyện khác.</p>
+<p>TReNDS cho biết họ đang nghiên cứu chiến lược tiered model: lỗi đơn giản có thể đi qua model nhẹ hơn, còn lỗi mới hoặc phức tạp được chuyển sang Sonnet để phân tích sâu hơn. (<a href="https://aws.amazon.com/blogs/machine-learning/how-trends-automates-root-cause-analysis-with-amazon-bedrock/?utm_source=chatgpt.com" title="How TReNDS automates root-cause analysis with Amazon Bedrock | Artificial Intelligence" target="_blank" rel="noopener noreferrer">Amazon Web Services, Inc.</a>)</p>
+<p>Đây cũng là một pattern đáng nhớ khi triển khai LLM:</p>
+<blockquote>
+<p>Model routing thường quan trọng không kém model selection.</p>
+</blockquote>
+<p>Amazon Bedrock hiện cung cấp nhiều foundation model thông qua một lớp dịch vụ chung, vì vậy kiến trúc ứng dụng có thể thay đổi model mà không phải viết lại toàn bộ hệ thống agent. Danh sách model và khả năng hỗ trợ vẫn tiếp tục thay đổi theo thời gian. (<a href="https://docs.aws.amazon.com/bedrock/latest/userguide/models-supported.html?utm_source=chatgpt.com" title="Supported foundation models in Amazon Bedrock" target="_blank" rel="noopener noreferrer">AWS Documentation</a>)</p>
+<h1 id="bước-tiếp-theo-sẽ-là-runbook">Bước tiếp theo sẽ là Runbook<a class="anchor ms-1" href="#bước-tiếp-theo-sẽ-là-runbook"><i class="fas fa-link"></i></a></h1>
+<p>Hãy tưởng tượng agent phát hiện:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Redis connection exhausted
+</span></span></code></pre></div><p>Source code giúp nó hiểu lỗi.</p>
+<p>Log giúp nó hiểu chuyện gì vừa xảy ra.</p>
+<p>Nhưng trong công ty thường còn một thứ khác:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">runbooks/
+</span></span><span class="line"><span class="ln">2</span><span class="cl">├── redis-connection-exhausted.md
+</span></span><span class="line"><span class="ln">3</span><span class="cl">├── database-lag.md
+</span></span><span class="line"><span class="ln">4</span><span class="cl">├── payment-timeout.md
+</span></span><span class="line"><span class="ln">5</span><span class="cl">└── kubernetes-oom.md
+</span></span></code></pre></div><p>Đây là ký ức của tổ chức.</p>
+<p>Một kỹ sư lâu năm gặp lỗi Redis có thể nói:</p>
+<blockquote>
+<p>À lỗi này năm ngoái từng dính rồi. Đừng restart bừa. Kiểm tra connection pool trước.</p>
+</blockquote>
+<p>Người mới thì không biết.</p>
+<p>AI cũng không biết.</p>
+<p>Trừ khi ta cho nó đọc.</p>
+<p>TReNDS vì thế đang nghiên cứu kết nối Amazon Bedrock Knowledge Bases với runbook nội bộ và các incident report cũ. (<a href="https://aws.amazon.com/blogs/machine-learning/how-trends-automates-root-cause-analysis-with-amazon-bedrock/?utm_source=chatgpt.com" title="How TReNDS automates root-cause analysis with Amazon Bedrock | Artificial Intelligence" target="_blank" rel="noopener noreferrer">Amazon Web Services, Inc.</a>)</p>
+<p>Lúc đó hệ thống bắt đầu có ba loại trí nhớ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Logs
+</span></span><span class="line"><span class="ln">2</span><span class="cl">→ chuyện vừa xảy ra
+</span></span><span class="line"><span class="ln">3</span><span class="cl">
+</span></span><span class="line"><span class="ln">4</span><span class="cl">Source code
+</span></span><span class="line"><span class="ln">5</span><span class="cl">→ hệ thống hiện đang hoạt động thế nào
+</span></span><span class="line"><span class="ln">6</span><span class="cl">
+</span></span><span class="line"><span class="ln">7</span><span class="cl">Runbook + incidents
+</span></span><span class="line"><span class="ln">8</span><span class="cl">→ chúng ta từng học được gì
+</span></span></code></pre></div><p>Khi ba thứ này gặp nhau, RCA mới thực sự thú vị.</p>
+<h1 id="và-rồi-đến-github-issue-thậm-chí-pull-request">Và rồi đến GitHub Issue, thậm chí Pull Request<a class="anchor ms-1" href="#và-rồi-đến-github-issue-thậm-chí-pull-request"><i class="fas fa-link"></i></a></h1>
+<p>Con đường tiếp theo gần như tự nhiên:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">Detect
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">↓
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">Investigate
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">↓
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">Root Cause
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">↓
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">Suggest Fix
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">↓
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">Create Issue
+</span></span><span class="line"><span class="ln">10</span><span class="cl">↓
+</span></span><span class="line"><span class="ln">11</span><span class="cl">Create PR
+</span></span><span class="line"><span class="ln">12</span><span class="cl">↓
+</span></span><span class="line"><span class="ln">13</span><span class="cl">Test
+</span></span><span class="line"><span class="ln">14</span><span class="cl">↓
+</span></span><span class="line"><span class="ln">15</span><span class="cl">Human Review
+</span></span><span class="line"><span class="ln">16</span><span class="cl">↓
+</span></span><span class="line"><span class="ln">17</span><span class="cl">Merge
+</span></span></code></pre></div><p>TReNDS cho biết họ cũng đang hướng tới việc tự động tạo GitHub issue và pull request khi agent xác định được một cách sửa tiềm năng. (<a href="https://aws.amazon.com/blogs/machine-learning/how-trends-automates-root-cause-analysis-with-amazon-bedrock/?utm_source=chatgpt.com" title="How TReNDS automates root-cause analysis with Amazon Bedrock | Artificial Intelligence" target="_blank" rel="noopener noreferrer">Amazon Web Services, Inc.</a>)</p>
+<p>Nghe đến đây rất dễ bị phấn khích rồi nối tiếp:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Agent tự merge
+</span></span><span class="line"><span class="ln">2</span><span class="cl">↓
+</span></span><span class="line"><span class="ln">3</span><span class="cl">Agent tự deploy
+</span></span><span class="line"><span class="ln">4</span><span class="cl">↓
+</span></span><span class="line"><span class="ln">5</span><span class="cl">Agent tự phá production lần hai
+</span></span></code></pre></div><p>Thôi.</p>
+<p>Ta nên phân biệt rất rõ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Read
+</span></span></code></pre></div><p>và:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Write
+</span></span></code></pre></div><p>Một agent chỉ có quyền:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">read logs
+</span></span><span class="line"><span class="ln">2</span><span class="cl">read metrics
+</span></span><span class="line"><span class="ln">3</span><span class="cl">read source
+</span></span></code></pre></div><p>có blast radius tương đối thấp.</p>
+<p>Agent có quyền:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">modify code
+</span></span><span class="line"><span class="ln">2</span><span class="cl">merge PR
+</span></span><span class="line"><span class="ln">3</span><span class="cl">restart pod
+</span></span><span class="line"><span class="ln">4</span><span class="cl">rollback deployment
+</span></span><span class="line"><span class="ln">5</span><span class="cl">change database
+</span></span></code></pre></div><p>là một sinh vật hoàn toàn khác.</p>
+<p>Càng tiến gần hệ thống production, mỗi bước nên có permission, policy, validation và human approval tương ứng.</p>
+<p>AI có thể rất thông minh.</p>
+<p>Nhưng <code>DROP TABLE</code> vẫn chạy ở tốc độ của database, không chạy ở tốc độ suy nghĩ của AI.</p>
+<h1 id="nếu-tự-xây-một-hệ-thống-tương-tự-mình-sẽ-chia-thành-6-lớp">Nếu tự xây một hệ thống tương tự, mình sẽ chia thành 6 lớp<a class="anchor ms-1" href="#nếu-tự-xây-một-hệ-thống-tương-tự-mình-sẽ-chia-thành-6-lớp"><i class="fas fa-link"></i></a></h1>
+<p>Mô hình TReNDS khá gọn. Nhưng nếu triển khai ở một hệ thống lớn, mình sẽ nghĩ về nó theo sáu lớp.</p>
+<h2 id="lớp-1-detection">Lớp 1: Detection<a class="anchor ms-1" href="#lớp-1-detection"><i class="fas fa-link"></i></a></h2>
+<p>Nguồn có thể là:</p>
+<ul>
+<li>application log;</li>
+<li>Kubernetes event;</li>
+<li>Prometheus alert;</li>
+<li>OpenTelemetry trace;</li>
+<li>database alert;</li>
+<li>message queue;</li>
+<li>API gateway;</li>
+<li>infrastructure metric.</li>
+</ul>
+<p>Mục tiêu chỉ là:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Có chuyện bất thường.
+</span></span></code></pre></div><p>Đừng bắt LLM làm việc mà regex, threshold hoặc anomaly detector đã làm tốt.</p>
+<h2 id="lớp-2-incident-normalization">Lớp 2: Incident normalization<a class="anchor ms-1" href="#lớp-2-incident-normalization"><i class="fas fa-link"></i></a></h2>
+<p>Biến:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">10.000 log lines
+</span></span></code></pre></div><p>thành:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Incident
+</span></span><span class="line"><span class="ln">2</span><span class="cl">{
+</span></span><span class="line"><span class="ln">3</span><span class="cl">    service,
+</span></span><span class="line"><span class="ln">4</span><span class="cl">    error_type,
+</span></span><span class="line"><span class="ln">5</span><span class="cl">    timestamp,
+</span></span><span class="line"><span class="ln">6</span><span class="cl">    deployment,
+</span></span><span class="line"><span class="ln">7</span><span class="cl">    stacktrace,
+</span></span><span class="line"><span class="ln">8</span><span class="cl">    fingerprint
+</span></span><span class="line"><span class="ln">9</span><span class="cl">}
+</span></span></code></pre></div><p>Đây là bước rất hay bị bỏ quên.</p>
+<p>Garbage in, Sherlock Holmes cũng khó điều tra.</p>
+<h2 id="lớp-3-context-retrieval">Lớp 3: Context retrieval<a class="anchor ms-1" href="#lớp-3-context-retrieval"><i class="fas fa-link"></i></a></h2>
+<p>Agent có thể lấy:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">logs
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">traces
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">metrics
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">source code
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">deployment diff
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">Git history
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">recent PR
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">config
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">feature flags
+</span></span><span class="line"><span class="ln">10</span><span class="cl">runbooks
+</span></span><span class="line"><span class="ln">11</span><span class="cl">past incidents
+</span></span></code></pre></div><p>RCA càng tốt khi evidence càng tốt.</p>
+<h2 id="lớp-4-reasoning">Lớp 4: Reasoning<a class="anchor ms-1" href="#lớp-4-reasoning"><i class="fas fa-link"></i></a></h2>
+<p>Đây mới là chỗ dành cho model.</p>
+<p>Nhiệm vụ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">evidence
+</span></span><span class="line"><span class="ln">2</span><span class="cl">   ↓
+</span></span><span class="line"><span class="ln">3</span><span class="cl">hypothesis
+</span></span><span class="line"><span class="ln">4</span><span class="cl">   ↓
+</span></span><span class="line"><span class="ln">5</span><span class="cl">cross-check
+</span></span><span class="line"><span class="ln">6</span><span class="cl">   ↓
+</span></span><span class="line"><span class="ln">7</span><span class="cl">root cause
+</span></span></code></pre></div><p>LLM nên được khuyến khích phân biệt:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Observed evidence
+</span></span><span class="line"><span class="ln">2</span><span class="cl">Likely cause
+</span></span><span class="line"><span class="ln">3</span><span class="cl">Confidence
+</span></span><span class="line"><span class="ln">4</span><span class="cl">Missing evidence
+</span></span><span class="line"><span class="ln">5</span><span class="cl">Suggested action
+</span></span></code></pre></div><p>Thay vì phán như thánh:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Chắc chắn lỗi do Redis.
+</span></span></code></pre></div><h2 id="lớp-5-action">Lớp 5: Action<a class="anchor ms-1" href="#lớp-5-action"><i class="fas fa-link"></i></a></h2>
+<p>Ban đầu chỉ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Slack
+</span></span><span class="line"><span class="ln">2</span><span class="cl">Email
+</span></span><span class="line"><span class="ln">3</span><span class="cl">Ticket
+</span></span></code></pre></div><p>Sau đó mới cân nhắc:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Create issue
+</span></span><span class="line"><span class="ln">2</span><span class="cl">Create PR
+</span></span><span class="line"><span class="ln">3</span><span class="cl">Rollback
+</span></span><span class="line"><span class="ln">4</span><span class="cl">Restart
+</span></span></code></pre></div><p>Quyền càng mạnh, guardrail càng phải dày.</p>
+<h2 id="lớp-6-learning">Lớp 6: Learning<a class="anchor ms-1" href="#lớp-6-learning"><i class="fas fa-link"></i></a></h2>
+<p>Sau khi kỹ sư xác nhận:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Agent đúng / sai
+</span></span></code></pre></div><p>hãy lưu lại.</p>
+<p>Sau vài nghìn incident, dữ liệu này trở thành một tài sản rất giá trị để:</p>
+<ul>
+<li>đánh giá model;</li>
+<li>cải thiện prompt;</li>
+<li>cải thiện tool;</li>
+<li>xây routing;</li>
+<li>tìm lỗi lặp;</li>
+<li>đo confidence;</li>
+<li>tạo incident knowledge base.</li>
+</ul>
+<p>Nếu không có feedback loop, agent sẽ mãi mãi là một nhân viên mới đi làm ngày đầu.</p>
+<h1 id="một-thứ-mình-sẽ-thêm-trace">Một thứ mình sẽ thêm: trace<a class="anchor ms-1" href="#một-thứ-mình-sẽ-thêm-trace"><i class="fas fa-link"></i></a></h1>
+<p>Kiến trúc TReNDS tập trung nhiều vào log stream và source code.</p>
+<p>Nhưng trong microservice lớn, mình sẽ muốn agent nhìn thêm distributed tracing.</p>
+<p>Ví dụ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">mobile
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">  ↓
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">API gateway
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">  ↓
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">order-service
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">  ↓
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">payment-service
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">  ↓
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">fraud-service
+</span></span><span class="line"><span class="ln">10</span><span class="cl">  ↓
+</span></span><span class="line"><span class="ln">11</span><span class="cl">database
+</span></span></code></pre></div><p>Một request có thể chạy qua năm service.</p>
+<p>Nếu chỉ nhìn từng log stream, ta giống như đứng ở năm căn phòng khác nhau và nghe người trong phòng kể lại.</p>
+<p>Trace ID biến chúng thành một câu chuyện duy nhất:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">trace_id = 12345
+</span></span></code></pre></div><p>Agent có thể đi:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">ERROR
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">↓
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">trace_id
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">↓
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">toàn bộ spans
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">↓
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">span có latency bất thường
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">↓
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">service liên quan
+</span></span><span class="line"><span class="ln">10</span><span class="cl">↓
+</span></span><span class="line"><span class="ln">11</span><span class="cl">logs
+</span></span><span class="line"><span class="ln">12</span><span class="cl">↓
+</span></span><span class="line"><span class="ln">13</span><span class="cl">source code
+</span></span></code></pre></div><p>Lúc ấy RCA không còn là:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Log → Code
+</span></span></code></pre></div><p>mà trở thành:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">Log
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl"> + Trace
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl"> + Metric
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl"> + Code
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl"> + Deployment
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl"> + Runbook
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl"> + Incident history
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">        ↓
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">      Agent
+</span></span><span class="line"><span class="ln">10</span><span class="cl">        ↓
+</span></span><span class="line"><span class="ln">11</span><span class="cl"> Root Cause hypothesis
+</span></span></code></pre></div><p>Đây mới là hình dạng mà mình nghĩ các hệ thống observability có AI sẽ dần tiến tới.</p>
+<h1 id="điều-đáng-học-nhất-không-phải-amazon-bedrock">Điều đáng học nhất không phải Amazon Bedrock<a class="anchor ms-1" href="#điều-đáng-học-nhất-không-phải-amazon-bedrock"><i class="fas fa-link"></i></a></h1>
+<p>Nếu bỏ hết tên sản phẩm ra, kiến trúc TReNDS còn lại:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">Event
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">↓
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">Filter
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">↓
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">Agent
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">↓
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">Tools
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">↓
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">Evidence
+</span></span><span class="line"><span class="ln">10</span><span class="cl">↓
+</span></span><span class="line"><span class="ln">11</span><span class="cl">Reasoning
+</span></span><span class="line"><span class="ln">12</span><span class="cl">↓
+</span></span><span class="line"><span class="ln">13</span><span class="cl">Structured Result
+</span></span></code></pre></div><p>Chúng ta hoàn toàn có thể thay:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">CloudWatch
+</span></span></code></pre></div><p>bằng Elasticsearch, Loki hay OpenSearch.</p>
+<p>Thay:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Bedrock
+</span></span></code></pre></div><p>bằng một model nội bộ.</p>
+<p>Thay:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Strands
+</span></span></code></pre></div><p>bằng framework agent khác hoặc một vòng tool calling tự viết.</p>
+<p>Thay:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">SNS
+</span></span></code></pre></div><p>bằng Kafka, Slack webhook hay hệ thống notification riêng.</p>
+<p>Phần mềm có thể thay.</p>
+<p>Pattern vẫn còn nguyên.</p>
+<p>Và đó mới là thứ đáng học.</p>
+<h1 id="từ-observability-sang-investigability">Từ observability sang investigability<a class="anchor ms-1" href="#từ-observability-sang-investigability"><i class="fas fa-link"></i></a></h1>
+<p>Ngày xưa chúng ta xây monitoring để máy tính nói:</p>
+<blockquote>
+<p>Tôi đang đau.</p>
+</blockquote>
+<p>Sau đó observability cố giúp kỹ sư hỏi:</p>
+<blockquote>
+<p>Đau ở đâu?</p>
+</blockquote>
+<p>Agentic RCA tiến thêm một bước:</p>
+<blockquote>
+<p>Tôi đang đau ở đây. Tôi đã xem log, kiểm tra trace, mở đoạn code liên quan và đây là ba nguyên nhân có khả năng nhất.</p>
+</blockquote>
+<p>Đó là một thay đổi khá lớn.</p>
+<p>Máy tính trước đây chỉ để lại dấu chân.</p>
+<p>Con người đi theo dấu chân.</p>
+<p>Bây giờ chúng ta đang xây những hệ thống có thể tự quay lại nhìn dấu chân của chính mình.</p>
+<p>Nó đọc những electron vừa chạy qua CPU.</p>
+<p>Đọc những byte vừa rơi xuống log.</p>
+<p>Lần ngược những function call được viết từ vài tháng trước.</p>
+<p>Mở repository.</p>
+<p>So sánh bằng chứng.</p>
+<p>Rồi vài chục giây sau gửi cho một con người đang uống cà phê:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Tôi nghĩ tôi biết mình vừa chết vì sao.
+</span></span></code></pre></div><p>Nghe hơi ngáo.</p>
+<p>Nhưng về mặt kỹ thuật, nó chỉ là:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">tool calling
+</span></span><span class="line"><span class="ln">2</span><span class="cl">+
+</span></span><span class="line"><span class="ln">3</span><span class="cl">context retrieval
+</span></span><span class="line"><span class="ln">4</span><span class="cl">+
+</span></span><span class="line"><span class="ln">5</span><span class="cl">reasoning
+</span></span></code></pre></div><p>Xong thuật toán, quá dễ.</p>
+<p>Phần khó vẫn như mọi hệ thống production khác:</p>
+<ul>
+<li>dữ liệu có sạch không;</li>
+<li>log có đủ context không;</li>
+<li>trace có nối được không;</li>
+<li>source code có đúng version đang deploy không;</li>
+<li>tool có permission quá rộng không;</li>
+<li>incident có deduplicate không;</li>
+<li>model sai thì ai kiểm tra;</li>
+<li>agent được phép hành động đến đâu.</li>
+</ul>
+<p>LLM không làm những câu hỏi này biến mất.</p>
+<p>Nó chỉ khiến chúng trở nên quan trọng hơn.</p>
+<h1 id="tổng-kết">Tổng kết<a class="anchor ms-1" href="#tổng-kết"><i class="fas fa-link"></i></a></h1>
+<p>Case study của TReNDS cho thấy một hướng ứng dụng AI Agent rất thực tế: không tạo thêm một chatbot nữa, mà cắm agent vào đúng nơi con người đang phải làm những thao tác lặp đi lặp lại giữa nhiều hệ thống.</p>
+<p>Kiến trúc cốt lõi khá đơn giản:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">Production error
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">↓
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">Detect
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">↓
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">Collect evidence
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">↓
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">Read logs
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">↓
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">Read code
+</span></span><span class="line"><span class="ln">10</span><span class="cl">↓
+</span></span><span class="line"><span class="ln">11</span><span class="cl">Reason
+</span></span><span class="line"><span class="ln">12</span><span class="cl">↓
+</span></span><span class="line"><span class="ln">13</span><span class="cl">Root Cause
+</span></span><span class="line"><span class="ln">14</span><span class="cl">↓
+</span></span><span class="line"><span class="ln">15</span><span class="cl">Suggested fix
+</span></span><span class="line"><span class="ln">16</span><span class="cl">↓
+</span></span><span class="line"><span class="ln">17</span><span class="cl">Human
+</span></span></code></pre></div><p>Theo TReNDS, pipeline này đã giúp giảm thời gian investigation từ khoảng 15–30 phút xuống dưới 60 giây trong workload của họ. (<a href="https://aws.amazon.com/blogs/machine-learning/how-trends-automates-root-cause-analysis-with-amazon-bedrock/?utm_source=chatgpt.com" title="How TReNDS automates root-cause analysis with Amazon Bedrock | Artificial Intelligence" target="_blank" rel="noopener noreferrer">Amazon Web Services, Inc.</a>)</p>
+<p>Nhưng có lẽ bài học đáng nhớ hơn là:</p>
+<blockquote>
+<p>Agent không trở nên hữu ích chỉ vì model thông minh. Nó trở nên hữu ích khi được đặt cạnh đúng dữ liệu và được trao đúng công cụ.</p>
+</blockquote>
+<p>Một LLM đứng một mình chỉ có thể nói.</p>
+<p>Một LLM có log, source code, trace, runbook và những tool nhỏ được kiểm soát chặt chẽ bắt đầu có thể <strong>điều tra</strong>.</p>
+<p>Và có lẽ đây mới là một trong những nơi AI Agent thực sự phù hợp với production: không thay người kỹ sư quyết định mọi thứ, mà chạy trước vài bước, bật đèn pin, mở đúng cánh cửa và chỉ cho chúng ta xem nơi nào đang có khói.</p>
+<p>Cảm ơn các bạn đã quan tâm và theo dõi bài viết, hẹn gặp lại ở các bài viết tiếp theo.</p>
+<h1 id="tham-khảo">Tham khảo<a class="anchor ms-1" href="#tham-khảo"><i class="fas fa-link"></i></a></h1>
+<ul>
+<li>AWS Machine Learning Blog — <em>How TReNDS automates root-cause analysis with Amazon Bedrock</em>. (<a href="https://aws.amazon.com/blogs/machine-learning/how-trends-automates-root-cause-analysis-with-amazon-bedrock/?utm_source=chatgpt.com" title="How TReNDS automates root-cause analysis with Amazon Bedrock | Artificial Intelligence" target="_blank" rel="noopener noreferrer">Amazon Web Services, Inc.</a>)</li>
+<li>Amazon CloudWatch — Subscription Filters documentation. (<a href="https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/SubscriptionFilters.html?utm_source=chatgpt.com" title="Log group-level subscription filters - Amazon CloudWatch Logs" target="_blank" rel="noopener noreferrer">AWS Documentation</a>)</li>
+<li>Strands Agents — Tools Overview và Custom Tools. (<a href="https://strandsagents.com/docs/user-guide/concepts/tools/?utm_source=chatgpt.com" title="Tools Overview - Strands Agents" target="_blank" rel="noopener noreferrer">Strands Agents SDK</a>)</li>
+<li>Amazon Bedrock — Model availability và supported foundation models. (<a href="https://docs.aws.amazon.com/bedrock/latest/userguide/models-supported.html?utm_source=chatgpt.com" title="Supported foundation models in Amazon Bedrock" target="_blank" rel="noopener noreferrer">AWS Documentation</a>)</li>
+</ul>
+</div></div>
+  <div class="card-footer"><div class="post-navs d-flex justify-content-evenly"><div class="post-nav post-prev">
+    <i class="fas fa-fw fa-chevron-left"></i>
+    <a href="https://www.phamduytung.com/blog/2026-08-07-kitesurf-agent-first-browser/">Kitesurf: Khi trình duyệt không còn được xây cho con người
+</a>
+  </div><div class="post-nav post-next">
+    <a href="https://www.phamduytung.com/blog/2026-08-09-kimi-delta-attention/">Kimi Delta Attention: Khi AI học cách nhớ như một cái bảng trắng thay vì ôm cả nhà kho
+</a>
+    <i class="fas fa-fw fa-chevron-right"></i>
+  </div></div></div>
+</article><div class="card component row post-comments" id="post-comments">
+  <div class="card-header">
+    <h2 class="card-title">Bình luận</h2>
+  </div>
+  <div class="card-body"><script src="https://utteranc.es/client.js"
+  repo="AlexBlack2202/utterances"
+  issue-term="pathname"
+  label="comment"
+  theme="github-dark"
+  crossorigin="anonymous"
+  async>
+</script></div>
+</div></div>
+</div><aside class="col-lg-3 col-md-4 sidebar d-flex">
+  <div class="container d-flex flex-column">
+    
+    <a href="https://www.buymeacoffee.com/alexblack28"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=🍎&slug=alexblack28&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" /></a><div class="post-toc row mb-4 card component" id="postTOC">
+  <div class="card-header">
+    <h2 class="card-title">Mục lục</h2>
+  </div>
+  <div class="card-body">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#một-dòng-error-thực-ra-không-hề-nhỏ">Một dòng ERROR thực ra không hề nhỏ</a></li>
+    <li><a href="#alert-và-điều-tra-là-hai-việc-khác-nhau">Alert và điều tra là hai việc khác nhau</a></li>
+    <li><a href="#đừng-đưa-log-cho-llm-hãy-đưa-cho-nó-một-chiếc-kính-lúp">Đừng đưa log cho LLM, hãy đưa cho nó một chiếc kính lúp</a></li>
+    <li><a href="#agent-không-phải-một-prompt-dài">Agent không phải một prompt dài</a></li>
+    <li><a href="#chiếc-đèn-pin-đầu-tiên-lấy-thêm-log">Chiếc đèn pin đầu tiên: lấy thêm log</a></li>
+    <li><a href="#chiếc-đèn-pin-thứ-hai-mở-source-code">Chiếc đèn pin thứ hai: mở source code</a></li>
+    <li><a href="#agent-có-thể-lần-theo-code-như-một-kỹ-sư">Agent có thể lần theo code như một kỹ sư</a></li>
+    <li><a href="#system-prompt-thực-ra-khá-đơn-giản">System Prompt thực ra khá đơn giản</a></li>
+    <li><a href="#tại-sao-tool-càng-nhỏ-càng-tốt">Tại sao tool càng nhỏ càng tốt?</a></li>
+    <li><a href="#một-incident-từ-đầu-tới-cuối">Một incident từ đầu tới cuối</a>
+      <ul>
+        <li><a href="#bước-1-cloudwatch-bắt-được-lỗi">Bước 1: CloudWatch bắt được lỗi</a></li>
+        <li><a href="#bước-2-lambda-giải-mã-event">Bước 2: Lambda giải mã event</a></li>
+        <li><a href="#bước-3-agent-bắt-đầu-điều-tra">Bước 3: Agent bắt đầu điều tra</a></li>
+        <li><a href="#bước-4-agent-mở-source-code">Bước 4: Agent mở source code</a></li>
+        <li><a href="#bước-5-agent-tìm-thêm">Bước 5: Agent tìm thêm</a></li>
+        <li><a href="#bước-6-kết-luận">Bước 6: Kết luận</a></li>
+        <li><a href="#bước-7-sns-gửi-thông-báo">Bước 7: SNS gửi thông báo</a></li>
+      </ul>
+    </li>
+    <li><a href="#từ-30-phút-xuống-dưới-60-giây">Từ 30 phút xuống dưới 60 giây</a></li>
+    <li><a href="#nhưng-có-một-vấn-đề-rất-đời-thường-cùng-một-lỗi-có-thể-la-hét-10000-lần">Nhưng có một vấn đề rất đời thường: cùng một lỗi có thể la hét 10.000 lần</a></li>
+    <li><a href="#có-thể-fingerprint-lỗi-như-thế-nào">Có thể fingerprint lỗi như thế nào?</a></li>
+    <li><a href="#không-phải-error-nào-cũng-cần-sonnet">Không phải error nào cũng cần Sonnet</a></li>
+    <li><a href="#bước-tiếp-theo-sẽ-là-runbook">Bước tiếp theo sẽ là Runbook</a></li>
+    <li><a href="#và-rồi-đến-github-issue-thậm-chí-pull-request">Và rồi đến GitHub Issue, thậm chí Pull Request</a></li>
+    <li><a href="#nếu-tự-xây-một-hệ-thống-tương-tự-mình-sẽ-chia-thành-6-lớp">Nếu tự xây một hệ thống tương tự, mình sẽ chia thành 6 lớp</a>
+      <ul>
+        <li><a href="#lớp-1-detection">Lớp 1: Detection</a></li>
+        <li><a href="#lớp-2-incident-normalization">Lớp 2: Incident normalization</a></li>
+        <li><a href="#lớp-3-context-retrieval">Lớp 3: Context retrieval</a></li>
+        <li><a href="#lớp-4-reasoning">Lớp 4: Reasoning</a></li>
+        <li><a href="#lớp-5-action">Lớp 5: Action</a></li>
+        <li><a href="#lớp-6-learning">Lớp 6: Learning</a></li>
+      </ul>
+    </li>
+    <li><a href="#một-thứ-mình-sẽ-thêm-trace">Một thứ mình sẽ thêm: trace</a></li>
+    <li><a href="#điều-đáng-học-nhất-không-phải-amazon-bedrock">Điều đáng học nhất không phải Amazon Bedrock</a></li>
+    <li><a href="#từ-observability-sang-investigability">Từ observability sang investigability</a></li>
+    <li><a href="#tổng-kết">Tổng kết</a></li>
+    <li><a href="#tham-khảo">Tham khảo</a></li>
+  </ul>
+</nav>
+  </div>
+</div><section class="recent-posts row card component">
+  <div class="card-header">
+    <h2 class="card-title">Bài gần đây</h2>
+  </div>
+  <div class="card-body">
+    <ul class="post-list"><li>
+        <a href="https://www.phamduytung.com/blog/2026-08-09-kimi-delta-attention/">Kimi Delta Attention: Khi AI học cách nhớ như một cái bảng trắng thay vì ôm cả nhà kho
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-08-09-cloudflare-os-ai-agent-enterprise/">Cloudflare OS: Khi AI Agent bắt đầu cần một hệ điều hành riêng cho doanh nghiệp
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-08-09-airllm-layer-streaming-4gb-vram/">AirLLM: Nhét một mô hình 2.8 nghìn tỷ tham số qua khe cửa 4GB VRAM
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-08-08-trends-ai-agent-root-cause-analysis/">Khi log biết tự điều tra: TReNDS dùng AI Agent để tìm Root Cause trong chưa đầy một phút
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-08-07-kitesurf-agent-first-browser/">Kitesurf: Khi trình duyệt không còn được xây cho con người
+</a>
+      </li></ul>
+  </div>
+</section><section class="series-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/series">series</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/series/kh%C3%B3a-h%E1%BB%8Dc-python-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học Python Căn Bản">
+            Khóa Học Python Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="https://www.phamduytung.com/series/kh%C3%B3a-h%E1%BB%8Dc-c&#43;&#43;-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học C&#43;&#43; Căn Bản">
+            Khóa Học C&#43;&#43; Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="https://www.phamduytung.com/series/machine-learning-dataset/" class="badge rounded post-taxonomy" title="Machine Learning Dataset">
+            Machine Learning Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a><a href="https://www.phamduytung.com/series/ch%E1%BB%A9ng-kho%C3%A1n-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Chứng Khoán Căn Bản">
+            Chứng Khoán Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">1</span></a></div>
+      </div>
+    </section><section class="tools-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/tools">tools</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/tools/tool-random/" class="badge rounded post-taxonomy" title="Tool Random">
+            Tool Random<span class="badge badge-sm text-white bg-accent ms-1">3</span></a></div>
+      </div>
+    </section><section class="categories-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/categories">categories</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/categories/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="https://www.phamduytung.com/categories/c&#43;&#43;/" class="badge rounded post-taxonomy" title="C&#43;&#43;">
+            C&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="https://www.phamduytung.com/categories/dataset/" class="badge rounded post-taxonomy" title="Dataset">
+            Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a></div>
+      </div>
+    </section><section class="tags-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/tags">tags</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/tags/machine-learning/" class="badge rounded post-taxonomy" title="Machine Learning">
+            Machine Learning<span class="badge badge-sm text-white bg-accent ms-1">26</span></a><a href="https://www.phamduytung.com/tags/deep-learning/" class="badge rounded post-taxonomy" title="Deep Learning">
+            Deep Learning<span class="badge badge-sm text-white bg-accent ms-1">23</span></a><a href="https://www.phamduytung.com/tags/llm/" class="badge rounded post-taxonomy" title="LLM">
+            LLM<span class="badge badge-sm text-white bg-accent ms-1">17</span></a><a href="https://www.phamduytung.com/tags/computer-vision/" class="badge rounded post-taxonomy" title="Computer Vision">
+            Computer Vision<span class="badge badge-sm text-white bg-accent ms-1">16</span></a><a href="https://www.phamduytung.com/tags/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">14</span></a><a href="https://www.phamduytung.com/tags/ai-agent/" class="badge rounded post-taxonomy" title="AI Agent">
+            AI Agent<span class="badge badge-sm text-white bg-accent ms-1">10</span></a><a href="https://www.phamduytung.com/tags/recommendation-system/" class="badge rounded post-taxonomy" title="Recommendation System">
+            Recommendation System<span class="badge badge-sm text-white bg-accent ms-1">7</span></a><a href="https://www.phamduytung.com/tags/system-design/" class="badge rounded post-taxonomy" title="System Design">
+            System Design<span class="badge badge-sm text-white bg-accent ms-1">7</span></a><a href="https://www.phamduytung.com/tags/time-series/" class="badge rounded post-taxonomy" title="Time Series">
+            Time Series<span class="badge badge-sm text-white bg-accent ms-1">6</span></a><a href="https://www.phamduytung.com/tags/uber-engineering/" class="badge rounded post-taxonomy" title="Uber Engineering">
+            Uber Engineering<span class="badge badge-sm text-white bg-accent ms-1">6</span></a></div>
+      </div>
+    </section>
+    
+  </div>
+</aside>
+</div>
+    </main><footer class="footer mt-auto py-3 text-center container"><ul class="nav justify-content-between footer-memu mb-3"><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Community
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-facebook"></i>Facebook Group
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://github.com/AlexBlack2202/alexblack2202.github.io" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-github"></i>GitHub
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/contact/"><i class="fas fa-fw fa-info-circle"></i>Contact Us
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/faq/"><i class="fas fa-fw fa-question-circle"></i>Câu hỏi thường gặp
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Docs
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="/team_of_services" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-users"></i>Điều khoản sử dụng
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/privacy" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-lock"></i>Chính sách bảo mật
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Features
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="/utils/gen_paswords/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-key"></i>Tạo password ngẫu nhiên
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Liên kết khác
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">Netlify
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">facebook
+</a>
+        </li></ul></li></ul>
+<div class="copyright mb-2">
+  Copyright © 2016-2026 Phạm Duy Tùng. All Rights Reserved.
+</div>
+<div class="powered-by mb-2">
+  Website chia sẻ kiến thức của Phạm Duy Tùng và Đặng Thị Hằng. Vui lòng liên hệ email alexblack2202@gmail.com nếu bạn có thông tin cần trao đổi.
+</div></footer>
+<script src="https://www.phamduytung.com/js/main.111d51a8c754010f8399ca010e552d803e2d5170b361f8886ad04ec6c21ca551.js" integrity="sha256-ER1RqMdUAQ&#43;DmcoBDlUtgD4tUXCzYfiIatBOxsIcpVE=" crossorigin="anonymous" defer></script><script src="https://www.phamduytung.com/js/icons.min.cb4c9958dbc49e29ac644e168e82db2d0de9a741a15751cc5bf2b0af21eb2845.js" integrity="sha256-y0yZWNvEnimsZE4WjoLbLQ3pp0GhV1HMW/KwryHrKEU=" crossorigin="anonymous" defer></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('https:\/\/www.phamduytung.com\/service-worker.js').then(function(reg) {
+      console.log('Successfully registered service worker', reg);
+    }).catch(function(err) {
+      console.warn('Error whilst registering service worker', err);
+    });
+  });
+}
+</script><script src="https://www.phamduytung.com/js/viewer.min.28bcf5233e406dae6715f46c8b9e8ca7c6cbf347e8678f5a2bebe5369c3270bb.js" integrity="sha256-KLz1Iz5Aba5nFfRsi56Mp8bL80foZ49aK&#43;vlNpwycLs=" crossorigin="anonymous" defer></script><script defer src="https://www.phamduytung.com/js/katex.min.8582b9feadf92a2a977ed303b97d7713cf2754ccf2b4eb60d8be7453a21042c2.js" integrity="sha256-hYK5/q35KiqXftMDuX13E88nVMzytOtg2L50U6IQQsI=" crossorigin="anonymous"></script>
+
+<script  data-ad-client="ca-pub-4644989745435991"  async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4644989745435991"
+     crossorigin="anonymous"></script><script data-cfasync="false" type="text/javascript" data-adel="atag" src="//acscdn.com/script/atg.js" czid="eul3gyjdmm"></script>
+  </body>
+</html>
