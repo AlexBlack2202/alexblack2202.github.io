@@ -1,0 +1,1045 @@
+<!doctype html><html lang="vi" data-palette="brown"
+   data-mode="light">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Hotelling: Vì sao các cửa hàng thích đứng sát nhau, và tại sao người chơi thứ ba làm mọi thứ rối tung? - Phạm Duy Tùng Machine Learning Blog</title>
+    <meta name="a.validate.02" content="1QZXZ8oi7g57H-GxBrBPkTYBydwii-Ic9iJu" /><link rel="apple-touch-icon" href="https://www.phamduytung.com/images/icons/icon-180x180.png" sizes="180x180">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/icon-32x32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/icon-16x16.png" sizes="16x16" type="image/png">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/favicon.ico">
+<link rel="manifest" href="https://www.phamduytung.com/manifest.json">
+<meta name="keywords" content="" />
+<meta name="description" content="Từ hai quầy kem trên bãi biển đến bán lẻ thời đại thương mại điện tử: mô hình Hotelling cho thấy cạnh tranh không chỉ là giá, mà còn là một trò chơi về vị trí, sự khác biệt, chi phí di chuyển và quyền không mua của khách hàng." /><meta name="robots" content="index, follow" />
+	<meta itemprop="name" content="Hotelling: Vì sao các cửa hàng thích đứng sát nhau, và tại sao người chơi thứ ba làm mọi thứ rối tung?">
+	<meta itemprop="description" content="Từ hai quầy kem trên bãi biển đến bán lẻ thời đại thương mại điện tử: mô hình Hotelling cho thấy cạnh tranh không chỉ là giá, mà còn là một trò chơi về vị trí, sự khác biệt, chi phí di chuyển và quyền không mua của khách hàng.">
+	<meta itemprop="datePublished" content="2026-08-11T00:00:00+07:00">
+	<meta itemprop="dateModified" content="2026-08-11T00:00:00+07:00">
+	<meta itemprop="wordCount" content="4461">
+	<meta itemprop="image" content="https://www.phamduytung.com/images/posts/2026-08-11-hotelling-spatial-competition-retail/cover-pearl-glass.png">
+	<meta itemprop="keywords" content="Hotelling,Game Theory,Retail,E-Commerce,Competition"><meta property="og:url" content="https://www.phamduytung.com/blog/2026-08-11-hotelling-spatial-competition-retail/">
+	<meta property="og:site_name" content="Phạm Duy Tùng Machine Learning Blog">
+	<meta property="og:title" content="Hotelling: Vì sao các cửa hàng thích đứng sát nhau, và tại sao người chơi thứ ba làm mọi thứ rối tung?">
+	<meta property="og:description" content="Từ hai quầy kem trên bãi biển đến bán lẻ thời đại thương mại điện tử: mô hình Hotelling cho thấy cạnh tranh không chỉ là giá, mà còn là một trò chơi về vị trí, sự khác biệt, chi phí di chuyển và quyền không mua của khách hàng.">
+	<meta property="og:locale" content="vi_VN">
+	<meta property="og:type" content="article">
+		<meta property="article:section" content="blog">
+		<meta property="article:published_time" content="2026-08-11T00:00:00+07:00">
+		<meta property="article:modified_time" content="2026-08-11T00:00:00+07:00">
+		<meta property="article:tag" content="Hotelling">
+		<meta property="article:tag" content="Game Theory">
+		<meta property="article:tag" content="Retail">
+		<meta property="article:tag" content="E-Commerce">
+		<meta property="article:tag" content="Competition">
+		<meta property="og:image" content="https://www.phamduytung.com/images/posts/2026-08-11-hotelling-spatial-competition-retail/cover-pearl-glass.png">
+
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:image" content="https://www.phamduytung.com/images/posts/2026-08-11-hotelling-spatial-competition-retail/cover-pearl-glass.png">
+	<meta name="twitter:title" content="Hotelling: Vì sao các cửa hàng thích đứng sát nhau, và tại sao người chơi thứ ba làm mọi thứ rối tung?">
+	<meta name="twitter:description" content="Từ hai quầy kem trên bãi biển đến bán lẻ thời đại thương mại điện tử: mô hình Hotelling cho thấy cạnh tranh không chỉ là giá, mà còn là một trò chơi về vị trí, sự khác biệt, chi phí di chuyển và quyền không mua của khách hàng.">
+<link rel="stylesheet" href="https://www.phamduytung.com/css/main.min.b0c1cbac9b623898b99bc3fccc2a09b35f812c6bd39f419020c06b9be74cd77d.css" integrity="sha256-sMHLrJtiOJi5m8P8zCoJs1&#43;BLGvTn0GQIMBrm&#43;dM130=" crossorigin="anonymous"><link rel="stylesheet" href="https://www.phamduytung.com/css/katex.min.4d6aa053ca8a5675016fa2c9c48ee5359bfaafb8295184458af9d64abce84c47.css" integrity="sha256-TWqgU8qKVnUBb6LJxI7lNZv6r7gpUYRFivnWSrzoTEc=" crossorigin="anonymous">
+<link rel="stylesheet" href="https://www.phamduytung.com/css/viewer.min.e882eb3a023412b73bb741b4604a1222a9f13aa7783c828d26d066ab8642bd51.css" integrity="sha256-6ILrOgI0Erc7t0G0YEoSIqnxOqd4PIKNJtBmq4ZCvVE=" crossorigin="anonymous"><link rel="canonical" href="https://www.phamduytung.com/blog/2026-08-11-hotelling-spatial-competition-retail/">
+<meta name="theme-color" content="#f7f5ff"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Phạm Duy Tùng"},"dateModified":"2026-08-11T00:00:00+07:00","datePublished":"2026-08-11T00:00:00+07:00","description":"Từ hai quầy kem trên bãi biển đến bán lẻ thời đại thương mại điện tử: mô hình Hotelling cho thấy cạnh tranh không chỉ là giá, mà còn là một trò chơi về vị trí, sự khác biệt, chi phí di chuyển và quyền không mua của khách hàng.","headline":"Hotelling: Vì sao các cửa hàng thích đứng sát nhau, và tại sao người chơi thứ ba làm mọi thứ rối tung?","image":["https://www.phamduytung.com/images/posts/2026-08-11-hotelling-spatial-competition-retail/cover-pearl-glass.png"],"inLanguage":"vi","keywords":"Hotelling, Game Theory, Retail, E-commerce, Competition","mainEntityOfPage":{"@id":"https://www.phamduytung.com/blog/2026-08-11-hotelling-spatial-competition-retail/","@type":"WebPage"},"publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://www.phamduytung.com/images/logo.png"},"name":"Phạm Duy Tùng Machine Learning Blog"},"url":"https://www.phamduytung.com/blog/2026-08-11-hotelling-spatial-competition-retail/"}</script></head>
+  <body><script>const items=["mode","palette"];items.forEach(function(e){const t=localStorage.getItem("hbs-"+e);t&&document.body.parentElement.setAttribute("data-"+e,t)})</script><header><nav class="navbar top-app-bar top-app-bar-expand-lg fixed-top">
+  <div class="container pearl-navbar__inner">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Mở menu">
+      <i class="fas fa-bars"></i>
+    </button>
+
+    <a class="navbar-brand pearl-brand flex-grow-1 flex-lg-grow-0" href="https://www.phamduytung.com/">
+      <span class="pearl-brand__mark" aria-hidden="true">PT</span>
+      <span class="pearl-brand__copy">
+        <strong>Phạm Duy Tùng</strong>
+        <small>AI · DATA · SYSTEMS</small>
+      </span>
+    </a>
+
+    <div class="offcanvas offcanvas-bottom surface" tabindex="-1" id="offcanvasSocialShare" aria-labelledby="offcanvasSocialShare">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Share</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body">
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Twitter Share Button"
+      target="_blank" href="https://twitter.com/intent/tweet?title=Hotelling%3a%20V%c3%ac%20sao%20c%c3%a1c%20c%e1%bb%ada%20h%c3%a0ng%20th%c3%adch%20%c4%91%e1%bb%a9ng%20s%c3%a1t%20nhau%2c%20v%c3%a0%20t%e1%ba%a1i%20sao%20ng%c6%b0%e1%bb%9di%20ch%c6%a1i%20th%e1%bb%a9%20ba%20l%c3%a0m%20m%e1%bb%8di%20th%e1%bb%a9%20r%e1%bb%91i%20tung%3f&url=https%3a%2f%2fwww.phamduytung.com%2fblog%2f2026-08-11-hotelling-spatial-competition-retail%2f">
+      <i class="fab fa-fw fa-twitter"></i> Twitter
+    </a>
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Facebook Share Button"
+      target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.phamduytung.com%2fblog%2f2026-08-11-hotelling-spatial-competition-retail%2f">
+      <i class="fab fa-fw fa-facebook-f"></i> Facebook
+    </a>
+  </div>
+</div>
+    <button class="navbar-settings" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSettings"
+  aria-controls="offcanvasSettings" aria-label="Toggle settings">
+  <i class="fas fa-ellipsis-v"></i>
+</button>
+
+<div class="offcanvas offcanvas-end surface h-100" tabindex="-1" id="offcanvasSettings" aria-labelledby="offcanvasSettings">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Cài đặt</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body d-flex flex-column">
+
+
+
+<section class="setting">
+  <form class="font-size-switcher-form row">
+    <div class="col-auto">
+      <label for="fontSize" class="form-label"><i class="fas fa-fw fa-font"></i> Cỡ chữ</label>
+    </div>
+    <div class="col-auto ms-auto">
+      <input type="range" class="form-range" min="-2" max="2" id="fontSize">
+    </div>
+  </form>
+</section>
+
+
+
+<section class="setting actions d-flex justify-content-around mt-auto overflow-auto">
+  <a role="button" class="action action-go-back" href="javascript: window.history.back();">
+    <span class="action-icon"><i class="fas fa-2x fa-arrow-left"></i></span> Quay lại
+  </a>
+  <a role="button" class="action action-reload-page">
+    <span class="action-icon"><i class="fas fa-2x fa-redo-alt"></i></span> Tải lại
+  </a>
+  <a role="button" class="action action-copy-url">
+    <span class="action-icon"><i class="fas fa-2x fa-link"></i></span> Sao chép URL
+  </a><a class="action action-social-share" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSocialShare"
+    aria-controls="offcanvasSocialShare" aria-label="Toggle social share">
+    <span class="action-icon"><i class="fas fa-2x fa-share-alt"></i></span> Chia sẻ
+  </a></section>
+
+</div>
+</div>
+
+    <div class="collapse navbar-collapse" tabindex="-1" id="navbarSupportedContent" aria-labelledby="navbarSupportedContent">
+      <form class="search-bar my-1" action="https://www.phamduytung.com/search">
+  <div class="input-group input-group-sm">
+    <span class="btn btn-search disabled position-absolute left-0"><i class="fas fa-fw fa-search"></i></span>
+    <input class="form-control rounded-pill" name="q" type="search" aria-label="Search">
+  </div>
+</form>
+      <ul class="navbar-nav ms-auto"><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/series/">
+            <i class="fas fa-fw fa-columns"></i>Courses
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/tools/">
+            <i class="fas fa-fw fa-folder"></i>Tools
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/categories/">
+            <i class="fas fa-fw fa-folder"></i>Categories
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/archives/">
+            <i class="fas fa-fw fa-file-archive"></i>Archives
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/tags/">
+            <i class="fas fa-fw fa-tags"></i>Tags
+          </a>
+        </li><li class="nav-item dropdown">
+          <a class="nav-link" id="navbarDropdownSupport" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-fw fa-comments"></i>Community
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdownSupport"><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Facebook Group
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://github.com/AlexBlack2202/alexblack2202.github.io" target="_blank" rel="noopener noreferrer">
+                GitHub
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/contact/">
+                Contact
+              </a>
+            </li><li><hr class="dropdown-divider"></li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/faq/">
+                Câu hỏi thường gặp
+              </a>
+            </li></ul>
+        </li></ul>
+    </div>
+  </div>
+</nav>
+</header>
+<main role="main" class="container" style="line-height:1.7em">
+      <div class="row content">
+<div class="col-lg-9 col-md-8">
+  <div class="container"><nav class="row card component" aria-label="breadcrumb">
+  <div class="card-body">
+    <ol class="breadcrumb "><li class="breadcrumb-item"><a href="https://www.phamduytung.com/">Trang chủ</a></li><li class="breadcrumb-item"><a href="https://www.phamduytung.com/blog/">Blogs</a></li><li class="breadcrumb-item active">Hotelling: Vì sao các cửa hàng thích đứng sát nhau, và tại sao người chơi thứ ba làm mọi thứ rối tung?</li></ol>
+  </div>
+</nav>
+<div class="post-panel-wrapper">
+  <div class="d-flex flex-column component rounded post-panel">
+    
+    <a class="action action-panel-toggler" role="button" title="Panel toggler">
+      <i class="fas fa-fw fa-chevron-circle-down"></i>
+    </a>
+    <a id="sidebarToggler" class="action d-none d-lg-block" role="button" title="Sidebar toggler">
+  <i class="fas fa-fw fa-expand-alt" data-fa-transform="rotate-45"></i>
+</a>
+
+    
+
+    
+    
+    <a class="action" href="#post-comments" role="button" aria-label="Comments" title="Comments">
+  <i class="fas fa-fw fa-comments"></i>
+</a>
+    <a class="action" href="#postTOC" aria-controls="Table of contents" role="button" title="Table of contents">
+  <i class="fas fa-fw fa-list-alt"></i>
+</a>
+    
+  </div>
+</div>
+<article class="row card component mb-4 post">
+  <div class="card-header "><div class="bgcover" style="background-image:url(https://www.phamduytung.com/images/posts/2026-08-11-hotelling-spatial-competition-retail/cover-pearl-glass.png)" aria-label="Hotelling: Vì sao các cửa hàng thích đứng sát nhau, và tại sao người chơi thứ ba làm mọi thứ rối tung?">
+      <div class="bgtrans">
+          <h1>Hotelling: Vì sao các cửa hàng thích đứng sát nhau, và tại sao người chơi thứ ba làm mọi thứ rối tung?
+</h1>
+      </div>
+  </div>
+</div>
+  <div class="card-body"><div class="post-meta">
+  <span class="post-date" title="tạo ngày 2026-08-11 00:00:00 &#43;0700 &#43;07.">
+    11/08/2026
+  </span><span class="post-reading-time">
+    21 phút đọc
+  </span><span class="post-taxonomies"><a href="https://www.phamduytung.com/tags/hotelling/" class="badge post-taxonomy">Hotelling</a><a href="https://www.phamduytung.com/tags/game-theory/" class="badge post-taxonomy">Game Theory</a><a href="https://www.phamduytung.com/tags/retail/" class="badge post-taxonomy">Retail</a><a href="https://www.phamduytung.com/tags/e-commerce/" class="badge post-taxonomy">E-commerce</a><a href="https://www.phamduytung.com/tags/competition/" class="badge post-taxonomy">Competition</a></span>
+</div>
+<div class="post-content mb-3"><hr>
+<div class="toc">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#hai-cửa-hàng-đứng-sát-nhau-để-làm-gì">Hai cửa hàng đứng sát nhau để làm gì?</a></li>
+    <li><a href="#bãi-biển-của-hotelling">Bãi biển của Hotelling</a></li>
+    <li><a href="#khác-biệt-đôi-khi-là-tự-sát">Khác biệt đôi khi là tự sát</a></li>
+    <li><a href="#nhưng-đây-chưa-phải-toàn-bộ-hotelling">Nhưng đây chưa phải toàn bộ Hotelling</a></li>
+    <li><a href="#cạnh-tranh-giá-đứng-sát-nhau-có-thể-trở-thành-tự-sát">Cạnh tranh giá: đứng sát nhau có thể trở thành tự sát</a></li>
+    <li><a href="#x">$$
+x^*</a></li>
+    <li><a href="#nguyên-lý-khác-biệt-hóa-tối-đa-từ-đâu-ra">Nguyên lý khác biệt hóa tối đa từ đâu ra?</a></li>
+    <li><a href="#rồi-người-thứ-ba-bước-vào">Rồi người thứ ba bước vào</a></li>
+    <li><a href="#biến-số-nguy-hiểm-nhất-khách-hàng-có-thể-không-mua">Biến số nguy hiểm nhất: khách hàng có thể không mua</a></li>
+    <li><a href="#rồi-thương-mại-điện-tử-từ-trên-trời-rơi-xuống">Rồi thương mại điện tử từ trên trời rơi xuống</a></li>
+    <li><a href="#c_offline">$$
+C_{offline}</a></li>
+    <li><a href="#c_online">$$
+C_{online}</a></li>
+    <li><a href="#thị-trường-bán-lẻ-thật-ra-là-hotelling-nhiều-chiều">Thị trường bán lẻ thật ra là Hotelling nhiều chiều</a></li>
+    <li><a href="#vì-sao-cửa-hàng-thật-vẫn-thích-đứng-gần-nhau">Vì sao cửa hàng thật vẫn thích đứng gần nhau?</a></li>
+    <li><a href="#không-tồn-tại-một-mức-khác-biệt-hoàn-hảo">Không tồn tại một “mức khác biệt hoàn hảo”</a></li>
+    <li><a href="#một-cách-nhìn-thực-tế-hơn-cho-bán-lẻ">Một cách nhìn thực tế hơn cho bán lẻ</a></li>
+    <li><a href="#thương-mại-điện-tử-không-giết-hotelling-nó-làm-hotelling-khó-hơn">Thương mại điện tử không giết Hotelling, nó làm Hotelling khó hơn</a></li>
+    <li><a href="#tổng-kết">Tổng kết</a></li>
+    <li><a href="#tham-khảo">Tham khảo</a></li>
+  </ul>
+</nav>
+  </div>
+<h1 id="hai-cửa-hàng-đứng-sát-nhau-để-làm-gì">Hai cửa hàng đứng sát nhau để làm gì?<a class="anchor ms-1" href="#hai-cửa-hàng-đứng-sát-nhau-để-làm-gì"><i class="fas fa-link"></i></a></h1>
+<p>Có một cảnh rất kỳ lạ mà chúng ta gặp gần như mỗi ngày.</p>
+<p>Đi trên một con đường bán điện thoại, thường sẽ thấy vài cửa hàng bán điện thoại nằm gần nhau.</p>
+<p>Ra khu ăn uống, các quán trà sữa mọc thành một cụm.</p>
+<p>Một góc đường có ba tiệm thuốc.</p>
+<p>Một khu chuyên bán nội thất thì gần như cả con phố bán nội thất.</p>
+<p>Nhìn bằng trực giác thông thường, chuyện này hơi vô lý.</p>
+<p>Nếu tôi mở một cửa hàng và đối thủ nằm bên trái, chẳng phải tôi nên chạy thật xa sang bên phải hay sao?</p>
+<p>Đối thủ ăn khách bên đó.</p>
+<p>Tôi ăn khách bên này.</p>
+<p>Hai bên nước sông không phạm nước giếng.</p>
+<p>Nghe hợp lý.</p>
+<p>Nhưng kinh tế học có một câu chuyện khá ngược đời: <strong>trong một số điều kiện, khác biệt quá nhiều mới chính là tự sát.</strong></p>
+<p>Nếu chỉ có hai người chơi và thứ duy nhất chúng ta cạnh tranh là vị trí, chiến lược tốt nhất có thể lại là bò từ từ về phía đối thủ.</p>
+<p>Bò nữa.</p>
+<p>Bò nữa.</p>
+<p>Cho đến khi hai thằng đứng gần như sát mặt nhau.</p>
+<p>Đó là thế giới của <strong>Harold Hotelling</strong> và mô hình cạnh tranh không gian (spatial competition) được ông trình bày từ năm 1929 trong bài <em>Stability in Competition</em>. Từ mô hình này sinh ra một ý tưởng thường được gọi là <strong>nguyên lý khác biệt hóa tối thiểu (Principle of Minimum Differentiation)</strong>: trong một số thị trường, các đối thủ có động lực trở nên giống nhau hơn thay vì khác nhau hơn. (<a href="https://www.math.toronto.edu/mccann/assignments/477/Hotelling29.pdf" title="Stability in Competition" target="_blank" rel="noopener noreferrer">U of T Mathematics</a>)</p>
+<p>Nhưng đây mới chỉ là tầng đầu tiên của câu chuyện.</p>
+<p>Bởi chỉ cần thêm một người chơi thứ ba, cho phép cửa hàng thay đổi giá, cho khách hàng quyền nói:</p>
+<blockquote>
+<p>“Thôi, mắc quá, tao không mua nữa.”</p>
+</blockquote>
+<p>rồi quăng thêm một ông thương mại điện tử không có vị trí vật lý rõ ràng vào giữa bàn cờ&hellip;</p>
+<p>thì cái mô hình đẹp đẽ ban đầu bắt đầu nứt ra.</p>
+<p>Và chính những vết nứt đó mới làm Hotelling thú vị.</p>
+<h1 id="bãi-biển-của-hotelling">Bãi biển của Hotelling<a class="anchor ms-1" href="#bãi-biển-của-hotelling"><i class="fas fa-link"></i></a></h1>
+<p>Giả sử có một bãi biển dài đúng 1 km.</p>
+<p>Ta biến nó thành một đoạn thẳng:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">0 ------------------------------------------------ 1
+</span></span></code></pre></div><p>Khách du lịch nằm đều trên bãi biển.</p>
+<p>Có hai ông bán kem: A và B.</p>
+<p>Kem giống nhau.</p>
+<p>Giá giống nhau.</p>
+<p>Chất lượng giống nhau.</p>
+<p>Khách chỉ quan tâm một chuyện:</p>
+<p><strong>đi bộ đến đâu gần hơn.</strong></p>
+<p>Ban đầu A đứng tại 0.25, B đứng tại 0.75.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">0 -------- A ---------------- B -------- 1
+</span></span><span class="line"><span class="ln">2</span><span class="cl">          0.25              0.75
+</span></span></code></pre></div><p>Rất đẹp.</p>
+<p>Mỗi người phục vụ khoảng nửa bãi biển.</p>
+<p>Nếu nhìn từ góc độ xã hội, đây thậm chí là một cách bố trí khá dễ chịu vì khách hàng không phải đi quá xa.</p>
+<p>Nhưng A bắt đầu suy nghĩ.</p>
+<p>Nếu A bước sang phải một chút:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">0 ---------- A ------------ B -------- 1
+</span></span></code></pre></div><p>A vẫn giữ gần như toàn bộ khách phía bên trái.</p>
+<p>Nhưng đồng thời cướp thêm một ít khách ở giữa của B.</p>
+<p>A vui.</p>
+<p>B nhìn thấy vậy.</p>
+<p>B cũng bước sang trái.</p>
+<p>Rồi A bước tiếp.</p>
+<p>B bước tiếp.</p>
+<p>Cuối cùng:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">0 ---------------- AB ---------------- 1
+</span></span><span class="line"><span class="ln">2</span><span class="cl">                   0.5
+</span></span></code></pre></div><p>Hai xe kem đứng giữa bãi biển, cạnh nhau.</p>
+<p>Người nằm ở hai đầu bãi biển giờ phải đi một quãng khá xa.</p>
+<p>Nhưng không ông bán kem nào muốn tự mình bỏ khỏi vị trí này.</p>
+<p>Nếu A chạy về 0.25, B sẽ đứng giữa và lấy phần lớn khách.</p>
+<p>Đây chính là trực giác nổi tiếng của Hotelling.</p>
+<p><strong>Hai đối thủ không nhất thiết muốn tránh nhau. Đôi khi họ muốn đứng ngay cạnh nhau để không nhường phần thị trường trung tâm cho đối thủ.</strong></p>
+<h1 id="khác-biệt-đôi-khi-là-tự-sát">Khác biệt đôi khi là tự sát<a class="anchor ms-1" href="#khác-biệt-đôi-khi-là-tự-sát"><i class="fas fa-link"></i></a></h1>
+<p>Ta có thể bỏ bãi biển đi và thay bằng một trục khác.</p>
+<p>Ví dụ điện thoại:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Giá rẻ -------------------------------- Cao cấp
+</span></span></code></pre></div><p>Hoặc nhà hàng:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Bình dân ------------------------------ Sang trọng
+</span></span></code></pre></div><p>Hoặc phần mềm:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Đơn giản ------------------------------ Nhiều tính năng
+</span></span></code></pre></div><p>Hoặc chính trị:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Một phía ------------------------------ Phía còn lại
+</span></span></code></pre></div><p>“Khoảng cách” trong Hotelling không nhất thiết là kilomet.</p>
+<p>Nó có thể là <strong>khoảng cách giữa thứ khách hàng muốn và thứ doanh nghiệp đang bán</strong>.</p>
+<p>Giả sử khách hàng phân bố như sau:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">|----|----|----|----|----|----|----|----|
+</span></span><span class="line"><span class="ln">2</span><span class="cl">rẻ             trung bình              đắt
+</span></span></code></pre></div><p>Nếu một thương hiệu chọn đứng cực kỳ xa ở phía cao cấp, họ có thể sở hữu một nhóm khách rất riêng.</p>
+<p>Nghe tuyệt vời.</p>
+<p>Nhưng đồng thời họ bỏ toàn bộ khối khách hàng khổng lồ ở giữa cho đối thủ.</p>
+<p>Đối thủ chỉ cần tiến vào giữa một chút là có thể lấy thêm thị trường.</p>
+<p>Trong mô hình Hotelling đơn giản, mỗi doanh nghiệp liên tục có động lực tiến về vùng có mật độ khách hàng lớn hơn.</p>
+<p>Kết quả là:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">Khác biệt
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">Thị trường riêng
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">Nhưng bỏ trống khách hàng trung tâm
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">Đối thủ tiến vào
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">Mình cũng phải tiến vào
+</span></span><span class="line"><span class="ln">10</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln">11</span><span class="cl">Hai bên ngày càng giống nhau
+</span></span></code></pre></div><p>Đó là lý do ta thường thấy nhiều sản phẩm cạnh tranh cuối cùng có cấu hình na ná nhau.</p>
+<p>Hai chuỗi cửa hàng mở gần nhau.</p>
+<p>Hai ứng dụng thêm gần giống bộ tính năng.</p>
+<p>Hai hãng điện thoại cùng có một model khoảng 10 triệu, một model 15 triệu, một model 20 triệu.</p>
+<p>Không nhất thiết vì họ thiếu sáng tạo.</p>
+<p>Đôi khi vì <strong>khoảng trống thị trường quá ngon để bỏ lại cho người khác</strong>.</p>
+<h1 id="nhưng-đây-chưa-phải-toàn-bộ-hotelling">Nhưng đây chưa phải toàn bộ Hotelling<a class="anchor ms-1" href="#nhưng-đây-chưa-phải-toàn-bộ-hotelling"><i class="fas fa-link"></i></a></h1>
+<p>Đến đây rất dễ kết luận:</p>
+<blockquote>
+<p>Hotelling chứng minh doanh nghiệp phải giống đối thủ.</p>
+</blockquote>
+<p>Không.</p>
+<p>Đây là đoạn cần cẩn thận nhất.</p>
+<p>Kết quả hội tụ vào giữa phụ thuộc vào một bộ giả định rất mạnh:</p>
+<ul>
+<li>số lượng đối thủ ít;</li>
+<li>giá được xem như giống nhau hoặc cố định;</li>
+<li>khách hàng luôn mua;</li>
+<li>khách hàng chỉ quan tâm đến khoảng cách;</li>
+<li>chi phí di chuyển có dạng đơn giản;</li>
+<li>thị trường chỉ có một chiều;</li>
+<li>mỗi khách chọn doanh nghiệp gần mình nhất;</li>
+<li>không có online;</li>
+<li>không có loyalty;</li>
+<li>không có thương hiệu;</li>
+<li>không có chi phí chuyển đổi;</li>
+<li>không có tồn kho;</li>
+<li>không có giao hàng;</li>
+<li>không có khuyến mãi;</li>
+<li>không có Google;</li>
+<li>nói chung là một thế giới sạch sẽ đến mức hơi đáng ngờ.</li>
+</ul>
+<p>Và khi bắt đầu tháo từng giả định ra, trò chơi thay đổi rất nhanh.</p>
+<h1 id="cạnh-tranh-giá-đứng-sát-nhau-có-thể-trở-thành-tự-sát">Cạnh tranh giá: đứng sát nhau có thể trở thành tự sát<a class="anchor ms-1" href="#cạnh-tranh-giá-đứng-sát-nhau-có-thể-trở-thành-tự-sát"><i class="fas fa-link"></i></a></h1>
+<p>Giả sử hai cửa hàng A và B không chỉ chọn vị trí.</p>
+<p>Chúng còn được chọn giá.</p>
+<p>Khách hàng tại vị trí $x$ khi mua từ A phải chịu một “tổng chi phí”:</p>
+<p>$$
+C_A(x) = p_A + t|x-a|
+$$</p>
+<p>Trong đó:</p>
+<ul>
+<li>$p_A$ là giá của A;</li>
+<li>$a$ là vị trí A;</li>
+<li>$x$ là vị trí khách hàng;</li>
+<li>$t$ là chi phí của khoảng cách.</li>
+</ul>
+<p>B tương tự:</p>
+<p>$$
+C_B(x) = p_B + t|x-b|
+$$</p>
+<p>Khách hàng chọn bên nào có tổng chi phí thấp hơn.</p>
+<p>Nếu hai bên bán cùng giá, khoảng cách quyết định phần lớn câu chuyện.</p>
+<p>Nhưng nếu A giảm giá?</p>
+<p>Đường biên thị trường dịch chuyển.</p>
+<p>Với $a &lt; b$, trong trường hợp đơn giản, vị trí khách hàng đang phân vân giữa A và B là:</p>
+<h1 id="x">$$
+x^*<a class="anchor ms-1" href="#x"><i class="fas fa-link"></i></a></h1>
+<p>\frac{a+b}{2}
++
+\frac{p_B-p_A}{2t}
+$$</p>
+<p>Giá của A giảm thì $x^*$ dịch sang phải.</p>
+<p>A ăn thêm khách.</p>
+<p>B thấy vậy giảm giá.</p>
+<p>A lại giảm.</p>
+<p>B lại giảm.</p>
+<p>Lúc này một điều rất thú vị xảy ra.</p>
+<p><strong>Hai doanh nghiệp càng giống nhau thì khách hàng càng dễ chuyển qua lại dựa trên giá.</strong></p>
+<p>Nếu hai cửa hàng nằm sát nhau:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">A B
+</span></span></code></pre></div><p>và bán thứ gần như giống nhau, khách không mất gì nhiều khi đổi từ A sang B.</p>
+<p>Thế là giá trở thành vũ khí chính.</p>
+<p>Cuộc chiến có thể biến thành:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">A giảm giá
+</span></span><span class="line"><span class="ln">2</span><span class="cl">   ↓
+</span></span><span class="line"><span class="ln">3</span><span class="cl">B giảm theo
+</span></span><span class="line"><span class="ln">4</span><span class="cl">   ↓
+</span></span><span class="line"><span class="ln">5</span><span class="cl">A giảm tiếp
+</span></span><span class="line"><span class="ln">6</span><span class="cl">   ↓
+</span></span><span class="line"><span class="ln">7</span><span class="cl">B giảm tiếp
+</span></span><span class="line"><span class="ln">8</span><span class="cl">   ↓
+</span></span><span class="line"><span class="ln">9</span><span class="cl">margin: xin vĩnh biệt cụ
+</span></span></code></pre></div><p>Khoảng cách lúc này lại trở thành một lớp áo giáp.</p>
+<p>Nếu A và B ở xa nhau:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">A -------------------------------- B
+</span></span></code></pre></div><p>A có một nhóm khách gần A.</p>
+<p>B có một nhóm khách gần B.</p>
+<p>Muốn cướp khách của nhau phải giảm giá đủ lớn để bù chi phí “đi xa”.</p>
+<p>Khác biệt hóa vì vậy làm <strong>giảm độ co giãn chéo giữa hai đối thủ</strong> và khiến cạnh tranh giá bớt dữ dội.</p>
+<p>Đây chính là nơi câu chuyện chuyển từ <strong>minimum differentiation</strong> sang <strong>maximum differentiation</strong>.</p>
+<h1 id="nguyên-lý-khác-biệt-hóa-tối-đa-từ-đâu-ra">Nguyên lý khác biệt hóa tối đa từ đâu ra?<a class="anchor ms-1" href="#nguyên-lý-khác-biệt-hóa-tối-đa-từ-đâu-ra"><i class="fas fa-link"></i></a></h1>
+<p>Năm 1979, Claude d&rsquo;Aspremont, Jean Jaskold Gabszewicz và Jacques-François Thisse xem lại mô hình Hotelling và chỉ ra một vấn đề quan trọng với kết quả ban đầu.</p>
+<p>Khi các doanh nghiệp cạnh tranh cả vị trí lẫn giá, mô hình với chi phí di chuyển tuyến tính có thể không tạo được cân bằng giá thuần túy ở nhiều cấu hình vị trí.</p>
+<p>Ba tác giả thay chi phí tuyến tính bằng chi phí bậc hai:</p>
+<p>$$
+C_A(x)=p_A+t(x-a)^2
+$$</p>
+<p>Khi đó, trong mô hình duopoly hai giai đoạn của họ, cân bằng vị trí đẩy hai hãng về hai đầu thị trường:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">A -------------------------------- B
+</span></span><span class="line"><span class="ln">2</span><span class="cl">0                                  1
+</span></span></code></pre></div><p>Tức <strong>khác biệt hóa tối đa (maximum differentiation)</strong>. (<a href="https://faculty.haas.berkeley.edu/giyer/PhD269C/d%27aspermont%20et.%20al.pdf" title="On Hotelling&#39;s \&#34;Stability in Competition\&#34;" target="_blank" rel="noopener noreferrer">Haas School of Business</a>)</p>
+<p>Nghe như Hotelling tự đánh nhau với Hotelling.</p>
+<p>Nhưng thật ra không có gì mâu thuẫn.</p>
+<p>Hai kết quả trả lời hai trò chơi khác nhau.</p>
+<p>Một trò chơi nói:</p>
+<blockquote>
+<p>Nếu giá không phải vũ khí chính, tôi muốn đứng gần đối thủ để cướp khách.</p>
+</blockquote>
+<p>Trò chơi còn lại nói:</p>
+<blockquote>
+<p>Nếu đứng gần nhau khiến hai bên phải chém giá đến chảy máu, tôi muốn tạo khoảng cách để giữ một vùng khách hàng riêng.</p>
+</blockquote>
+<p>Vậy nên câu hỏi đúng không phải:</p>
+<blockquote>
+<p>Doanh nghiệp nên giống hay khác đối thủ?</p>
+</blockquote>
+<p>Mà là:</p>
+<blockquote>
+<p>Trong cấu trúc cạnh tranh hiện tại, <strong>lợi ích của việc tiến gần khách hàng trung tâm lớn hơn hay nhỏ hơn chi phí của việc cạnh tranh trực tiếp với đối thủ?</strong></p>
+</blockquote>
+<p>Đó mới là phần đẹp nhất của Hotelling.</p>
+<h1 id="rồi-người-thứ-ba-bước-vào">Rồi người thứ ba bước vào<a class="anchor ms-1" href="#rồi-người-thứ-ba-bước-vào"><i class="fas fa-link"></i></a></h1>
+<p>Hai người chơi là một thế giới rất đặc biệt.</p>
+<p>A nhìn B.</p>
+<p>B nhìn A.</p>
+<p>Ta còn có thể tưởng tượng được một đường biên:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">A -------- x* -------- B
+</span></span></code></pre></div><p>Nhưng bây giờ thêm C.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">A -------- B -------- C
+</span></span></code></pre></div><p>Ai nên đứng đâu?</p>
+<p>Giả sử B đứng giữa.</p>
+<p>B có khách hai bên.</p>
+<p>Nghe ngon.</p>
+<p>Nhưng B cũng bị kẹp bởi hai đối thủ.</p>
+<p>A chỉ cạnh tranh mạnh với B ở một phía.</p>
+<p>C cũng vậy.</p>
+<p>B thì đánh nhau cả hai mặt trận.</p>
+<p>Nếu B dịch sang gần A để ăn thêm khách của A, C có thể hưởng phần thị trường B vừa bỏ lại.</p>
+<p>Nếu A thấy khoảng trống ngon hơn ở giữa, A dịch vào.</p>
+<p>C lại thay đổi.</p>
+<p>B phản ứng.</p>
+<p>Mỗi lần một người di chuyển, biên giới của hai người khác cũng thay đổi.</p>
+<p>Đây không còn là:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">A ↔ B
+</span></span></code></pre></div><p>mà thành:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">       A
+</span></span><span class="line"><span class="ln">2</span><span class="cl">      ↙ ↘
+</span></span><span class="line"><span class="ln">3</span><span class="cl">     B ↔ C
+</span></span></code></pre></div><p>Trong phiên bản <strong>pure-location Hotelling game</strong> với ba người chơi, kết quả nổi tiếng là <strong>không tồn tại cân bằng Nash thuần túy</strong>: ở mọi cấu hình, vẫn có ít nhất một người chơi muốn đổi vị trí để cải thiện thị phần. Eaton và Lipsey là những người quan trọng trong việc chỉ ra giới hạn của nguyên lý minimum differentiation khi số người chơi tăng lên. (<a href="https://academic.oup.com/restud/article-abstract/42/1/27/1538204" title="The Principle of Minimum Differentiation Reconsidered" target="_blank" rel="noopener noreferrer">OUP Academic</a>)</p>
+<p>Ba là một con số khá quái.</p>
+<p>Với bốn người chơi, mô hình location game cổ điển lại có thể hình thành cấu hình cân bằng kiểu ghép cặp, chẳng hạn hai doanh nghiệp quanh một phần tư và hai doanh nghiệp quanh ba phần tư của thị trường. Các thí nghiệm Hotelling bốn người cũng sử dụng chính cấu hình cân bằng này. (<a href="https://www.cambridge.org/core/journals/journal-of-the-economic-science-association/article/hotelling-revisits-the-lab-equilibration-in-continuous-and-discrete-time/551910F5DCAB6D35450DECFC28BEF107" title="Hotelling revisits the lab: equilibration in continuous and discrete time" target="_blank" rel="noopener noreferrer">Cambridge University Press</a>)</p>
+<p>Cho nên không thể nói đơn giản:</p>
+<blockquote>
+<p>Nhiều đối thủ hơn thì không còn cân bằng.</p>
+</blockquote>
+<p>Không đúng.</p>
+<p>Đúng hơn là:</p>
+<blockquote>
+<p><strong>Cấu trúc cân bằng phụ thuộc cực mạnh vào số người chơi và luật chơi.</strong></p>
+</blockquote>
+<p>Thậm chí trong mô hình Hotelling có cạnh tranh giá và chi phí vận chuyển bậc hai, nghiên cứu mở rộng sang ba, bốn và nhiều doanh nghiệp của Steffen Brenner lại tìm được các cấu hình cân bằng phức tạp hơn; chúng không còn là “tất cả đứng giữa” cũng không phải “tất cả chạy ra xa nhất có thể”. (<a href="https://onlinelibrary.wiley.com/doi/abs/10.1111/j.0022-4146.2005.00395.x" title="Hotelling Games with Three, Four, and More Players" target="_blank" rel="noopener noreferrer">Wiley Online Library</a>)</p>
+<p>Thế giới bắt đầu giống đời thật hơn.</p>
+<p>Và cũng bắt đầu xấu xí hơn về mặt toán học.</p>
+<h1 id="biến-số-nguy-hiểm-nhất-khách-hàng-có-thể-không-mua">Biến số nguy hiểm nhất: khách hàng có thể không mua<a class="anchor ms-1" href="#biến-số-nguy-hiểm-nhất-khách-hàng-có-thể-không-mua"><i class="fas fa-link"></i></a></h1>
+<p>Hotelling nguyên thủy thường giả định một thị trường được <strong>covered market</strong>.</p>
+<p>Nói đơn giản:</p>
+<p>Khách sẽ mua một trong hai.</p>
+<p>Ví dụ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">A hay B?
+</span></span></code></pre></div><p>Không có lựa chọn thứ ba.</p>
+<p>Nhưng đời thật có một nút rất mạnh:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">[ Bỏ qua ]
+</span></span></code></pre></div><p>Giả sử khách nhận được giá trị $V$ từ sản phẩm.</p>
+<p>Utility khi mua A:</p>
+<p>$$
+U_A(x)=V-p_A-t|x-a|
+$$</p>
+<p>B tương tự:</p>
+<p>$$
+U_B(x)=V-p_B-t|x-b|
+$$</p>
+<p>Nhưng khách còn có outside option:</p>
+<p>$$
+U_0=0
+$$</p>
+<p>Khách chỉ mua nếu:</p>
+<p>$$
+\max(U_A,U_B) &gt; 0
+$$</p>
+<p>Nếu:</p>
+<p>$$
+U_A &lt; 0
+$$</p>
+<p>và</p>
+<p>$$
+U_B &lt; 0
+$$</p>
+<p>thì khách chẳng chọn ai cả.</p>
+<p>Đột nhiên thị phần không còn là một chiếc bánh cố định.</p>
+<p>Trước đây:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Market = A + B
+</span></span></code></pre></div><p>Bây giờ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Market = A + B + Không mua
+</span></span></code></pre></div><p>Đây là một thay đổi rất lớn.</p>
+<p>Bởi giảm giá không còn chỉ có tác dụng <strong>cướp khách đối thủ</strong>.</p>
+<p>Nó còn có thể <strong>kích hoạt một người vốn chẳng định mua gì cả</strong>.</p>
+<p>Tương tự, mở cửa hàng gần khách hơn không chỉ lấy khách của đối thủ.</p>
+<p>Nó có thể biến:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">&#34;xa quá, thôi&#34;
+</span></span></code></pre></div><p>thành:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">&#34;gần nhà, mua luôn&#34;
+</span></span></code></pre></div><p>Các mô hình Hotelling mở rộng với outside option hay reservation utility cho thấy chỉ cần cho người tiêu dùng quyền từ bỏ giao dịch, cấu trúc vị trí và giá cân bằng đã có thể thay đổi đáng kể. (<a href="https://link.springer.com/article/10.1007/s00712-002-0546-9" title="Spatial Competition with an Outside Good and Distributed Reservation Prices" target="_blank" rel="noopener noreferrer">Springer</a>)</p>
+<p>Đây là lúc Hotelling bắt đầu chạm khá sát vào bán lẻ thực tế.</p>
+<h1 id="rồi-thương-mại-điện-tử-từ-trên-trời-rơi-xuống">Rồi thương mại điện tử từ trên trời rơi xuống<a class="anchor ms-1" href="#rồi-thương-mại-điện-tử-từ-trên-trời-rơi-xuống"><i class="fas fa-link"></i></a></h1>
+<p>Hãy quay lại con đường dài 1 km.</p>
+<p>Có A và B.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">0 -------- A ---------------- B -------- 1
+</span></span></code></pre></div><p>Bỗng một ngày xuất hiện C.</p>
+<p>Nhưng C không nằm ở đâu trên con đường.</p>
+<p>C là một website.</p>
+<p>Khách ở kilomet 0 mua được.</p>
+<p>Khách kilomet 0.5 mua được.</p>
+<p>Khách kilomet 1 cũng mua được.</p>
+<p>Nếu vẫn cố nhét C lên trục Hotelling, ta gặp một vật thể khá kỳ quái.</p>
+<p>Khoảng cách địa lý của C gần như không còn phụ thuộc tuyến tính vào vị trí khách hàng.</p>
+<p>Thay vào đó, khách online chịu những loại “khoảng cách” khác:</p>
+<ul>
+<li>thời gian giao hàng;</li>
+<li>phí vận chuyển;</li>
+<li>rủi ro hàng không đúng kỳ vọng;</li>
+<li>độ khó đổi trả;</li>
+<li>mức độ tin tưởng;</li>
+<li>thời gian tìm kiếm;</li>
+<li>việc không được sờ thử sản phẩm;</li>
+<li>khả năng sản phẩm có sẵn ngay hay phải chờ.</li>
+</ul>
+<p>Một số nghiên cứu mở rộng Hotelling cho cạnh tranh online–offline mô hình hóa cửa hàng vật lý bằng chi phí đi lại phụ thuộc vị trí, trong khi người mua online chịu một dạng chi phí cố định hoặc ma sát khác. Kết quả cho thấy online không đơn giản là “cửa hàng có khoảng cách bằng 0”; lợi thế chi phí có thể đi cùng bất lợi về niềm tin, trải nghiệm hoặc ma sát giao dịch. (<a href="https://www.cambridge.org/core/journals/recherches-economiques-de-louvain-louvain-economic-review/article/shop-around-the-corner-in-the-internet-age1/ED2FB69CF579843281A1ADC33135A3DC" title="The Shop Around the Corner in the Internet Age" target="_blank" rel="noopener noreferrer">Cambridge University Press</a>)</p>
+<p>Ta có thể tưởng tượng tổng chi phí của cửa hàng vật lý:</p>
+<h1 id="c_offline">$$
+C_{offline}<a class="anchor ms-1" href="#c_offline"><i class="fas fa-link"></i></a></h1>
+<p>price
++
+travel
++
+waiting
+$$</p>
+<p>Còn online:</p>
+<h1 id="c_online">$$
+C_{online}<a class="anchor ms-1" href="#c_online"><i class="fas fa-link"></i></a></h1>
+<p>price
++
+shipping
++
+delivery_time
++
+risk
++
+return_friction
+$$</p>
+<p>Một người cách cửa hàng 100 mét có thể chọn offline.</p>
+<p>Người cách 10 km chọn online.</p>
+<p>Nhưng nếu online giao ba ngày còn cửa hàng có hàng ngay, người cần gấp lại quay về offline.</p>
+<p>Không còn một đường thẳng đơn giản nữa.</p>
+<h1 id="thị-trường-bán-lẻ-thật-ra-là-hotelling-nhiều-chiều">Thị trường bán lẻ thật ra là Hotelling nhiều chiều<a class="anchor ms-1" href="#thị-trường-bán-lẻ-thật-ra-là-hotelling-nhiều-chiều"><i class="fas fa-link"></i></a></h1>
+<p>Một cửa hàng hiện đại không đứng trên một trục.</p>
+<p>Nó đứng trong một không gian nhiều chiều.</p>
+<p>Ví dụ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">                    Giá
+</span></span><span class="line"><span class="ln">2</span><span class="cl">                     ↑
+</span></span><span class="line"><span class="ln">3</span><span class="cl">                     |
+</span></span><span class="line"><span class="ln">4</span><span class="cl">                     |
+</span></span><span class="line"><span class="ln">5</span><span class="cl">Trải nghiệm ← ------ + ------ → Tiện lợi
+</span></span><span class="line"><span class="ln">6</span><span class="cl">                     |
+</span></span><span class="line"><span class="ln">7</span><span class="cl">                     |
+</span></span><span class="line"><span class="ln">8</span><span class="cl">                     ↓
+</span></span><span class="line"><span class="ln">9</span><span class="cl">                  Tốc độ giao
+</span></span></code></pre></div><p>Rồi còn:</p>
+<ul>
+<li>thương hiệu;</li>
+<li>assortment;</li>
+<li>tồn kho;</li>
+<li>khoảng cách;</li>
+<li>hậu mãi;</li>
+<li>chương trình thành viên;</li>
+<li>khuyến mãi;</li>
+<li>giao nhanh;</li>
+<li>đổi trả;</li>
+<li>tư vấn;</li>
+<li>độ tin cậy;</li>
+<li>ứng dụng;</li>
+<li>website;</li>
+<li>phương thức thanh toán.</li>
+</ul>
+<p>Trong không gian đó, hai nhà bán lẻ có thể cực gần nhau ở một chiều nhưng rất xa ở chiều khác.</p>
+<p>Ví dụ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Giá:            gần nhau
+</span></span><span class="line"><span class="ln">2</span><span class="cl">Sản phẩm:       gần nhau
+</span></span><span class="line"><span class="ln">3</span><span class="cl">Địa điểm:       gần nhau
+</span></span><span class="line"><span class="ln">4</span><span class="cl">
+</span></span><span class="line"><span class="ln">5</span><span class="cl">Giao hàng:      khác xa
+</span></span><span class="line"><span class="ln">6</span><span class="cl">Hậu mãi:        khác xa
+</span></span><span class="line"><span class="ln">7</span><span class="cl">Trải nghiệm:    khác xa
+</span></span></code></pre></div><p>Và đây là một cách hiểu khá hay về khác biệt hóa.</p>
+<p><strong>Khác biệt hóa không nhất thiết là chạy sang một thị trường hoàn toàn khác.</strong></p>
+<p>Đôi khi doanh nghiệp vẫn đứng ngay cạnh đối thủ ở vị trí có nhiều khách nhất, bán những sản phẩm gần giống nhất, ở mức giá gần giống nhất&hellip;</p>
+<p>nhưng đào một cái hố thật sâu ở một chiều khác.</p>
+<p>Ví dụ tốc độ.</p>
+<p>Hoặc dịch vụ.</p>
+<p>Hoặc trải nghiệm.</p>
+<p>Hoặc tồn kho.</p>
+<p>Tức là:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Minimum differentiation ở chiều A
+</span></span><span class="line"><span class="ln">2</span><span class="cl">+
+</span></span><span class="line"><span class="ln">3</span><span class="cl">Maximum differentiation ở chiều B
+</span></span></code></pre></div><p>Hai thứ hoàn toàn có thể tồn tại cùng lúc.</p>
+<h1 id="vì-sao-cửa-hàng-thật-vẫn-thích-đứng-gần-nhau">Vì sao cửa hàng thật vẫn thích đứng gần nhau?<a class="anchor ms-1" href="#vì-sao-cửa-hàng-thật-vẫn-thích-đứng-gần-nhau"><i class="fas fa-link"></i></a></h1>
+<p>Đến đây cũng cần nói thêm một chuyện.</p>
+<p>Không phải mọi cụm cửa hàng trên đời đều do Hotelling.</p>
+<p>Ngoài cạnh tranh không gian còn có <strong>agglomeration effects</strong> — lợi ích khi nhiều doanh nghiệp cùng ngành tập trung gần nhau.</p>
+<p>Khách muốn mua một món đồ giá trị cao thường thích đến nơi có nhiều lựa chọn.</p>
+<p>Nếu chỉ có một cửa hàng nội thất nằm giữa đồng, khách có thể chẳng muốn đi.</p>
+<p>Nhưng nếu cả con đường có 30 cửa hàng nội thất:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Nhu cầu đi đến khu vực
+</span></span><span class="line"><span class="ln">2</span><span class="cl">        ↑
+</span></span><span class="line"><span class="ln">3</span><span class="cl">Nhiều cửa hàng
+</span></span><span class="line"><span class="ln">4</span><span class="cl">        ↑
+</span></span><span class="line"><span class="ln">5</span><span class="cl">Nhiều lựa chọn
+</span></span><span class="line"><span class="ln">6</span><span class="cl">        ↑
+</span></span><span class="line"><span class="ln">7</span><span class="cl">Nhiều khách
+</span></span><span class="line"><span class="ln">8</span><span class="cl">        ↑
+</span></span><span class="line"><span class="ln">9</span><span class="cl">Càng hấp dẫn cửa hàng mới
+</span></span></code></pre></div><p>Đối thủ vừa là kẻ cướp khách của mình, vừa là lý do khiến khách xuất hiện ở khu vực đó.</p>
+<p>Nghe hơi nghịch lý.</p>
+<p>Nhưng bán lẻ đầy những nghịch lý kiểu như vậy.</p>
+<p>Một quán ăn nằm cạnh mười quán ăn khác phải cạnh tranh dữ hơn.</p>
+<p>Nhưng nó cũng được hưởng lượng người tới khu phố ăn uống lớn hơn.</p>
+<p>Vì vậy khi nhìn thấy hai cửa hàng nằm cạnh nhau, không nên lập tức kết luận:</p>
+<blockquote>
+<p>Hotelling!</p>
+</blockquote>
+<p>Có thể là Hotelling.</p>
+<p>Có thể là lưu lượng khách.</p>
+<p>Có thể là giá thuê.</p>
+<p>Có thể là zoning.</p>
+<p>Có thể là logistics.</p>
+<p>Có thể là đối thủ đã bỏ tiền nghiên cứu thị trường xong, ông còn lại nhìn sang bên kia đường rồi nói:</p>
+<blockquote>
+<p>“Chắc nó nghiên cứu kỹ rồi.”</p>
+</blockquote>
+<p>và thuê mặt bằng luôn.</p>
+<p>Kinh tế học đôi khi cũng rất đời.</p>
+<h1 id="không-tồn-tại-một-mức-khác-biệt-hoàn-hảo">Không tồn tại một “mức khác biệt hoàn hảo”<a class="anchor ms-1" href="#không-tồn-tại-một-mức-khác-biệt-hoàn-hảo"><i class="fas fa-link"></i></a></h1>
+<p>Điều mình thích nhất ở Hotelling không phải là kết luận hai xe kem đứng giữa bãi biển.</p>
+<p>Điều thú vị hơn là những nghiên cứu sau Hotelling liên tục phá kết luận đó.</p>
+<p>Hai người chơi.</p>
+<p>Một kết quả.</p>
+<p>Thêm giá.</p>
+<p>Kết quả khác.</p>
+<p>Đổi dạng transportation cost.</p>
+<p>Kết quả lại khác.</p>
+<p>Thêm người chơi thứ ba.</p>
+<p>Cân bằng của một số phiên bản biến mất.</p>
+<p>Thêm người thứ tư.</p>
+<p>Cân bằng có thể quay trở lại.</p>
+<p>Cho khách quyền không mua.</p>
+<p>Thay đổi tiếp.</p>
+<p>Cho một đối thủ bán online.</p>
+<p>Lại thay đổi.</p>
+<p>Thêm loyalty.</p>
+<p>Thêm tồn kho.</p>
+<p>Thêm thương hiệu.</p>
+<p>Thêm chi phí tìm kiếm.</p>
+<p>Thêm quảng cáo.</p>
+<p>Thêm giao hàng trong hai giờ.</p>
+<p>Cái bãi biển ban đầu giờ trông như một con quái vật nhiều chiều.</p>
+<p>Nhưng đây lại chính là bài học quan trọng.</p>
+<p><strong>Không tồn tại một nguyên lý kinh doanh đơn giản rằng phải khác biệt tối đa hay phải giống đối thủ tối đa.</strong></p>
+<p>Cả hai đều có thể đúng.</p>
+<p>Trong những trò chơi khác nhau.</p>
+<h1 id="một-cách-nhìn-thực-tế-hơn-cho-bán-lẻ">Một cách nhìn thực tế hơn cho bán lẻ<a class="anchor ms-1" href="#một-cách-nhìn-thực-tế-hơn-cho-bán-lẻ"><i class="fas fa-link"></i></a></h1>
+<p>Giả sử ta đang quyết định chiến lược cho một nhà bán lẻ.</p>
+<p>Thay vì hỏi:</p>
+<blockquote>
+<p>Chúng ta khác đối thủ ở đâu?</p>
+</blockquote>
+<p>Có lẽ nên hỏi ba câu khác.</p>
+<p>Thứ nhất:</p>
+<blockquote>
+<p><strong>Ở những chiều nào chúng ta buộc phải gần đối thủ?</strong></p>
+</blockquote>
+<p>Ví dụ khách thị trường muốn smartphone 10–15 triệu mà mình chỉ bán máy 30 triệu trở lên thì sự khác biệt đó chẳng có gì đáng tự hào.</p>
+<p>Ta đơn giản là bỏ thị trường.</p>
+<p>Thứ hai:</p>
+<blockquote>
+<p><strong>Ở chiều nào đứng quá gần khiến cạnh tranh trở thành cuộc chiến tiêu hao?</strong></p>
+</blockquote>
+<p>Nếu hàng hóa giống nhau, vị trí tương đương, giao hàng giống nhau, dịch vụ giống nhau và trải nghiệm giống nhau thì khách còn một nút rất dễ bấm:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Sắp xếp theo giá thấp nhất
+</span></span></code></pre></div><p>Đó là nơi minimum differentiation có thể trở thành nguy hiểm.</p>
+<p>Thứ ba:</p>
+<blockquote>
+<p><strong>Có thể tạo khoảng cách ở chiều nào mà khách thật sự quan tâm?</strong></p>
+</blockquote>
+<p>Không phải khác biệt cho vui.</p>
+<p>Không phải đổi màu logo.</p>
+<p>Không phải thêm một cái tên tiếng Anh nghe như tàu vũ trụ.</p>
+<p>Mà là một khoảng cách đủ lớn để khách nói:</p>
+<blockquote>
+<p>“Hai bên không còn hoàn toàn thay thế cho nhau nữa.”</p>
+</blockquote>
+<p>Khi đó doanh nghiệp bắt đầu có một vùng hấp dẫn riêng.</p>
+<p>Trong ngôn ngữ Hotelling:</p>
+<p><strong>khoảng cách tạo ra market power.</strong></p>
+<p>Nhưng nếu đi xa quá:</p>
+<p><strong>khoảng cách lại làm mất demand.</strong></p>
+<p>Doanh nghiệp sống ở giữa hai lực kéo đó.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Tiến gần khách hàng trung tâm
+</span></span><span class="line"><span class="ln">2</span><span class="cl">            ↓
+</span></span><span class="line"><span class="ln">3</span><span class="cl">       tăng thị phần
+</span></span><span class="line"><span class="ln">4</span><span class="cl">            ↓
+</span></span><span class="line"><span class="ln">5</span><span class="cl">      giống đối thủ hơn
+</span></span><span class="line"><span class="ln">6</span><span class="cl">            ↓
+</span></span><span class="line"><span class="ln">7</span><span class="cl">     cạnh tranh mạnh hơn
+</span></span><span class="line"><span class="ln">8</span><span class="cl">            ↓
+</span></span><span class="line"><span class="ln">9</span><span class="cl">       margin giảm
+</span></span></code></pre></div><p>Trong khi chiều ngược lại:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Khác biệt hơn
+</span></span><span class="line"><span class="ln">2</span><span class="cl">      ↓
+</span></span><span class="line"><span class="ln">3</span><span class="cl">ít cạnh tranh trực tiếp
+</span></span><span class="line"><span class="ln">4</span><span class="cl">      ↓
+</span></span><span class="line"><span class="ln">5</span><span class="cl">margin tốt hơn
+</span></span><span class="line"><span class="ln">6</span><span class="cl">      ↓
+</span></span><span class="line"><span class="ln">7</span><span class="cl">nhưng xa nhu cầu số đông
+</span></span><span class="line"><span class="ln">8</span><span class="cl">      ↓
+</span></span><span class="line"><span class="ln">9</span><span class="cl">thị phần có thể giảm
+</span></span></code></pre></div><p>Không có đầu nào miễn phí.</p>
+<h1 id="thương-mại-điện-tử-không-giết-hotelling-nó-làm-hotelling-khó-hơn">Thương mại điện tử không giết Hotelling, nó làm Hotelling khó hơn<a class="anchor ms-1" href="#thương-mại-điện-tử-không-giết-hotelling-nó-làm-hotelling-khó-hơn"><i class="fas fa-link"></i></a></h1>
+<p>Thoạt nhìn có thể nghĩ Internet đã làm location hết ý nghĩa.</p>
+<p>Nếu hàng mua online thì cửa hàng ở đâu còn quan trọng gì nữa?</p>
+<p>Nhưng “location” chỉ đổi hình dạng.</p>
+<p>Ngày xưa:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">distance = kilomet
+</span></span></code></pre></div><p>Ngày nay:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">distance =
+</span></span><span class="line"><span class="ln">2</span><span class="cl">    kilomet
+</span></span><span class="line"><span class="ln">3</span><span class="cl">  + delivery time
+</span></span><span class="line"><span class="ln">4</span><span class="cl">  + shipping fee
+</span></span><span class="line"><span class="ln">5</span><span class="cl">  + search friction
+</span></span><span class="line"><span class="ln">6</span><span class="cl">  + trust
+</span></span><span class="line"><span class="ln">7</span><span class="cl">  + return cost
+</span></span><span class="line"><span class="ln">8</span><span class="cl">  + inventory availability
+</span></span></code></pre></div><p>Một cửa hàng cách nhà 500 mét nhưng hết hàng có thể “xa” hơn một kho cách 20 km giao được trong 30 phút.</p>
+<p>Một website có giá thấp hơn 5% nhưng giao bảy ngày có thể “xa” hơn cửa hàng đắt hơn một chút nhưng lấy ngay.</p>
+<p>Một sản phẩm nằm ngay trước mắt nhưng người dùng không tìm thấy trên app về mặt kinh tế cũng gần như đang nằm ở một hành tinh khác.</p>
+<p>Đó là lý do mình nghĩ Hotelling vẫn rất hữu ích khi nói về retail hiện đại.</p>
+<p>Chỉ là ta phải ngừng hiểu <strong>distance</strong> theo nghĩa mét.</p>
+<p>Distance là <strong>friction</strong>.</p>
+<p>Khoảng cách chính là số đơn vị khó chịu mà khách phải vượt qua để mua được món hàng.</p>
+<h1 id="tổng-kết">Tổng kết<a class="anchor ms-1" href="#tổng-kết"><i class="fas fa-link"></i></a></h1>
+<p>Hotelling bắt đầu bằng một câu hỏi rất ngây thơ:</p>
+<blockquote>
+<p>Hai người bán hàng nên đứng ở đâu?</p>
+</blockquote>
+<p>Nhưng từ câu hỏi nhỏ đó, chúng ta đi tới một vấn đề lớn hơn rất nhiều:</p>
+<blockquote>
+<p>Một doanh nghiệp nên giống và khác đối thủ bao nhiêu?</p>
+</blockquote>
+<p>Trong mô hình location đơn giản với hai người chơi, các đối thủ có thể hội tụ và tạo ra <strong>minimum differentiation</strong>.</p>
+<p>Khi thêm cạnh tranh giá và một cấu trúc chi phí khác, việc đứng quá gần nhau làm price competition trở nên nguy hiểm, tạo động lực cho <strong>maximum differentiation</strong>. (<a href="https://faculty.haas.berkeley.edu/giyer/PhD269C/d%27aspermont%20et.%20al.pdf" title="On Hotelling&#39;s \&#34;Stability in Competition\&#34;" target="_blank" rel="noopener noreferrer">Haas School of Business</a>)</p>
+<p>Khi có ba người chơi, một số mô hình Hotelling thuần vị trí thậm chí không còn cân bằng Nash thuần túy.</p>
+<p>Khi cho khách quyền không mua, chiếc bánh thị trường không còn cố định.</p>
+<p>Khi thương mại điện tử xuất hiện, khoảng cách địa lý biến thành một tổ hợp của giá, thời gian giao, niềm tin, tồn kho và hàng loạt ma sát khác.</p>
+<p>Và cuối cùng, câu hỏi “nên khác biệt hay nên giống đối thủ?” có lẽ vốn đã sai.</p>
+<p>Câu hỏi đúng hơn là:</p>
+<blockquote>
+<p><strong>Ta nên đứng gần đối thủ ở chiều nào để không bỏ mất khách hàng, và phải đứng đủ xa ở chiều nào để không biến mình thành một món hàng hoàn toàn có thể thay thế?</strong></p>
+</blockquote>
+<p>Khác biệt quá xa có thể chết vì không còn khách.</p>
+<p>Giống nhau quá mức có thể chết vì giá.</p>
+<p>Doanh nghiệp sống trong khoảng không nhỏ bé ở giữa hai cái chết đó.</p>
+<p>Cảm ơn các bạn đã quan tâm và theo dõi bài viết, hẹn gặp lại ở các bài viết tiếp theo.</p>
+<h1 id="tham-khảo">Tham khảo<a class="anchor ms-1" href="#tham-khảo"><i class="fas fa-link"></i></a></h1>
+<ul>
+<li><a href="https://www.math.toronto.edu/mccann/assignments/477/Hotelling29.pdf" target="_blank" rel="noopener noreferrer">Harold Hotelling — Stability in Competition, The Economic Journal, 1929</a></li>
+<li><a href="https://faculty.haas.berkeley.edu/giyer/PhD269C/d%27aspermont%20et.%20al.pdf" target="_blank" rel="noopener noreferrer">C. d’Aspremont, J. J. Gabszewicz, J.-F. Thisse — On Hotelling&rsquo;s Stability in Competition, Econometrica, 1979</a></li>
+<li><a href="https://academic.oup.com/restud/article-abstract/42/1/27/1538204" target="_blank" rel="noopener noreferrer">B. Curtis Eaton, Richard G. Lipsey — The Principle of Minimum Differentiation Reconsidered, Review of Economic Studies, 1975</a></li>
+<li><a href="https://onlinelibrary.wiley.com/doi/abs/10.1111/j.0022-4146.2005.00395.x" target="_blank" rel="noopener noreferrer">Steffen Brenner — Hotelling Games with Three, Four, and More Players, Journal of Regional Science, 2005</a></li>
+<li><a href="https://neconomides.com/uploads/Economides_Minimal_and_Maximal.pdf" target="_blank" rel="noopener noreferrer">Nicolas Economides — Minimal and Maximal Product Differentiation in Hotelling&rsquo;s Duopoly, Economics Letters, 1986</a></li>
+<li><a href="https://www.cambridge.org/core/journals/recherches-economiques-de-louvain-louvain-economic-review/article/shop-around-the-corner-in-the-internet-age1/ED2FB69CF579843281A1ADC33135A3DC" target="_blank" rel="noopener noreferrer">Jérôme Foncel, Marianne Guyot, Frédéric Jouneau-Sion — The Shop Around the Corner in the Internet Age</a></li>
+<li><a href="https://link.springer.com/article/10.1007/s11151-021-09814-1" target="_blank" rel="noopener noreferrer">Stefano Colombo, Zemin Hou — Location-Price Equilibria when Traditional Retailers Compete Against an Online Retailer</a></li>
+</ul>
+</div></div>
+  <div class="card-footer"><div class="post-navs d-flex justify-content-evenly"><div class="post-nav post-prev">
+    <i class="fas fa-fw fa-chevron-left"></i>
+    <a href="https://www.phamduytung.com/blog/2026-08-09-airllm-layer-streaming-4gb-vram/">AirLLM: Nhét một mô hình 2.8 nghìn tỷ tham số qua khe cửa 4GB VRAM
+</a>
+  </div><div class="post-nav post-next">
+    <a href="https://www.phamduytung.com/blog/2026-08-12-pixieset-ai-alt-text-adoption/">Pixieset và bài học 35% adoption: AI tốt nhất đôi khi chỉ nên làm việc mà con người ghét làm
+</a>
+    <i class="fas fa-fw fa-chevron-right"></i>
+  </div></div></div>
+</article><div class="card component row post-comments" id="post-comments">
+  <div class="card-header">
+    <h2 class="card-title">Bình luận</h2>
+  </div>
+  <div class="card-body"><script src="https://utteranc.es/client.js"
+  repo="AlexBlack2202/utterances"
+  issue-term="pathname"
+  label="comment"
+  theme="github-dark"
+  crossorigin="anonymous"
+  async>
+</script></div>
+</div></div>
+</div><aside class="col-lg-3 col-md-4 sidebar d-flex">
+  <div class="container d-flex flex-column">
+    
+    <a href="https://www.buymeacoffee.com/alexblack28"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=🍎&slug=alexblack28&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" /></a><div class="post-toc row mb-4 card component" id="postTOC">
+  <div class="card-header">
+    <h2 class="card-title">Mục lục</h2>
+  </div>
+  <div class="card-body">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#hai-cửa-hàng-đứng-sát-nhau-để-làm-gì">Hai cửa hàng đứng sát nhau để làm gì?</a></li>
+    <li><a href="#bãi-biển-của-hotelling">Bãi biển của Hotelling</a></li>
+    <li><a href="#khác-biệt-đôi-khi-là-tự-sát">Khác biệt đôi khi là tự sát</a></li>
+    <li><a href="#nhưng-đây-chưa-phải-toàn-bộ-hotelling">Nhưng đây chưa phải toàn bộ Hotelling</a></li>
+    <li><a href="#cạnh-tranh-giá-đứng-sát-nhau-có-thể-trở-thành-tự-sát">Cạnh tranh giá: đứng sát nhau có thể trở thành tự sát</a></li>
+    <li><a href="#x">$$
+x^*</a></li>
+    <li><a href="#nguyên-lý-khác-biệt-hóa-tối-đa-từ-đâu-ra">Nguyên lý khác biệt hóa tối đa từ đâu ra?</a></li>
+    <li><a href="#rồi-người-thứ-ba-bước-vào">Rồi người thứ ba bước vào</a></li>
+    <li><a href="#biến-số-nguy-hiểm-nhất-khách-hàng-có-thể-không-mua">Biến số nguy hiểm nhất: khách hàng có thể không mua</a></li>
+    <li><a href="#rồi-thương-mại-điện-tử-từ-trên-trời-rơi-xuống">Rồi thương mại điện tử từ trên trời rơi xuống</a></li>
+    <li><a href="#c_offline">$$
+C_{offline}</a></li>
+    <li><a href="#c_online">$$
+C_{online}</a></li>
+    <li><a href="#thị-trường-bán-lẻ-thật-ra-là-hotelling-nhiều-chiều">Thị trường bán lẻ thật ra là Hotelling nhiều chiều</a></li>
+    <li><a href="#vì-sao-cửa-hàng-thật-vẫn-thích-đứng-gần-nhau">Vì sao cửa hàng thật vẫn thích đứng gần nhau?</a></li>
+    <li><a href="#không-tồn-tại-một-mức-khác-biệt-hoàn-hảo">Không tồn tại một “mức khác biệt hoàn hảo”</a></li>
+    <li><a href="#một-cách-nhìn-thực-tế-hơn-cho-bán-lẻ">Một cách nhìn thực tế hơn cho bán lẻ</a></li>
+    <li><a href="#thương-mại-điện-tử-không-giết-hotelling-nó-làm-hotelling-khó-hơn">Thương mại điện tử không giết Hotelling, nó làm Hotelling khó hơn</a></li>
+    <li><a href="#tổng-kết">Tổng kết</a></li>
+    <li><a href="#tham-khảo">Tham khảo</a></li>
+  </ul>
+</nav>
+  </div>
+</div><section class="recent-posts row card component">
+  <div class="card-header">
+    <h2 class="card-title">Bài gần đây</h2>
+  </div>
+  <div class="card-body">
+    <ul class="post-list"><li>
+        <a href="https://www.phamduytung.com/blog/2026-08-12-pixieset-ai-alt-text-adoption/">Pixieset và bài học 35% adoption: AI tốt nhất đôi khi chỉ nên làm việc mà con người ghét làm
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-08-11-hotelling-spatial-competition-retail/">Hotelling: Vì sao các cửa hàng thích đứng sát nhau, và tại sao người chơi thứ ba làm mọi thứ rối tung?
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-08-09-kimi-delta-attention/">Kimi Delta Attention: Khi AI học cách nhớ như một cái bảng trắng thay vì ôm cả nhà kho
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-08-09-cloudflare-os-ai-agent-enterprise/">Cloudflare OS: Khi AI Agent bắt đầu cần một hệ điều hành riêng cho doanh nghiệp
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-08-09-airllm-layer-streaming-4gb-vram/">AirLLM: Nhét một mô hình 2.8 nghìn tỷ tham số qua khe cửa 4GB VRAM
+</a>
+      </li></ul>
+  </div>
+</section><section class="series-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/series">series</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/series/kh%C3%B3a-h%E1%BB%8Dc-python-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học Python Căn Bản">
+            Khóa Học Python Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="https://www.phamduytung.com/series/kh%C3%B3a-h%E1%BB%8Dc-c&#43;&#43;-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học C&#43;&#43; Căn Bản">
+            Khóa Học C&#43;&#43; Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="https://www.phamduytung.com/series/machine-learning-dataset/" class="badge rounded post-taxonomy" title="Machine Learning Dataset">
+            Machine Learning Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a><a href="https://www.phamduytung.com/series/ch%E1%BB%A9ng-kho%C3%A1n-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Chứng Khoán Căn Bản">
+            Chứng Khoán Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">1</span></a></div>
+      </div>
+    </section><section class="tools-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/tools">tools</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/tools/tool-random/" class="badge rounded post-taxonomy" title="Tool Random">
+            Tool Random<span class="badge badge-sm text-white bg-accent ms-1">3</span></a></div>
+      </div>
+    </section><section class="categories-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/categories">categories</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/categories/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="https://www.phamduytung.com/categories/c&#43;&#43;/" class="badge rounded post-taxonomy" title="C&#43;&#43;">
+            C&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="https://www.phamduytung.com/categories/dataset/" class="badge rounded post-taxonomy" title="Dataset">
+            Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a></div>
+      </div>
+    </section><section class="tags-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/tags">tags</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/tags/machine-learning/" class="badge rounded post-taxonomy" title="Machine Learning">
+            Machine Learning<span class="badge badge-sm text-white bg-accent ms-1">26</span></a><a href="https://www.phamduytung.com/tags/deep-learning/" class="badge rounded post-taxonomy" title="Deep Learning">
+            Deep Learning<span class="badge badge-sm text-white bg-accent ms-1">23</span></a><a href="https://www.phamduytung.com/tags/llm/" class="badge rounded post-taxonomy" title="Llm">
+            Llm<span class="badge badge-sm text-white bg-accent ms-1">17</span></a><a href="https://www.phamduytung.com/tags/computer-vision/" class="badge rounded post-taxonomy" title="Computer Vision">
+            Computer Vision<span class="badge badge-sm text-white bg-accent ms-1">16</span></a><a href="https://www.phamduytung.com/tags/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">14</span></a><a href="https://www.phamduytung.com/tags/ai-agent/" class="badge rounded post-taxonomy" title="AI Agent">
+            AI Agent<span class="badge badge-sm text-white bg-accent ms-1">10</span></a><a href="https://www.phamduytung.com/tags/recommendation-system/" class="badge rounded post-taxonomy" title="Recommendation System">
+            Recommendation System<span class="badge badge-sm text-white bg-accent ms-1">7</span></a><a href="https://www.phamduytung.com/tags/system-design/" class="badge rounded post-taxonomy" title="System Design">
+            System Design<span class="badge badge-sm text-white bg-accent ms-1">7</span></a><a href="https://www.phamduytung.com/tags/generative-ai/" class="badge rounded post-taxonomy" title="Generative AI">
+            Generative AI<span class="badge badge-sm text-white bg-accent ms-1">6</span></a><a href="https://www.phamduytung.com/tags/time-series/" class="badge rounded post-taxonomy" title="Time Series">
+            Time Series<span class="badge badge-sm text-white bg-accent ms-1">6</span></a></div>
+      </div>
+    </section>
+    
+  </div>
+</aside>
+</div>
+    </main><footer class="footer mt-auto py-3 text-center container"><ul class="nav justify-content-between footer-memu mb-3"><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Community
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-facebook"></i>Facebook Group
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://github.com/AlexBlack2202/alexblack2202.github.io" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-github"></i>GitHub
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/contact/"><i class="fas fa-fw fa-info-circle"></i>Contact Us
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/faq/"><i class="fas fa-fw fa-question-circle"></i>Câu hỏi thường gặp
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Docs
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="/team_of_services" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-users"></i>Điều khoản sử dụng
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/privacy" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-lock"></i>Chính sách bảo mật
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Features
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="/utils/gen_paswords/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-key"></i>Tạo password ngẫu nhiên
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Liên kết khác
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">Netlify
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">facebook
+</a>
+        </li></ul></li></ul>
+<div class="copyright mb-2">
+  Copyright © 2016-2026 Phạm Duy Tùng. All Rights Reserved.
+</div>
+<div class="powered-by mb-2">
+  Website chia sẻ kiến thức của Phạm Duy Tùng và Đặng Thị Hằng. Vui lòng liên hệ email alexblack2202@gmail.com nếu bạn có thông tin cần trao đổi.
+</div></footer>
+<script src="https://www.phamduytung.com/js/main.111d51a8c754010f8399ca010e552d803e2d5170b361f8886ad04ec6c21ca551.js" integrity="sha256-ER1RqMdUAQ&#43;DmcoBDlUtgD4tUXCzYfiIatBOxsIcpVE=" crossorigin="anonymous" defer></script><script src="https://www.phamduytung.com/js/icons.min.cb4c9958dbc49e29ac644e168e82db2d0de9a741a15751cc5bf2b0af21eb2845.js" integrity="sha256-y0yZWNvEnimsZE4WjoLbLQ3pp0GhV1HMW/KwryHrKEU=" crossorigin="anonymous" defer></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('https:\/\/www.phamduytung.com\/service-worker.js').then(function(reg) {
+      console.log('Successfully registered service worker', reg);
+    }).catch(function(err) {
+      console.warn('Error whilst registering service worker', err);
+    });
+  });
+}
+</script><script src="https://www.phamduytung.com/js/viewer.min.28bcf5233e406dae6715f46c8b9e8ca7c6cbf347e8678f5a2bebe5369c3270bb.js" integrity="sha256-KLz1Iz5Aba5nFfRsi56Mp8bL80foZ49aK&#43;vlNpwycLs=" crossorigin="anonymous" defer></script><script defer src="https://www.phamduytung.com/js/katex.min.8582b9feadf92a2a977ed303b97d7713cf2754ccf2b4eb60d8be7453a21042c2.js" integrity="sha256-hYK5/q35KiqXftMDuX13E88nVMzytOtg2L50U6IQQsI=" crossorigin="anonymous"></script>
+
+<script  data-ad-client="ca-pub-4644989745435991"  async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4644989745435991"
+     crossorigin="anonymous"></script><script data-cfasync="false" type="text/javascript" data-adel="atag" src="//acscdn.com/script/atg.js" czid="eul3gyjdmm"></script>
+  </body>
+</html>
