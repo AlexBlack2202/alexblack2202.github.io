@@ -1,0 +1,957 @@
+<!doctype html><html lang="vi" data-palette="brown"
+   data-mode="light">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Switch Transformer: Cái công tắc mở đường cho kỷ nguyên mô hình nghìn tỷ tham số - Phạm Duy Tùng Machine Learning Blog</title>
+    <meta name="a.validate.02" content="1QZXZ8oi7g57H-GxBrBPkTYBydwii-Ic9iJu" /><link rel="apple-touch-icon" href="https://www.phamduytung.com/images/icons/icon-180x180.png" sizes="180x180">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/icon-32x32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/icon-16x16.png" sizes="16x16" type="image/png">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/favicon.ico">
+<link rel="manifest" href="https://www.phamduytung.com/manifest.json">
+<meta name="keywords" content="" />
+<meta name="description" content="Switch Transformer đưa Mixture of Experts vào một thiết kế đơn giản: mỗi token chỉ đi qua một expert. Nhờ tách số tham số khỏi lượng tính toán thực tế, Google đã huấn luyện Transformer 1,6 nghìn tỷ tham số và đạt tốc độ pre-training nhanh hơn nhiều so với mô hình dense tương đương." /><meta name="robots" content="index, follow" />
+	<meta itemprop="name" content="Switch Transformer: Cái công tắc mở đường cho kỷ nguyên mô hình nghìn tỷ tham số">
+	<meta itemprop="description" content="Switch Transformer đưa Mixture of Experts vào một thiết kế đơn giản: mỗi token chỉ đi qua một expert. Nhờ tách số tham số khỏi lượng tính toán thực tế, Google đã huấn luyện Transformer 1,6 nghìn tỷ tham số và đạt tốc độ pre-training nhanh hơn nhiều so với mô hình dense tương đương.">
+	<meta itemprop="datePublished" content="2026-08-15T00:00:00+07:00">
+	<meta itemprop="dateModified" content="2026-08-15T00:00:00+07:00">
+	<meta itemprop="wordCount" content="3810">
+	<meta itemprop="image" content="https://www.phamduytung.com/images/posts/2026-08-15-switch-transformer/cover-pearl-glass.png">
+	<meta itemprop="keywords" content="Switch Transformer,Mixture of Experts,Transformer,MoE,Deep Learning"><meta property="og:url" content="https://www.phamduytung.com/blog/2026-08-15-switch-transformer/">
+	<meta property="og:site_name" content="Phạm Duy Tùng Machine Learning Blog">
+	<meta property="og:title" content="Switch Transformer: Cái công tắc mở đường cho kỷ nguyên mô hình nghìn tỷ tham số">
+	<meta property="og:description" content="Switch Transformer đưa Mixture of Experts vào một thiết kế đơn giản: mỗi token chỉ đi qua một expert. Nhờ tách số tham số khỏi lượng tính toán thực tế, Google đã huấn luyện Transformer 1,6 nghìn tỷ tham số và đạt tốc độ pre-training nhanh hơn nhiều so với mô hình dense tương đương.">
+	<meta property="og:locale" content="vi_VN">
+	<meta property="og:type" content="article">
+		<meta property="article:section" content="blog">
+		<meta property="article:published_time" content="2026-08-15T00:00:00+07:00">
+		<meta property="article:modified_time" content="2026-08-15T00:00:00+07:00">
+		<meta property="article:tag" content="Switch Transformer">
+		<meta property="article:tag" content="Mixture of Experts">
+		<meta property="article:tag" content="Transformer">
+		<meta property="article:tag" content="MoE">
+		<meta property="article:tag" content="Deep Learning">
+		<meta property="og:image" content="https://www.phamduytung.com/images/posts/2026-08-15-switch-transformer/cover-pearl-glass.png">
+
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:image" content="https://www.phamduytung.com/images/posts/2026-08-15-switch-transformer/cover-pearl-glass.png">
+	<meta name="twitter:title" content="Switch Transformer: Cái công tắc mở đường cho kỷ nguyên mô hình nghìn tỷ tham số">
+	<meta name="twitter:description" content="Switch Transformer đưa Mixture of Experts vào một thiết kế đơn giản: mỗi token chỉ đi qua một expert. Nhờ tách số tham số khỏi lượng tính toán thực tế, Google đã huấn luyện Transformer 1,6 nghìn tỷ tham số và đạt tốc độ pre-training nhanh hơn nhiều so với mô hình dense tương đương.">
+<link rel="stylesheet" href="https://www.phamduytung.com/css/main.min.1a7226fbd65768f38cdf02e59cdd28a35be617bb64b16963588e2b5b5797ce55.css" integrity="sha256-GnIm&#43;9ZXaPOM3wLlnN0oo1vmF7tksWljWI4rW1eXzlU=" crossorigin="anonymous"><link rel="stylesheet" href="https://www.phamduytung.com/css/katex.min.4d6aa053ca8a5675016fa2c9c48ee5359bfaafb8295184458af9d64abce84c47.css" integrity="sha256-TWqgU8qKVnUBb6LJxI7lNZv6r7gpUYRFivnWSrzoTEc=" crossorigin="anonymous">
+<link rel="stylesheet" href="https://www.phamduytung.com/css/viewer.min.3d228794bcedbbfa0412beb8fbc1ec6973202945e42af7004f742a4d7bd620ab.css" integrity="sha256-PSKHlLztu/oEEr64&#43;8HsaXMgKUXkKvcAT3QqTXvWIKs=" crossorigin="anonymous"><link rel="canonical" href="https://www.phamduytung.com/blog/2026-08-15-switch-transformer/">
+<meta name="theme-color" content="#f7f5ff"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Phạm Duy Tùng"},"dateModified":"2026-08-15T00:00:00+07:00","datePublished":"2026-08-15T00:00:00+07:00","description":"Switch Transformer đưa Mixture of Experts vào một thiết kế đơn giản: mỗi token chỉ đi qua một expert. Nhờ tách số tham số khỏi lượng tính toán thực tế, Google đã huấn luyện Transformer 1,6 nghìn tỷ tham số và đạt tốc độ pre-training nhanh hơn nhiều so với mô hình dense tương đương.","headline":"Switch Transformer: Cái công tắc mở đường cho kỷ nguyên mô hình nghìn tỷ tham số","image":["https://www.phamduytung.com/images/posts/2026-08-15-switch-transformer/cover-pearl-glass.png"],"inLanguage":"vi","keywords":"Switch Transformer, Mixture of Experts, Transformer, MoE, Deep Learning","mainEntityOfPage":{"@id":"https://www.phamduytung.com/blog/2026-08-15-switch-transformer/","@type":"WebPage"},"publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://www.phamduytung.com/images/brand-mark-flaming-book-red.png"},"name":"Phạm Duy Tùng Machine Learning Blog"},"url":"https://www.phamduytung.com/blog/2026-08-15-switch-transformer/"}</script></head>
+  <body><script>const items=["mode","palette"];items.forEach(function(e){const t=localStorage.getItem("hbs-"+e);t&&document.body.parentElement.setAttribute("data-"+e,t)})</script><header><nav class="navbar top-app-bar top-app-bar-expand-lg fixed-top">
+  <div class="container pearl-navbar__inner">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Mở menu">
+      <i class="fas fa-bars"></i>
+    </button>
+
+    <a class="navbar-brand pearl-brand flex-grow-1 flex-lg-grow-0" href="https://www.phamduytung.com/">
+      <span class="pearl-brand__mark" aria-hidden="true">
+        <img src="https://www.phamduytung.com/images/brand-mark-flaming-book-red.png" alt="" width="42" height="42">
+      </span>
+      <span class="pearl-brand__copy">
+        <strong>Phạm Duy Tùng</strong>
+        <small>AI · DATA · SYSTEMS</small>
+      </span>
+    </a>
+
+    <div class="offcanvas offcanvas-bottom surface" tabindex="-1" id="offcanvasSocialShare" aria-labelledby="offcanvasSocialShare">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Share</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body">
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Twitter Share Button"
+      target="_blank" href="https://twitter.com/intent/tweet?title=Switch%20Transformer%3a%20C%c3%a1i%20c%c3%b4ng%20t%e1%ba%afc%20m%e1%bb%9f%20%c4%91%c6%b0%e1%bb%9dng%20cho%20k%e1%bb%b7%20nguy%c3%aan%20m%c3%b4%20h%c3%acnh%20ngh%c3%acn%20t%e1%bb%b7%20tham%20s%e1%bb%91&url=https%3a%2f%2fwww.phamduytung.com%2fblog%2f2026-08-15-switch-transformer%2f">
+      <i class="fab fa-fw fa-twitter"></i> Twitter
+    </a>
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Facebook Share Button"
+      target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.phamduytung.com%2fblog%2f2026-08-15-switch-transformer%2f">
+      <i class="fab fa-fw fa-facebook-f"></i> Facebook
+    </a>
+  </div>
+</div>
+    <button class="navbar-settings" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSettings"
+  aria-controls="offcanvasSettings" aria-label="Toggle settings">
+  <i class="fas fa-ellipsis-v"></i>
+</button>
+
+<div class="offcanvas offcanvas-end surface h-100" tabindex="-1" id="offcanvasSettings" aria-labelledby="offcanvasSettings">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Cài đặt</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body d-flex flex-column">
+
+
+
+<section class="setting">
+  <form class="font-size-switcher-form row">
+    <div class="col-auto">
+      <label for="fontSize" class="form-label"><i class="fas fa-fw fa-font"></i> Cỡ chữ</label>
+    </div>
+    <div class="col-auto ms-auto">
+      <input type="range" class="form-range" min="-2" max="2" id="fontSize">
+    </div>
+  </form>
+</section>
+
+
+
+<section class="setting actions d-flex justify-content-around mt-auto overflow-auto">
+  <a role="button" class="action action-go-back" href="javascript: window.history.back();">
+    <span class="action-icon"><i class="fas fa-2x fa-arrow-left"></i></span> Quay lại
+  </a>
+  <a role="button" class="action action-reload-page">
+    <span class="action-icon"><i class="fas fa-2x fa-redo-alt"></i></span> Tải lại
+  </a>
+  <a role="button" class="action action-copy-url">
+    <span class="action-icon"><i class="fas fa-2x fa-link"></i></span> Sao chép URL
+  </a><a class="action action-social-share" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSocialShare"
+    aria-controls="offcanvasSocialShare" aria-label="Toggle social share">
+    <span class="action-icon"><i class="fas fa-2x fa-share-alt"></i></span> Chia sẻ
+  </a></section>
+
+</div>
+</div>
+
+    <div class="collapse navbar-collapse" tabindex="-1" id="navbarSupportedContent" aria-labelledby="navbarSupportedContent">
+      <form class="search-bar my-1" action="https://www.phamduytung.com/search">
+  <div class="input-group input-group-sm">
+    <span class="btn btn-search disabled position-absolute left-0"><i class="fas fa-fw fa-search"></i></span>
+    <input class="form-control rounded-pill" name="q" type="search" aria-label="Search">
+  </div>
+</form>
+      <ul class="navbar-nav ms-auto"><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/series/">
+            <i class="fas fa-fw fa-columns"></i>Courses
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/tools/">
+            <i class="fas fa-fw fa-folder"></i>Tools
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/categories/">
+            <i class="fas fa-fw fa-folder"></i>Categories
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/archives/">
+            <i class="fas fa-fw fa-file-archive"></i>Archives
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/tags/">
+            <i class="fas fa-fw fa-tags"></i>Tags
+          </a>
+        </li><li class="nav-item dropdown">
+          <a class="nav-link" id="navbarDropdownSupport" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-fw fa-comments"></i>Community
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdownSupport"><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Facebook Group
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://github.com/AlexBlack2202/alexblack2202.github.io" target="_blank" rel="noopener noreferrer">
+                GitHub
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/contact/">
+                Contact
+              </a>
+            </li><li><hr class="dropdown-divider"></li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/faq/">
+                Câu hỏi thường gặp
+              </a>
+            </li></ul>
+        </li></ul>
+    </div>
+  </div>
+</nav>
+</header>
+<main role="main" class="container" style="line-height:1.7em">
+      <div class="row content">
+<div class="col-lg-9 col-md-8">
+  <div class="container"><nav class="row card component" aria-label="breadcrumb">
+  <div class="card-body">
+    <ol class="breadcrumb "><li class="breadcrumb-item"><a href="https://www.phamduytung.com/">Trang chủ</a></li><li class="breadcrumb-item"><a href="https://www.phamduytung.com/blog/">Blogs</a></li><li class="breadcrumb-item active">Switch Transformer: Cái công tắc mở đường cho kỷ nguyên mô hình nghìn tỷ tham số</li></ol>
+  </div>
+</nav>
+<div class="post-panel-wrapper">
+  <div class="d-flex flex-column component rounded post-panel">
+    
+    <a class="action action-panel-toggler" role="button" title="Panel toggler">
+      <i class="fas fa-fw fa-chevron-circle-down"></i>
+    </a>
+    <a id="sidebarToggler" class="action d-none d-lg-block" role="button" title="Sidebar toggler">
+  <i class="fas fa-fw fa-expand-alt" data-fa-transform="rotate-45"></i>
+</a>
+
+    
+
+    
+    
+    <a class="action" href="#post-comments" role="button" aria-label="Comments" title="Comments">
+  <i class="fas fa-fw fa-comments"></i>
+</a>
+    <a class="action" href="#postTOC" aria-controls="Table of contents" role="button" title="Table of contents">
+  <i class="fas fa-fw fa-list-alt"></i>
+</a>
+    
+  </div>
+</div>
+<article class="row card component mb-4 post">
+  <div class="card-header "><div class="bgcover" style="background-image:url(https://www.phamduytung.com/images/posts/2026-08-15-switch-transformer/cover-pearl-glass.png)" aria-label="Switch Transformer: Cái công tắc mở đường cho kỷ nguyên mô hình nghìn tỷ tham số">
+      <div class="bgtrans">
+          <h1>Switch Transformer: Cái công tắc mở đường cho kỷ nguyên mô hình nghìn tỷ tham số
+</h1>
+      </div>
+  </div>
+</div>
+  <div class="card-body"><div class="post-meta">
+  <span class="post-date" title="tạo ngày 2026-08-15 00:00:00 &#43;0700 &#43;07.">
+    15/08/2026
+  </span><span class="post-reading-time">
+    18 phút đọc
+  </span><span class="post-taxonomies"><a href="https://www.phamduytung.com/tags/switch-transformer/" class="badge post-taxonomy">Switch Transformer</a><a href="https://www.phamduytung.com/tags/mixture-of-experts/" class="badge post-taxonomy">Mixture of Experts</a><a href="https://www.phamduytung.com/tags/transformer/" class="badge post-taxonomy">Transformer</a><a href="https://www.phamduytung.com/tags/moe/" class="badge post-taxonomy">MoE</a><a href="https://www.phamduytung.com/tags/deep-learning/" class="badge post-taxonomy">deep learning</a></span>
+</div>
+<div class="post-content mb-3"><div class="toc">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#đặt-vấn-đề">Đặt vấn đề</a></li>
+    <li><a href="#trước-switch-transformer-mô-hình-càng-to-càng-phải-tính-nhiều">Trước Switch Transformer, mô hình càng to càng phải tính nhiều</a></li>
+    <li><a href="#mixture-of-experts-thuê-rất-nhiều-chuyên-gia-nhưng-không-gọi-tất-cả-cùng-lúc">Mixture of Experts: thuê rất nhiều chuyên gia nhưng không gọi tất cả cùng lúc</a></li>
+    <li><a href="#nhưng-moe-trước-đó-khá-phiền">Nhưng MoE trước đó khá phiền</a></li>
+    <li><a href="#switch-transformer-thôi-chọn-một-ông-thôi">Switch Transformer: thôi, chọn một ông thôi</a></li>
+    <li><a href="#một-token-bước-vào-switch-transformer-như-thế-nào">Một token bước vào Switch Transformer như thế nào?</a></li>
+    <li><a href="#16-nghìn-tỷ-parameter-nhưng-không-tính-16-nghìn-tỷ-parameter-cho-mỗi-token">1,6 nghìn tỷ parameter nhưng không tính 1,6 nghìn tỷ parameter cho mỗi token</a></li>
+    <li><a href="#nhưng-nếu-mọi-token-đều-thích-cùng-một-expert-thì-sao">Nhưng nếu mọi token đều thích cùng một expert thì sao?</a></li>
+    <li><a href="#expert-capacity-mỗi-chuyên-gia-cũng-chỉ-có-hai-tay">Expert Capacity: mỗi chuyên gia cũng chỉ có hai tay</a></li>
+    <li><a href="#tại-sao-switch-transformer-lại-huấn-luyện-nhanh-hơn">Tại sao Switch Transformer lại huấn luyện nhanh hơn?</a></li>
+    <li><a href="#một-nghìn-tỷ-parameter-bắt-đầu-trở-nên-khả-thi">Một nghìn tỷ parameter bắt đầu trở nên khả thi</a></li>
+    <li><a href="#huấn-luyện-một-con-quái-vật-sparse-không-hề-dễ">Huấn luyện một con quái vật sparse không hề dễ</a></li>
+    <li><a href="#cái-switch-thực-sự-thay-đổi-là-cách-chúng-ta-nghĩ-về-mô-hình-lớn">Cái Switch thực sự thay đổi là cách chúng ta nghĩ về &ldquo;mô hình lớn&rdquo;</a></li>
+    <li><a href="#switch-transformer-không-chứng-minh-rằng-càng-nhiều-parameter-càng-thông-minh">Switch Transformer không chứng minh rằng càng nhiều parameter càng thông minh</a></li>
+    <li><a href="#vì-sao-switch-transformer-là-một-cột-mốc-quan-trọng">Vì sao Switch Transformer là một cột mốc quan trọng?</a></li>
+    <li><a href="#tổng-kết">Tổng kết</a></li>
+    <li><a href="#tham-khảo">Tham khảo</a></li>
+  </ul>
+</nav>
+  </div>
+<h1 id="đặt-vấn-đề">Đặt vấn đề<a class="anchor ms-1" href="#đặt-vấn-đề"><i class="fas fa-link"></i></a></h1>
+<p>Có một thời chúng ta nghĩ rằng muốn xây một bộ não lớn hơn thì phải bắt toàn bộ bộ não làm việc nhiều hơn.</p>
+<p>Transformer cũng từng sống theo luật đó.</p>
+<p>Muốn mô hình thông minh hơn?</p>
+<p>Thêm layer.</p>
+<p>Muốn thêm kiến thức?</p>
+<p>Tăng hidden dimension.</p>
+<p>Muốn nhiều parameter hơn?</p>
+<p>Làm Feed Forward Network to hơn.</p>
+<p>Nghe thì có vẻ đơn giản. Nhưng mỗi lần mô hình phình ra, những con chip ở phía dưới cũng phải nhân những ma trận lớn hơn, bộ nhớ phải chứa nhiều trọng số hơn, dữ liệu phải chạy qua nhiều GPU hoặc TPU hơn, những dòng điện nhỏ xíu phải lao qua hàng tỷ transistor nhanh hơn nữa.</p>
+<p>Một tỷ parameter đã nặng.</p>
+<p>Mười tỷ nặng hơn.</p>
+<p>Một trăm tỷ bắt đầu giống xây nhà bằng xe tải.</p>
+<p>Nếu cứ đi theo con đường đó thì mô hình một nghìn tỷ parameter nghe gần giống chuyện:</p>
+<blockquote>
+<p>Muốn chở thêm một người nên quyết định xây thêm một con đường cao tốc.</p>
+</blockquote>
+<p>Nhưng năm 2021, William Fedus, Barret Zoph và Noam Shazeer tại Google đưa ra một ý tưởng khá buồn cười.</p>
+<p><strong>Tại sao phải bắt toàn bộ mô hình làm việc?</strong></p>
+<p>Nếu chúng ta có một nghìn tỷ parameter nhưng mỗi token chỉ sử dụng một phần rất nhỏ trong số đó thì sao?</p>
+<p>Đó chính là Switch Transformer.</p>
+<p>Switch Transformer không phải nơi Mixture of Experts (MoE) được phát minh. Ý tưởng MoE đã xuất hiện từ nhiều năm trước. Điều quan trọng hơn là Switch Transformer đã đơn giản hóa MoE đến mức có thể huấn luyện ổn định ở quy mô cực lớn, và nhóm tác giả đã thực sự đưa một Transformer lên khoảng <strong>1,6 nghìn tỷ parameter với 2.048 experts</strong>.</p>
+<p>Và ở đây lịch sử của Transformer rẽ sang một con đường rất thú vị:</p>
+<p><strong>số parameter của mô hình không còn nhất thiết phải tăng cùng tốc độ với lượng computation dành cho mỗi token.</strong></p>
+<h1 id="trước-switch-transformer-mô-hình-càng-to-càng-phải-tính-nhiều">Trước Switch Transformer, mô hình càng to càng phải tính nhiều<a class="anchor ms-1" href="#trước-switch-transformer-mô-hình-càng-to-càng-phải-tính-nhiều"><i class="fas fa-link"></i></a></h1>
+<p>Transformer năm 2017 đã giải quyết một vấn đề rất quan trọng của các kiến trúc tuần tự trước đó: thay vì đọc câu từng từ như một đoàn tàu chạy qua từng ga, self-attention cho phép các token xem xét quan hệ với nhau theo cách phù hợp hơn với phần cứng tính toán song song. (<a href="https://research.google/blog/transformer-a-novel-neural-network-architecture-for-language-understanding/" title="Transformer: A Novel Neural Network Architecture for Language Understanding" target="_blank" rel="noopener noreferrer">Google Research</a>)</p>
+<p>Một Transformer block, nếu giản lược rất mạnh, có thể tưởng tượng như:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Token
+</span></span><span class="line"><span class="ln">2</span><span class="cl">  ↓
+</span></span><span class="line"><span class="ln">3</span><span class="cl">Self-Attention
+</span></span><span class="line"><span class="ln">4</span><span class="cl">  ↓
+</span></span><span class="line"><span class="ln">5</span><span class="cl">Feed Forward Network
+</span></span><span class="line"><span class="ln">6</span><span class="cl">  ↓
+</span></span><span class="line"><span class="ln">7</span><span class="cl">Token mới
+</span></span></code></pre></div><p>Attention giúp các token nhìn nhau.</p>
+<p>Còn Feed Forward Network, thường gọi là <strong>FFN</strong>, thực hiện một lượng rất lớn phép nhân ma trận cho từng token.</p>
+<p>Ví dụ đơn giản:</p>
+<p>$$
+h = \text{ReLU}(xW_1)
+$$</p>
+<p>$$
+y = hW_2
+$$</p>
+<p>Hai ma trận $W_1$ và $W_2$ chứa rất nhiều parameter.</p>
+<p>Muốn Transformer lớn hơn, một cách tự nhiên là làm các ma trận này lớn hơn.</p>
+<p>Nhưng khi đó có một luật vật lý khá khó chịu:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">nhiều parameter hơn
+</span></span><span class="line"><span class="ln">2</span><span class="cl">        ↓
+</span></span><span class="line"><span class="ln">3</span><span class="cl">ma trận lớn hơn
+</span></span><span class="line"><span class="ln">4</span><span class="cl">        ↓
+</span></span><span class="line"><span class="ln">5</span><span class="cl">nhiều phép nhân hơn
+</span></span><span class="line"><span class="ln">6</span><span class="cl">        ↓
+</span></span><span class="line"><span class="ln">7</span><span class="cl">nhiều FLOPs hơn
+</span></span><span class="line"><span class="ln">8</span><span class="cl">        ↓
+</span></span><span class="line"><span class="ln">9</span><span class="cl">training lâu hơn
+</span></span></code></pre></div><p>Đây là mô hình <strong>dense</strong>.</p>
+<p>Mỗi token bước vào mạng neural giống một vị khách đi vào nhà hàng và bắt <strong>toàn bộ đầu bếp trong bếp cùng đứng dậy nấu một tô mì</strong>.</p>
+<p>Có 1.000 đầu bếp?</p>
+<p>Cả 1.000 ông cùng nấu.</p>
+<p>Có 10.000 đầu bếp?</p>
+<p>Cả 10.000 ông vẫn cùng nấu.</p>
+<p>Khá đoàn kết.</p>
+<p>Và cũng khá tốn điện.</p>
+<h1 id="mixture-of-experts-thuê-rất-nhiều-chuyên-gia-nhưng-không-gọi-tất-cả-cùng-lúc">Mixture of Experts: thuê rất nhiều chuyên gia nhưng không gọi tất cả cùng lúc<a class="anchor ms-1" href="#mixture-of-experts-thuê-rất-nhiều-chuyên-gia-nhưng-không-gọi-tất-cả-cùng-lúc"><i class="fas fa-link"></i></a></h1>
+<p>Mixture of Experts đưa ra một triết lý khác.</p>
+<p>Giả sử chúng ta có một bệnh viện với:</p>
+<ul>
+<li>bác sĩ tim mạch</li>
+<li>bác sĩ da liễu</li>
+<li>bác sĩ thần kinh</li>
+<li>bác sĩ mắt</li>
+<li>bác sĩ xương</li>
+<li>bác sĩ nhi</li>
+<li>vài trăm ông khác đang ngồi uống cà phê</li>
+</ul>
+<p>Một bệnh nhân đau mắt đi vào.</p>
+<p>Không cần gọi 2.048 bác sĩ xếp hàng khám người đó.</p>
+<p>Chúng ta cần một <strong>router</strong> đứng ở cửa:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Bệnh nhân
+</span></span><span class="line"><span class="ln">2</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln">3</span><span class="cl"> Router
+</span></span><span class="line"><span class="ln">4</span><span class="cl">    ↓
+</span></span><span class="line"><span class="ln">5</span><span class="cl">Bác sĩ phù hợp
+</span></span></code></pre></div><p>Trong Transformer cũng vậy.</p>
+<p>Thay vì một FFN duy nhất:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Token
+</span></span><span class="line"><span class="ln">2</span><span class="cl">  ↓
+</span></span><span class="line"><span class="ln">3</span><span class="cl">FFN
+</span></span></code></pre></div><p>ta tạo ra rất nhiều FFN:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">                    ┌── Expert 1
+</span></span><span class="line"><span class="ln">2</span><span class="cl">                    ├── Expert 2
+</span></span><span class="line"><span class="ln">3</span><span class="cl">Token → Router ─────├── Expert 3
+</span></span><span class="line"><span class="ln">4</span><span class="cl">                    ├── ...
+</span></span><span class="line"><span class="ln">5</span><span class="cl">                    └── Expert N
+</span></span></code></pre></div><p>Mỗi FFN được gọi là một <strong>expert</strong>.</p>
+<p>Đây là conditional computation:</p>
+<blockquote>
+<p>Mô hình có thể sở hữu rất nhiều parameter, nhưng với một input cụ thể chỉ một phần parameter được kích hoạt.</p>
+</blockquote>
+<p>Paper Switch Transformer mô tả mục tiêu này khá trực tiếp: tăng số lượng parameter trong khi giữ FLOPs trên mỗi example gần như không đổi.</p>
+<p>Đây chính là cái khe nhỏ mà những con quái vật nghìn tỷ parameter sau này có thể chui qua.</p>
+<h1 id="nhưng-moe-trước-đó-khá-phiền">Nhưng MoE trước đó khá phiền<a class="anchor ms-1" href="#nhưng-moe-trước-đó-khá-phiền"><i class="fas fa-link"></i></a></h1>
+<p>Ý tưởng MoE không mới.</p>
+<p>Paper Switch Transformer nhắc lại những công trình MoE từ thập niên 1990 và đặc biệt là sparse MoE của Shazeer và cộng sự năm 2017. Trước Switch, GShard cũng đã đưa Transformer MoE lên quy mô hàng trăm tỷ parameter.</p>
+<p>Nhưng MoE mang theo một túi vấn đề.</p>
+<p>Router phải chọn expert.</p>
+<p>Token phải được chuyển giữa các accelerator.</p>
+<p>Expert này có thể nhận quá nhiều token.</p>
+<p>Expert kia có thể ngồi ngáp.</p>
+<p>Training có thể mất ổn định.</p>
+<p>Và một thiết kế MoE phổ biến lúc đó sử dụng <strong>Top-k routing</strong>.</p>
+<p>Ví dụ Top-2:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Token &#34;con mèo&#34;
+</span></span><span class="line"><span class="ln">2</span><span class="cl">       ↓
+</span></span><span class="line"><span class="ln">3</span><span class="cl">     Router
+</span></span><span class="line"><span class="ln">4</span><span class="cl">      ↙   ↘
+</span></span><span class="line"><span class="ln">5</span><span class="cl">Expert 7  Expert 23
+</span></span></code></pre></div><p>Cùng một token được gửi tới hai expert.</p>
+<p>Output có dạng:</p>
+<p>$$
+y = \sum_{i \in T} p_i(x)E_i(x)
+$$</p>
+<p>Trong đó:</p>
+<ul>
+<li>$x$ là representation của token</li>
+<li>$E_i$ là expert thứ $i$</li>
+<li>$p_i(x)$ là xác suất router gán cho expert đó</li>
+<li>$T$ là tập các expert được chọn</li>
+</ul>
+<p>Top-2 có cái hay của nó.</p>
+<p>Nhưng token phải chạy đến <strong>hai nơi</strong>, hai FFN phải tính toán, rồi kết quả phải được ghép lại.</p>
+<p>Ở quy mô vài nghìn accelerator, chuyện một vector nhỏ chạy từ chip này sang chip kia không còn nhỏ nữa.</p>
+<p>Hàng tỷ token đang chạy.</p>
+<p>Mỗi token kéo theo những tensor.</p>
+<p>Những tensor đi xuyên qua interconnect.</p>
+<p>Các accelerator gửi dữ liệu qua lại.</p>
+<p>Và trong một hệ thống phân tán khổng lồ, đôi khi thứ giết tốc độ không phải phép nhân.</p>
+<p>Mà là <strong>chờ hàng xóm gửi dữ liệu sang</strong>.</p>
+<h1 id="switch-transformer-thôi-chọn-một-ông-thôi">Switch Transformer: thôi, chọn một ông thôi<a class="anchor ms-1" href="#switch-transformer-thôi-chọn-một-ông-thôi"><i class="fas fa-link"></i></a></h1>
+<p>Đây là phần vừa đơn giản vừa quan trọng nhất của Switch Transformer.</p>
+<p>Nhóm tác giả đặt câu hỏi:</p>
+<p><strong>Tại sao một token phải đi qua nhiều expert?</strong></p>
+<p>Thử chỉ chọn một expert xem sao.</p>
+<p>Router tính:</p>
+<p>$$
+h(x) = W_r x
+$$</p>
+<p>sau đó chuyển logits thành xác suất:</p>
+<p>$$
+p_i(x)=\frac{e^{h_i(x)}}{\sum_{j=1}^{N} e^{h_j(x)}}
+$$</p>
+<p>Và cuối cùng:</p>
+<p>$$
+i^* = \arg\max_i p_i(x)
+$$</p>
+<p>Chọn đúng <strong>một</strong> expert.</p>
+<p>Output trở thành:</p>
+<p>$$
+y = p_{i^<em>}(x)E_{i^</em>}(x)
+$$</p>
+<p>Hết.</p>
+<p>Xong thuật toán, quá dễ.</p>
+<p>Trong paper, nhóm tác giả gọi chiến lược $k=1$ này là <strong>Switch layer</strong>. Họ báo cáo rằng việc chỉ route mỗi token tới một expert vẫn giữ được chất lượng, đồng thời giảm computation của router, giảm expert capacity cần thiết và giảm communication cost.</p>
+<p>Nếu Top-2 giống:</p>
+<blockquote>
+<p>“Không biết hỏi ai nên gửi email cho hai phòng ban.”</p>
+</blockquote>
+<p>thì Switch Transformer nói:</p>
+<blockquote>
+<p>“Chọn một phòng thôi. Đừng CC cả công ty.”</p>
+</blockquote>
+<p>Đây là thay đổi cực nhỏ trên sơ đồ.</p>
+<p>Nhưng khi nhân nó lên hàng tỷ token và hàng nghìn accelerator, thay đổi nhỏ ấy biến thành một con sông computation.</p>
+<h1 id="một-token-bước-vào-switch-transformer-như-thế-nào">Một token bước vào Switch Transformer như thế nào?<a class="anchor ms-1" href="#một-token-bước-vào-switch-transformer-như-thế-nào"><i class="fas fa-link"></i></a></h1>
+<p>Giả sử có câu:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Con mèo đang ngủ.
+</span></span></code></pre></div><p>Sau tokenizer, cứ giả sử ta có các token:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">[&#34;Con&#34;, &#34;mèo&#34;, &#34;đang&#34;, &#34;ngủ&#34;]
+</span></span></code></pre></div><p>Và một Switch layer có bốn expert.</p>
+<p>Router có thể quyết định:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">&#34;Con&#34;  → Expert 2
+</span></span><span class="line"><span class="ln">2</span><span class="cl">&#34;mèo&#34;  → Expert 4
+</span></span><span class="line"><span class="ln">3</span><span class="cl">&#34;đang&#34; → Expert 1
+</span></span><span class="line"><span class="ln">4</span><span class="cl">&#34;ngủ&#34;  → Expert 4
+</span></span></code></pre></div><p>Expert 3 lần này chẳng làm gì.</p>
+<p>Batch khác đến, Expert 3 có thể lại nhận rất nhiều token.</p>
+<p>Điểm quan trọng nằm ở đây.</p>
+<p>Mô hình <strong>sở hữu</strong> parameter của:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Expert 1
+</span></span><span class="line"><span class="ln">2</span><span class="cl">Expert 2
+</span></span><span class="line"><span class="ln">3</span><span class="cl">Expert 3
+</span></span><span class="line"><span class="ln">4</span><span class="cl">Expert 4
+</span></span><span class="line"><span class="ln">5</span><span class="cl">...
+</span></span><span class="line"><span class="ln">6</span><span class="cl">Expert 2048
+</span></span></code></pre></div><p>nhưng token <code>&quot;mèo&quot;</code> không chạy qua tất cả 2.048 expert.</p>
+<p>Nó chỉ chạy qua <strong>một expert được router chọn</strong>.</p>
+<p>Đây là lý do phải phân biệt hai khái niệm:</p>
+<ul>
+<li><strong>total parameters</strong>: toàn bộ parameter mà mô hình sở hữu</li>
+<li><strong>active parameters / computation per token</strong>: phần thực sự tham gia xử lý một token</li>
+</ul>
+<p>Hai con số trước đây thường đi cùng nhau.</p>
+<p>MoE bắt đầu kéo chúng ra xa nhau.</p>
+<p>Switch Transformer kéo mạnh hơn nữa.</p>
+<h1 id="16-nghìn-tỷ-parameter-nhưng-không-tính-16-nghìn-tỷ-parameter-cho-mỗi-token">1,6 nghìn tỷ parameter nhưng không tính 1,6 nghìn tỷ parameter cho mỗi token<a class="anchor ms-1" href="#16-nghìn-tỷ-parameter-nhưng-không-tính-16-nghìn-tỷ-parameter-cho-mỗi-token"><i class="fas fa-link"></i></a></h1>
+<p>Đây có lẽ là phần quan trọng nhất của cả bài.</p>
+<p>Nhìn vào một số model trong paper:</p>
+<table>
+	<thead>
+			<tr>
+					<th>Model</th>
+					<th style="text-align: right">Tổng parameter</th>
+					<th style="text-align: right">FLOPs / sequence</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>T5-XXL</td>
+					<td style="text-align: right">11B</td>
+					<td style="text-align: right">6.3T</td>
+			</tr>
+			<tr>
+					<td>Switch-XXL</td>
+					<td style="text-align: right">395B</td>
+					<td style="text-align: right">6.3T</td>
+			</tr>
+			<tr>
+					<td>Switch-C</td>
+					<td style="text-align: right">1.571T</td>
+					<td style="text-align: right">890B</td>
+			</tr>
+	</tbody>
+</table>
+<p>Các số liệu này nằm trong Table 9 của paper. Switch-C sử dụng <strong>2.048 experts</strong> và có khoảng <strong>1,571 nghìn tỷ parameter</strong>.</p>
+<p>Khoan.</p>
+<p>Một mô hình 1.571T parameter lại có FLOPs/sequence <strong>thấp hơn</strong> T5-XXL 11B trong cấu hình được paper so sánh?</p>
+<p>Đúng.</p>
+<p>Bởi vì 1.571T là số parameter <strong>đang tồn tại</strong>.</p>
+<p>Không phải tất cả parameter đều thức dậy khi một token đi ngang qua.</p>
+<p>Hãy tưởng tượng một thành phố có 2.048 thư viện.</p>
+<p>Thành phố sở hữu hàng tỷ cuốn sách.</p>
+<p>Nhưng khi một cậu bé muốn biết:</p>
+<blockquote>
+<p>“Khủng long có biết bơi không?”</p>
+</blockquote>
+<p>cậu bé không cần khiêng toàn bộ 2.048 thư viện về nhà.</p>
+<p>Router chỉ cần chỉ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">→ thư viện số 742
+</span></span></code></pre></div><p>Năng lực lưu trữ tri thức của thành phố có thể tăng rất lớn.</p>
+<p>Nhưng công việc cần làm cho từng câu hỏi không nhất thiết tăng tương ứng.</p>
+<p>Đây là sự tách rời quan trọng:</p>
+<p>$$
+\text{Model Capacity}
+\neq
+\text{Compute per Token}
+$$</p>
+<p>Một mô hình có thể rất lớn về <strong>capacity</strong>, trong khi vẫn tương đối nhỏ về <strong>active computation</strong>.</p>
+<h1 id="nhưng-nếu-mọi-token-đều-thích-cùng-một-expert-thì-sao">Nhưng nếu mọi token đều thích cùng một expert thì sao?<a class="anchor ms-1" href="#nhưng-nếu-mọi-token-đều-thích-cùng-một-expert-thì-sao"><i class="fas fa-link"></i></a></h1>
+<p>Bây giờ xuất hiện một vấn đề rất con người.</p>
+<p>Giả sử có 100 quầy bán vé.</p>
+<p>Router phát hiện quầy số 7 hơi ngon.</p>
+<p>Thế là:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">1.000 người → quầy số 7
+</span></span><span class="line"><span class="ln">2</span><span class="cl">99 quầy còn lại → ngồi chơi
+</span></span></code></pre></div><p>Hệ thống chết.</p>
+<p>Trong MoE, hiện tượng tương tự gọi là <strong>load imbalance</strong>.</p>
+<p>Một số expert có thể nhận quá nhiều token, trong khi các expert khác gần như không được dùng.</p>
+<p>Switch Transformer thêm một auxiliary loss nhằm khuyến khích router phân phối token tương đối đều giữa các expert.</p>
+<p>Paper viết loss này dưới dạng:</p>
+<p>$$
+L_{\text{balance}}=\alpha N\sum_{i=1}^{N}f_i P_i
+$$</p>
+<p>Trong đó:</p>
+<ul>
+<li>$N$ là số expert</li>
+<li>$f_i$ là tỷ lệ token thực sự được gửi tới expert $i$</li>
+<li>$P_i$ là lượng xác suất trung bình router dành cho expert $i$</li>
+<li>$\alpha$ điều khiển mức quan trọng của loss phụ</li>
+</ul>
+<p>Nhóm tác giả sử dụng $\alpha = 10^{-2}$ trong các thí nghiệm chính để cân bằng tải mà không lấn át cross-entropy loss.</p>
+<p>Nói nôm na:</p>
+<blockquote>
+<p>Router được học rằng đừng có cả lớp 40 đứa cùng chạy tới hỏi một cô giáo trong khi 39 giáo viên khác đang ngồi nhìn trần nhà.</p>
+</blockquote>
+<h1 id="expert-capacity-mỗi-chuyên-gia-cũng-chỉ-có-hai-tay">Expert Capacity: mỗi chuyên gia cũng chỉ có hai tay<a class="anchor ms-1" href="#expert-capacity-mỗi-chuyên-gia-cũng-chỉ-có-hai-tay"><i class="fas fa-link"></i></a></h1>
+<p>Ngay cả khi có load balancing, phân phối token không bao giờ hoàn hảo.</p>
+<p>Vì vậy mỗi expert có một giới hạn gọi là <strong>expert capacity</strong>.</p>
+<p>Paper định nghĩa:</p>
+<p>$$
+\text{Expert Capacity}=\frac{\text{Tokens per Batch}}{\text{Number of Experts}}\times\text{Capacity Factor}
+$$</p>
+<p>Ví dụ:</p>
+<ul>
+<li>batch có 10.000 token</li>
+<li>100 experts</li>
+<li>capacity factor = 1.25</li>
+</ul>
+<p>thì:</p>
+<p>$$
+\frac{10{,}000}{100}\times 1.25=125
+$$</p>
+<p>Mỗi expert có chỗ cho khoảng 125 token.</p>
+<p>Capacity factor lớn hơn tạo thêm khoảng đệm khi router phân phối không đều.</p>
+<p>Nhưng buffer càng lớn thì càng tốn memory và communication.</p>
+<p>Nếu expert đầy, một số token có thể bị bỏ qua tại Switch layer và đi tiếp qua residual connection. Trong các thí nghiệm của paper, tỷ lệ dropped token thường dưới 1% khi load balancing được cấu hình phù hợp.</p>
+<p>Đây là một ví dụ rất đẹp của engineering.</p>
+<p>Không có:</p>
+<blockquote>
+<p>“Mọi thứ phải hoàn hảo.”</p>
+</blockquote>
+<p>Chỉ có:</p>
+<blockquote>
+<p>“Cho hệ thống một cái hành lang đủ rộng để đám đông đi qua mà không cần xây cả sân vận động.”</p>
+</blockquote>
+<h1 id="tại-sao-switch-transformer-lại-huấn-luyện-nhanh-hơn">Tại sao Switch Transformer lại huấn luyện nhanh hơn?<a class="anchor ms-1" href="#tại-sao-switch-transformer-lại-huấn-luyện-nhanh-hơn"><i class="fas fa-link"></i></a></h1>
+<p>Đến đây cần làm rõ một câu rất dễ bị viết sai:</p>
+<p><strong>Switch Transformer không đơn giản là “mô hình 1,6T chạy nhanh hơn mọi Transformer nhỏ hơn”.</strong></p>
+<p>Speedup trong paper được đo trong các cấu hình và baseline cụ thể.</p>
+<p>Với các mô hình Switch-Base dựa trên T5, nhóm tác giả báo cáo mức <strong>pre-training speedup hơn 7 lần</strong> trong một số thí nghiệm khi giữ FLOPs/example tương đương. Một Switch-Base 64 experts đạt cùng chất lượng với T5-Base chỉ trong khoảng <strong>1/7 thời gian training</strong> trong thí nghiệm trên 32 TPUv3 cores.</p>
+<p>Ở quy mô lớn hơn, Switch-C đạt khoảng <strong>4x speedup tới một mức perplexity cố định so với T5-XXL</strong> với cùng compute budget trong thí nghiệm được công bố.</p>
+<p>Tức là chữ “nhanh” ở đây nên hiểu là:</p>
+<blockquote>
+<p>đạt một mức chất lượng pre-training nhất định bằng ít bước/thời gian hơn trong cấu hình so sánh của paper.</p>
+</blockquote>
+<p>Không phải cứ thay FFN bằng MoE rồi chương trình tự nhiên chạy nhanh gấp bảy.</p>
+<p>Paper thậm chí nhấn mạnh rằng tốc độ cuối cùng còn phụ thuộc implementation và low-level optimization.</p>
+<p>Nhưng nguyên nhân kiến trúc phía sau speedup thì rất đáng chú ý.</p>
+<p>Switch Transformer có thể tăng <strong>model capacity</strong> bằng cách thêm experts mà không buộc mỗi token chạy qua toàn bộ số experts đó.</p>
+<p>Nhiều parameter hơn.</p>
+<p>Nhiều chỗ để học hơn.</p>
+<p>Nhưng lượng compute cho từng token không tăng theo cùng tỷ lệ.</p>
+<h1 id="một-nghìn-tỷ-parameter-bắt-đầu-trở-nên-khả-thi">Một nghìn tỷ parameter bắt đầu trở nên khả thi<a class="anchor ms-1" href="#một-nghìn-tỷ-parameter-bắt-đầu-trở-nên-khả-thi"><i class="fas fa-link"></i></a></h1>
+<p>Switch-C là ví dụ cực đoan nhất.</p>
+<p>Paper công bố cấu hình:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Switch-C
+</span></span><span class="line"><span class="ln">2</span><span class="cl">≈ 1.571 trillion parameters
+</span></span><span class="line"><span class="ln">3</span><span class="cl">2,048 experts
+</span></span><span class="line"><span class="ln">4</span><span class="cl">Top-1 routing
+</span></span></code></pre></div><p>Điều đáng chú ý không phải chỉ là con số 1,6 nghìn tỷ.</p>
+<p>Nếu mục tiêu chỉ là khoe parameter, người ta có thể tạo một khối parameter khổng lồ rồi để nó nằm đó.</p>
+<p>Điều quan trọng là Google đã xây được một hệ thống <strong>thực sự pre-train được</strong> bằng cách kết hợp:</p>
+<ul>
+<li>data parallelism</li>
+<li>model parallelism</li>
+<li>expert parallelism</li>
+<li>sparse activation</li>
+<li>distributed routing</li>
+</ul>
+<p>Các expert có thể nằm trên những thiết bị khác nhau. Token được router phân loại rồi gửi tới accelerator đang chứa expert tương ứng.</p>
+<p>Lúc này một Transformer không còn giống một bộ não nguyên khối.</p>
+<p>Nó giống một thành phố.</p>
+<p>Attention là hệ thống đường sá chung.</p>
+<p>Các layer dense là hạ tầng dùng chung.</p>
+<p>Còn những expert giống hàng nghìn khu công nghiệp, mỗi khu chứa một lượng parameter khổng lồ.</p>
+<p>Một token chạy vào thành phố.</p>
+<p>Router bật một cái công tắc.</p>
+<p>Một khu sáng lên.</p>
+<p>2.047 khu còn lại tối.</p>
+<p>Và chính chữ <strong>Switch</strong> nằm ở đó.</p>
+<h1 id="huấn-luyện-một-con-quái-vật-sparse-không-hề-dễ">Huấn luyện một con quái vật sparse không hề dễ<a class="anchor ms-1" href="#huấn-luyện-một-con-quái-vật-sparse-không-hề-dễ"><i class="fas fa-link"></i></a></h1>
+<p>Nghe đến đây có thể thấy MoE giống cheat code:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">while model_not_smart:
+</span></span><span class="line"><span class="ln">2</span><span class="cl">    add_more_experts()
+</span></span></code></pre></div><p>Tiếc là đời không dễ vậy.</p>
+<p>Sparse models có thể khó train hơn dense Transformer.</p>
+<p>Router phải dùng softmax.</p>
+<p>Routing có hard decision.</p>
+<p>Một số expert có thể nhận quá nhiều token.</p>
+<p>Gradient có thể trở nên mất ổn định.</p>
+<p>Đặc biệt khi chuyển sang precision thấp để tăng tốc training, những vấn đề số học bắt đầu xuất hiện.</p>
+<p>Switch Transformer sử dụng một thủ thuật khá đẹp gọi là <strong>selective precision</strong>.</p>
+<p>Phần lớn model vẫn chạy bằng <code>bfloat16</code>.</p>
+<p>Nhưng computation nhạy cảm trong router được chuyển sang <code>float32</code>.</p>
+<p>Sau đó kết quả lại được cast về <code>bfloat16</code> trước communication.</p>
+<p>Trong thí nghiệm của paper, pure <code>bfloat16</code> bị diverge, trong khi selective precision giữ độ ổn định gần float32 nhưng tốc độ gần với bfloat16.</p>
+<p>Ngoài ra nhóm tác giả giảm initialization scale của Transformer xuống <strong>10 lần</strong>, từ <code>1.0x</code> xuống <code>0.1x</code>, nhằm cải thiện stability khi số experts tăng rất lớn.</p>
+<p>Đây là một chi tiết quan trọng.</p>
+<p>Một ý tưởng kiến trúc hay chưa đủ.</p>
+<p>Muốn biến nó thành mô hình nghìn tỷ parameter, phải giải quyết cả một tầng vật lý bên dưới:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">routing
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">↓
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">tensor layout
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">↓
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">memory
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">↓
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">precision
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">↓
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">communication
+</span></span><span class="line"><span class="ln">10</span><span class="cl">↓
+</span></span><span class="line"><span class="ln">11</span><span class="cl">accelerator
+</span></span><span class="line"><span class="ln">12</span><span class="cl">↓
+</span></span><span class="line"><span class="ln">13</span><span class="cl">network
+</span></span></code></pre></div><p>AI cuối cùng vẫn không sống trong mây.</p>
+<p>Nó sống trong transistor.</p>
+<h1 id="cái-switch-thực-sự-thay-đổi-là-cách-chúng-ta-nghĩ-về-mô-hình-lớn">Cái Switch thực sự thay đổi là cách chúng ta nghĩ về “mô hình lớn”<a class="anchor ms-1" href="#cái-switch-thực-sự-thay-đổi-là-cách-chúng-ta-nghĩ-về-mô-hình-lớn"><i class="fas fa-link"></i></a></h1>
+<p>Trước sparse MoE, chúng ta dễ hình dung:</p>
+<p>$$
+\text{Model lớn hơn}
+\Rightarrow
+\text{Compute lớn hơn}
+$$</p>
+<p>Switch Transformer cho thấy một trục scaling khác:</p>
+<p>$$
+\text{Model Capacity} \uparrow
+$$</p>
+<p>trong khi cố giữ:</p>
+<p>$$
+\text{FLOPs per Token} \approx \text{constant}
+$$</p>
+<p>Đây mới là phần có ảnh hưởng lâu dài.</p>
+<p>Sau đó, khi nhìn một mô hình MoE có hàng trăm tỷ hay hàng nghìn tỷ parameter, chỉ nhìn <strong>total parameters</strong> đã không còn đủ.</p>
+<p>Ta phải hỏi tiếp:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">Có bao nhiêu parameter tổng cộng?
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">Mỗi token kích hoạt bao nhiêu expert?
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">Top-1 hay Top-2?
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">Mỗi expert lớn bao nhiêu?
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">Bao nhiêu parameter thực sự active?
+</span></span><span class="line"><span class="ln">10</span><span class="cl">
+</span></span><span class="line"><span class="ln">11</span><span class="cl">Communication giữa các GPU ra sao?
+</span></span><span class="line"><span class="ln">12</span><span class="cl">
+</span></span><span class="line"><span class="ln">13</span><span class="cl">Load balancing thế nào?
+</span></span></code></pre></div><p>Một model 1T parameter chưa chắc cần computation tương đương một dense model 1T.</p>
+<p>Hai con quái vật cùng ghi trên trán chữ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">1 TRILLION PARAMETERS
+</span></span></code></pre></div><p>có thể là hai sinh vật hoàn toàn khác nhau.</p>
+<p>Một con bắt cả nghìn tỷ parameter đứng dậy làm việc.</p>
+<p>Một con sở hữu nghìn tỷ parameter nhưng mỗi token chỉ gọi một nhóm nhỏ.</p>
+<p>Nhìn bảng thông số mà không biết điều này rất dễ bị con số parameter lừa.</p>
+<h1 id="switch-transformer-không-chứng-minh-rằng-càng-nhiều-parameter-càng-thông-minh">Switch Transformer không chứng minh rằng càng nhiều parameter càng thông minh<a class="anchor ms-1" href="#switch-transformer-không-chứng-minh-rằng-càng-nhiều-parameter-càng-thông-minh"><i class="fas fa-link"></i></a></h1>
+<p>Có một điểm nữa cũng nên nói cho công bằng.</p>
+<p>Paper tự ghi nhận rằng upstream pre-training tốt hơn không phải lúc nào cũng chuyển thành downstream performance tốt hơn tương ứng.</p>
+<p>Ví dụ, Switch-C 1.6T có một số kết quả fine-tuning không tốt bằng Switch-XXL nhỏ hơn, dù Switch-C sở hữu nhiều unique parameters hơn rất nhiều. Nhóm tác giả chỉ ra rằng Switch-XXL thực hiện khoảng 10 lần FLOPs/token so với Switch-C trong so sánh đó, cho thấy mối quan hệ giữa parameter count, compute và downstream quality phức tạp hơn câu:</p>
+<blockquote>
+<p>“To hơn = thông minh hơn.”</p>
+</blockquote>
+<p>Đây cũng là bài học vẫn còn nguyên giá trị.</p>
+<p>Parameter là <strong>capacity</strong>.</p>
+<p>Compute là <strong>khả năng sử dụng capacity đó</strong>.</p>
+<p>Data quyết định model được học thứ gì.</p>
+<p>Routing quyết định phần nào của model được gọi.</p>
+<p>Architecture quyết định thông tin được biến đổi thế nào.</p>
+<p>Training recipe quyết định con quái vật có học được hay nổ tung giữa đường.</p>
+<p>Không có một con số duy nhất đại diện cho trí thông minh.</p>
+<h1 id="vì-sao-switch-transformer-là-một-cột-mốc-quan-trọng">Vì sao Switch Transformer là một cột mốc quan trọng?<a class="anchor ms-1" href="#vì-sao-switch-transformer-là-một-cột-mốc-quan-trọng"><i class="fas fa-link"></i></a></h1>
+<p>Switch Transformer không phát minh Transformer.</p>
+<p>Cũng không phát minh Mixture of Experts.</p>
+<p>Nó thậm chí không phải công trình đầu tiên đưa MoE vào Transformer.</p>
+<p>Nhưng nó làm một việc rất quan trọng:</p>
+<p><strong>đơn giản hóa conditional computation đủ nhiều để biến sparse Transformer thành một con đường scaling thực tế.</strong></p>
+<p>Từ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">token → nhiều experts
+</span></span></code></pre></div><p>thành:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">token → một expert
+</span></span></code></pre></div><p>Một cái <code>argmax</code>.</p>
+<p>Một cái công tắc.</p>
+<p>Một thay đổi tưởng như bé đến mức sinh viên đọc paper có thể hỏi:</p>
+<blockquote>
+<p>“Ủa vậy thôi hả?”</p>
+</blockquote>
+<p>Ừ.</p>
+<p>Nhưng khoa học nhiều khi rất kỳ.</p>
+<p>Không phải phát minh lớn nào cũng cần thêm mười tầng toán học.</p>
+<p>Có những lúc tiến bộ đến từ việc nhìn một cỗ máy đang có quá nhiều bánh răng rồi hỏi:</p>
+<blockquote>
+<p>“Bánh răng này có thật sự cần không?”</p>
+</blockquote>
+<p>Switch Transformer bỏ bớt một phần phức tạp của MoE, giảm routing computation và communication, cải thiện stability, rồi dùng khoảng trống vừa tạo ra để đẩy Transformer tới quy mô hơn <strong>một nghìn tỷ parameter</strong>. (<a href="https://jmlr.org/papers/v23/21-0998.html" title="Switch Transformers: Scaling to Trillion Parameter Models with Simple and Efficient Sparsity" target="_blank" rel="noopener noreferrer">Journal of Machine Learning Research</a>)</p>
+<p>Và từ đó, câu hỏi của ngành AI thay đổi.</p>
+<p>Không còn chỉ là:</p>
+<blockquote>
+<p>“Chúng ta có thể xây model lớn tới đâu?”</p>
+</blockquote>
+<p>Mà trở thành:</p>
+<blockquote>
+<p><strong>“Chúng ta có thể xây model lớn tới đâu mà mỗi token không phải đánh thức toàn bộ con quái vật?”</strong></p>
+</blockquote>
+<h1 id="tổng-kết">Tổng kết<a class="anchor ms-1" href="#tổng-kết"><i class="fas fa-link"></i></a></h1>
+<p>Nếu phải gói Switch Transformer vào một ý duy nhất thì mình sẽ chọn câu này:</p>
+<blockquote>
+<p><strong>Đừng bắt toàn bộ bộ não suy nghĩ cho mọi câu hỏi. Hãy xây một bộ não rất lớn, rồi chỉ đánh thức phần cần thiết.</strong></p>
+</blockquote>
+<p>Transformer dense mở rộng bằng cách làm phần đang hoạt động lớn hơn.</p>
+<p>Switch Transformer mở thêm một con đường khác: làm <strong>tổng capacity</strong> lớn hơn bằng hàng nghìn experts, nhưng mỗi token chỉ kích hoạt một expert trong mỗi Switch layer.</p>
+<p>Nhờ Top-1 routing, load balancing, expert capacity, selective precision và expert parallelism, nhóm Google đã pre-train mô hình khoảng <strong>1,6 nghìn tỷ parameter với 2.048 experts</strong>, đồng thời báo cáo speedup lên tới <strong>7x</strong> trong một số cấu hình Switch-Base và khoảng <strong>4x</strong> so với T5-XXL ở thí nghiệm quy mô lớn tương ứng.</p>
+<p>Nhưng di sản lớn nhất của Switch Transformer có lẽ không nằm ở con số 1,6T.</p>
+<p>Nó nằm ở một phương trình mới trong đầu chúng ta:</p>
+<p>$$
+\text{Total Parameters}
+\neq
+\text{Active Compute}
+$$</p>
+<p>Một nghìn tỷ parameter có thể nằm im trong bóng tối.</p>
+<p>Một token xuất hiện.</p>
+<p>Router nhìn nó.</p>
+<p>Một expert sáng lên.</p>
+<p>Hàng nghìn expert khác ngủ tiếp.</p>
+<p>Và cái công tắc nhỏ bé đó đã giúp Transformer bước qua cánh cửa của kỷ nguyên mô hình nghìn tỷ tham số.</p>
+<h1 id="tham-khảo">Tham khảo<a class="anchor ms-1" href="#tham-khảo"><i class="fas fa-link"></i></a></h1>
+<ul>
+<li>William Fedus, Barret Zoph, Noam Shazeer — <a href="https://jmlr.org/papers/v23/21-0998.html" target="_blank" rel="noopener noreferrer"><em>Switch Transformers: Scaling to Trillion Parameter Models with Simple and Efficient Sparsity</em></a>, <em>Journal of Machine Learning Research</em>, 2022.</li>
+<li>William Fedus, Barret Zoph, Noam Shazeer — <a href="https://arxiv.org/abs/2101.03961" target="_blank" rel="noopener noreferrer"><em>Switch Transformers</em></a>, arXiv:2101.03961.</li>
+<li>Google Research — <a href="https://research.google/blog/transformer-a-novel-neural-network-architecture-for-language-understanding/" target="_blank" rel="noopener noreferrer"><em>Transformer: A Novel Neural Network Architecture for Language Understanding</em></a>.</li>
+</ul>
+</div></div>
+  <div class="card-footer"><div class="post-navs d-flex justify-content-evenly"><div class="post-nav post-prev">
+    <i class="fas fa-fw fa-chevron-left"></i>
+    <a href="https://www.phamduytung.com/blog/2026-08-15-transformer-attention-ky-nguyen-ai/">Transformer: Khi máy tính thôi đọc từng chữ một và một kỷ nguyên mới bắt đầu
+</a>
+  </div><div class="post-nav post-next">
+    <a href="https://www.phamduytung.com/blog/2026-08-15-so-ghi-nhieu-cognitive-offloading/">Sổ ghi nhiễu: Đừng bắt bộ não tập trung, hãy cho sự xao nhãng một chỗ để đậu
+</a>
+    <i class="fas fa-fw fa-chevron-right"></i>
+  </div></div></div>
+</article><div class="card component row post-comments" id="post-comments">
+  <div class="card-header">
+    <h2 class="card-title">Bình luận</h2>
+  </div>
+  <div class="card-body"><script src="https://utteranc.es/client.js"
+  repo="AlexBlack2202/utterances"
+  issue-term="pathname"
+  label="comment"
+  theme="github-dark"
+  crossorigin="anonymous"
+  async>
+</script></div>
+</div></div>
+</div><aside class="col-lg-3 col-md-4 sidebar d-flex">
+  <div class="container d-flex flex-column">
+    
+    <a href="https://www.buymeacoffee.com/alexblack28"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=🍎&slug=alexblack28&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" /></a><div class="post-toc row mb-4 card component" id="postTOC">
+  <div class="card-header">
+    <h2 class="card-title">Mục lục</h2>
+  </div>
+  <div class="card-body">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#đặt-vấn-đề">Đặt vấn đề</a></li>
+    <li><a href="#trước-switch-transformer-mô-hình-càng-to-càng-phải-tính-nhiều">Trước Switch Transformer, mô hình càng to càng phải tính nhiều</a></li>
+    <li><a href="#mixture-of-experts-thuê-rất-nhiều-chuyên-gia-nhưng-không-gọi-tất-cả-cùng-lúc">Mixture of Experts: thuê rất nhiều chuyên gia nhưng không gọi tất cả cùng lúc</a></li>
+    <li><a href="#nhưng-moe-trước-đó-khá-phiền">Nhưng MoE trước đó khá phiền</a></li>
+    <li><a href="#switch-transformer-thôi-chọn-một-ông-thôi">Switch Transformer: thôi, chọn một ông thôi</a></li>
+    <li><a href="#một-token-bước-vào-switch-transformer-như-thế-nào">Một token bước vào Switch Transformer như thế nào?</a></li>
+    <li><a href="#16-nghìn-tỷ-parameter-nhưng-không-tính-16-nghìn-tỷ-parameter-cho-mỗi-token">1,6 nghìn tỷ parameter nhưng không tính 1,6 nghìn tỷ parameter cho mỗi token</a></li>
+    <li><a href="#nhưng-nếu-mọi-token-đều-thích-cùng-một-expert-thì-sao">Nhưng nếu mọi token đều thích cùng một expert thì sao?</a></li>
+    <li><a href="#expert-capacity-mỗi-chuyên-gia-cũng-chỉ-có-hai-tay">Expert Capacity: mỗi chuyên gia cũng chỉ có hai tay</a></li>
+    <li><a href="#tại-sao-switch-transformer-lại-huấn-luyện-nhanh-hơn">Tại sao Switch Transformer lại huấn luyện nhanh hơn?</a></li>
+    <li><a href="#một-nghìn-tỷ-parameter-bắt-đầu-trở-nên-khả-thi">Một nghìn tỷ parameter bắt đầu trở nên khả thi</a></li>
+    <li><a href="#huấn-luyện-một-con-quái-vật-sparse-không-hề-dễ">Huấn luyện một con quái vật sparse không hề dễ</a></li>
+    <li><a href="#cái-switch-thực-sự-thay-đổi-là-cách-chúng-ta-nghĩ-về-mô-hình-lớn">Cái Switch thực sự thay đổi là cách chúng ta nghĩ về &ldquo;mô hình lớn&rdquo;</a></li>
+    <li><a href="#switch-transformer-không-chứng-minh-rằng-càng-nhiều-parameter-càng-thông-minh">Switch Transformer không chứng minh rằng càng nhiều parameter càng thông minh</a></li>
+    <li><a href="#vì-sao-switch-transformer-là-một-cột-mốc-quan-trọng">Vì sao Switch Transformer là một cột mốc quan trọng?</a></li>
+    <li><a href="#tổng-kết">Tổng kết</a></li>
+    <li><a href="#tham-khảo">Tham khảo</a></li>
+  </ul>
+</nav>
+  </div>
+</div><section class="recent-posts row card component">
+  <div class="card-header">
+    <h2 class="card-title">Bài gần đây</h2>
+  </div>
+  <div class="card-body">
+    <ul class="post-list"><li>
+        <a href="https://www.phamduytung.com/blog/2026-08-15-transformer-attention-ky-nguyen-ai/">Transformer: Khi máy tính thôi đọc từng chữ một và một kỷ nguyên mới bắt đầu
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-08-15-switch-transformer/">Switch Transformer: Cái công tắc mở đường cho kỷ nguyên mô hình nghìn tỷ tham số
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-08-15-so-ghi-nhieu-cognitive-offloading/">Sổ ghi nhiễu: Đừng bắt bộ não tập trung, hãy cho sự xao nhãng một chỗ để đậu
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-08-15-dai-dao-vo-hinh-van-phap-sai-biet/">Đại đạo vô hình, vạn pháp sai biệt — đừng lấy đoạn đường mình đã đi để phán cả thiên hạ
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-08-14-1000-chai-ruou-10-con-chuot-nhi-phan/">1000 chai rượu, 10 con chuột và 1 giờ: Khi một con chuột trở thành một bit
+</a>
+      </li></ul>
+  </div>
+</section><section class="series-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/series">series</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/series/kh%C3%B3a-h%E1%BB%8Dc-python-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học Python Căn Bản">
+            Khóa Học Python Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="https://www.phamduytung.com/series/kh%C3%B3a-h%E1%BB%8Dc-c&#43;&#43;-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học C&#43;&#43; Căn Bản">
+            Khóa Học C&#43;&#43; Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="https://www.phamduytung.com/series/machine-learning-dataset/" class="badge rounded post-taxonomy" title="Machine Learning Dataset">
+            Machine Learning Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a><a href="https://www.phamduytung.com/series/ch%E1%BB%A9ng-kho%C3%A1n-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Chứng Khoán Căn Bản">
+            Chứng Khoán Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">1</span></a></div>
+      </div>
+    </section><section class="tools-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/tools">tools</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/tools/tool-random/" class="badge rounded post-taxonomy" title="Tool Random">
+            Tool Random<span class="badge badge-sm text-white bg-accent ms-1">3</span></a></div>
+      </div>
+    </section><section class="categories-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/categories">categories</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/categories/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="https://www.phamduytung.com/categories/c&#43;&#43;/" class="badge rounded post-taxonomy" title="C&#43;&#43;">
+            C&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="https://www.phamduytung.com/categories/dataset/" class="badge rounded post-taxonomy" title="Dataset">
+            Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a></div>
+      </div>
+    </section><section class="tags-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/tags">tags</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/tags/machine-learning/" class="badge rounded post-taxonomy" title="Machine Learning">
+            Machine Learning<span class="badge badge-sm text-white bg-accent ms-1">26</span></a><a href="https://www.phamduytung.com/tags/deep-learning/" class="badge rounded post-taxonomy" title="Deep Learning">
+            Deep Learning<span class="badge badge-sm text-white bg-accent ms-1">25</span></a><a href="https://www.phamduytung.com/tags/llm/" class="badge rounded post-taxonomy" title="LLM">
+            LLM<span class="badge badge-sm text-white bg-accent ms-1">17</span></a><a href="https://www.phamduytung.com/tags/computer-vision/" class="badge rounded post-taxonomy" title="Computer Vision">
+            Computer Vision<span class="badge badge-sm text-white bg-accent ms-1">16</span></a><a href="https://www.phamduytung.com/tags/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">14</span></a><a href="https://www.phamduytung.com/tags/ai-agent/" class="badge rounded post-taxonomy" title="Ai Agent">
+            Ai Agent<span class="badge badge-sm text-white bg-accent ms-1">10</span></a><a href="https://www.phamduytung.com/tags/recommendation-system/" class="badge rounded post-taxonomy" title="Recommendation System">
+            Recommendation System<span class="badge badge-sm text-white bg-accent ms-1">7</span></a><a href="https://www.phamduytung.com/tags/system-design/" class="badge rounded post-taxonomy" title="System Design">
+            System Design<span class="badge badge-sm text-white bg-accent ms-1">7</span></a><a href="https://www.phamduytung.com/tags/ai/" class="badge rounded post-taxonomy" title="AI">
+            AI<span class="badge badge-sm text-white bg-accent ms-1">6</span></a><a href="https://www.phamduytung.com/tags/generative-ai/" class="badge rounded post-taxonomy" title="Generative Ai">
+            Generative Ai<span class="badge badge-sm text-white bg-accent ms-1">6</span></a></div>
+      </div>
+    </section>
+    
+  </div>
+</aside>
+</div>
+    </main><footer class="footer mt-auto py-3 text-center container"><ul class="nav justify-content-between footer-memu mb-3"><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Community
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-facebook"></i>Facebook Group
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://github.com/AlexBlack2202/alexblack2202.github.io" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-github"></i>GitHub
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/contact/"><i class="fas fa-fw fa-info-circle"></i>Contact Us
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/faq/"><i class="fas fa-fw fa-question-circle"></i>Câu hỏi thường gặp
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Docs
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="/team_of_services" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-users"></i>Điều khoản sử dụng
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/privacy" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-lock"></i>Chính sách bảo mật
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Features
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="/utils/gen_paswords/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-key"></i>Tạo password ngẫu nhiên
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Liên kết khác
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">Netlify
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">facebook
+</a>
+        </li></ul></li></ul>
+<div class="copyright mb-2">
+  Copyright © 2016-2026 Phạm Duy Tùng. All Rights Reserved.
+</div>
+<div class="powered-by mb-2">
+  Website chia sẻ kiến thức của Phạm Duy Tùng và Đặng Thị Hằng. Vui lòng liên hệ email alexblack2202@gmail.com nếu bạn có thông tin cần trao đổi.
+</div></footer>
+<script src="https://www.phamduytung.com/js/main.111d51a8c754010f8399ca010e552d803e2d5170b361f8886ad04ec6c21ca551.js" integrity="sha256-ER1RqMdUAQ&#43;DmcoBDlUtgD4tUXCzYfiIatBOxsIcpVE=" crossorigin="anonymous" defer></script><script src="https://www.phamduytung.com/js/icons.min.cb4c9958dbc49e29ac644e168e82db2d0de9a741a15751cc5bf2b0af21eb2845.js" integrity="sha256-y0yZWNvEnimsZE4WjoLbLQ3pp0GhV1HMW/KwryHrKEU=" crossorigin="anonymous" defer></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('https:\/\/www.phamduytung.com\/service-worker.js').then(function(reg) {
+      console.log('Successfully registered service worker', reg);
+    }).catch(function(err) {
+      console.warn('Error whilst registering service worker', err);
+    });
+  });
+}
+</script><script src="https://www.phamduytung.com/js/viewer.min.28bcf5233e406dae6715f46c8b9e8ca7c6cbf347e8678f5a2bebe5369c3270bb.js" integrity="sha256-KLz1Iz5Aba5nFfRsi56Mp8bL80foZ49aK&#43;vlNpwycLs=" crossorigin="anonymous" defer></script><script defer src="https://www.phamduytung.com/js/katex.min.8582b9feadf92a2a977ed303b97d7713cf2754ccf2b4eb60d8be7453a21042c2.js" integrity="sha256-hYK5/q35KiqXftMDuX13E88nVMzytOtg2L50U6IQQsI=" crossorigin="anonymous"></script>
+
+<script  data-ad-client="ca-pub-4644989745435991"  async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4644989745435991"
+     crossorigin="anonymous"></script><script data-cfasync="false" type="text/javascript" data-adel="atag" src="//acscdn.com/script/atg.js" czid="eul3gyjdmm"></script>
+  </body>
+</html>
