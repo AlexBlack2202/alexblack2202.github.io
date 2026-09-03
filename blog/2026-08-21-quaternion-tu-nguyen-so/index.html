@@ -1,0 +1,1393 @@
+<!doctype html><html lang="vi" data-palette="brown"
+   data-mode="light">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Tứ nguyên số Quaternion: khi một con số biết xoay cả thế giới - Phạm Duy Tùng Machine Learning Blog</title>
+    <meta name="a.validate.02" content="1QZXZ8oi7g57H-GxBrBPkTYBydwii-Ic9iJu" /><link rel="apple-touch-icon" href="https://www.phamduytung.com/images/icons/icon-180x180.png" sizes="180x180">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/icon-32x32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/icon-16x16.png" sizes="16x16" type="image/png">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/favicon.ico">
+<link rel="manifest" href="https://www.phamduytung.com/manifest.json">
+<meta name="keywords" content="" />
+<meta name="description" content="Quaternion là một hệ số gồm bốn thành phần, nơi phép nhân không còn giao hoán. Một thứ toán học kỳ quặc sinh năm 1843 lại trở thành công cụ cực kỳ hữu ích để xoay camera, robot, máy bay, điện thoại và cả thế giới 3D." /><meta name="robots" content="index, follow" />
+	<meta itemprop="name" content="Tứ nguyên số Quaternion: khi một con số biết xoay cả thế giới">
+	<meta itemprop="description" content="Quaternion là một hệ số gồm bốn thành phần, nơi phép nhân không còn giao hoán. Một thứ toán học kỳ quặc sinh năm 1843 lại trở thành công cụ cực kỳ hữu ích để xoay camera, robot, máy bay, điện thoại và cả thế giới 3D.">
+	<meta itemprop="datePublished" content="2026-08-21T00:00:00+07:00">
+	<meta itemprop="dateModified" content="2026-08-21T00:00:00+07:00">
+	<meta itemprop="wordCount" content="4182">
+	<meta itemprop="image" content="https://www.phamduytung.com/images/posts/2026-08-21-quaternion-tu-nguyen-so/cover-pearl-glass.png">
+	<meta itemprop="keywords" content="Quaternion,Toan-Hoc,3d,Computer Graphics,Robotics"><meta property="og:url" content="https://www.phamduytung.com/blog/2026-08-21-quaternion-tu-nguyen-so/">
+	<meta property="og:site_name" content="Phạm Duy Tùng Machine Learning Blog">
+	<meta property="og:title" content="Tứ nguyên số Quaternion: khi một con số biết xoay cả thế giới">
+	<meta property="og:description" content="Quaternion là một hệ số gồm bốn thành phần, nơi phép nhân không còn giao hoán. Một thứ toán học kỳ quặc sinh năm 1843 lại trở thành công cụ cực kỳ hữu ích để xoay camera, robot, máy bay, điện thoại và cả thế giới 3D.">
+	<meta property="og:locale" content="vi_VN">
+	<meta property="og:type" content="article">
+		<meta property="article:section" content="blog">
+		<meta property="article:published_time" content="2026-08-21T00:00:00+07:00">
+		<meta property="article:modified_time" content="2026-08-21T00:00:00+07:00">
+		<meta property="article:tag" content="Quaternion">
+		<meta property="article:tag" content="Toan-Hoc">
+		<meta property="article:tag" content="3d">
+		<meta property="article:tag" content="Computer Graphics">
+		<meta property="article:tag" content="Robotics">
+		<meta property="og:image" content="https://www.phamduytung.com/images/posts/2026-08-21-quaternion-tu-nguyen-so/cover-pearl-glass.png">
+
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:image" content="https://www.phamduytung.com/images/posts/2026-08-21-quaternion-tu-nguyen-so/cover-pearl-glass.png">
+	<meta name="twitter:title" content="Tứ nguyên số Quaternion: khi một con số biết xoay cả thế giới">
+	<meta name="twitter:description" content="Quaternion là một hệ số gồm bốn thành phần, nơi phép nhân không còn giao hoán. Một thứ toán học kỳ quặc sinh năm 1843 lại trở thành công cụ cực kỳ hữu ích để xoay camera, robot, máy bay, điện thoại và cả thế giới 3D.">
+<link rel="stylesheet" href="https://www.phamduytung.com/css/main.min.1a7226fbd65768f38cdf02e59cdd28a35be617bb64b16963588e2b5b5797ce55.css" integrity="sha256-GnIm&#43;9ZXaPOM3wLlnN0oo1vmF7tksWljWI4rW1eXzlU=" crossorigin="anonymous"><link rel="stylesheet" href="https://www.phamduytung.com/css/katex.min.4d6aa053ca8a5675016fa2c9c48ee5359bfaafb8295184458af9d64abce84c47.css" integrity="sha256-TWqgU8qKVnUBb6LJxI7lNZv6r7gpUYRFivnWSrzoTEc=" crossorigin="anonymous">
+<link rel="stylesheet" href="https://www.phamduytung.com/css/viewer.min.3d228794bcedbbfa0412beb8fbc1ec6973202945e42af7004f742a4d7bd620ab.css" integrity="sha256-PSKHlLztu/oEEr64&#43;8HsaXMgKUXkKvcAT3QqTXvWIKs=" crossorigin="anonymous"><link rel="canonical" href="https://www.phamduytung.com/blog/2026-08-21-quaternion-tu-nguyen-so/">
+<meta name="theme-color" content="#f7f5ff"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Phạm Duy Tùng"},"dateModified":"2026-08-21T00:00:00+07:00","datePublished":"2026-08-21T00:00:00+07:00","description":"Quaternion là một hệ số gồm bốn thành phần, nơi phép nhân không còn giao hoán. Một thứ toán học kỳ quặc sinh năm 1843 lại trở thành công cụ cực kỳ hữu ích để xoay camera, robot, máy bay, điện thoại và cả thế giới 3D.","headline":"Tứ nguyên số Quaternion: khi một con số biết xoay cả thế giới","image":["https://www.phamduytung.com/images/posts/2026-08-21-quaternion-tu-nguyen-so/cover-pearl-glass.png"],"inLanguage":"vi","keywords":"quaternion, toan-hoc, 3d, computer-graphics, robotics","mainEntityOfPage":{"@id":"https://www.phamduytung.com/blog/2026-08-21-quaternion-tu-nguyen-so/","@type":"WebPage"},"publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://www.phamduytung.com/images/brand-mark-flaming-book-red.png"},"name":"Phạm Duy Tùng Machine Learning Blog"},"url":"https://www.phamduytung.com/blog/2026-08-21-quaternion-tu-nguyen-so/"}</script></head>
+  <body><script>const items=["mode","palette"];items.forEach(function(e){const t=localStorage.getItem("hbs-"+e);t&&document.body.parentElement.setAttribute("data-"+e,t)})</script><header><nav class="navbar top-app-bar top-app-bar-expand-lg fixed-top">
+  <div class="container pearl-navbar__inner">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Mở menu">
+      <i class="fas fa-bars"></i>
+    </button>
+
+    <a class="navbar-brand pearl-brand flex-grow-1 flex-lg-grow-0" href="https://www.phamduytung.com/">
+      <span class="pearl-brand__mark" aria-hidden="true">
+        <img src="https://www.phamduytung.com/images/brand-mark-flaming-book-red.png" alt="" width="42" height="42">
+      </span>
+      <span class="pearl-brand__copy">
+        <strong>Phạm Duy Tùng</strong>
+        <small>AI · DATA · SYSTEMS</small>
+      </span>
+    </a>
+
+    <div class="offcanvas offcanvas-bottom surface" tabindex="-1" id="offcanvasSocialShare" aria-labelledby="offcanvasSocialShare">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Share</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body">
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Twitter Share Button"
+      target="_blank" href="https://twitter.com/intent/tweet?title=T%e1%bb%a9%20nguy%c3%aan%20s%e1%bb%91%20Quaternion%3a%20khi%20m%e1%bb%99t%20con%20s%e1%bb%91%20bi%e1%ba%bft%20xoay%20c%e1%ba%a3%20th%e1%ba%bf%20gi%e1%bb%9bi&url=https%3a%2f%2fwww.phamduytung.com%2fblog%2f2026-08-21-quaternion-tu-nguyen-so%2f">
+      <i class="fab fa-fw fa-twitter"></i> Twitter
+    </a>
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Facebook Share Button"
+      target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.phamduytung.com%2fblog%2f2026-08-21-quaternion-tu-nguyen-so%2f">
+      <i class="fab fa-fw fa-facebook-f"></i> Facebook
+    </a>
+  </div>
+</div>
+    <button class="navbar-settings" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSettings"
+  aria-controls="offcanvasSettings" aria-label="Toggle settings">
+  <i class="fas fa-ellipsis-v"></i>
+</button>
+
+<div class="offcanvas offcanvas-end surface h-100" tabindex="-1" id="offcanvasSettings" aria-labelledby="offcanvasSettings">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Cài đặt</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body d-flex flex-column">
+
+
+
+<section class="setting">
+  <form class="font-size-switcher-form row">
+    <div class="col-auto">
+      <label for="fontSize" class="form-label"><i class="fas fa-fw fa-font"></i> Cỡ chữ</label>
+    </div>
+    <div class="col-auto ms-auto">
+      <input type="range" class="form-range" min="-2" max="2" id="fontSize">
+    </div>
+  </form>
+</section>
+
+
+
+<section class="setting actions d-flex justify-content-around mt-auto overflow-auto">
+  <a role="button" class="action action-go-back" href="javascript: window.history.back();">
+    <span class="action-icon"><i class="fas fa-2x fa-arrow-left"></i></span> Quay lại
+  </a>
+  <a role="button" class="action action-reload-page">
+    <span class="action-icon"><i class="fas fa-2x fa-redo-alt"></i></span> Tải lại
+  </a>
+  <a role="button" class="action action-copy-url">
+    <span class="action-icon"><i class="fas fa-2x fa-link"></i></span> Sao chép URL
+  </a><a class="action action-social-share" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSocialShare"
+    aria-controls="offcanvasSocialShare" aria-label="Toggle social share">
+    <span class="action-icon"><i class="fas fa-2x fa-share-alt"></i></span> Chia sẻ
+  </a></section>
+
+</div>
+</div>
+
+    <div class="collapse navbar-collapse" tabindex="-1" id="navbarSupportedContent" aria-labelledby="navbarSupportedContent">
+      <form class="search-bar my-1" action="https://www.phamduytung.com/search">
+  <div class="input-group input-group-sm">
+    <span class="btn btn-search disabled position-absolute left-0"><i class="fas fa-fw fa-search"></i></span>
+    <input class="form-control rounded-pill" name="q" type="search" aria-label="Search">
+  </div>
+</form>
+      <ul class="navbar-nav ms-auto"><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/series/">
+            <i class="fas fa-fw fa-columns"></i>Courses
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/tools/">
+            <i class="fas fa-fw fa-folder"></i>Tools
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/categories/">
+            <i class="fas fa-fw fa-folder"></i>Categories
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/archives/">
+            <i class="fas fa-fw fa-file-archive"></i>Archives
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/tags/">
+            <i class="fas fa-fw fa-tags"></i>Tags
+          </a>
+        </li><li class="nav-item dropdown">
+          <a class="nav-link" id="navbarDropdownSupport" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-fw fa-comments"></i>Community
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdownSupport"><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Facebook Group
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://github.com/AlexBlack2202/alexblack2202.github.io" target="_blank" rel="noopener noreferrer">
+                GitHub
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/contact/">
+                Contact
+              </a>
+            </li><li><hr class="dropdown-divider"></li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/faq/">
+                Câu hỏi thường gặp
+              </a>
+            </li></ul>
+        </li></ul>
+    </div>
+  </div>
+</nav>
+</header>
+<main role="main" class="container" style="line-height:1.7em">
+      <div class="row content">
+<div class="col-lg-9 col-md-8">
+  <div class="container"><nav class="row card component" aria-label="breadcrumb">
+  <div class="card-body">
+    <ol class="breadcrumb "><li class="breadcrumb-item"><a href="https://www.phamduytung.com/">Trang chủ</a></li><li class="breadcrumb-item"><a href="https://www.phamduytung.com/blog/">Blogs</a></li><li class="breadcrumb-item active">Tứ nguyên số Quaternion: khi một con số biết xoay cả thế giới</li></ol>
+  </div>
+</nav>
+<div class="post-panel-wrapper">
+  <div class="d-flex flex-column component rounded post-panel">
+    
+    <a class="action action-panel-toggler" role="button" title="Panel toggler">
+      <i class="fas fa-fw fa-chevron-circle-down"></i>
+    </a>
+    <a id="sidebarToggler" class="action d-none d-lg-block" role="button" title="Sidebar toggler">
+  <i class="fas fa-fw fa-expand-alt" data-fa-transform="rotate-45"></i>
+</a>
+
+    
+
+    
+    
+    <a class="action" href="#post-comments" role="button" aria-label="Comments" title="Comments">
+  <i class="fas fa-fw fa-comments"></i>
+</a>
+    <a class="action" href="#postTOC" aria-controls="Table of contents" role="button" title="Table of contents">
+  <i class="fas fa-fw fa-list-alt"></i>
+</a>
+    
+  </div>
+</div>
+<article class="row card component mb-4 post">
+  <div class="card-header "><div class="bgcover" style="background-image:url(https://www.phamduytung.com/images/posts/2026-08-21-quaternion-tu-nguyen-so/cover-pearl-glass.png)" aria-label="Tứ nguyên số Quaternion: khi một con số biết xoay cả thế giới">
+      <div class="bgtrans">
+          <h1>Tứ nguyên số Quaternion: khi một con số biết xoay cả thế giới
+</h1>
+      </div>
+  </div>
+</div>
+  <div class="card-body"><div class="post-meta">
+  <span class="post-date" title="tạo ngày 2026-08-21 00:00:00 &#43;0700 &#43;07.">
+    21/08/2026
+  </span><span class="post-reading-time">
+    20 phút đọc
+  </span><span class="post-taxonomies"><a href="https://www.phamduytung.com/tags/quaternion/" class="badge post-taxonomy">quaternion</a><a href="https://www.phamduytung.com/tags/toan-hoc/" class="badge post-taxonomy">toan-hoc</a><a href="https://www.phamduytung.com/tags/3d/" class="badge post-taxonomy">3d</a><a href="https://www.phamduytung.com/tags/computer-graphics/" class="badge post-taxonomy">Computer Graphics</a><a href="https://www.phamduytung.com/tags/robotics/" class="badge post-taxonomy">robotics</a></span>
+</div>
+<div class="post-content mb-3"><div class="toc">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#đặt-vấn-đề">Đặt vấn đề</a></li>
+    <li><a href="#từ-số-thực-đến-một-con-quái-vật-bốn-đầu">Từ số thực đến một con quái vật bốn đầu</a>
+      <ul>
+        <li><a href="#số-thực-thế-giới-một-chiều">Số thực: thế giới một chiều</a></li>
+        <li><a href="#số-phức-khi-số-mọc-thêm-một-chiều">Số phức: khi số mọc thêm một chiều</a></li>
+      </ul>
+    </li>
+    <li><a href="#eitheta">$$
+e^{i\theta}</a></li>
+    <li><a href="#quaternion-là-gì">Quaternion là gì?</a></li>
+    <li><a href="#ba-con-quỷ-i-j-k">Ba con quỷ i, j, k</a></li>
+    <li><a href="#ở-quaternion-2--3-không-còn-giống-3--2">Ở Quaternion, 2 × 3 không còn giống 3 × 2</a></li>
+    <li><a href="#cầm-một-cuốn-sách-lên-thử">Cầm một cuốn sách lên thử</a></li>
+    <li><a href="#một-quaternion-có-thể-biểu-diễn-phép-quay-như-thế-nào">Một Quaternion có thể biểu diễn phép quay như thế nào?</a></li>
+    <li><a href="#q">$$
+q</a></li>
+    <li><a href="#tại-sao-lại-là-góc-chia-đôi">Tại sao lại là góc chia đôi?</a></li>
+    <li><a href="#ví-dụ-xoay-vector-bằng-quaternion">Ví dụ: xoay vector bằng Quaternion</a></li>
+    <li><a href="#độ-dài-của-quaternion">Độ dài của Quaternion</a></li>
+    <li><a href="#q-1">$$
+|q|</a></li>
+    <li><a href="#một-điều-hơi-đáng-sợ-q-và--q-là-cùng-một-phép-quay">Một điều hơi đáng sợ: q và -q là cùng một phép quay</a></li>
+    <li><a href="#vậy-tại-sao-không-dùng-euler-angles">Vậy tại sao không dùng Euler angles?</a></li>
+    <li><a href="#gimbal-lock-khi-hai-trục-nhập-làm-một">Gimbal Lock: khi hai trục nhập làm một</a></li>
+    <li><a href="#nhưng-quaternion-có-phải-luôn-tốt-hơn-euler-không">Nhưng Quaternion có phải luôn tốt hơn Euler không?</a></li>
+    <li><a href="#quaternion-và-ma-trận-quay">Quaternion và ma trận quay</a></li>
+    <li><a href="#kết-hợp-nhiều-phép-quay">Kết hợp nhiều phép quay</a></li>
+    <li><a href="#slerp-xoay-mà-không-giật-cục">SLERP: xoay mà không giật cục</a></li>
+    <li><a href="#operatornameslerpq_0q_1t">$$
+\operatorname{slerp}(q_0,q_1,t)</a></li>
+    <li><a href="#một-chút-python">Một chút Python</a></li>
+    <li><a href="#một-cái-bẫy-rất-thực-tế-convention">Một cái bẫy rất thực tế: convention</a></li>
+    <li><a href="#quaternion-xuất-hiện-ở-đâu">Quaternion xuất hiện ở đâu?</a>
+      <ul>
+        <li><a href="#game">Game</a></li>
+        <li><a href="#robot">Robot</a></li>
+        <li><a href="#điện-thoại">Điện thoại</a></li>
+      </ul>
+    </li>
+    <li><a href="#tại-sao-quaternion-lại-có-bốn-chiều-nhưng-mô-tả-rotation-3d">Tại sao Quaternion lại có bốn chiều nhưng mô tả rotation 3D?</a></li>
+    <li><a href="#ưu-điểm-và-hạn-chế">Ưu điểm và hạn chế</a>
+      <ul>
+        <li><a href="#ưu-điểm">Ưu điểm</a></li>
+        <li><a href="#hạn-chế">Hạn chế</a></li>
+      </ul>
+    </li>
+    <li><a href="#điều-thú-vị-nhất-về-quaternion-không-phải-là-game">Điều thú vị nhất về Quaternion không phải là game</a></li>
+    <li><a href="#tổng-kết">Tổng kết</a></li>
+    <li><a href="#tham-khảo">Tham khảo</a></li>
+  </ul>
+</nav>
+  </div>
+<h1 id="đặt-vấn-đề">Đặt vấn đề<a class="anchor ms-1" href="#đặt-vấn-đề"><i class="fas fa-link"></i></a></h1>
+<p>Có một chuyện hơi buồn cười thế này.</p>
+<p>Bạn cầm điện thoại lên.</p>
+<p>Bạn xoay nó sang trái.</p>
+<p>Màn hình biết.</p>
+<p>Bạn nghiêng nó xuống.</p>
+<p>Điện thoại cũng biết.</p>
+<p>Bạn mở một game 3D, kéo chuột một cái, nhân vật quay đầu. Chiếc máy bay trong game chúi mũi xuống, con tàu vũ trụ lộn một vòng, camera bay xuyên qua một thành phố giả được tạo bằng hàng triệu tam giác.</p>
+<p>Nhìn trên màn hình thì chỉ là vài thứ đang xoay.</p>
+<p>Nhưng bên dưới lớp kính lạnh lẽo ấy, CPU và GPU đang phải trả lời một câu hỏi khá kỳ quặc:</p>
+<blockquote>
+<p>Một vật đang hướng về phía này, làm sao biến nó thành hướng về phía kia?</p>
+</blockquote>
+<p>Nghe như bài toán dành cho trẻ mẫu giáo.</p>
+<p>Cầm con khủng long đồ chơi lên.</p>
+<p>Xoay nó.</p>
+<p>Xong.</p>
+<p>Nhưng máy tính không có bàn tay.</p>
+<p>Nó chỉ có số.</p>
+<p>Và thế là một vấn đề tưởng đơn giản như xoay một con khủng long nhựa lại dẫn chúng ta xuống một cái hang toán học rất sâu, nơi số thực sinh ra số phức, số phức mọc thêm hai cái chân nữa, phép nhân bỗng nhiên không còn đổi chỗ được, và một nhà toán học thế kỷ XIX phải khắc công thức lên một cây cầu vì quá phấn khích.</p>
+<p>Thứ nằm dưới đáy cái hang đó có tên:</p>
+<p><strong>Quaternion — tứ nguyên số.</strong></p>
+<p>Nếu số thực giống như một con kiến bò trên một đường thẳng, số phức cho nó chạy ra một mặt phẳng, thì Quaternion bảo:</p>
+<blockquote>
+<p>Hai chiều thôi à? Yếu vậy.</p>
+</blockquote>
+<p>Rồi nó viết:</p>
+<p>$$
+q = a + bi + cj + dk
+$$</p>
+<p>Bốn con số.</p>
+<p>Một phần thực.</p>
+<p>Ba phần tưởng tượng.</p>
+<p>Và bằng một cách rất kỳ lạ, thứ sống trong không gian bốn chiều này lại trở thành một trong những công cụ đẹp nhất để mô tả <strong>phép quay trong không gian ba chiều</strong>.</p>
+<h1 id="từ-số-thực-đến-một-con-quái-vật-bốn-đầu">Từ số thực đến một con quái vật bốn đầu<a class="anchor ms-1" href="#từ-số-thực-đến-một-con-quái-vật-bốn-đầu"><i class="fas fa-link"></i></a></h1>
+<p>Trước khi gặp Quaternion, ta quay lại với những thứ hiền lành hơn một chút.</p>
+<h2 id="số-thực-thế-giới-một-chiều">Số thực: thế giới một chiều<a class="anchor ms-1" href="#số-thực-thế-giới-một-chiều"><i class="fas fa-link"></i></a></h2>
+<p>Giả sử ta có một trục số:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">&lt;---- -2 ---- -1 ---- 0 ---- 1 ---- 2 ----&gt;
+</span></span></code></pre></div><p>Một số thực chỉ cần một con số để xác định vị trí.</p>
+<p>Ví dụ:</p>
+<p>$$
+x = 5
+$$</p>
+<p>Rất ngoan.</p>
+<p>Rất dễ thương.</p>
+<p>Không có chuyện gì xảy ra.</p>
+<h2 id="số-phức-khi-số-mọc-thêm-một-chiều">Số phức: khi số mọc thêm một chiều<a class="anchor ms-1" href="#số-phức-khi-số-mọc-thêm-một-chiều"><i class="fas fa-link"></i></a></h2>
+<p>Rồi toán học gặp phương trình:</p>
+<p>$$
+x^2 = -1
+$$</p>
+<p>Không có số thực nào bình phương lên bằng (-1).</p>
+<p>Thay vì bỏ cuộc, các nhà toán học làm điều mà toán học rất hay làm:</p>
+<p><strong>phát minh thêm một thứ mới.</strong></p>
+<p>Ta gọi:</p>
+<p>$$
+i^2 = -1
+$$</p>
+<p>Một số phức có dạng:</p>
+<p>$$
+z = a + bi
+$$</p>
+<p>Bây giờ thay vì nằm trên đường thẳng, nó có thể được hình dung trên một mặt phẳng.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">          Im
+</span></span><span class="line"><span class="ln">2</span><span class="cl">           ^
+</span></span><span class="line"><span class="ln">3</span><span class="cl">           |
+</span></span><span class="line"><span class="ln">4</span><span class="cl">           |      a + bi
+</span></span><span class="line"><span class="ln">5</span><span class="cl">           |       *
+</span></span><span class="line"><span class="ln">6</span><span class="cl">           |
+</span></span><span class="line"><span class="ln">7</span><span class="cl">-----------+------------&gt; Re
+</span></span><span class="line"><span class="ln">8</span><span class="cl">           |
+</span></span></code></pre></div><p>Điều thú vị là số phức cực kỳ phù hợp với phép quay 2D.</p>
+<p>Ví dụ:</p>
+<h1 id="eitheta">$$
+e^{i\theta}<a class="anchor ms-1" href="#eitheta"><i class="fas fa-link"></i></a></h1>
+<p>\cos\theta + i\sin\theta
+$$</p>
+<p>Nhân một số phức với biểu thức trên tương ứng với việc quay nó một góc (\theta) trên mặt phẳng.</p>
+<p>Đẹp.</p>
+<p>Gọn.</p>
+<p>Thơm.</p>
+<p>William Rowan Hamilton nhìn thấy điều đó và bắt đầu nghĩ:</p>
+<blockquote>
+<p>Nếu số phức quay được thế giới 2D, liệu có một loại số nào quay được thế giới 3D không?</p>
+</blockquote>
+<p>Nghe hợp lý.</p>
+<p>Thế là ông tìm một hệ số kiểu:</p>
+<p>$$
+a + bi + cj
+$$</p>
+<p>Ba chiều.</p>
+<p>Ba thành phần.</p>
+<p>Có vẻ quá đẹp.</p>
+<p>Chỉ có một vấn đề nhỏ.</p>
+<p><strong>Nó không hoạt động.</strong></p>
+<p>Hamilton vật lộn với bài toán này trong nhiều năm. Năm 1843, ông nhận ra rằng ba thành phần là chưa đủ. Phải có <strong>bốn</strong>.</p>
+<p>Và Quaternion xuất hiện:</p>
+<p>$$
+q = a + bi + cj + dk
+$$</p>
+<p>Quaternion tạo thành một không gian vector bốn chiều trên số thực với cơ sở (1,i,j,k). (<a href="https://en.wikipedia.org/wiki/Quaternion" title="Quaternion" target="_blank" rel="noopener noreferrer">Wikipedia</a>)</p>
+<p>Con quái vật đã mọc đủ bốn cái đầu.</p>
+<h1 id="quaternion-là-gì">Quaternion là gì?<a class="anchor ms-1" href="#quaternion-là-gì"><i class="fas fa-link"></i></a></h1>
+<p>Một Quaternion thường được viết:</p>
+<p>$$
+q = w + xi + yj + zk
+$$</p>
+<p>Trong đó:</p>
+<ul>
+<li>(w) là phần vô hướng (scalar part)</li>
+<li>(x,y,z) tạo thành phần vector</li>
+<li>(i,j,k) là ba đơn vị tưởng tượng</li>
+</ul>
+<p>Ta cũng có thể viết gọn:</p>
+<p>$$
+q = (w, \mathbf{v})
+$$</p>
+<p>với:</p>
+<p>$$
+\mathbf{v}=(x,y,z)
+$$</p>
+<p>Ví dụ:</p>
+<p>$$
+q = 2 + 3i + 4j + 5k
+$$</p>
+<p>tương đương:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">w = 2
+</span></span><span class="line"><span class="ln">2</span><span class="cl">x = 3
+</span></span><span class="line"><span class="ln">3</span><span class="cl">y = 4
+</span></span><span class="line"><span class="ln">4</span><span class="cl">z = 5
+</span></span></code></pre></div><p>Đến đây Quaternion trông chẳng có gì ghê gớm.</p>
+<p>Chỉ là bốn con số đứng cạnh nhau.</p>
+<p>Nhưng rồi Hamilton đưa ra luật chơi.</p>
+<p>Và luật chơi hơi điên.</p>
+<h1 id="ba-con-quỷ-i-j-k">Ba con quỷ i, j, k<a class="anchor ms-1" href="#ba-con-quỷ-i-j-k"><i class="fas fa-link"></i></a></h1>
+<p>Với số phức ta có:</p>
+<p>$$
+i^2=-1
+$$</p>
+<p>Quaternion có ba đơn vị tưởng tượng:</p>
+<p>$$
+i,;j,;k
+$$</p>
+<p>và:</p>
+<p>$$
+i^2=j^2=k^2=-1
+$$</p>
+<p>Chưa hết.</p>
+<p>Hamilton định nghĩa:</p>
+<p>$$
+ij=k
+$$</p>
+<p>$$
+jk=i
+$$</p>
+<p>$$
+ki=j
+$$</p>
+<p>Nhưng nếu đổi thứ tự:</p>
+<p>$$
+ji=-k
+$$</p>
+<p>$$
+kj=-i
+$$</p>
+<p>$$
+ik=-j
+$$</p>
+<p>Gộp tất cả lại ta có công thức nổi tiếng:</p>
+<p>$$
+i^2=j^2=k^2=ijk=-1
+$$</p>
+<p>Đây là luật nhân Hamilton kinh điển. (<a href="https://en.wikipedia.org/wiki/Quaternion" title="Quaternion" target="_blank" rel="noopener noreferrer">Wikipedia</a>)</p>
+<p>Có thể nhớ bằng một vòng tròn:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">        i
+</span></span><span class="line"><span class="ln">2</span><span class="cl">       / \
+</span></span><span class="line"><span class="ln">3</span><span class="cl">      /   \
+</span></span><span class="line"><span class="ln">4</span><span class="cl">     k --- j
+</span></span></code></pre></div><p>Đi thuận vòng:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">i × j = k
+</span></span><span class="line"><span class="ln">2</span><span class="cl">j × k = i
+</span></span><span class="line"><span class="ln">3</span><span class="cl">k × i = j
+</span></span></code></pre></div><p>Đi ngược vòng thì thêm dấu âm:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">j × i = -k
+</span></span><span class="line"><span class="ln">2</span><span class="cl">k × j = -i
+</span></span><span class="line"><span class="ln">3</span><span class="cl">i × k = -j
+</span></span></code></pre></div><p>Và ở đây có một thứ cực kỳ quan trọng xuất hiện.</p>
+<h1 id="ở-quaternion-2--3-không-còn-giống-3--2">Ở Quaternion, 2 × 3 không còn giống 3 × 2<a class="anchor ms-1" href="#ở-quaternion-2--3-không-còn-giống-3--2"><i class="fas fa-link"></i></a></h1>
+<p>Từ nhỏ ta được dạy:</p>
+<p>$$
+2\times3=3\times2
+$$</p>
+<p>Toán học gọi tính chất này là <strong>giao hoán</strong> (commutative).</p>
+<p>Nhưng Quaternion nói:</p>
+<blockquote>
+<p>Tôi không chơi luật đó.</p>
+</blockquote>
+<p>Ví dụ:</p>
+<p>$$
+ij=k
+$$</p>
+<p>nhưng:</p>
+<p>$$
+ji=-k
+$$</p>
+<p>Nghĩa là:</p>
+<p>$$
+ij\neq ji
+$$</p>
+<p>Phép nhân Quaternion <strong>không giao hoán</strong>.</p>
+<p>Nghe có vẻ như một lỗi thiết kế.</p>
+<p>Nhưng thực ra đây chính là thứ khiến Quaternion hoàn hảo cho phép quay.</p>
+<p>Bởi vì trong thế giới 3D:</p>
+<p><strong>thứ tự quay rất quan trọng.</strong></p>
+<h1 id="cầm-một-cuốn-sách-lên-thử">Cầm một cuốn sách lên thử<a class="anchor ms-1" href="#cầm-một-cuốn-sách-lên-thử"><i class="fas fa-link"></i></a></h1>
+<p>Lấy một cuốn sách.</p>
+<p>Ban đầu mặt bìa hướng lên trên.</p>
+<p>Thực hiện:</p>
+<ol>
+<li>quay 90° quanh trục X;</li>
+<li>sau đó quay 90° quanh trục Y.</li>
+</ol>
+<p>Nhìn vị trí cuối.</p>
+<p>Bây giờ làm lại:</p>
+<ol>
+<li>quay 90° quanh Y;</li>
+<li>rồi quay 90° quanh X.</li>
+</ol>
+<p>Bạn sẽ thấy hai kết quả khác nhau.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Rotate X -&gt; Rotate Y
+</span></span><span class="line"><span class="ln">2</span><span class="cl">
+</span></span><span class="line"><span class="ln">3</span><span class="cl">khác
+</span></span><span class="line"><span class="ln">4</span><span class="cl">
+</span></span><span class="line"><span class="ln">5</span><span class="cl">Rotate Y -&gt; Rotate X
+</span></span></code></pre></div><p>Đó không phải lỗi của toán.</p>
+<p>Đó là bản chất của không gian.</p>
+<p>Và Quaternion phản ánh chính xác điều này:</p>
+<p>$$
+q_1q_2\neq q_2q_1
+$$</p>
+<p>Một thứ toán học trông có vẻ méo mó thực ra lại méo <strong>đúng kiểu mà thế giới vật lý méo</strong>.</p>
+<p>Đấy mới là chỗ thú vị.</p>
+<h1 id="một-quaternion-có-thể-biểu-diễn-phép-quay-như-thế-nào">Một Quaternion có thể biểu diễn phép quay như thế nào?<a class="anchor ms-1" href="#một-quaternion-có-thể-biểu-diễn-phép-quay-như-thế-nào"><i class="fas fa-link"></i></a></h1>
+<p>Bây giờ mới đến phần hơi ma thuật.</p>
+<p>Giả sử ta muốn xoay một vật quanh vector đơn vị:</p>
+<p>$$
+\mathbf{u}=(u_x,u_y,u_z)
+$$</p>
+<p>một góc:</p>
+<p>$$
+\theta
+$$</p>
+<p>Ta tạo Quaternion:</p>
+<h1 id="q">$$
+q<a class="anchor ms-1" href="#q"><i class="fas fa-link"></i></a></h1>
+<p>\cos\frac{\theta}{2}
++
+(u_xi+u_yj+u_zk)\sin\frac{\theta}{2}
+$$</p>
+<p>Hay dạng bốn số:</p>
+<p>$$
+q=
+\left(
+\cos\frac{\theta}{2},
+u_x\sin\frac{\theta}{2},
+u_y\sin\frac{\theta}{2},
+u_z\sin\frac{\theta}{2}
+\right)
+$$</p>
+<p>Đây là một <strong>unit quaternion</strong>, nghĩa là độ dài của nó bằng 1. Công thức axis-angle với góc nửa (\theta/2) chính là cách Quaternion đơn vị mã hóa phép quay 3D. (<a href="https://en.wikipedia.org/wiki/Euler%E2%80%93Rodrigues_formula" title="Euler–Rodrigues formula" target="_blank" rel="noopener noreferrer">Wikipedia</a>)</p>
+<p>Ví dụ muốn quay 90° quanh trục Z:</p>
+<p>$$
+\mathbf{u}=(0,0,1)
+$$</p>
+<p>và:</p>
+<p>$$
+\theta=90^\circ
+$$</p>
+<p>Ta có:</p>
+<p>$$
+\frac{\theta}{2}=45^\circ
+$$</p>
+<p>Suy ra:</p>
+<p>$$
+q=
+\cos45^\circ+k\sin45^\circ
+$$</p>
+<p>hay:</p>
+<p>$$
+q=
+\frac{\sqrt2}{2}
++
+\frac{\sqrt2}{2}k
+$$</p>
+<p>Chỉ bốn con số.</p>
+<p>Nhưng bên trong bốn con số đó đang cất một phép quay hoàn chỉnh.</p>
+<h1 id="tại-sao-lại-là-góc-chia-đôi">Tại sao lại là góc chia đôi?<a class="anchor ms-1" href="#tại-sao-lại-là-góc-chia-đôi"><i class="fas fa-link"></i></a></h1>
+<p>Đây là đoạn khiến Quaternion có vẻ như uống nhầm thuốc.</p>
+<p>Ta muốn quay:</p>
+<p>$$
+90^\circ
+$$</p>
+<p>nhưng trong Quaternion lại lưu:</p>
+<p>$$
+45^\circ
+$$</p>
+<p>Tại sao?</p>
+<p>Bởi vì phép quay một vector không phải là:</p>
+<p>$$
+qv
+$$</p>
+<p>mà là:</p>
+<p>$$
+v&rsquo;=qvq^{-1}
+$$</p>
+<p>Vector ba chiều:</p>
+<p>$$
+v=(x,y,z)
+$$</p>
+<p>được nhét vào một Quaternion thuần vector:</p>
+<p>$$
+v=0+xi+yj+zk
+$$</p>
+<p>Sau đó ta kẹp nó giữa:</p>
+<p>$$
+q
+$$</p>
+<p>và:</p>
+<p>$$
+q^{-1}
+$$</p>
+<p>Giống như bỏ một miếng bánh mì vào máy ép:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">q  -&gt;  vector  -&gt;  q⁻¹
+</span></span><span class="line"><span class="ln">2</span><span class="cl">
+</span></span><span class="line"><span class="ln">3</span><span class="cl">        ↓
+</span></span><span class="line"><span class="ln">4</span><span class="cl">
+</span></span><span class="line"><span class="ln">5</span><span class="cl">   vector đã xoay
+</span></span></code></pre></div><p>Do Quaternion xuất hiện ở cả hai phía, góc nửa ở (q) kết hợp thành góc đầy đủ ở kết quả.</p>
+<p>Nếu (q) là unit quaternion thì:</p>
+<p>$$
+q^{-1}=\bar q
+$$</p>
+<p>với Quaternion liên hợp:</p>
+<p>$$
+\bar q=w-xi-yj-zk
+$$</p>
+<h1 id="ví-dụ-xoay-vector-bằng-quaternion">Ví dụ: xoay vector bằng Quaternion<a class="anchor ms-1" href="#ví-dụ-xoay-vector-bằng-quaternion"><i class="fas fa-link"></i></a></h1>
+<p>Giả sử ta có vector:</p>
+<p>$$
+v=(1,0,0)
+$$</p>
+<p>Tức một mũi tên đang chỉ theo trục X.</p>
+<p>Ta muốn xoay nó 90° quanh trục Z.</p>
+<p>Quaternion quay:</p>
+<p>$$
+q=
+\frac{\sqrt2}{2}
++
+\frac{\sqrt2}{2}k
+$$</p>
+<p>Vector được viết thành Quaternion:</p>
+<p>$$
+p=i
+$$</p>
+<p>Sau đó:</p>
+<p>$$
+p&rsquo;=qpq^{-1}
+$$</p>
+<p>Kết quả:</p>
+<p>$$
+p&rsquo;=j
+$$</p>
+<p>Hay:</p>
+<p>$$
+(1,0,0)
+\rightarrow
+(0,1,0)
+$$</p>
+<p>Một mũi tên đang chỉ sang phải đã quay lên trên.</p>
+<p>Máy tính không cầm mũi tên.</p>
+<p>Không biết trên.</p>
+<p>Không biết dưới.</p>
+<p>Không biết &ldquo;xoay&rdquo; nghĩa là gì.</p>
+<p>Nó chỉ nhân bốn con số với bốn con số.</p>
+<p>Và từ phép nhân lạnh lùng ấy, một vật thể trên màn hình quay đi.</p>
+<p>Cũng hơi kỳ.</p>
+<h1 id="độ-dài-của-quaternion">Độ dài của Quaternion<a class="anchor ms-1" href="#độ-dài-của-quaternion"><i class="fas fa-link"></i></a></h1>
+<p>Với:</p>
+<p>$$
+q=w+xi+yj+zk
+$$</p>
+<p>độ lớn là:</p>
+<h1 id="q-1">$$
+|q|<a class="anchor ms-1" href="#q-1"><i class="fas fa-link"></i></a></h1>
+<p>\sqrt{w^2+x^2+y^2+z^2}
+$$</p>
+<p>Nếu:</p>
+<p>$$
+|q|=1
+$$</p>
+<p>ta gọi nó là <strong>unit quaternion</strong>.</p>
+<p>Các Quaternion dùng để biểu diễn phép quay thường được chuẩn hóa về độ dài 1.</p>
+<p>Ví dụ:</p>
+<p>$$
+q=(0.7071,0,0,0.7071)
+$$</p>
+<p>Ta có:</p>
+<p>$$
+0.7071^2+0.7071^2\approx1
+$$</p>
+<p>Đây gần như là unit quaternion.</p>
+<h1 id="một-điều-hơi-đáng-sợ-q-và--q-là-cùng-một-phép-quay">Một điều hơi đáng sợ: q và -q là cùng một phép quay<a class="anchor ms-1" href="#một-điều-hơi-đáng-sợ-q-và--q-là-cùng-một-phép-quay"><i class="fas fa-link"></i></a></h1>
+<p>Giả sử:</p>
+<p>$$
+q=(w,x,y,z)
+$$</p>
+<p>Một điều kỳ quặc xảy ra:</p>
+<p>$$
+q
+$$</p>
+<p>và:</p>
+<p>$$
+-q
+$$</p>
+<p>biểu diễn <strong>cùng một phép quay 3D</strong>.</p>
+<p>Ví dụ:</p>
+<p>$$
+(0.707,0,0,0.707)
+$$</p>
+<p>và:</p>
+<p>$$
+(-0.707,0,0,-0.707)
+$$</p>
+<p>là cùng một orientation.</p>
+<p>Đây không phải bug.</p>
+<p>Không gian các unit quaternion là một mặt cầu ba chiều (S^3), và ánh xạ từ unit quaternion xuống các phép quay (SO(3)) là một <strong>double cover</strong>: mỗi phép quay tương ứng với hai Quaternion đối dấu nhau. (<a href="https://mathworld.wolfram.com/SpecialUnitaryGroup.html" title="Special Unitary Group -- from Wolfram MathWorld" target="_blank" rel="noopener noreferrer">MathWorld</a>)</p>
+<p>Hình dung rất thô:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">              Quaternion space S³
+</span></span><span class="line"><span class="ln">2</span><span class="cl">
+</span></span><span class="line"><span class="ln">3</span><span class="cl">              q --------+
+</span></span><span class="line"><span class="ln">4</span><span class="cl">                         |
+</span></span><span class="line"><span class="ln">5</span><span class="cl">                         +----&gt; một phép quay 3D
+</span></span><span class="line"><span class="ln">6</span><span class="cl">                         |
+</span></span><span class="line"><span class="ln">7</span><span class="cl">             -q --------+
+</span></span></code></pre></div><p>Hai điểm khác nhau trong không gian Quaternion.</p>
+<p>Nhưng khi chiếu xuống thế giới quay 3D:</p>
+<p><strong>chúng trở thành một.</strong></p>
+<p>Một thứ rất toán học, nhưng cũng khá triết học.</p>
+<p>Có khi hai con đường nằm ở hai phía của một quả cầu, đi xa nhau đến mức tưởng như đối nghịch, cuối cùng lại chỉ vào cùng một hướng.</p>
+<h1 id="vậy-tại-sao-không-dùng-euler-angles">Vậy tại sao không dùng Euler angles?<a class="anchor ms-1" href="#vậy-tại-sao-không-dùng-euler-angles"><i class="fas fa-link"></i></a></h1>
+<p>Trong game hoặc robotics, một orientation có thể được mô tả bằng ba góc:</p>
+<ul>
+<li>yaw</li>
+<li>pitch</li>
+<li>roll</li>
+</ul>
+<p>Ví dụ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">yaw   = 30°
+</span></span><span class="line"><span class="ln">2</span><span class="cl">pitch = 20°
+</span></span><span class="line"><span class="ln">3</span><span class="cl">roll  = 10°
+</span></span></code></pre></div><p>Nghe rất tự nhiên.</p>
+<p>Con người thích kiểu này vì ta hiểu được:</p>
+<blockquote>
+<p>quay trái 30 độ, ngẩng lên 20 độ.</p>
+</blockquote>
+<p>Nhưng Euler angles có một con quái vật tên là:</p>
+<p><strong>Gimbal Lock.</strong></p>
+<h1 id="gimbal-lock-khi-hai-trục-nhập-làm-một">Gimbal Lock: khi hai trục nhập làm một<a class="anchor ms-1" href="#gimbal-lock-khi-hai-trục-nhập-làm-một"><i class="fas fa-link"></i></a></h1>
+<p>Hãy tưởng tượng ba vòng xoay lồng vào nhau:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">        vòng Z
+</span></span><span class="line"><span class="ln">2</span><span class="cl">      ┌────────┐
+</span></span><span class="line"><span class="ln">3</span><span class="cl">      │ vòng Y │
+</span></span><span class="line"><span class="ln">4</span><span class="cl">      │ ┌────┐ │
+</span></span><span class="line"><span class="ln">5</span><span class="cl">      │ │ X  │ │
+</span></span><span class="line"><span class="ln">6</span><span class="cl">      │ └────┘ │
+</span></span><span class="line"><span class="ln">7</span><span class="cl">      └────────┘
+</span></span></code></pre></div><p>Mỗi vòng đại diện cho một trục quay.</p>
+<p>Trong một số tư thế đặc biệt, hai trục có thể chồng lên nhau.</p>
+<p>Khi đó hệ thống mất một bậc tự do.</p>
+<p>Ví dụ kinh điển là pitch tới:</p>
+<p>$$
+90^\circ
+$$</p>
+<p>Lúc ấy hai phép quay vốn độc lập có thể trở nên không còn độc lập theo cách biểu diễn Euler.</p>
+<p>Chiếc camera 3D có thể bắt đầu cư xử như vừa tỉnh dậy lúc ba giờ sáng.</p>
+<p>Quaternion không dùng ba góc Euler độc lập như vậy nên tránh được singularity kiểu gimbal lock của representation Euler.</p>
+<p>Đây là một lý do nó xuất hiện rất nhiều trong:</p>
+<ul>
+<li>game engine</li>
+<li>robotics</li>
+<li>drone</li>
+<li>aerospace</li>
+<li>VR/AR</li>
+<li>computer graphics</li>
+<li>IMU và cảm biến định hướng</li>
+</ul>
+<h1 id="nhưng-quaternion-có-phải-luôn-tốt-hơn-euler-không">Nhưng Quaternion có phải luôn tốt hơn Euler không?<a class="anchor ms-1" href="#nhưng-quaternion-có-phải-luôn-tốt-hơn-euler-không"><i class="fas fa-link"></i></a></h1>
+<p>Không.</p>
+<p>Toán học hiếm khi có một cây búa đập được tất cả đinh.</p>
+<p>Euler angles dễ hiểu với con người.</p>
+<p>Nếu tôi nói:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">yaw = 45°
+</span></span></code></pre></div><p>bạn hiểu ngay.</p>
+<p>Nếu tôi nói:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">q = (0.9239, 0, 0, 0.3827)
+</span></span></code></pre></div><p>thì trừ khi vừa uống ba ly cà phê và đang debug Unity lúc hai giờ sáng, khả năng cao bạn sẽ nhìn tôi như nhìn một sinh vật biển sâu.</p>
+<p>Vì vậy một hệ thống thực tế thường:</p>
+<ul>
+<li>dùng Quaternion để tính toán nội bộ;</li>
+<li>chuyển sang Euler angles khi cần hiển thị cho con người.</li>
+</ul>
+<h1 id="quaternion-và-ma-trận-quay">Quaternion và ma trận quay<a class="anchor ms-1" href="#quaternion-và-ma-trận-quay"><i class="fas fa-link"></i></a></h1>
+<p>Ta cũng có thể biểu diễn rotation bằng ma trận (3\times3):</p>
+<p>$$
+R=
+\begin{bmatrix}
+r_{11} &amp; r_{12} &amp; r_{13}<br>
+r_{21} &amp; r_{22} &amp; r_{23}<br>
+r_{31} &amp; r_{32} &amp; r_{33}
+\end{bmatrix}
+$$</p>
+<p>Ma trận quay cần 9 con số.</p>
+<p>Quaternion chỉ cần 4:</p>
+<p>$$
+q=(w,x,y,z)
+$$</p>
+<p>Tất nhiên không phải Quaternion có &ldquo;4 bậc tự do thực sự&rdquo;. Vì unit quaternion phải thỏa:</p>
+<p>$$
+w^2+x^2+y^2+z^2=1
+$$</p>
+<p>nên có một constraint.</p>
+<p>Và vì (q) với (-q) là cùng một rotation nên nó còn có tính dư thừa dấu.</p>
+<p>Nhưng trong thực tế, bốn giá trị vẫn rất tiện để lưu và kết hợp orientation.</p>
+<h1 id="kết-hợp-nhiều-phép-quay">Kết hợp nhiều phép quay<a class="anchor ms-1" href="#kết-hợp-nhiều-phép-quay"><i class="fas fa-link"></i></a></h1>
+<p>Giả sử robot phải:</p>
+<ol>
+<li>quay 30° quanh X;</li>
+<li>rồi quay 45° quanh Y;</li>
+<li>rồi quay 10° quanh Z.</li>
+</ol>
+<p>Ta tạo:</p>
+<p>$$
+q_x,;q_y,;q_z
+$$</p>
+<p>Sau đó kết hợp chúng bằng phép nhân Quaternion:</p>
+<p>$$
+q=q_zq_yq_x
+$$</p>
+<p>Thứ tự rất quan trọng.</p>
+<p>Bởi:</p>
+<p>$$
+q_zq_yq_x
+\neq
+q_xq_yq_z
+$$</p>
+<p>Điều này chính xác với vật lý.</p>
+<p>Quay một vật quanh X rồi Y không nhất thiết giống quay quanh Y rồi X.</p>
+<p>Quaternion không cố làm thế giới dễ hơn.</p>
+<p>Nó chấp nhận rằng thế giới vốn đã kỳ quặc.</p>
+<h1 id="slerp-xoay-mà-không-giật-cục">SLERP: xoay mà không giật cục<a class="anchor ms-1" href="#slerp-xoay-mà-không-giật-cục"><i class="fas fa-link"></i></a></h1>
+<p>Giả sử camera game đang hướng về A.</p>
+<p>Ta muốn nó quay dần sang B.</p>
+<p>Một cách ngây thơ là nội suy từng thành phần.</p>
+<p>Quaternion A:</p>
+<p>$$
+q_0
+$$</p>
+<p>Quaternion B:</p>
+<p>$$
+q_1
+$$</p>
+<p>Ta có thể thử:</p>
+<p>$$
+q(t)=(1-t)q_0+tq_1
+$$</p>
+<p>Đây gọi là linear interpolation.</p>
+<p>Nhưng rotation không thực sự sống trên một đường thẳng.</p>
+<p>Unit quaternion sống trên:</p>
+<p>$$
+S^3
+$$</p>
+<p>một mặt cầu trong không gian bốn chiều.</p>
+<p>Vì vậy nếu muốn đi từ rotation A sang B một cách tự nhiên, ta nên đi theo cung tròn trên mặt cầu.</p>
+<p>Kỹ thuật này gọi là:</p>
+<p><strong>SLERP — Spherical Linear Interpolation.</strong></p>
+<p>Ý tưởng có thể hình dung:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">             q1 *
+</span></span><span class="line"><span class="ln">2</span><span class="cl">               /
+</span></span><span class="line"><span class="ln">3</span><span class="cl">             /
+</span></span><span class="line"><span class="ln">4</span><span class="cl">           /
+</span></span><span class="line"><span class="ln">5</span><span class="cl">        *
+</span></span><span class="line"><span class="ln">6</span><span class="cl">      q0
+</span></span><span class="line"><span class="ln">7</span><span class="cl">
+</span></span><span class="line"><span class="ln">8</span><span class="cl">đi theo cung của mặt cầu,
+</span></span><span class="line"><span class="ln">9</span><span class="cl">không chọc xuyên thẳng qua bên trong.
+</span></span></code></pre></div><p>Công thức:</p>
+<h1 id="operatornameslerpq_0q_1t">$$
+\operatorname{slerp}(q_0,q_1,t)<a class="anchor ms-1" href="#operatornameslerpq_0q_1t"><i class="fas fa-link"></i></a></h1>
+<p>\frac{\sin((1-t)\Omega)}
+{\sin\Omega}q_0
++
+\frac{\sin(t\Omega)}
+{\sin\Omega}q_1
+$$</p>
+<p>với:</p>
+<p>$$
+\cos\Omega=q_0\cdot q_1
+$$</p>
+<p>SLERP cho tốc độ góc đều dọc theo cung ngắn thích hợp và thường được dùng khi cần animation rotation mượt.</p>
+<p>Nghe phức tạp.</p>
+<p>Nhưng mục tiêu rất đời thường:</p>
+<blockquote>
+<p>Camera quay từ người này sang người kia mà đừng giật như bị ai đá vào tripod.</p>
+</blockquote>
+<h1 id="một-chút-python">Một chút Python<a class="anchor ms-1" href="#một-chút-python"><i class="fas fa-link"></i></a></h1>
+<p>Ta thử tạo Quaternion biểu diễn phép quay quanh một trục.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="kn">import</span> <span class="nn">math</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl"><span class="k">def</span> <span class="nf">axis_angle_to_quaternion</span><span class="p">(</span><span class="n">axis</span><span class="p">,</span> <span class="n">angle_deg</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">    <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">axis</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">    <span class="n">length</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">x</span><span class="o">*</span><span class="n">x</span> <span class="o">+</span> <span class="n">y</span><span class="o">*</span><span class="n">y</span> <span class="o">+</span> <span class="n">z</span><span class="o">*</span><span class="n">z</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">    <span class="n">x</span> <span class="o">/=</span> <span class="n">length</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">    <span class="n">y</span> <span class="o">/=</span> <span class="n">length</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">    <span class="n">z</span> <span class="o">/=</span> <span class="n">length</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">
+</span></span><span class="line"><span class="ln">11</span><span class="cl">    <span class="n">angle</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">angle_deg</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl">    <span class="n">half</span> <span class="o">=</span> <span class="n">angle</span> <span class="o">/</span> <span class="mi">2</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl">
+</span></span><span class="line"><span class="ln">14</span><span class="cl">    <span class="n">w</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">half</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl">    <span class="n">s</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">half</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">16</span><span class="cl">
+</span></span><span class="line"><span class="ln">17</span><span class="cl">    <span class="k">return</span> <span class="p">(</span>
+</span></span><span class="line"><span class="ln">18</span><span class="cl">        <span class="n">w</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">19</span><span class="cl">        <span class="n">x</span> <span class="o">*</span> <span class="n">s</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">20</span><span class="cl">        <span class="n">y</span> <span class="o">*</span> <span class="n">s</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">21</span><span class="cl">        <span class="n">z</span> <span class="o">*</span> <span class="n">s</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">22</span><span class="cl">    <span class="p">)</span>
+</span></span><span class="line"><span class="ln">23</span><span class="cl">
+</span></span><span class="line"><span class="ln">24</span><span class="cl">
+</span></span><span class="line"><span class="ln">25</span><span class="cl"><span class="n">q</span> <span class="o">=</span> <span class="n">axis_angle_to_quaternion</span><span class="p">(</span>
+</span></span><span class="line"><span class="ln">26</span><span class="cl">    <span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+</span></span><span class="line"><span class="ln">27</span><span class="cl">    <span class="n">angle_deg</span><span class="o">=</span><span class="mi">90</span>
+</span></span><span class="line"><span class="ln">28</span><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="ln">29</span><span class="cl">
+</span></span><span class="line"><span class="ln">30</span><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="n">q</span><span class="p">)</span>
+</span></span></code></pre></div><p>Kết quả gần:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">(0.70710678, 0.0, 0.0, 0.70710678)
+</span></span></code></pre></div><p>Đúng với công thức:</p>
+<p>$$
+q=
+\cos45^\circ
++
+k\sin45^\circ
+$$</p>
+<p>Xong Quaternion.</p>
+<p>Quá dễ.</p>
+<p>Tất nhiên đấy là câu người ta thường nói trước khi dành ba tiếng debug xem thư viện đang dùng thứ tự <code>(w, x, y, z)</code> hay <code>(x, y, z, w)</code>.</p>
+<h1 id="một-cái-bẫy-rất-thực-tế-convention">Một cái bẫy rất thực tế: convention<a class="anchor ms-1" href="#một-cái-bẫy-rất-thực-tế-convention"><i class="fas fa-link"></i></a></h1>
+<p>Nếu làm với Quaternion trong production, có một thứ rất nên kiểm tra:</p>
+<p><strong>quy ước của thư viện.</strong></p>
+<p>Có thư viện lưu:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">(w, x, y, z)
+</span></span></code></pre></div><p>Có thư viện lưu:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">(x, y, z, w)
+</span></span></code></pre></div><p>Ngoài ra còn có khác biệt về:</p>
+<ul>
+<li>hệ tọa độ tay trái / tay phải;</li>
+<li>active rotation / passive rotation;</li>
+<li>thứ tự nhân;</li>
+<li>local space / world space.</li>
+</ul>
+<p>Thậm chí trong lịch sử kỹ thuật còn tồn tại các convention Quaternion khác nhau; Hamilton convention dùng (ij=k), trong khi một số convention aerospace/JPL từng sử dụng dấu theo cách khác. (<a href="https://en.wikipedia.org/wiki/Quaternions_and_spatial_rotation" title="Quaternions and spatial rotation" target="_blank" rel="noopener noreferrer">Wikipedia</a>)</p>
+<p>Đây là loại bug mà code nhìn hoàn toàn đúng.</p>
+<p>Vector cũng đúng.</p>
+<p>Quaternion cũng normalized.</p>
+<p>Chỉ có chiếc drone tưởng rằng &ldquo;quay trái&rdquo; nghĩa là &ldquo;úp mặt xuống đất&rdquo;.</p>
+<h1 id="quaternion-xuất-hiện-ở-đâu">Quaternion xuất hiện ở đâu?<a class="anchor ms-1" href="#quaternion-xuất-hiện-ở-đâu"><i class="fas fa-link"></i></a></h1>
+<h2 id="game">Game<a class="anchor ms-1" href="#game"><i class="fas fa-link"></i></a></h2>
+<p>Mỗi object 3D thường có:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">position
+</span></span><span class="line"><span class="ln">2</span><span class="cl">rotation
+</span></span><span class="line"><span class="ln">3</span><span class="cl">scale
+</span></span></code></pre></div><p>Rotation rất thường được lưu bằng Quaternion.</p>
+<p>Ví dụ ý tưởng:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln">1</span><span class="cl"><span class="n">player</span><span class="o">.</span><span class="n">rotation</span> <span class="o">=</span> <span class="n">quaternion</span>
+</span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="n">camera</span><span class="o">.</span><span class="n">rotation</span> <span class="o">=</span> <span class="n">quaternion</span>
+</span></span></code></pre></div><p>Nhờ đó ta có thể:</p>
+<ul>
+<li>quay nhân vật;</li>
+<li>xoay camera;</li>
+<li>blend animation;</li>
+<li>interpolate orientation;</li>
+<li>kết hợp nhiều rotation.</li>
+</ul>
+<h2 id="robot">Robot<a class="anchor ms-1" href="#robot"><i class="fas fa-link"></i></a></h2>
+<p>Một cánh tay robot không chỉ cần biết đầu kẹp đang ở:</p>
+<p>$$
+(x,y,z)
+$$</p>
+<p>Nó còn phải biết đầu kẹp <strong>đang hướng như thế nào</strong>.</p>
+<p>Pose thường có thể được biểu diễn:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">position:
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">    x
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">    y
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">    z
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">orientation:
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">    x
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">    y
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">    z
+</span></span><span class="line"><span class="ln">10</span><span class="cl">    w
+</span></span></code></pre></div><p>Ba số cho vị trí.</p>
+<p>Bốn số cho Quaternion orientation.</p>
+<p>Một robot công nghiệp nhặt một con ốc không chỉ cần biết con ốc ở đâu.</p>
+<p>Nó còn phải biết:</p>
+<blockquote>
+<p>Tay mình phải nghiêng theo hướng nào để chụp xuống đúng cái con ốc bé tí kia?</p>
+</blockquote>
+<h2 id="điện-thoại">Điện thoại<a class="anchor ms-1" href="#điện-thoại"><i class="fas fa-link"></i></a></h2>
+<p>Bên trong điện thoại có thể có:</p>
+<ul>
+<li>accelerometer;</li>
+<li>gyroscope;</li>
+<li>magnetometer.</li>
+</ul>
+<p>Từ những cảm biến này, hệ thống ước lượng orientation của thiết bị.</p>
+<p>Quaternion là một dạng biểu diễn rất phổ biến trong các bài toán sensor fusion.</p>
+<p>Bạn chỉ xoay điện thoại một chút.</p>
+<p>Ở tầng trên:</p>
+<blockquote>
+<p>màn hình xoay.</p>
+</blockquote>
+<p>Ở tầng dưới:</p>
+<p>điện áp thay đổi trong MEMS sensor, dữ liệu được lấy mẫu, các thuật toán ước lượng trạng thái chạy liên tục, vector gia tốc và vận tốc góc được kết hợp, rồi bốn con số Quaternion thay đổi từng mili giây.</p>
+<p>Không có gì là hoàn toàn &ldquo;ảo&rdquo;.</p>
+<p>Ngay cả một cái xoay màn hình cũng là kết quả cuối của một chuỗi vật chất rất dài.</p>
+<h1 id="tại-sao-quaternion-lại-có-bốn-chiều-nhưng-mô-tả-rotation-3d">Tại sao Quaternion lại có bốn chiều nhưng mô tả rotation 3D?<a class="anchor ms-1" href="#tại-sao-quaternion-lại-có-bốn-chiều-nhưng-mô-tả-rotation-3d"><i class="fas fa-link"></i></a></h1>
+<p>Đây là câu rất hay.</p>
+<p>Không gian rotation 3D không đơn giản là:</p>
+<p>$$
+\mathbb{R}^3
+$$</p>
+<p>Ta không thể chỉ lấy:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">rotation = (x, y, z)
+</span></span></code></pre></div><p>rồi cộng trừ vô tư như tọa độ thông thường.</p>
+<p>Các rotation có cấu trúc toán học riêng gọi là:</p>
+<p>$$
+SO(3)
+$$</p>
+<p>Trong khi đó các unit quaternion tạo thành:</p>
+<p>$$
+S^3
+$$</p>
+<p>và có quan hệ rất đẹp:</p>
+<p>$$
+S^3/{q\sim-q}
+\cong SO(3)
+$$</p>
+<p>Nói bằng tiếng người:</p>
+<blockquote>
+<p>mặt cầu unit Quaternion bốn chiều có thể phủ lên toàn bộ không gian rotation 3D, nhưng mỗi rotation được phủ bởi hai điểm (q) và (-q).</p>
+</blockquote>
+<p>Đây chính là double cover nói ở trên. (<a href="https://mathworld.wolfram.com/SpecialUnitaryGroup.html" title="Special Unitary Group -- from Wolfram MathWorld" target="_blank" rel="noopener noreferrer">MathWorld</a>)</p>
+<p>Có vẻ như để hiểu đầy đủ cách một vật quay trong ba chiều, ta phải lùi ra ngoài nó một chiều.</p>
+<p>Giống như một con kiến sống trên tờ giấy không nhìn được toàn bộ hình dạng của tờ giấy nếu chỉ bò mãi bên trong mặt phẳng.</p>
+<p>Đôi khi muốn hiểu một vật, ta phải đứng ở một nơi lớn hơn vật đó.</p>
+<h1 id="ưu-điểm-và-hạn-chế">Ưu điểm và hạn chế<a class="anchor ms-1" href="#ưu-điểm-và-hạn-chế"><i class="fas fa-link"></i></a></h1>
+<p>Quaternion được dùng nhiều không phải vì tên nó nghe ngầu, mặc dù tên cũng khá ngầu.</p>
+<h2 id="ưu-điểm">Ưu điểm<a class="anchor ms-1" href="#ưu-điểm"><i class="fas fa-link"></i></a></h2>
+<ul>
+<li>Chỉ cần 4 số để lưu orientation.</li>
+<li>Kết hợp rotation bằng phép nhân khá gọn.</li>
+<li>Tránh singularity kiểu gimbal lock của Euler angles.</li>
+<li>Dễ normalize.</li>
+<li>Nội suy rotation đẹp bằng SLERP.</li>
+<li>Phù hợp với animation, robotics, graphics và orientation tracking.</li>
+<li>Có cấu trúc đại số phản ánh đúng tính không giao hoán của rotation 3D.</li>
+</ul>
+<h2 id="hạn-chế">Hạn chế<a class="anchor ms-1" href="#hạn-chế"><i class="fas fa-link"></i></a></h2>
+<ul>
+<li>Khó đọc trực tiếp bằng mắt người.</li>
+<li>Dễ nhầm convention.</li>
+<li>Thứ tự nhân rất dễ gây bug.</li>
+<li>Phải giữ Quaternion normalized khi dùng làm rotation.</li>
+<li>(q) và (-q) đại diện cùng rotation nên cần chú ý khi interpolation.</li>
+<li>Debug <code>yaw=90°</code> thường dễ hơn debug <code>(0.707, 0, 0.707, 0)</code>.</li>
+</ul>
+<p>Nói ngắn gọn:</p>
+<p>Euler angles thân thiện với con người.</p>
+<p>Quaternion thân thiện với máy tính.</p>
+<p>Ma trận thân thiện với đại số tuyến tính.</p>
+<p>Mỗi đứa có một nghề.</p>
+<h1 id="điều-thú-vị-nhất-về-quaternion-không-phải-là-game">Điều thú vị nhất về Quaternion không phải là game<a class="anchor ms-1" href="#điều-thú-vị-nhất-về-quaternion-không-phải-là-game"><i class="fas fa-link"></i></a></h1>
+<p>Quaternion ban đầu không được phát minh để làm Unity.</p>
+<p>Không có Unreal Engine.</p>
+<p>Không có drone.</p>
+<p>Không có điện thoại thông minh.</p>
+<p>Không có GPU.</p>
+<p>Hamilton chỉ đang cố mở rộng một ý tưởng toán học.</p>
+<p>Ông không thể biết rằng gần hai thế kỷ sau, hàng tỷ thiết bị sẽ liên tục thực hiện những phép toán có liên quan đến cấu trúc mà ông tìm ra.</p>
+<p>Một đứa trẻ nghiêng chiếc tablet.</p>
+<p>Một chiếc drone giữ thăng bằng trong gió.</p>
+<p>Một robot xoay cổ tay.</p>
+<p>Một nhân vật game quay mặt nhìn người chơi.</p>
+<p>Một kính VR cập nhật hướng đầu hàng chục lần mỗi giây.</p>
+<p>Ở phía trên, chúng là những hành động hoàn toàn khác nhau.</p>
+<p>Ở phía dưới, rất nhiều trong số chúng cuối cùng lại chạm vào cùng một thứ:</p>
+<p>$$
+q=w+xi+yj+zk
+$$</p>
+<p>Một cấu trúc toán học không có khối lượng.</p>
+<p>Không có màu sắc.</p>
+<p>Không phát ra ánh sáng.</p>
+<p>Nhưng khi được mã hóa thành bit, chạy qua transistor, biến thành dòng điện và được GPU tính toán hàng triệu lần mỗi giây, nó có thể khiến cả một thế giới ảo quay quanh mắt chúng ta.</p>
+<p>Đó cũng là một điều mình rất thích ở toán học.</p>
+<p>Ta phát minh ra những vật thể tưởng như chẳng liên quan gì đến đời sống.</p>
+<p>Rồi vài chục năm, vài trăm năm sau, thế giới vật lý bỗng tìm được một chỗ vừa khít để đặt chúng vào.</p>
+<h1 id="tổng-kết">Tổng kết<a class="anchor ms-1" href="#tổng-kết"><i class="fas fa-link"></i></a></h1>
+<p>Quaternion có dạng:</p>
+<p>$$
+q=w+xi+yj+zk
+$$</p>
+<p>với:</p>
+<p>$$
+i^2=j^2=k^2=ijk=-1
+$$</p>
+<p>Điểm đặc biệt nhất là phép nhân Quaternion không giao hoán:</p>
+<p>$$
+q_1q_2\neq q_2q_1
+$$</p>
+<p>và chính đặc điểm tưởng như khó chịu đó lại phù hợp với bản chất của rotation 3D.</p>
+<p>Một unit quaternion:</p>
+<p>$$
+q=
+\cos\frac{\theta}{2}
++
+\mathbf{u}\sin\frac{\theta}{2}
+$$</p>
+<p>có thể biểu diễn phép quay góc (\theta) quanh trục (\mathbf{u}).</p>
+<p>Vector được quay thông qua:</p>
+<p>$$
+v&rsquo;=qvq^{-1}
+$$</p>
+<p>Từ đó Quaternion trở thành công cụ cực kỳ hữu ích trong computer graphics, game, robotics, aerospace, VR và hệ thống cảm biến.</p>
+<p>Nhưng có lẽ điều đáng nhớ nhất không phải công thức.</p>
+<p>Mà là câu chuyện phía sau nó.</p>
+<p>Hamilton muốn tìm một thứ tương tự số phức cho không gian ba chiều.</p>
+<p>Ông thất bại.</p>
+<p>Ông thử tiếp.</p>
+<p>Vẫn thất bại.</p>
+<p>Cuối cùng ông phát hiện ra rằng câu trả lời không nằm trong ba chiều.</p>
+<p>Nó nằm ở bốn.</p>
+<p>Đôi khi một bài toán không giải được không phải vì ta tính chưa đủ giỏi.</p>
+<p>Mà bởi vì cái khung ta đang nhốt bài toán vào quá nhỏ.</p>
+<p>Và đôi khi, để xoay một vật trong thế giới ba chiều, ta cần một con số sống ở nơi mà mắt mình thậm chí không thể nhìn thấy.</p>
+<p>Cảm ơn các bạn đã quan tâm và theo dõi bài viết, hẹn gặp lại ở các bài viết tiếp theo.</p>
+<h1 id="tham-khảo">Tham khảo<a class="anchor ms-1" href="#tham-khảo"><i class="fas fa-link"></i></a></h1>
+<ul>
+<li>Wikipedia — Quaternion. <a href="https://en.wikipedia.org/wiki/Quaternion" target="_blank" rel="noopener noreferrer">Quaternion</a></li>
+<li>Wikipedia — Quaternions and spatial rotation. <a href="https://en.wikipedia.org/wiki/Quaternions_and_spatial_rotation" target="_blank" rel="noopener noreferrer">Quaternions and spatial rotation</a></li>
+<li>Wikipedia — Euler–Rodrigues formula. <a href="https://en.wikipedia.org/wiki/Euler%E2%80%93Rodrigues_formula" target="_blank" rel="noopener noreferrer">Euler–Rodrigues formula</a></li>
+<li>Wolfram MathWorld — Special Unitary Group, quan hệ giữa unit quaternion, (SU(2)) và (SO(3)). (<a href="https://mathworld.wolfram.com/SpecialUnitaryGroup.html" title="Special Unitary Group -- from Wolfram MathWorld" target="_blank" rel="noopener noreferrer">MathWorld</a>)</li>
+</ul>
+</div></div>
+  <div class="card-footer"><div class="post-navs d-flex justify-content-evenly"><div class="post-nav post-prev">
+    <i class="fas fa-fw fa-chevron-left"></i>
+    <a href="https://www.phamduytung.com/blog/2026-08-20-loi-nguyen-kien-thuc/">Lời nguyền của kiến thức: Khi biết quá nhiều khiến ta quên mất cảm giác chưa từng biết
+</a>
+  </div><div class="post-nav post-next">
+    <a href="https://www.phamduytung.com/blog/2026-08-21-tu-duy-sieu-hinh-khi-buc-anh-khong-phai-ca-the-gioi/">Tư duy siêu hình: Khi một bức ảnh không phải là cả thế giới
+</a>
+    <i class="fas fa-fw fa-chevron-right"></i>
+  </div></div></div>
+</article><div class="card component row post-comments" id="post-comments">
+  <div class="card-header">
+    <h2 class="card-title">Bình luận</h2>
+  </div>
+  <div class="card-body"><script src="https://utteranc.es/client.js"
+  repo="AlexBlack2202/utterances"
+  issue-term="pathname"
+  label="comment"
+  theme="github-dark"
+  crossorigin="anonymous"
+  async>
+</script></div>
+</div></div>
+</div><aside class="col-lg-3 col-md-4 sidebar d-flex">
+  <div class="container d-flex flex-column">
+    
+    <a href="https://www.buymeacoffee.com/alexblack28"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=🍎&slug=alexblack28&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" /></a><div class="post-toc row mb-4 card component" id="postTOC">
+  <div class="card-header">
+    <h2 class="card-title">Mục lục</h2>
+  </div>
+  <div class="card-body">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#đặt-vấn-đề">Đặt vấn đề</a></li>
+    <li><a href="#từ-số-thực-đến-một-con-quái-vật-bốn-đầu">Từ số thực đến một con quái vật bốn đầu</a>
+      <ul>
+        <li><a href="#số-thực-thế-giới-một-chiều">Số thực: thế giới một chiều</a></li>
+        <li><a href="#số-phức-khi-số-mọc-thêm-một-chiều">Số phức: khi số mọc thêm một chiều</a></li>
+      </ul>
+    </li>
+    <li><a href="#eitheta">$$
+e^{i\theta}</a></li>
+    <li><a href="#quaternion-là-gì">Quaternion là gì?</a></li>
+    <li><a href="#ba-con-quỷ-i-j-k">Ba con quỷ i, j, k</a></li>
+    <li><a href="#ở-quaternion-2--3-không-còn-giống-3--2">Ở Quaternion, 2 × 3 không còn giống 3 × 2</a></li>
+    <li><a href="#cầm-một-cuốn-sách-lên-thử">Cầm một cuốn sách lên thử</a></li>
+    <li><a href="#một-quaternion-có-thể-biểu-diễn-phép-quay-như-thế-nào">Một Quaternion có thể biểu diễn phép quay như thế nào?</a></li>
+    <li><a href="#q">$$
+q</a></li>
+    <li><a href="#tại-sao-lại-là-góc-chia-đôi">Tại sao lại là góc chia đôi?</a></li>
+    <li><a href="#ví-dụ-xoay-vector-bằng-quaternion">Ví dụ: xoay vector bằng Quaternion</a></li>
+    <li><a href="#độ-dài-của-quaternion">Độ dài của Quaternion</a></li>
+    <li><a href="#q-1">$$
+|q|</a></li>
+    <li><a href="#một-điều-hơi-đáng-sợ-q-và--q-là-cùng-một-phép-quay">Một điều hơi đáng sợ: q và -q là cùng một phép quay</a></li>
+    <li><a href="#vậy-tại-sao-không-dùng-euler-angles">Vậy tại sao không dùng Euler angles?</a></li>
+    <li><a href="#gimbal-lock-khi-hai-trục-nhập-làm-một">Gimbal Lock: khi hai trục nhập làm một</a></li>
+    <li><a href="#nhưng-quaternion-có-phải-luôn-tốt-hơn-euler-không">Nhưng Quaternion có phải luôn tốt hơn Euler không?</a></li>
+    <li><a href="#quaternion-và-ma-trận-quay">Quaternion và ma trận quay</a></li>
+    <li><a href="#kết-hợp-nhiều-phép-quay">Kết hợp nhiều phép quay</a></li>
+    <li><a href="#slerp-xoay-mà-không-giật-cục">SLERP: xoay mà không giật cục</a></li>
+    <li><a href="#operatornameslerpq_0q_1t">$$
+\operatorname{slerp}(q_0,q_1,t)</a></li>
+    <li><a href="#một-chút-python">Một chút Python</a></li>
+    <li><a href="#một-cái-bẫy-rất-thực-tế-convention">Một cái bẫy rất thực tế: convention</a></li>
+    <li><a href="#quaternion-xuất-hiện-ở-đâu">Quaternion xuất hiện ở đâu?</a>
+      <ul>
+        <li><a href="#game">Game</a></li>
+        <li><a href="#robot">Robot</a></li>
+        <li><a href="#điện-thoại">Điện thoại</a></li>
+      </ul>
+    </li>
+    <li><a href="#tại-sao-quaternion-lại-có-bốn-chiều-nhưng-mô-tả-rotation-3d">Tại sao Quaternion lại có bốn chiều nhưng mô tả rotation 3D?</a></li>
+    <li><a href="#ưu-điểm-và-hạn-chế">Ưu điểm và hạn chế</a>
+      <ul>
+        <li><a href="#ưu-điểm">Ưu điểm</a></li>
+        <li><a href="#hạn-chế">Hạn chế</a></li>
+      </ul>
+    </li>
+    <li><a href="#điều-thú-vị-nhất-về-quaternion-không-phải-là-game">Điều thú vị nhất về Quaternion không phải là game</a></li>
+    <li><a href="#tổng-kết">Tổng kết</a></li>
+    <li><a href="#tham-khảo">Tham khảo</a></li>
+  </ul>
+</nav>
+  </div>
+</div><section class="recent-posts row card component">
+  <div class="card-header">
+    <h2 class="card-title">Bài gần đây</h2>
+  </div>
+  <div class="card-body">
+    <ul class="post-list"><li>
+        <a href="https://www.phamduytung.com/blog/2026-09-02-fourier/">Biến đổi Fourier: xé một đường cong hỗn loạn thành những con sóng hình sin
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-09-02-becker/">Lý thuyết Becker: Khi tội phạm cũng là một bài toán kinh tế
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-09-02-festunger/">Định luật Festinger: 10% là chuyện xảy ra, 90% là cách ta phản ứng
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-08-24-ly-thuyet-tro-choi-tu-te-khong-thanh-con-moi/">Lý thuyết trò chơi: Tử tế mà không biến mình thành con mồi
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-08-23-webaudio-im-lang-van-giu-tai-nghe-bluetooth/">WebAudio im lặng: Vì sao một trang web vẫn giữ tai nghe Bluetooth của bạn
+</a>
+      </li></ul>
+  </div>
+</section><section class="series-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/series">series</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/series/kh%C3%B3a-h%E1%BB%8Dc-python-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học Python Căn Bản">
+            Khóa Học Python Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="https://www.phamduytung.com/series/kh%C3%B3a-h%E1%BB%8Dc-c&#43;&#43;-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học C&#43;&#43; Căn Bản">
+            Khóa Học C&#43;&#43; Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="https://www.phamduytung.com/series/machine-learning-dataset/" class="badge rounded post-taxonomy" title="Machine Learning Dataset">
+            Machine Learning Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a><a href="https://www.phamduytung.com/series/ch%E1%BB%A9ng-kho%C3%A1n-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Chứng Khoán Căn Bản">
+            Chứng Khoán Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">1</span></a></div>
+      </div>
+    </section><section class="tools-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/tools">tools</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/tools/tool-random/" class="badge rounded post-taxonomy" title="Tool Random">
+            Tool Random<span class="badge badge-sm text-white bg-accent ms-1">3</span></a></div>
+      </div>
+    </section><section class="categories-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/categories">categories</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/categories/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="https://www.phamduytung.com/categories/c&#43;&#43;/" class="badge rounded post-taxonomy" title="C&#43;&#43;">
+            C&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="https://www.phamduytung.com/categories/dataset/" class="badge rounded post-taxonomy" title="Dataset">
+            Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a></div>
+      </div>
+    </section><section class="tags-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/tags">tags</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/tags/machine-learning/" class="badge rounded post-taxonomy" title="Machine Learning">
+            Machine Learning<span class="badge badge-sm text-white bg-accent ms-1">29</span></a><a href="https://www.phamduytung.com/tags/deep-learning/" class="badge rounded post-taxonomy" title="Deep Learning">
+            Deep Learning<span class="badge badge-sm text-white bg-accent ms-1">25</span></a><a href="https://www.phamduytung.com/tags/llm/" class="badge rounded post-taxonomy" title="LLM">
+            LLM<span class="badge badge-sm text-white bg-accent ms-1">17</span></a><a href="https://www.phamduytung.com/tags/computer-vision/" class="badge rounded post-taxonomy" title="Computer Vision">
+            Computer Vision<span class="badge badge-sm text-white bg-accent ms-1">16</span></a><a href="https://www.phamduytung.com/tags/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">14</span></a><a href="https://www.phamduytung.com/tags/mathematics/" class="badge rounded post-taxonomy" title="Mathematics">
+            Mathematics<span class="badge badge-sm text-white bg-accent ms-1">12</span></a><a href="https://www.phamduytung.com/tags/ai-agent/" class="badge rounded post-taxonomy" title="Ai Agent">
+            Ai Agent<span class="badge badge-sm text-white bg-accent ms-1">10</span></a><a href="https://www.phamduytung.com/tags/tri%E1%BA%BFt-h%E1%BB%8Dc/" class="badge rounded post-taxonomy" title="Triết Học">
+            Triết Học<span class="badge badge-sm text-white bg-accent ms-1">8</span></a><a href="https://www.phamduytung.com/tags/ai/" class="badge rounded post-taxonomy" title="AI">
+            AI<span class="badge badge-sm text-white bg-accent ms-1">7</span></a><a href="https://www.phamduytung.com/tags/recommendation-system/" class="badge rounded post-taxonomy" title="Recommendation System">
+            Recommendation System<span class="badge badge-sm text-white bg-accent ms-1">7</span></a></div>
+      </div>
+    </section>
+    
+  </div>
+</aside>
+</div>
+    </main><footer class="footer mt-auto py-3 text-center container"><ul class="nav justify-content-between footer-memu mb-3"><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Community
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-facebook"></i>Facebook Group
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://github.com/AlexBlack2202/alexblack2202.github.io" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-github"></i>GitHub
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/contact/"><i class="fas fa-fw fa-info-circle"></i>Contact Us
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/faq/"><i class="fas fa-fw fa-question-circle"></i>Câu hỏi thường gặp
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Docs
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="/team_of_services" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-users"></i>Điều khoản sử dụng
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/privacy" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-lock"></i>Chính sách bảo mật
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Features
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="/utils/gen_paswords/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-key"></i>Tạo password ngẫu nhiên
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Liên kết khác
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">Netlify
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">facebook
+</a>
+        </li></ul></li></ul>
+<div class="copyright mb-2">
+  Copyright © 2016-2026 Phạm Duy Tùng. All Rights Reserved.
+</div>
+<div class="powered-by mb-2">
+  Website chia sẻ kiến thức của Phạm Duy Tùng và Đặng Thị Hằng. Vui lòng liên hệ email alexblack2202@gmail.com nếu bạn có thông tin cần trao đổi.
+</div></footer>
+<script src="https://www.phamduytung.com/js/main.111d51a8c754010f8399ca010e552d803e2d5170b361f8886ad04ec6c21ca551.js" integrity="sha256-ER1RqMdUAQ&#43;DmcoBDlUtgD4tUXCzYfiIatBOxsIcpVE=" crossorigin="anonymous" defer></script><script src="https://www.phamduytung.com/js/icons.min.cb4c9958dbc49e29ac644e168e82db2d0de9a741a15751cc5bf2b0af21eb2845.js" integrity="sha256-y0yZWNvEnimsZE4WjoLbLQ3pp0GhV1HMW/KwryHrKEU=" crossorigin="anonymous" defer></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('https:\/\/www.phamduytung.com\/service-worker.js').then(function(reg) {
+      console.log('Successfully registered service worker', reg);
+    }).catch(function(err) {
+      console.warn('Error whilst registering service worker', err);
+    });
+  });
+}
+</script><script src="https://www.phamduytung.com/js/viewer.min.28bcf5233e406dae6715f46c8b9e8ca7c6cbf347e8678f5a2bebe5369c3270bb.js" integrity="sha256-KLz1Iz5Aba5nFfRsi56Mp8bL80foZ49aK&#43;vlNpwycLs=" crossorigin="anonymous" defer></script><script defer src="https://www.phamduytung.com/js/katex.min.8582b9feadf92a2a977ed303b97d7713cf2754ccf2b4eb60d8be7453a21042c2.js" integrity="sha256-hYK5/q35KiqXftMDuX13E88nVMzytOtg2L50U6IQQsI=" crossorigin="anonymous"></script>
+
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-2WWQ5G9DKL"></script>
+      <script>
+        var doNotTrack = false;
+        if ( true ) {
+          var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
+          var doNotTrack = (dnt == "1" || dnt == "yes");
+        }
+        if (!doNotTrack) {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-2WWQ5G9DKL');
+        }
+      </script>
+<script  data-ad-client="ca-pub-4644989745435991"  async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4644989745435991"
+     crossorigin="anonymous"></script><script data-cfasync="false" type="text/javascript" data-adel="atag" src="//acscdn.com/script/atg.js" czid="eul3gyjdmm"></script>
+  </body>
+</html>

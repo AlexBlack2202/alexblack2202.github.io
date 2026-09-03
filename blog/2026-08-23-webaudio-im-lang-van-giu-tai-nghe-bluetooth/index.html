@@ -1,0 +1,1179 @@
+<!doctype html><html lang="vi" data-palette="brown"
+   data-mode="light">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>WebAudio im lặng: Vì sao một trang web vẫn giữ tai nghe Bluetooth của bạn - Phạm Duy Tùng Machine Learning Blog</title>
+    <meta name="a.validate.02" content="1QZXZ8oi7g57H-GxBrBPkTYBydwii-Ic9iJu" /><link rel="apple-touch-icon" href="https://www.phamduytung.com/images/icons/icon-180x180.png" sizes="180x180">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/icon-32x32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/icon-16x16.png" sizes="16x16" type="image/png">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/favicon.ico">
+<link rel="manifest" href="https://www.phamduytung.com/manifest.json">
+<meta name="keywords" content="" />
+<meta name="description" content="Một lỗi Bluetooth kỳ quặc dẫn đến việc phát hiện hai WebAudio graph chạy với đầu ra bằng 0 trên AliExpress. Câu chuyện cho thấy browser fingerprinting có thể biến sai khác rất nhỏ của trình duyệt, CPU và phần cứng thành tín hiệu nhận dạng — đồng thời để lại tác dụng phụ ngoài đời thật." /><meta name="robots" content="index, follow" />
+	<meta itemprop="name" content="WebAudio im lặng: Vì sao một trang web vẫn giữ tai nghe Bluetooth của bạn">
+	<meta itemprop="description" content="Một lỗi Bluetooth kỳ quặc dẫn đến việc phát hiện hai WebAudio graph chạy với đầu ra bằng 0 trên AliExpress. Câu chuyện cho thấy browser fingerprinting có thể biến sai khác rất nhỏ của trình duyệt, CPU và phần cứng thành tín hiệu nhận dạng — đồng thời để lại tác dụng phụ ngoài đời thật.">
+	<meta itemprop="datePublished" content="2026-08-23T00:00:00+07:00">
+	<meta itemprop="dateModified" content="2026-08-23T00:00:00+07:00">
+	<meta itemprop="wordCount" content="4492">
+	<meta itemprop="image" content="https://www.phamduytung.com/images/posts/2026-08-23-webaudio-im-lang-van-giu-tai-nghe-bluetooth/cover-pearl-glass.png">
+	<meta itemprop="keywords" content="Web Audio API,Browser Fingerprinting,Quyền Riêng Tư,Bluetooth,Bảo Mật"><meta property="og:url" content="https://www.phamduytung.com/blog/2026-08-23-webaudio-im-lang-van-giu-tai-nghe-bluetooth/">
+	<meta property="og:site_name" content="Phạm Duy Tùng Machine Learning Blog">
+	<meta property="og:title" content="WebAudio im lặng: Vì sao một trang web vẫn giữ tai nghe Bluetooth của bạn">
+	<meta property="og:description" content="Một lỗi Bluetooth kỳ quặc dẫn đến việc phát hiện hai WebAudio graph chạy với đầu ra bằng 0 trên AliExpress. Câu chuyện cho thấy browser fingerprinting có thể biến sai khác rất nhỏ của trình duyệt, CPU và phần cứng thành tín hiệu nhận dạng — đồng thời để lại tác dụng phụ ngoài đời thật.">
+	<meta property="og:locale" content="vi_VN">
+	<meta property="og:type" content="article">
+		<meta property="article:section" content="blog">
+		<meta property="article:published_time" content="2026-08-23T00:00:00+07:00">
+		<meta property="article:modified_time" content="2026-08-23T00:00:00+07:00">
+		<meta property="article:tag" content="Web Audio API">
+		<meta property="article:tag" content="Browser Fingerprinting">
+		<meta property="article:tag" content="Quyền Riêng Tư">
+		<meta property="article:tag" content="Bluetooth">
+		<meta property="article:tag" content="Bảo Mật">
+		<meta property="og:image" content="https://www.phamduytung.com/images/posts/2026-08-23-webaudio-im-lang-van-giu-tai-nghe-bluetooth/cover-pearl-glass.png">
+
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:image" content="https://www.phamduytung.com/images/posts/2026-08-23-webaudio-im-lang-van-giu-tai-nghe-bluetooth/cover-pearl-glass.png">
+	<meta name="twitter:title" content="WebAudio im lặng: Vì sao một trang web vẫn giữ tai nghe Bluetooth của bạn">
+	<meta name="twitter:description" content="Một lỗi Bluetooth kỳ quặc dẫn đến việc phát hiện hai WebAudio graph chạy với đầu ra bằng 0 trên AliExpress. Câu chuyện cho thấy browser fingerprinting có thể biến sai khác rất nhỏ của trình duyệt, CPU và phần cứng thành tín hiệu nhận dạng — đồng thời để lại tác dụng phụ ngoài đời thật.">
+<link rel="stylesheet" href="https://www.phamduytung.com/css/main.min.1a7226fbd65768f38cdf02e59cdd28a35be617bb64b16963588e2b5b5797ce55.css" integrity="sha256-GnIm&#43;9ZXaPOM3wLlnN0oo1vmF7tksWljWI4rW1eXzlU=" crossorigin="anonymous"><link rel="stylesheet" href="https://www.phamduytung.com/css/katex.min.4d6aa053ca8a5675016fa2c9c48ee5359bfaafb8295184458af9d64abce84c47.css" integrity="sha256-TWqgU8qKVnUBb6LJxI7lNZv6r7gpUYRFivnWSrzoTEc=" crossorigin="anonymous">
+<link rel="stylesheet" href="https://www.phamduytung.com/css/viewer.min.3d228794bcedbbfa0412beb8fbc1ec6973202945e42af7004f742a4d7bd620ab.css" integrity="sha256-PSKHlLztu/oEEr64&#43;8HsaXMgKUXkKvcAT3QqTXvWIKs=" crossorigin="anonymous"><link rel="canonical" href="https://www.phamduytung.com/blog/2026-08-23-webaudio-im-lang-van-giu-tai-nghe-bluetooth/">
+<meta name="theme-color" content="#f7f5ff"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Phạm Duy Tùng"},"dateModified":"2026-08-23T00:00:00+07:00","datePublished":"2026-08-23T00:00:00+07:00","description":"Một lỗi Bluetooth kỳ quặc dẫn đến việc phát hiện hai WebAudio graph chạy với đầu ra bằng 0 trên AliExpress. Câu chuyện cho thấy browser fingerprinting có thể biến sai khác rất nhỏ của trình duyệt, CPU và phần cứng thành tín hiệu nhận dạng — đồng thời để lại tác dụng phụ ngoài đời thật.","headline":"WebAudio im lặng: Vì sao một trang web vẫn giữ tai nghe Bluetooth của bạn","image":["https://www.phamduytung.com/images/posts/2026-08-23-webaudio-im-lang-van-giu-tai-nghe-bluetooth/cover-pearl-glass.png"],"inLanguage":"vi","keywords":"Web Audio API, browser fingerprinting, quyền riêng tư, Bluetooth, bảo mật","mainEntityOfPage":{"@id":"https://www.phamduytung.com/blog/2026-08-23-webaudio-im-lang-van-giu-tai-nghe-bluetooth/","@type":"WebPage"},"publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://www.phamduytung.com/images/brand-mark-flaming-book-red.png"},"name":"Phạm Duy Tùng Machine Learning Blog"},"url":"https://www.phamduytung.com/blog/2026-08-23-webaudio-im-lang-van-giu-tai-nghe-bluetooth/"}</script></head>
+  <body><script>const items=["mode","palette"];items.forEach(function(e){const t=localStorage.getItem("hbs-"+e);t&&document.body.parentElement.setAttribute("data-"+e,t)})</script><header><nav class="navbar top-app-bar top-app-bar-expand-lg fixed-top">
+  <div class="container pearl-navbar__inner">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Mở menu">
+      <i class="fas fa-bars"></i>
+    </button>
+
+    <a class="navbar-brand pearl-brand flex-grow-1 flex-lg-grow-0" href="https://www.phamduytung.com/">
+      <span class="pearl-brand__mark" aria-hidden="true">
+        <img src="https://www.phamduytung.com/images/brand-mark-flaming-book-red.png" alt="" width="42" height="42">
+      </span>
+      <span class="pearl-brand__copy">
+        <strong>Phạm Duy Tùng</strong>
+        <small>AI · DATA · SYSTEMS</small>
+      </span>
+    </a>
+
+    <div class="offcanvas offcanvas-bottom surface" tabindex="-1" id="offcanvasSocialShare" aria-labelledby="offcanvasSocialShare">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Share</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body">
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Twitter Share Button"
+      target="_blank" href="https://twitter.com/intent/tweet?title=WebAudio%20im%20l%e1%ba%b7ng%3a%20V%c3%ac%20sao%20m%e1%bb%99t%20trang%20web%20v%e1%ba%abn%20gi%e1%bb%af%20tai%20nghe%20Bluetooth%20c%e1%bb%a7a%20b%e1%ba%a1n&url=https%3a%2f%2fwww.phamduytung.com%2fblog%2f2026-08-23-webaudio-im-lang-van-giu-tai-nghe-bluetooth%2f">
+      <i class="fab fa-fw fa-twitter"></i> Twitter
+    </a>
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Facebook Share Button"
+      target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.phamduytung.com%2fblog%2f2026-08-23-webaudio-im-lang-van-giu-tai-nghe-bluetooth%2f">
+      <i class="fab fa-fw fa-facebook-f"></i> Facebook
+    </a>
+  </div>
+</div>
+    <button class="navbar-settings" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSettings"
+  aria-controls="offcanvasSettings" aria-label="Toggle settings">
+  <i class="fas fa-ellipsis-v"></i>
+</button>
+
+<div class="offcanvas offcanvas-end surface h-100" tabindex="-1" id="offcanvasSettings" aria-labelledby="offcanvasSettings">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Cài đặt</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body d-flex flex-column">
+
+
+
+<section class="setting">
+  <form class="font-size-switcher-form row">
+    <div class="col-auto">
+      <label for="fontSize" class="form-label"><i class="fas fa-fw fa-font"></i> Cỡ chữ</label>
+    </div>
+    <div class="col-auto ms-auto">
+      <input type="range" class="form-range" min="-2" max="2" id="fontSize">
+    </div>
+  </form>
+</section>
+
+
+
+<section class="setting actions d-flex justify-content-around mt-auto overflow-auto">
+  <a role="button" class="action action-go-back" href="javascript: window.history.back();">
+    <span class="action-icon"><i class="fas fa-2x fa-arrow-left"></i></span> Quay lại
+  </a>
+  <a role="button" class="action action-reload-page">
+    <span class="action-icon"><i class="fas fa-2x fa-redo-alt"></i></span> Tải lại
+  </a>
+  <a role="button" class="action action-copy-url">
+    <span class="action-icon"><i class="fas fa-2x fa-link"></i></span> Sao chép URL
+  </a><a class="action action-social-share" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSocialShare"
+    aria-controls="offcanvasSocialShare" aria-label="Toggle social share">
+    <span class="action-icon"><i class="fas fa-2x fa-share-alt"></i></span> Chia sẻ
+  </a></section>
+
+</div>
+</div>
+
+    <div class="collapse navbar-collapse" tabindex="-1" id="navbarSupportedContent" aria-labelledby="navbarSupportedContent">
+      <form class="search-bar my-1" action="https://www.phamduytung.com/search">
+  <div class="input-group input-group-sm">
+    <span class="btn btn-search disabled position-absolute left-0"><i class="fas fa-fw fa-search"></i></span>
+    <input class="form-control rounded-pill" name="q" type="search" aria-label="Search">
+  </div>
+</form>
+      <ul class="navbar-nav ms-auto"><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/series/">
+            <i class="fas fa-fw fa-columns"></i>Courses
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/tools/">
+            <i class="fas fa-fw fa-folder"></i>Tools
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/categories/">
+            <i class="fas fa-fw fa-folder"></i>Categories
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/archives/">
+            <i class="fas fa-fw fa-file-archive"></i>Archives
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/tags/">
+            <i class="fas fa-fw fa-tags"></i>Tags
+          </a>
+        </li><li class="nav-item dropdown">
+          <a class="nav-link" id="navbarDropdownSupport" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-fw fa-comments"></i>Community
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdownSupport"><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Facebook Group
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://github.com/AlexBlack2202/alexblack2202.github.io" target="_blank" rel="noopener noreferrer">
+                GitHub
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/contact/">
+                Contact
+              </a>
+            </li><li><hr class="dropdown-divider"></li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/faq/">
+                Câu hỏi thường gặp
+              </a>
+            </li></ul>
+        </li></ul>
+    </div>
+  </div>
+</nav>
+</header>
+<main role="main" class="container" style="line-height:1.7em">
+      <div class="row content">
+<div class="col-lg-9 col-md-8">
+  <div class="container"><nav class="row card component" aria-label="breadcrumb">
+  <div class="card-body">
+    <ol class="breadcrumb "><li class="breadcrumb-item"><a href="https://www.phamduytung.com/">Trang chủ</a></li><li class="breadcrumb-item"><a href="https://www.phamduytung.com/blog/">Blogs</a></li><li class="breadcrumb-item active">WebAudio im lặng: Vì sao một trang web vẫn giữ tai nghe Bluetooth của bạn</li></ol>
+  </div>
+</nav>
+<div class="post-panel-wrapper">
+  <div class="d-flex flex-column component rounded post-panel">
+    
+    <a class="action action-panel-toggler" role="button" title="Panel toggler">
+      <i class="fas fa-fw fa-chevron-circle-down"></i>
+    </a>
+    <a id="sidebarToggler" class="action d-none d-lg-block" role="button" title="Sidebar toggler">
+  <i class="fas fa-fw fa-expand-alt" data-fa-transform="rotate-45"></i>
+</a>
+
+    
+
+    
+    
+    <a class="action" href="#post-comments" role="button" aria-label="Comments" title="Comments">
+  <i class="fas fa-fw fa-comments"></i>
+</a>
+    <a class="action" href="#postTOC" aria-controls="Table of contents" role="button" title="Table of contents">
+  <i class="fas fa-fw fa-list-alt"></i>
+</a>
+    
+  </div>
+</div>
+<article class="row card component mb-4 post">
+  <div class="card-header "><div class="bgcover" style="background-image:url(https://www.phamduytung.com/images/posts/2026-08-23-webaudio-im-lang-van-giu-tai-nghe-bluetooth/cover-pearl-glass.png)" aria-label="WebAudio im lặng: Vì sao một trang web vẫn giữ tai nghe Bluetooth của bạn">
+      <div class="bgtrans">
+          <h1>WebAudio im lặng: Vì sao một trang web vẫn giữ tai nghe Bluetooth của bạn
+</h1>
+      </div>
+  </div>
+</div>
+  <div class="card-body"><div class="post-meta">
+  <span class="post-date" title="tạo ngày 2026-08-23 00:00:00 &#43;0700 &#43;07.">
+    23/08/2026
+  </span><span class="post-reading-time">
+    22 phút đọc
+  </span><span class="post-taxonomies"><a href="https://www.phamduytung.com/tags/web-audio-api/" class="badge post-taxonomy">Web Audio API</a><a href="https://www.phamduytung.com/tags/browser-fingerprinting/" class="badge post-taxonomy">browser fingerprinting</a><a href="https://www.phamduytung.com/tags/quy%E1%BB%81n-ri%C3%AAng-t%C6%B0/" class="badge post-taxonomy">quyền riêng tư</a><a href="https://www.phamduytung.com/tags/bluetooth/" class="badge post-taxonomy">Bluetooth</a><a href="https://www.phamduytung.com/tags/b%E1%BA%A3o-m%E1%BA%ADt/" class="badge post-taxonomy">bảo mật</a></span>
+</div>
+<div class="post-content mb-3"><div class="toc">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#không-có-gì-là-hoàn-toàn-im-lặng">Không có gì là hoàn toàn im lặng</a></li>
+    <li><a href="#ban-đầu-nghi-phạm-là-một-cái-video-ngu-ngốc-nào-đó">Ban đầu, nghi phạm là một cái video ngu ngốc nào đó</a></li>
+    <li><a href="#web-audio-api-là-cái-gì">Web Audio API là cái gì?</a></li>
+    <li><a href="#hai-audiocontext-bí-mật">Hai AudioContext bí mật</a></li>
+    <li><a href="#âm-thanh-bằng-0-nhưng-đường-audio-vẫn-còn-sống">Âm thanh bằng 0 nhưng đường audio vẫn còn sống</a></li>
+    <li><a href="#nhưng-tại-sao-một-website-lại-tự-tạo-sóng-âm">Nhưng tại sao một website lại tự tạo sóng âm?</a></li>
+    <li><a href="#đây-chính-là-browser-fingerprinting">Đây chính là browser fingerprinting</a></li>
+    <li><a href="#aliexpress-không-chỉ-nhìn-vào-audio">AliExpress không chỉ nhìn vào audio</a></li>
+    <li><a href="#tại-sao-một-trang-thương-mại-điện-tử-lại-muốn-fingerprint-người-dùng">Tại sao một trang thương mại điện tử lại muốn fingerprint người dùng?</a></li>
+    <li><a href="#webaudio-fingerprint-nghe-đáng-sợ-nhưng-firefox-đã-làm-nó-bớt-đáng-sợ-khá-nhiều">WebAudio fingerprint nghe đáng sợ, nhưng Firefox đã làm nó bớt đáng sợ khá nhiều</a></li>
+    <li><a href="#và-thế-mới-buồn-cười-fingerprint-có-thể-không-hiệu-quả-nhưng-vẫn-làm-hỏng-bluetooth">Và thế mới buồn cười: fingerprint có thể không hiệu quả, nhưng vẫn làm hỏng Bluetooth</a></li>
+    <li><a href="#tại-sao-bấm-mute-tab-vẫn-không-cứu-được">Tại sao bấm Mute tab vẫn không cứu được?</a></li>
+    <li><a href="#offlineaudiocontext-còn-thú-vị-hơn"><code>OfflineAudioContext</code> còn thú vị hơn</a></li>
+    <li><a href="#một-waveform-có-thể-nhận-diện-cpu-như-thế-nào">Một waveform có thể nhận diện CPU như thế nào?</a></li>
+    <li><a href="#fingerprinting-không-cần-một-phép-đo-thần-kỳ">Fingerprinting không cần một phép đo thần kỳ</a></li>
+    <li><a href="#còn-brave-thì-sao">Còn Brave thì sao?</a></li>
+    <li><a href="#vậy-có-phải-aliexpress-đang-nghe-lén-microphone-không">Vậy có phải AliExpress đang nghe lén microphone không?</a></li>
+    <li><a href="#có-thể-tự-kiểm-tra-kiểu-này-không">Có thể tự kiểm tra kiểu này không?</a></li>
+    <li><a href="#nếu-muốn-chặn-thì-sao">Nếu muốn chặn thì sao?</a></li>
+    <li><a href="#điều-thú-vị-nhất-không-phải-aliexpress">Điều thú vị nhất không phải AliExpress</a></li>
+    <li><a href="#một-bug-nhỏ-đã-làm-lộ-một-hệ-thống-lớn">Một bug nhỏ đã làm lộ một hệ thống lớn</a></li>
+    <li><a href="#tổng-kết">Tổng kết</a></li>
+    <li><a href="#tham-khảo">Tham khảo</a></li>
+  </ul>
+</nav>
+  </div>
+<h1 id="không-có-gì-là-hoàn-toàn-im-lặng">Không có gì là hoàn toàn im lặng<a class="anchor ms-1" href="#không-có-gì-là-hoàn-toàn-im-lặng"><i class="fas fa-link"></i></a></h1>
+<p>Giả sử bạn có một chiếc tai nghe Bluetooth hỗ trợ <strong>multipoint</strong>.</p>
+<p>Nó kết nối cùng lúc với:</p>
+<ul>
+<li>điện thoại;</li>
+<li>máy tính.</li>
+</ul>
+<p>Bạn đang nghe nhạc trên điện thoại.</p>
+<p>Máy tính nằm bên cạnh, im re.</p>
+<p>Mọi thứ rất hòa bình.</p>
+<p>Rồi bạn mở một trang AliExpress trên máy tính.</p>
+<p>Không video.</p>
+<p>Không quảng cáo phát nhạc.</p>
+<p>Không tiếng <em>ting</em>.</p>
+<p>Không có biểu tượng cái loa trên tab.</p>
+<p>Bạn thậm chí bấm <strong>Mute tab</strong>.</p>
+<p>Và rồi&hellip;</p>
+<p>nhạc trên điện thoại tắt.</p>
+<p>Chiếc tai nghe quay sang máy tính như một con chó vừa nghe ai đó mở túi bánh.</p>
+<p>Máy tính rõ ràng <strong>không phát ra âm thanh nào</strong>, nhưng tai nghe lại hành xử như thể máy tính đang giữ đường audio.</p>
+<p>Đóng tab AliExpress.</p>
+<p>Nhạc trên điện thoại lập tức sống lại.</p>
+<p>Nghe giống một lỗi Bluetooth vớ vẩn.</p>
+<p>Nhưng đây chính là chỗ câu chuyện bắt đầu trở nên hơi điên.</p>
+<p>Bởi vì trong máy tính, <strong>âm lượng bằng 0 không có nghĩa là không có âm thanh đang được xử lý</strong>.</p>
+<p>Giống như một đường ống nước mà vòi cuối cùng đã khóa: bạn không thấy giọt nước nào chảy ra ngoài, nhưng máy bơm phía sau vẫn có thể đang gầm gừ, đường ống vẫn đầy áp lực, van vẫn mở và cả hệ thống vẫn tin rằng nó đang làm việc.</p>
+<p>Một lập trình viên có nickname <code>m-c-tech</code> gặp đúng hiện tượng đó và bắt đầu đào xuống.</p>
+<p>Càng đào, câu chuyện càng đi từ một chiếc tai nghe Bluetooth xuống JavaScript, WebAudio, CPU, FFT, browser fingerprinting và cuối cùng là câu hỏi khá khó chịu:</p>
+<p><strong>Một trang web thực sự biết bao nhiêu về cái máy đang nằm trên bàn của chúng ta?</strong> (<a href="https://blog.laserphile.com/2026/08/aliexpress-webpage-keeping-multipoint.html" title="laserphile: AliExpress webpage keeping multipoint Bluetooth headphones active with WebAudio fingerprinting" target="_blank" rel="noopener noreferrer">Laserphile</a>)</p>
+<h1 id="ban-đầu-nghi-phạm-là-một-cái-video-ngu-ngốc-nào-đó">Ban đầu, nghi phạm là một cái video ngu ngốc nào đó<a class="anchor ms-1" href="#ban-đầu-nghi-phạm-là-một-cái-video-ngu-ngốc-nào-đó"><i class="fas fa-link"></i></a></h1>
+<p>Phản ứng đầu tiên rất hợp lý:</p>
+<blockquote>
+<p>Chắc AliExpress đang autoplay một cái video quảng cáo ở đâu đó.</p>
+</blockquote>
+<p>Tác giả kiểm tra những thứ bình thường:</p>
+<ul>
+<li>thẻ <code>&lt;audio&gt;</code>;</li>
+<li>thẻ <code>&lt;video&gt;</code>;</li>
+<li><code>HTMLMediaElement.play()</code>;</li>
+<li>Media Session;</li>
+<li>request tải media;</li>
+<li>iframe chứa video hoặc audio.</li>
+</ul>
+<p>Không có gì.</p>
+<p>Trang vẫn im lặng.</p>
+<p>Nhưng sau vài giây, tai nghe vẫn bị máy tính giành quyền ưu tiên.</p>
+<p>Điểm đáng chú ý là hiện tượng <strong>không xảy ra ngay lập tức sau khi tải trang</strong>. Nó xuất hiện sau khi trang đã chạy một lúc.</p>
+<p>Thế là thay vì nhìn vào <code>&lt;audio&gt;</code> và <code>&lt;video&gt;</code>, tác giả bắt đầu nhìn xuống một tầng thấp hơn:</p>
+<p><strong>Web Audio API.</strong></p>
+<h1 id="web-audio-api-là-cái-gì">Web Audio API là cái gì?<a class="anchor ms-1" href="#web-audio-api-là-cái-gì"><i class="fas fa-link"></i></a></h1>
+<p>Nếu <code>&lt;audio&gt;</code> giống như một chiếc máy cassette:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-html" data-lang="html"><span class="line"><span class="ln">1</span><span class="cl"><span class="p">&lt;</span><span class="nt">audio</span> <span class="na">src</span><span class="o">=</span><span class="s">&#34;hello.mp3&#34;</span><span class="p">&gt;</span>
+</span></span></code></pre></div><p>thì Web Audio API giống như bạn mang nguyên một bàn mixer, máy synthesizer, equalizer và oscilloscope nhét vào JavaScript.</p>
+<p>Bạn có thể tạo âm thanh từ con số.</p>
+<p>Bạn có thể:</p>
+<ul>
+<li>tạo sóng sine;</li>
+<li>tạo sóng vuông;</li>
+<li>tạo sóng sawtooth;</li>
+<li>tăng giảm volume;</li>
+<li>lọc tần số;</li>
+<li>nén dynamic range;</li>
+<li>trộn nhiều nguồn;</li>
+<li>phân tích phổ tần số;</li>
+<li>đo waveform;</li>
+<li>đưa kết quả ra loa.</li>
+</ul>
+<p>Trong WebAudio, âm thanh được tổ chức thành một <strong>audio graph</strong>.</p>
+<p>Ví dụ đơn giản:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Oscillator
+</span></span><span class="line"><span class="ln">2</span><span class="cl">    |
+</span></span><span class="line"><span class="ln">3</span><span class="cl">    v
+</span></span><span class="line"><span class="ln">4</span><span class="cl">GainNode
+</span></span><span class="line"><span class="ln">5</span><span class="cl">    |
+</span></span><span class="line"><span class="ln">6</span><span class="cl">    v
+</span></span><span class="line"><span class="ln">7</span><span class="cl">Speaker
+</span></span></code></pre></div><p><code>OscillatorNode</code> tạo ra một sóng tuần hoàn. <code>GainNode</code> thay đổi biên độ, còn <code>AudioContext.destination</code> thường đại diện cho thiết bị output cuối cùng như loa hoặc tai nghe. (<a href="https://developer.mozilla.org/en-US/docs/Web/API/AudioNode" title="AudioNode - Web APIs | MDN" target="_blank" rel="noopener noreferrer">MDN Web Docs</a>)</p>
+<p>Nghe thì có vẻ vô hại.</p>
+<p>Và phần lớn thời gian nó đúng là vô hại.</p>
+<p>Các game chạy trên web, synthesizer online, phần mềm chỉnh nhạc, voice changer hay visualizer âm thanh đều cần những API kiểu này.</p>
+<p>Vấn đề nằm ở chỗ:</p>
+<p><strong>cùng một chiếc búa có thể dùng để đóng đinh, hoặc gõ thử xem bức tường nhà bạn làm bằng vật liệu gì.</strong></p>
+<h1 id="hai-audiocontext-bí-mật">Hai AudioContext bí mật<a class="anchor ms-1" href="#hai-audiocontext-bí-mật"><i class="fas fa-link"></i></a></h1>
+<p>Tác giả sửa tạm <code>AudioContext</code> của trình duyệt để ghi lại mỗi khi trang tạo một context mới.</p>
+<p>Ý tưởng đại khái như sau:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="kr">const</span> <span class="nx">OriginalAudioContext</span> <span class="o">=</span> <span class="nb">window</span><span class="p">.</span><span class="nx">AudioContext</span><span class="p">;</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl"><span class="nb">window</span><span class="p">.</span><span class="nx">AudioContext</span> <span class="o">=</span> <span class="kr">class</span> <span class="kr">extends</span> <span class="nx">OriginalAudioContext</span> <span class="p">{</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">    <span class="nx">constructor</span><span class="p">(...</span><span class="nx">args</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">        <span class="kr">super</span><span class="p">(...</span><span class="nx">args</span><span class="p">);</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&#34;AudioContext created&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">        <span class="nx">console</span><span class="p">.</span><span class="nx">trace</span><span class="p">();</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl"><span class="p">};</span>
+</span></span></code></pre></div><p>Sau đó tiếp tục theo dõi những lời gọi:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="ln">1</span><span class="cl"><span class="nx">AudioNode</span><span class="p">.</span><span class="nx">connect</span><span class="p">(...)</span>
+</span></span></code></pre></div><p>để xem audio graph được nối đi đâu.</p>
+<p>Và đây là lúc con thỏ trắng chui khỏi cái mũ.</p>
+<p>AliExpress tạo ra <strong>hai <code>AudioContext</code> đang chạy</strong>.</p>
+<p>Cả hai cuối cùng đều nối tới:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="ln">1</span><span class="cl"><span class="nx">AudioContext</span><span class="p">.</span><span class="nx">destination</span>
+</span></span></code></pre></div><p>Trong khi đó:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">&lt;audio&gt;           = 0
+</span></span><span class="line"><span class="ln">2</span><span class="cl">&lt;video&gt;           = 0
+</span></span><span class="line"><span class="ln">3</span><span class="cl">media play()      = 0
+</span></span><span class="line"><span class="ln">4</span><span class="cl">MediaSession      = none
+</span></span><span class="line"><span class="ln">5</span><span class="cl">âm thanh nghe thấy = 0
+</span></span></code></pre></div><p>Stack trace dẫn tới hai JavaScript bundle thuộc nhóm AWSC:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">collina.js
+</span></span><span class="line"><span class="ln">2</span><span class="cl">fireyejs.js
+</span></span></code></pre></div><p>Các script bị obfuscate khá mạnh và có vẻ thuộc hệ thống browser security / anti-abuse của Alibaba. (<a href="https://blog.laserphile.com/2026/08/aliexpress-webpage-keeping-multipoint.html" title="laserphile: AliExpress webpage keeping multipoint Bluetooth headphones active with WebAudio fingerprinting" target="_blank" rel="noopener noreferrer">Laserphile</a>)</p>
+<h1 id="âm-thanh-bằng-0-nhưng-đường-audio-vẫn-còn-sống">Âm thanh bằng 0 nhưng đường audio vẫn còn sống<a class="anchor ms-1" href="#âm-thanh-bằng-0-nhưng-đường-audio-vẫn-còn-sống"><i class="fas fa-link"></i></a></h1>
+<p>Audio graph được phát hiện có hình dạng gần như thế này:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">                  ┌──────────────┐
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">                  │ Sawtooth     │
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">                  │ Oscillator   │
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">                  └──────┬───────┘
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">                         │
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">                         ▼
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">                  ┌──────────────┐
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">                  │ AnalyserNode │
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">                  └──────┬───────┘
+</span></span><span class="line"><span class="ln">10</span><span class="cl">                         │
+</span></span><span class="line"><span class="ln">11</span><span class="cl">                         ▼
+</span></span><span class="line"><span class="ln">12</span><span class="cl">               ┌───────────────────┐
+</span></span><span class="line"><span class="ln">13</span><span class="cl">               │ ScriptProcessorNode│
+</span></span><span class="line"><span class="ln">14</span><span class="cl">               └────────┬──────────┘
+</span></span><span class="line"><span class="ln">15</span><span class="cl">                        │
+</span></span><span class="line"><span class="ln">16</span><span class="cl">                        ▼
+</span></span><span class="line"><span class="ln">17</span><span class="cl">                 ┌────────────┐
+</span></span><span class="line"><span class="ln">18</span><span class="cl">                 │ GainNode   │
+</span></span><span class="line"><span class="ln">19</span><span class="cl">                 │ gain = 0   │
+</span></span><span class="line"><span class="ln">20</span><span class="cl">                 └─────┬──────┘
+</span></span><span class="line"><span class="ln">21</span><span class="cl">                       │
+</span></span><span class="line"><span class="ln">22</span><span class="cl">                       ▼
+</span></span><span class="line"><span class="ln">23</span><span class="cl">              AudioContext.destination
+</span></span><span class="line"><span class="ln">24</span><span class="cl">                       │
+</span></span><span class="line"><span class="ln">25</span><span class="cl">                       ▼
+</span></span><span class="line"><span class="ln">26</span><span class="cl">              Bluetooth / Speaker
+</span></span></code></pre></div><p>Đây là chỗ rất dễ hiểu nhầm.</p>
+<p><code>gain = 0</code> nghĩa là:</p>
+<p>$$
+output = input \times 0
+$$</p>
+<p>Cho dù input là:</p>
+<p>$$
+0.31
+$$</p>
+<p>hay:</p>
+<p>$$
+-0.912
+$$</p>
+<p>thì cuối cùng:</p>
+<p>$$
+output = 0
+$$</p>
+<p>Tai người không nghe thấy gì.</p>
+<p>Nhưng phía trước cái số 0 ấy, browser vẫn có thể đang:</p>
+<ul>
+<li>sinh waveform;</li>
+<li>chạy audio processing;</li>
+<li>tính toán các sample;</li>
+<li>chạy FFT;</li>
+<li>đọc frequency bins;</li>
+<li>giữ <code>AudioContext</code>;</li>
+<li>duy trì audio backend.</li>
+</ul>
+<p>MDN mô tả <code>AudioContext.suspend()</code> là thao tác có thể dừng tiến trình của audio context, tạm ngừng truy cập audio hardware và giảm CPU/battery usage. Điều đó cũng cho ta một cách nhìn ngược lại: một context vẫn chạy có thể tiếp tục duy trì công việc ở audio subsystem dù cuối graph chẳng có âm thanh nghe thấy. (<a href="https://developer.mozilla.org/en-US/docs/Web/API/AudioContext" title="AudioContext - Web APIs | MDN" target="_blank" rel="noopener noreferrer">MDN Web Docs</a>)</p>
+<p>Với trường hợp được báo cáo, trạng thái đó đủ để Windows/Firefox coi audio path là còn hoạt động.</p>
+<p>Chiếc tai nghe Bluetooth không biết rằng:</p>
+<blockquote>
+<p>“À, đây chỉ là một thuật toán fingerprinting đang nhân tín hiệu với zero.”</p>
+</blockquote>
+<p>Nó chỉ nhìn thấy:</p>
+<blockquote>
+<p>“Máy tính vẫn đang dùng audio.”</p>
+</blockquote>
+<p>Thế là multipoint giữ kết nối với PC.</p>
+<p>Điện thoại đứng ngoài cửa.</p>
+<p>Nhạc chết.</p>
+<h1 id="nhưng-tại-sao-một-website-lại-tự-tạo-sóng-âm">Nhưng tại sao một website lại tự tạo sóng âm?<a class="anchor ms-1" href="#nhưng-tại-sao-một-website-lại-tự-tạo-sóng-âm"><i class="fas fa-link"></i></a></h1>
+<p>Đây mới là đoạn hay.</p>
+<p>Giả sử tôi đưa cho 100 người một bài toán:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">1234567 × 7654321
+</span></span></code></pre></div><p>Tất cả đều đưa ra cùng một đáp án.</p>
+<p>Không phân biệt được ai với ai.</p>
+<p>Nhưng bây giờ tôi đưa một cỗ máy cực kỳ phức tạp:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">tạo waveform
+</span></span><span class="line"><span class="ln">2</span><span class="cl">→ xử lý floating point
+</span></span><span class="line"><span class="ln">3</span><span class="cl">→ filter
+</span></span><span class="line"><span class="ln">4</span><span class="cl">→ transform
+</span></span><span class="line"><span class="ln">5</span><span class="cl">→ FFT
+</span></span><span class="line"><span class="ln">6</span><span class="cl">→ đọc một mảng số
+</span></span></code></pre></div><p>Về lý thuyết, cùng input phải ra cùng output.</p>
+<p>Trong thế giới vật lý&hellip;</p>
+<p>không hẳn.</p>
+<p>CPU khác nhau.</p>
+<p>Instruction set khác nhau.</p>
+<p>Thư viện DSP khác nhau.</p>
+<p>Compiler khác nhau.</p>
+<p>Browser implementation khác nhau.</p>
+<p>Floating-point có những sai số cực nhỏ.</p>
+<p>Một con chip có thể tính:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">0.123456701
+</span></span></code></pre></div><p>con khác:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">0.123456698
+</span></span></code></pre></div><p>Hai con số nhìn bằng mắt gần như giống nhau.</p>
+<p>Nhưng máy tính không nhìn bằng mắt.</p>
+<p>Nó có thể gom hàng trăm hay hàng nghìn giá trị đó lại rồi hash:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">audio result
+</span></span><span class="line"><span class="ln">2</span><span class="cl">    |
+</span></span><span class="line"><span class="ln">3</span><span class="cl">    v
+</span></span><span class="line"><span class="ln">4</span><span class="cl">SHA-256
+</span></span><span class="line"><span class="ln">5</span><span class="cl">    |
+</span></span><span class="line"><span class="ln">6</span><span class="cl">    v
+</span></span><span class="line"><span class="ln">7</span><span class="cl">9a388c0dd04cfdc...
+</span></span></code></pre></div><p>Thế là một tiếng nói không tồn tại đã trở thành một đặc điểm của thiết bị.</p>
+<h1 id="đây-chính-là-browser-fingerprinting">Đây chính là browser fingerprinting<a class="anchor ms-1" href="#đây-chính-là-browser-fingerprinting"><i class="fas fa-link"></i></a></h1>
+<p>Cookie giống như việc website dán lên áo bạn một tờ giấy:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">HELLO, USER #829173
+</span></span></code></pre></div><p>Bạn xóa cookie.</p>
+<p>Tờ giấy biến mất.</p>
+<p>Fingerprinting chơi một trò khác.</p>
+<p>Website nhìn bạn rồi hỏi:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">Màn hình rộng bao nhiêu?
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">GPU gì?
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">WebGL render thế nào?
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">CPU có bao nhiêu core?
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">Browser hỗ trợ codec nào?
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">Canvas vẽ ra pixel gì?
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">Audio engine tính waveform ra sao?
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">Device pixel ratio bằng bao nhiêu?
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">WebRTC cư xử thế nào?
+</span></span><span class="line"><span class="ln">10</span><span class="cl">Chuột di chuyển kiểu gì?
+</span></span></code></pre></div><p>Mỗi câu riêng lẻ rất yếu.</p>
+<p>Ví dụ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">8 CPU cores
+</span></span></code></pre></div><p>Có hàng triệu máy như vậy.</p>
+<p>Nhưng ghép lại:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">Windows
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">Chrome
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">1920 × 1080
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">DPR 1.25
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">8 cores
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">WebGL result A
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">Canvas hash B
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">Audio hash C
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">Codec set D
+</span></span><span class="line"><span class="ln">10</span><span class="cl">Timezone E
+</span></span><span class="line"><span class="ln">11</span><span class="cl">...
+</span></span></code></pre></div><p>thì đám đông bắt đầu nhỏ dần.</p>
+<p>Giống trò chơi:</p>
+<blockquote>
+<p>Ai mặc áo đỏ?</p>
+</blockquote>
+<p>500 người giơ tay.</p>
+<blockquote>
+<p>Ai mặc áo đỏ, cao 1m75?</p>
+</blockquote>
+<p>80 người.</p>
+<blockquote>
+<p>Ai mặc áo đỏ, cao 1m75, đi giày 42?</p>
+</blockquote>
+<p>12 người.</p>
+<blockquote>
+<p>Ai còn đang cầm một ổ bánh mì?</p>
+</blockquote>
+<p>Một người từ từ nhìn xuống tay mình.</p>
+<p><strong>Xin chào.</strong></p>
+<h1 id="aliexpress-không-chỉ-nhìn-vào-audio">AliExpress không chỉ nhìn vào audio<a class="anchor ms-1" href="#aliexpress-không-chỉ-nhìn-vào-audio"><i class="fas fa-link"></i></a></h1>
+<p>Theo phân tích client-side của tác giả, các bundle này còn kiểm tra hoặc thu thập nhiều loại signal khác như:</p>
+<ul>
+<li>Canvas;</li>
+<li>WebGL renderer;</li>
+<li>WebGL extension;</li>
+<li>shader precision;</li>
+<li>kích thước screen và viewport;</li>
+<li>device pixel ratio;</li>
+<li>hardware concurrency;</li>
+<li>device memory;</li>
+<li>browser plugins;</li>
+<li>codec audio/video;</li>
+<li>hành vi WebRTC;</li>
+<li>performance timing;</li>
+<li>mouse;</li>
+<li>touch;</li>
+<li>focus;</li>
+<li>scroll;</li>
+<li>motion/orientation;</li>
+<li>dấu hiệu thường xuất hiện ở browser automation.</li>
+</ul>
+<p>Code cũng chứa logic serialize dữ liệu, mã hóa và gửi telemetry qua các cơ chế như <code>fetch()</code> hoặc <code>sendBeacon()</code>. (<a href="https://blog.laserphile.com/2026/08/aliexpress-webpage-keeping-multipoint.html" title="laserphile: AliExpress webpage keeping multipoint Bluetooth headphones active with WebAudio fingerprinting" target="_blank" rel="noopener noreferrer">Laserphile</a>)</p>
+<p>Nhìn cả cụm thì đây rõ ràng là một hệ thống thu thập <strong>fingerprint-like signals</strong> khá rộng.</p>
+<p>Nhưng phải cẩn thận ở đây.</p>
+<p>Từ phía browser, chúng ta thấy:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">signal được đo
+</span></span><span class="line"><span class="ln">2</span><span class="cl">→ dữ liệu được đóng gói
+</span></span><span class="line"><span class="ln">3</span><span class="cl">→ dữ liệu được gửi đi
+</span></span></code></pre></div><p>Nhưng không thể nhìn xuyên qua Internet để thấy database phía server.</p>
+<p>Do đó chưa thể kết luận chắc chắn rằng:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">fingerprint này được dùng như một ID theo dõi vĩnh viễn
+</span></span></code></pre></div><p>Nó cũng có thể chỉ là một feature trong hệ thống:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">fraud score
+</span></span><span class="line"><span class="ln">2</span><span class="cl">bot score
+</span></span><span class="line"><span class="ln">3</span><span class="cl">risk score
+</span></span><span class="line"><span class="ln">4</span><span class="cl">account security
+</span></span><span class="line"><span class="ln">5</span><span class="cl">abuse prevention
+</span></span></code></pre></div><p>Tác giả bài gốc cũng nói rõ giới hạn này. (<a href="https://blog.laserphile.com/2026/08/aliexpress-webpage-keeping-multipoint.html" title="laserphile: AliExpress webpage keeping multipoint Bluetooth headphones active with WebAudio fingerprinting" target="_blank" rel="noopener noreferrer">Laserphile</a>)</p>
+<h1 id="tại-sao-một-trang-thương-mại-điện-tử-lại-muốn-fingerprint-người-dùng">Tại sao một trang thương mại điện tử lại muốn fingerprint người dùng?<a class="anchor ms-1" href="#tại-sao-một-trang-thương-mại-điện-tử-lại-muốn-fingerprint-người-dùng"><i class="fas fa-link"></i></a></h1>
+<p>Giả sử bạn vận hành một website có hàng triệu giao dịch.</p>
+<p>Ngày đẹp trời xuất hiện một con bot:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">tạo 10.000 account
+</span></span><span class="line"><span class="ln">2</span><span class="cl">→ lấy coupon khách hàng mới
+</span></span><span class="line"><span class="ln">3</span><span class="cl">→ mua hàng
+</span></span><span class="line"><span class="ln">4</span><span class="cl">→ xóa cookie
+</span></span><span class="line"><span class="ln">5</span><span class="cl">→ tạo account mới
+</span></span></code></pre></div><p>Nếu hệ thống chỉ hỏi:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Có cookie chưa?
+</span></span></code></pre></div><p>con bot sẽ cười.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">rm -rf cookies
+</span></span></code></pre></div><p>Xong.</p>
+<p>Nhưng nếu website còn thấy:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">GPU giống nhau
+</span></span><span class="line"><span class="ln">2</span><span class="cl">Canvas giống nhau
+</span></span><span class="line"><span class="ln">3</span><span class="cl">Audio giống nhau
+</span></span><span class="line"><span class="ln">4</span><span class="cl">WebGL giống nhau
+</span></span><span class="line"><span class="ln">5</span><span class="cl">Timing giống nhau
+</span></span><span class="line"><span class="ln">6</span><span class="cl">Screen giống nhau
+</span></span><span class="line"><span class="ln">7</span><span class="cl">Automation signals giống nhau
+</span></span></code></pre></div><p>thì việc giả làm một thiết bị hoàn toàn mới khó hơn nhiều.</p>
+<p>Một marketplace lớn phải đối mặt với:</p>
+<ul>
+<li>scraping;</li>
+<li>account takeover;</li>
+<li>payment fraud;</li>
+<li>coupon abuse;</li>
+<li>fake account;</li>
+<li>review manipulation;</li>
+<li>automation;</li>
+<li>bot mua hàng;</li>
+<li>credential stuffing.</li>
+</ul>
+<p>Vì thế việc tồn tại một hệ thống device risk / anti-fraud không có gì bất ngờ.</p>
+<p>Điều đáng tranh luận không phải là:</p>
+<blockquote>
+<p>“Tại sao họ chống bot?”</p>
+</blockquote>
+<p>Mà là:</p>
+<blockquote>
+<p>“Một trang mua sắm bình thường nên được phép chạm sâu tới đâu vào đặc tính thiết bị trước khi người dùng làm bất kỳ hành động nhạy cảm nào?”</p>
+</blockquote>
+<p>Hai câu hỏi đó hoàn toàn khác nhau.</p>
+<h1 id="webaudio-fingerprint-nghe-đáng-sợ-nhưng-firefox-đã-làm-nó-bớt-đáng-sợ-khá-nhiều">WebAudio fingerprint nghe đáng sợ, nhưng Firefox đã làm nó bớt đáng sợ khá nhiều<a class="anchor ms-1" href="#webaudio-fingerprint-nghe-đáng-sợ-nhưng-firefox-đã-làm-nó-bớt-đáng-sợ-khá-nhiều"><i class="fas fa-link"></i></a></h1>
+<p>Sau khi bài gốc được thảo luận rộng rãi, Tom Ritter, một developer làm việc với Firefox, đào sâu hơn vào fingerprint cụ thể này.</p>
+<p>Kết quả khá thú vị.</p>
+<p>Firefox đã cố làm WebAudio output trở nên gần như ổn định từ Firefox 118.</p>
+<p>Trong telemetry được Tom Ritter mô tả, <strong>99,24% người dùng rơi vào chỉ ba giá trị fingerprint chính</strong>.</p>
+<p>Ba nhóm này chủ yếu xuất phát từ khác biệt CPU:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">x86 / x64 không FMA
+</span></span><span class="line"><span class="ln">2</span><span class="cl">x64 có FMA
+</span></span><span class="line"><span class="ln">3</span><span class="cl">ARM / NEON
+</span></span></code></pre></div><p>Nếu 10 triệu người cùng có một fingerprint thì fingerprint đó chẳng còn giống dấu vân tay nữa.</p>
+<p>Nó giống việc cảnh sát hỏi:</p>
+<blockquote>
+<p>Hung thủ có mấy chân?</p>
+</blockquote>
+<p>“Dạ hai.”</p>
+<p>Tuyệt vời.</p>
+<p>Còn khoảng vài tỷ nghi phạm.</p>
+<p>Mozilla sau đó sửa một phép fused multiply-add để gom hai bucket x86 lại với nhau trong Firefox 152. Tom Ritter kết luận WebAudio fingerprinting trên Firefox hiện đã <strong>gần như vô dụng khi đứng riêng lẻ</strong>, dù fingerprinting tổng hợp từ nhiều nguồn khác vẫn là một vấn đề. (<a href="https://ritter.vg/blog-webaudio_alibaba.html" title="webaudio fingerprinting on alibaba - ritter.vg" target="_blank" rel="noopener noreferrer">Ritter</a>) (<a href="https://bugzilla.mozilla.org/show_bug.cgi?id=2036977" title="2036977 - Honor fp-contract=no to reduce fingerprinting in Web Audio" target="_blank" rel="noopener noreferrer">Mozilla Bugzilla</a>)</p>
+<p>Đây là một chi tiết rất quan trọng.</p>
+<p><strong>AliExpress có code cố đo WebAudio không đồng nghĩa với việc WebAudio fingerprint đó đang phân biệt tốt người dùng Firefox.</strong></p>
+<p>Hai chuyện khác nhau.</p>
+<p>Một người có thể đang cố soi dấu vân tay qua một tấm kính mờ.</p>
+<p>Hành động soi vẫn xảy ra.</p>
+<p>Nhưng thứ nhìn thấy có thể chẳng hữu ích bao nhiêu.</p>
+<h1 id="và-thế-mới-buồn-cười-fingerprint-có-thể-không-hiệu-quả-nhưng-vẫn-làm-hỏng-bluetooth">Và thế mới buồn cười: fingerprint có thể không hiệu quả, nhưng vẫn làm hỏng Bluetooth<a class="anchor ms-1" href="#và-thế-mới-buồn-cười-fingerprint-có-thể-không-hiệu-quả-nhưng-vẫn-làm-hỏng-bluetooth"><i class="fas fa-link"></i></a></h1>
+<p>Đây có lẽ là đoạn hài nhất của toàn bộ câu chuyện.</p>
+<p>Một hệ thống cố phân biệt máy tính bằng WebAudio.</p>
+<p>Firefox đã làm output gần như giống nhau giữa phần lớn người dùng.</p>
+<p>Thế nhưng code vẫn chạy.</p>
+<p>Audio graph vẫn hoạt động.</p>
+<p>Audio path vẫn bị giữ.</p>
+<p>Tai nghe vẫn không chuyển sang điện thoại.</p>
+<p>Tức là:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Fingerprint:
+</span></span><span class="line"><span class="ln">2</span><span class="cl">gần như vô dụng
+</span></span><span class="line"><span class="ln">3</span><span class="cl">
+</span></span><span class="line"><span class="ln">4</span><span class="cl">Tác dụng phụ:
+</span></span><span class="line"><span class="ln">5</span><span class="cl">rất hữu dụng trong việc làm người dùng tức
+</span></span></code></pre></div><p>Mozilla Bugzilla đã có report từ khoảng hai năm trước về AliExpress: Windows báo <strong>“An audio stream is currently in use”</strong>, khiến máy không sleep dù người dùng không nghe thấy âm thanh nào. Các developer Firefox sau đó thấy <code>OscillatorNode</code> và <code>AnalyserNode</code> tiếp tục được xử lý. (<a href="https://bugzilla.mozilla.org/show_bug.cgi?id=1863193" title="1863193 - Audio power request prevents sleep on Windows 11 on Aliexpress pages" target="_blank" rel="noopener noreferrer">Mozilla Bugzilla</a>)</p>
+<p>Có một bài học debugging khá đẹp ở đây:</p>
+<p><strong>Một bug hôm nay đôi khi chính là bằng chứng khảo cổ của một hành vi đã tồn tại nhiều năm.</strong></p>
+<h1 id="tại-sao-bấm-mute-tab-vẫn-không-cứu-được">Tại sao bấm Mute tab vẫn không cứu được?<a class="anchor ms-1" href="#tại-sao-bấm-mute-tab-vẫn-không-cứu-được"><i class="fas fa-link"></i></a></h1>
+<p>Bởi vì trực giác của chúng ta về web audio thường là:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">website
+</span></span><span class="line"><span class="ln">2</span><span class="cl">   |
+</span></span><span class="line"><span class="ln">3</span><span class="cl">&lt;video&gt;/&lt;audio&gt;
+</span></span><span class="line"><span class="ln">4</span><span class="cl">   |
+</span></span><span class="line"><span class="ln">5</span><span class="cl">browser media playback
+</span></span><span class="line"><span class="ln">6</span><span class="cl">   |
+</span></span><span class="line"><span class="ln">7</span><span class="cl">speaker
+</span></span></code></pre></div><p>Mute tab xử lý phần âm thanh người dùng nghe thấy trong thế giới đó.</p>
+<p>Nhưng WebAudio là một graph xử lý tín hiệu:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">JavaScript
+</span></span><span class="line"><span class="ln">2</span><span class="cl">   |
+</span></span><span class="line"><span class="ln">3</span><span class="cl">AudioContext
+</span></span><span class="line"><span class="ln">4</span><span class="cl">   |
+</span></span><span class="line"><span class="ln">5</span><span class="cl">AudioNodes
+</span></span><span class="line"><span class="ln">6</span><span class="cl">   |
+</span></span><span class="line"><span class="ln">7</span><span class="cl">AudioDestination
+</span></span></code></pre></div><p>Trang dùng WebAudio không nhất thiết phải có:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-html" data-lang="html"><span class="line"><span class="ln">1</span><span class="cl"><span class="p">&lt;</span><span class="nt">audio</span><span class="p">&gt;</span>
+</span></span></code></pre></div><p>hay:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-html" data-lang="html"><span class="line"><span class="ln">1</span><span class="cl"><span class="p">&lt;</span><span class="nt">video</span><span class="p">&gt;</span>
+</span></span></code></pre></div><p>nào cả.</p>
+<p>MDN mô tả Web Audio API như một hệ thống node graph độc lập, nơi source, processing node và destination được nối trực tiếp với nhau. Quan trọng hơn, làm đầu ra im lặng không đồng nghĩa với việc gọi <code>AudioContext.suspend()</code>: thao tác <code>suspend()</code> mới tạm dừng tiến trình của context, ngừng truy cập audio hardware và giảm CPU/battery usage. (<a href="https://developer.mozilla.org/en-US/docs/Web/API/AudioNode" title="AudioNode - Web APIs | MDN" target="_blank" rel="noopener noreferrer">MDN Web Docs</a>) (<a href="https://developer.mozilla.org/en-US/docs/Web/API/AudioContext" title="AudioContext - Web APIs | MDN" target="_blank" rel="noopener noreferrer">MDN Web Docs</a>)</p>
+<p>Vì vậy tab có thể hoàn toàn im lặng trong tai người dùng, trong khi graph xử lý và audio path vẫn còn sống. Ở trường hợp được báo cáo, nút mute không đóng context nên không giải quyết được tác dụng phụ lên Bluetooth.</p>
+<p>Nói theo cách hơi ngáo một chút:</p>
+<p><strong>Bạn đã bịt miệng ca sĩ, nhưng phòng thu vẫn bật điện.</strong></p>
+<h1 id="offlineaudiocontext-còn-thú-vị-hơn">OfflineAudioContext còn thú vị hơn<a class="anchor ms-1" href="#offlineaudiocontext-còn-thú-vị-hơn"><i class="fas fa-link"></i></a></h1>
+<p>Các hệ thống audio fingerprinting không nhất thiết phải dùng real-time <code>AudioContext</code>.</p>
+<p>Chúng có thể dùng:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="ln">1</span><span class="cl"><span class="nx">OfflineAudioContext</span>
+</span></span></code></pre></div><p>Loại context này không phát âm thanh ra phần cứng. Theo MDN, nó xử lý graph nhanh nhất có thể rồi trả kết quả vào <code>AudioBuffer</code>: (<a href="https://developer.mozilla.org/en-US/docs/Web/API/OfflineAudioContext" title="OfflineAudioContext - Web APIs | MDN" target="_blank" rel="noopener noreferrer">MDN Web Docs</a>)</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Oscillator
+</span></span><span class="line"><span class="ln">2</span><span class="cl">   ↓
+</span></span><span class="line"><span class="ln">3</span><span class="cl">Filter / Compressor
+</span></span><span class="line"><span class="ln">4</span><span class="cl">   ↓
+</span></span><span class="line"><span class="ln">5</span><span class="cl">OfflineAudioContext
+</span></span><span class="line"><span class="ln">6</span><span class="cl">   ↓
+</span></span><span class="line"><span class="ln">7</span><span class="cl">AudioBuffer
+</span></span><span class="line"><span class="ln">8</span><span class="cl">   ↓
+</span></span><span class="line"><span class="ln">9</span><span class="cl">hash()
+</span></span></code></pre></div><p>Sau đó lấy kết quả:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">8da3c911...
+</span></span></code></pre></div><p>làm một signal cho fingerprint.</p>
+<p>Cách này sạch hơn vì không cần giành audio device thật.</p>
+<p>Vụ AliExpress đáng chú ý chính vì graph được quan sát lại nối tới real-time <code>AudioContext.destination</code>, từ đó sinh ra tác dụng phụ lên hệ thống Bluetooth. (<a href="https://blog.laserphile.com/2026/08/aliexpress-webpage-keeping-multipoint.html" title="laserphile: AliExpress webpage keeping multipoint Bluetooth headphones active with WebAudio fingerprinting" target="_blank" rel="noopener noreferrer">Laserphile</a>)</p>
+<h1 id="một-waveform-có-thể-nhận-diện-cpu-như-thế-nào">Một waveform có thể nhận diện CPU như thế nào?<a class="anchor ms-1" href="#một-waveform-có-thể-nhận-diện-cpu-như-thế-nào"><i class="fas fa-link"></i></a></h1>
+<p>Hãy tưởng tượng một chuỗi audio gồm các sample:</p>
+<p>$$
+x_1,x_2,x_3,\dots,x_n
+$$</p>
+<p>Audio engine áp dụng một phép biến đổi:</p>
+<p>$$
+y_i = f(x_i)
+$$</p>
+<p>Lý tưởng:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">CPU A → y
+</span></span><span class="line"><span class="ln">2</span><span class="cl">CPU B → y
+</span></span></code></pre></div><p>Nhưng floating-point trong đời thực có thể tạo ra:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">CPU A:
+</span></span><span class="line"><span class="ln">2</span><span class="cl">0.5213827421
+</span></span><span class="line"><span class="ln">3</span><span class="cl">
+</span></span><span class="line"><span class="ln">4</span><span class="cl">CPU B:
+</span></span><span class="line"><span class="ln">5</span><span class="cl">0.5213828017
+</span></span></code></pre></div><p>Chênh lệch:</p>
+<p>$$
+5.96 \times 10^{-8}
+$$</p>
+<p>Một đứa trẻ nhìn vào sẽ nói:</p>
+<blockquote>
+<p>Giống nhau mà.</p>
+</blockquote>
+<p>SHA-256 nhìn vào sẽ nói:</p>
+<blockquote>
+<p>Hai vũ trụ khác nhau.</p>
+</blockquote>
+<p>Chỉ cần một byte khác:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">input A → hash A
+</span></span><span class="line"><span class="ln">2</span><span class="cl">input B → hash B
+</span></span></code></pre></div><p>Hai hash có thể khác hoàn toàn.</p>
+<p>Đó là lý do browser vendors phải chủ động giảm entropy thay vì hy vọng sai số quá nhỏ sẽ không ai quan tâm.</p>
+<h1 id="fingerprinting-không-cần-một-phép-đo-thần-kỳ">Fingerprinting không cần một phép đo thần kỳ<a class="anchor ms-1" href="#fingerprinting-không-cần-một-phép-đo-thần-kỳ"><i class="fas fa-link"></i></a></h1>
+<p>Đây có lẽ là điều quan trọng nhất của câu chuyện.</p>
+<p>Người ta thường hình dung fingerprinting như một hacker có một API bí mật:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="ln">1</span><span class="cl"><span class="nx">getUniqueComputerSerialNumber</span><span class="p">()</span>
+</span></span></code></pre></div><p>Không.</p>
+<p>Web không hoạt động đẹp đẽ như vậy.</p>
+<p>Nó giống một thám tử hơi rảnh.</p>
+<p>Hắn không biết tên bạn.</p>
+<p>Nhưng hắn thấy:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">một đôi giày size 42
+</span></span><span class="line"><span class="ln">2</span><span class="cl">một cái áo màu xanh
+</span></span><span class="line"><span class="ln">3</span><span class="cl">một vết xước trên đồng hồ
+</span></span><span class="line"><span class="ln">4</span><span class="cl">một giọng nói hơi khàn
+</span></span><span class="line"><span class="ln">5</span><span class="cl">một chiếc xe màu trắng
+</span></span><span class="line"><span class="ln">6</span><span class="cl">thường xuất hiện lúc 8 giờ sáng
+</span></span></code></pre></div><p>Không dữ kiện nào nói:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">ĐÂY LÀ ANH A.
+</span></span></code></pre></div><p>Nhưng giao của chúng:</p>
+<p>$$
+F = A \cap B \cap C \cap D \cap E
+$$</p>
+<p>có thể làm tập ứng viên nhỏ dần.</p>
+<p>Browser fingerprinting cũng vậy.</p>
+<p>Audio chỉ là một mảnh.</p>
+<p>Canvas là một mảnh.</p>
+<p>WebGL là một mảnh.</p>
+<p>Screen size là một mảnh.</p>
+<p>Timezone là một mảnh.</p>
+<p>Hardware concurrency là một mảnh.</p>
+<p>Một hạt cát chẳng nói được gì.</p>
+<p>Nhưng đủ nhiều hạt cát có thể tạo thành khuôn bàn chân.</p>
+<h1 id="còn-brave-thì-sao">Còn Brave thì sao?<a class="anchor ms-1" href="#còn-brave-thì-sao"><i class="fas fa-link"></i></a></h1>
+<p>Brave đã dùng một chiến lược khá thú vị gọi là <strong>farbling</strong> đối với những API có thể dùng để fingerprint, trong đó có WebAudio.</p>
+<p>Thay vì cố bắt mọi máy trả về một giá trị hoàn toàn giống nhau, Brave có thể thêm một lượng biến đổi nhỏ phụ thuộc site/session.</p>
+<p>Ý tưởng là:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">fingerprint thật
+</span></span><span class="line"><span class="ln">2</span><span class="cl">      ↓
+</span></span><span class="line"><span class="ln">3</span><span class="cl">thêm noise có kiểm soát
+</span></span><span class="line"><span class="ln">4</span><span class="cl">      ↓
+</span></span><span class="line"><span class="ln">5</span><span class="cl">website A thấy X
+</span></span><span class="line"><span class="ln">6</span><span class="cl">website B thấy Y
+</span></span><span class="line"><span class="ln">7</span><span class="cl">session sau thấy Z
+</span></span></code></pre></div><p>Tracker lúc này khó nối:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">X = Y = Z = cùng một người
+</span></span></code></pre></div><p>Brave gọi cơ chế randomization này là <strong>farbling</strong> và áp dụng nó cho Canvas cùng WebAudio. (<a href="https://brave.com/privacy-updates/4-fingerprinting-defenses-2.0/" title="Fingerprinting defenses 2.0 | Brave" target="_blank" rel="noopener noreferrer">Brave</a>)</p>
+<p>Nhưng cần nói chính xác:</p>
+<p><strong>Các nguồn ở đây không chứng minh rằng Brave đã chặn riêng hai script AliExpress này.</strong></p>
+<p>Điều có thể nói chắc hơn là Brave có các cơ chế bảo vệ WebAudio fingerprinting nói chung.</p>
+<p>Đừng biến:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">browser có anti-fingerprinting
+</span></span></code></pre></div><p>thành:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">browser đã xác nhận chặn chính xác case AliExpress này
+</span></span></code></pre></div><p>Hai mệnh đề trông gần giống nhau nhưng không phải một.</p>
+<h1 id="vậy-có-phải-aliexpress-đang-nghe-lén-microphone-không">Vậy có phải AliExpress đang nghe lén microphone không?<a class="anchor ms-1" href="#vậy-có-phải-aliexpress-đang-nghe-lén-microphone-không"><i class="fas fa-link"></i></a></h1>
+<p>Không có bằng chứng trong phân tích này cho thấy microphone được dùng để nghe người dùng.</p>
+<p>Điều quan trọng là oscillator ở đây có thể <strong>tự tạo signal bên trong máy</strong>.</p>
+<p>Không cần ai nói:</p>
+<blockquote>
+<p>Alo alo một hai ba bốn.</p>
+</blockquote>
+<p>Browser tự sinh:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">████╲____████╲____████╲____
+</span></span></code></pre></div><p>rồi đo xem audio engine xử lý nó như thế nào.</p>
+<p>Nó giống kiểm tra một cái chuông bằng cách tự gõ vào chuông.</p>
+<p>Không cần nghe âm thanh trong phòng.</p>
+<p><code>AnalyserNode</code> của WebAudio có thể cung cấp dữ liệu time-domain và frequency-domain từ signal trong audio graph; MDN mô tả cơ chế này dựa trên việc phân tích các sample, bao gồm FFT cho miền tần số. (<a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API/Visualizations_with_Web_Audio_API" title="Visualizations with Web Audio API - Web APIs | MDN" target="_blank" rel="noopener noreferrer">MDN Web Docs</a>)</p>
+<p>Vì vậy:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">audio fingerprinting
+</span></span></code></pre></div><p>không đồng nghĩa với:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">microphone spying
+</span></span></code></pre></div><p>Đây là hai chuyện rất khác nhau.</p>
+<h1 id="có-thể-tự-kiểm-tra-kiểu-này-không">Có thể tự kiểm tra kiểu này không?<a class="anchor ms-1" href="#có-thể-tự-kiểm-tra-kiểu-này-không"><i class="fas fa-link"></i></a></h1>
+<p>Có.</p>
+<p>Một cách đơn giản là instrument <code>AudioContext</code>.</p>
+<p>Ví dụ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="kr">const</span> <span class="nx">OriginalAudioContext</span> <span class="o">=</span> <span class="nb">window</span><span class="p">.</span><span class="nx">AudioContext</span><span class="p">;</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl"><span class="nb">window</span><span class="p">.</span><span class="nx">AudioContext</span> <span class="o">=</span> <span class="kr">class</span> <span class="kr">extends</span> <span class="nx">OriginalAudioContext</span> <span class="p">{</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">    <span class="nx">constructor</span><span class="p">(...</span><span class="nx">args</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">        <span class="kr">super</span><span class="p">(...</span><span class="nx">args</span><span class="p">);</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">            <span class="s2">&#34;New AudioContext&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">            <span class="k">this</span><span class="p">.</span><span class="nx">state</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">            <span class="k">new</span> <span class="nb">Error</span><span class="p">().</span><span class="nx">stack</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl">        <span class="p">);</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl"><span class="p">};</span>
+</span></span><span class="line"><span class="ln">14</span><span class="cl">
+</span></span><span class="line"><span class="ln">15</span><span class="cl"><span class="kr">const</span> <span class="nx">originalConnect</span> <span class="o">=</span> <span class="nx">AudioNode</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">connect</span><span class="p">;</span>
+</span></span><span class="line"><span class="ln">16</span><span class="cl">
+</span></span><span class="line"><span class="ln">17</span><span class="cl"><span class="nx">AudioNode</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">connect</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(...</span><span class="nx">args</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="ln">18</span><span class="cl">    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span>
+</span></span><span class="line"><span class="ln">19</span><span class="cl">        <span class="k">this</span><span class="p">.</span><span class="nx">constructor</span><span class="p">.</span><span class="nx">name</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">20</span><span class="cl">        <span class="s2">&#34;→&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">21</span><span class="cl">        <span class="nx">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">?</span><span class="p">.</span><span class="nx">constructor</span><span class="o">?</span><span class="p">.</span><span class="nx">name</span>
+</span></span><span class="line"><span class="ln">22</span><span class="cl">    <span class="p">);</span>
+</span></span><span class="line"><span class="ln">23</span><span class="cl">
+</span></span><span class="line"><span class="ln">24</span><span class="cl">    <span class="k">return</span> <span class="nx">originalConnect</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">args</span><span class="p">);</span>
+</span></span><span class="line"><span class="ln">25</span><span class="cl"><span class="p">};</span>
+</span></span></code></pre></div><p>Sau đó mở DevTools và xem graph nào được dựng lên.</p>
+<p>Đây chỉ là đoạn demo để hiểu ý tưởng, không phải một browser security tool hoàn chỉnh.</p>
+<p>Nhưng nó cho thấy một tư duy debugging khá hay:</p>
+<p>Khi cái bạn nhìn thấy ở tầng trên không giải thích được hiện tượng&hellip;</p>
+<p>hãy đi xuống một tầng.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">HTML
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl"> ↓
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">JavaScript
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl"> ↓
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">Web API
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl"> ↓
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">Browser engine
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl"> ↓
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">Operating system
+</span></span><span class="line"><span class="ln">10</span><span class="cl"> ↓
+</span></span><span class="line"><span class="ln">11</span><span class="cl">Driver
+</span></span><span class="line"><span class="ln">12</span><span class="cl"> ↓
+</span></span><span class="line"><span class="ln">13</span><span class="cl">Hardware
+</span></span></code></pre></div><p>Rất nhiều con ma trong máy tính biến mất khi ta chịu khó đi xuống cầu thang.</p>
+<h1 id="nếu-muốn-chặn-thì-sao">Nếu muốn chặn thì sao?<a class="anchor ms-1" href="#nếu-muốn-chặn-thì-sao"><i class="fas fa-link"></i></a></h1>
+<p>Tác giả bài gốc thử chặn hai họ script bằng uBlock Origin và quan sát thấy các <code>AudioContext</code> nói trên không còn được tạo trong bài test của mình. (<a href="https://blog.laserphile.com/2026/08/aliexpress-webpage-keeping-multipoint.html" title="laserphile: AliExpress webpage keeping multipoint Bluetooth headphones active with WebAudio fingerprinting" target="_blank" rel="noopener noreferrer">Laserphile</a>)</p>
+<p>Nhưng cần nhớ chúng có vẻ liên quan đến anti-fraud / anti-abuse.</p>
+<p>Chặn chúng có thể khiến website:</p>
+<ul>
+<li>yêu cầu CAPTCHA nhiều hơn;</li>
+<li>nghi ngờ browser;</li>
+<li>gây lỗi login;</li>
+<li>gây vấn đề khi checkout;</li>
+<li>thay đổi hành vi trong tương lai.</li>
+</ul>
+<p>Và script path hoàn toàn có thể được AliExpress thay đổi.</p>
+<p>Đây không phải kiểu:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">thêm hai rule
+</span></span><span class="line"><span class="ln">2</span><span class="cl">→ bảo vệ quyền riêng tư vĩnh viễn
+</span></span><span class="line"><span class="ln">3</span><span class="cl">→ đi ngủ
+</span></span></code></pre></div><p>Security chưa bao giờ dễ thương như vậy.</p>
+<h1 id="điều-thú-vị-nhất-không-phải-aliexpress">Điều thú vị nhất không phải AliExpress<a class="anchor ms-1" href="#điều-thú-vị-nhất-không-phải-aliexpress"><i class="fas fa-link"></i></a></h1>
+<p>Nếu chỉ đọc câu chuyện này như:</p>
+<blockquote>
+<p>AliExpress có một đoạn JavaScript đáng ngờ.</p>
+</blockquote>
+<p>thì hơi phí.</p>
+<p>Điều thú vị hơn nhiều là ranh giới giữa <strong>thế giới ảo và thế giới vật lý</strong>.</p>
+<p>Một đoạn JavaScript:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-javascript" data-lang="javascript"><span class="line"><span class="ln">1</span><span class="cl"><span class="nx">gain</span><span class="p">.</span><span class="nx">gain</span><span class="p">.</span><span class="nx">value</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span></code></pre></div><p>trông vô hại.</p>
+<p>Chỉ là một con số zero.</p>
+<p>Nhưng con số zero ấy có thể tạo ra chuỗi:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">JavaScript
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">↓
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">WebAudio graph
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">↓
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">audio processing thread
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">↓
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">browser audio backend
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">↓
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">Windows audio subsystem
+</span></span><span class="line"><span class="ln">10</span><span class="cl">↓
+</span></span><span class="line"><span class="ln">11</span><span class="cl">Bluetooth audio path
+</span></span><span class="line"><span class="ln">12</span><span class="cl">↓
+</span></span><span class="line"><span class="ln">13</span><span class="cl">tai nghe multipoint
+</span></span><span class="line"><span class="ln">14</span><span class="cl">↓
+</span></span><span class="line"><span class="ln">15</span><span class="cl">điện thoại mất quyền phát nhạc
+</span></span></code></pre></div><p>Một dòng code nằm trong RAM.</p>
+<p>Nhưng cuối cùng nó thay đổi hành vi của một vật thể đang nằm trên đầu bạn.</p>
+<p>Đó là điều mình thấy đẹp một cách hơi đáng sợ trong máy tính.</p>
+<p>Không có gì là hoàn toàn “ảo”.</p>
+<p>Một pixel trên màn hình cuối cùng vẫn là transistor.</p>
+<p>Một request HTTP cuối cùng vẫn là electron chạy trong mạch điện, photon chạy trong sợi quang và sóng điện từ bay qua không khí.</p>
+<p>Một mô hình AI cuối cùng vẫn là hàng tỷ phép nhân cộng làm transistor đóng mở rồi biến điện thành nhiệt.</p>
+<p>Và một âm thanh có volume bằng zero&hellip;</p>
+<p>vẫn có thể giữ cả một đường audio sống.</p>
+<h1 id="một-bug-nhỏ-đã-làm-lộ-một-hệ-thống-lớn">Một bug nhỏ đã làm lộ một hệ thống lớn<a class="anchor ms-1" href="#một-bug-nhỏ-đã-làm-lộ-một-hệ-thống-lớn"><i class="fas fa-link"></i></a></h1>
+<p>Nếu Bluetooth multipoint hoạt động hoàn hảo, có lẽ chẳng ai để ý.</p>
+<p>Audio fingerprint chạy.</p>
+<p>Telemetry được thu thập.</p>
+<p>Tab vẫn im lặng.</p>
+<p>Người dùng tiếp tục xem sản phẩm.</p>
+<p>Mọi thứ chìm dưới mặt nước.</p>
+<p>Nhưng một chiếc tai nghe từ chối chuyển sang điện thoại.</p>
+<p>Một lỗi rất nhỏ.</p>
+<p>Một sự khó chịu rất tầm thường.</p>
+<p>Và chính cái khó chịu đó khiến ai đó mở DevTools.</p>
+<p>Từ đó:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">Bluetooth bug
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">     ↓
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">AudioContext
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">     ↓
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">hidden audio graph
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">     ↓
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">obfuscated JavaScript
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">     ↓
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">WebAudio fingerprint
+</span></span><span class="line"><span class="ln">10</span><span class="cl">     ↓
+</span></span><span class="line"><span class="ln">11</span><span class="cl">browser fingerprinting system
+</span></span></code></pre></div><p>Có một câu của Tom Ritter mình khá thích về tinh thần của vụ này, đại ý rằng khi một đoạn code tác động lên đủ nhiều nạn nhân, cuối cùng nó sẽ thay đổi một thứ gì đó khiến một người chú ý. (<a href="https://ritter.vg/blog-webaudio_alibaba.html" title="webaudio fingerprinting on alibaba - ritter.vg" target="_blank" rel="noopener noreferrer">Ritter</a>)</p>
+<p>Máy tính hiện đại có hàng tỷ thứ diễn ra mà người dùng không bao giờ nhìn thấy.</p>
+<p>Nhưng hệ thống vật lý có một tính xấu.</p>
+<p>Nó hay để lại dấu chân.</p>
+<p>CPU nóng lên.</p>
+<p>Pin tụt.</p>
+<p>Máy không sleep.</p>
+<p>Tai nghe không chuyển.</p>
+<p>Quạt quay.</p>
+<p>Network nháy.</p>
+<p>Một thứ gì đó lệch đi một chút.</p>
+<p>Và đôi khi chỉ cần kéo một sợi chỉ rất nhỏ&hellip;</p>
+<p>cả chiếc áo len bung ra.</p>
+<h1 id="tổng-kết">Tổng kết<a class="anchor ms-1" href="#tổng-kết"><i class="fas fa-link"></i></a></h1>
+<p>Vụ AliExpress này bắt đầu từ một hiện tượng rất đời thường: mở một website thì tai nghe Bluetooth không chịu phát nhạc từ điện thoại.</p>
+<p>Đi xuống vài tầng, tác giả phát hiện hai WebAudio context được tạo bởi các script obfuscate, dựng audio graph có oscillator, analyser và cuối cùng nối qua <code>GainNode</code> có gain bằng zero tới audio destination. Người dùng không nghe thấy gì, nhưng audio subsystem vẫn có thể hoạt động và gây tác dụng phụ lên Bluetooth.</p>
+<p>Những script này đồng thời đo nhiều signal thường xuất hiện trong browser/device fingerprinting như Canvas, WebGL, hardware, screen, codec, WebRTC và interaction data. Tuy nhiên, từ client-side không thể kết luận chính xác fingerprint được sử dụng hoặc lưu trữ thế nào ở server.</p>
+<p>Một chi tiết khá thú vị là Firefox đã làm WebAudio fingerprinting kém hiệu quả đi rất nhiều, nên phép đo vẫn có thể chạy trong khi giá trị thu được chẳng còn phân biệt tốt người dùng. Trớ trêu thay, tác dụng phụ giữ audio path sống lại hoàn toàn có thật.</p>
+<p>Và có lẽ đó mới là điều đáng nhớ.</p>
+<p><strong>Trong máy tính, “không nghe thấy gì” không có nghĩa là “không có gì đang xảy ra”.</strong></p>
+<p>Đôi khi phía sau một con số zero là oscillator đang chạy, FFT đang quay, CPU đang tính, driver đang giữ thiết bị, Bluetooth đang đổi trạng thái và một đoạn JavaScript bé tí đang kéo một sợi dây xuyên từ thế giới phần mềm xuống tận vật chất.</p>
+<p>Xong cái audio bằng zero.</p>
+<p>Quá dễ.</p>
+<p>Cho đến khi tai nghe của bạn ngừng phát nhạc.</p>
+<h1 id="tham-khảo">Tham khảo<a class="anchor ms-1" href="#tham-khảo"><i class="fas fa-link"></i></a></h1>
+<ul>
+<li>laserphile — <em>AliExpress webpage keeping multipoint Bluetooth headphones active with WebAudio fingerprinting</em>. (<a href="https://blog.laserphile.com/2026/08/aliexpress-webpage-keeping-multipoint.html" title="laserphile: AliExpress webpage keeping multipoint Bluetooth headphones active with WebAudio fingerprinting" target="_blank" rel="noopener noreferrer">Laserphile</a>)</li>
+<li>Tom Ritter — <em>webaudio fingerprinting on alibaba</em>. (<a href="https://ritter.vg/blog-webaudio_alibaba.html" title="webaudio fingerprinting on alibaba - ritter.vg" target="_blank" rel="noopener noreferrer">Ritter</a>)</li>
+<li>Mozilla Bugzilla — <em>Audio power request prevents sleep on Windows 11 on Aliexpress pages</em>. (<a href="https://bugzilla.mozilla.org/show_bug.cgi?id=1863193" title="1863193 - Audio power request prevents sleep on Windows 11 on Aliexpress pages" target="_blank" rel="noopener noreferrer">Mozilla Bugzilla</a>)</li>
+<li>Mozilla Bugzilla — thay đổi nhằm giảm entropy còn lại của WebAudio fingerprint. (<a href="https://bugzilla.mozilla.org/show_bug.cgi?id=2036977" title="2036977 - Honor fp-contract=no to reduce fingerprinting in Web Audio" target="_blank" rel="noopener noreferrer">Mozilla Bugzilla</a>)</li>
+<li>MDN — <code>AudioNode</code>, <code>AudioContext</code>, <code>OfflineAudioContext</code>, <code>AnalyserNode</code> và audio destination. (<a href="https://developer.mozilla.org/en-US/docs/Web/API/AudioNode" title="AudioNode - Web APIs | MDN" target="_blank" rel="noopener noreferrer">MDN Web Docs</a>)</li>
+<li>Brave — tài liệu về fingerprint randomization/farbling và các biện pháp bảo vệ fingerprinting. (<a href="https://brave.com/privacy-updates/4-fingerprinting-defenses-2.0/" title="Fingerprinting defenses 2.0 | Brave" target="_blank" rel="noopener noreferrer">Brave</a>)</li>
+</ul>
+</div></div>
+  <div class="card-footer"><div class="post-navs d-flex justify-content-evenly"><div class="post-nav post-prev">
+    <i class="fas fa-fw fa-chevron-left"></i>
+    <a href="https://www.phamduytung.com/blog/2026-08-21-ly-thuyet-hon-don/">Chaos – Hỗn độn: Khi vũ trụ biết chính xác mình đang làm gì nhưng ta vẫn không đoán nổi
+</a>
+  </div><div class="post-nav post-next">
+    <a href="https://www.phamduytung.com/blog/2026-08-24-ly-thuyet-tro-choi-tu-te-khong-thanh-con-moi/">Lý thuyết trò chơi: Tử tế mà không biến mình thành con mồi
+</a>
+    <i class="fas fa-fw fa-chevron-right"></i>
+  </div></div></div>
+</article><div class="card component row post-comments" id="post-comments">
+  <div class="card-header">
+    <h2 class="card-title">Bình luận</h2>
+  </div>
+  <div class="card-body"><script src="https://utteranc.es/client.js"
+  repo="AlexBlack2202/utterances"
+  issue-term="pathname"
+  label="comment"
+  theme="github-dark"
+  crossorigin="anonymous"
+  async>
+</script></div>
+</div></div>
+</div><aside class="col-lg-3 col-md-4 sidebar d-flex">
+  <div class="container d-flex flex-column">
+    
+    <a href="https://www.buymeacoffee.com/alexblack28"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=🍎&slug=alexblack28&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" /></a><div class="post-toc row mb-4 card component" id="postTOC">
+  <div class="card-header">
+    <h2 class="card-title">Mục lục</h2>
+  </div>
+  <div class="card-body">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#không-có-gì-là-hoàn-toàn-im-lặng">Không có gì là hoàn toàn im lặng</a></li>
+    <li><a href="#ban-đầu-nghi-phạm-là-một-cái-video-ngu-ngốc-nào-đó">Ban đầu, nghi phạm là một cái video ngu ngốc nào đó</a></li>
+    <li><a href="#web-audio-api-là-cái-gì">Web Audio API là cái gì?</a></li>
+    <li><a href="#hai-audiocontext-bí-mật">Hai AudioContext bí mật</a></li>
+    <li><a href="#âm-thanh-bằng-0-nhưng-đường-audio-vẫn-còn-sống">Âm thanh bằng 0 nhưng đường audio vẫn còn sống</a></li>
+    <li><a href="#nhưng-tại-sao-một-website-lại-tự-tạo-sóng-âm">Nhưng tại sao một website lại tự tạo sóng âm?</a></li>
+    <li><a href="#đây-chính-là-browser-fingerprinting">Đây chính là browser fingerprinting</a></li>
+    <li><a href="#aliexpress-không-chỉ-nhìn-vào-audio">AliExpress không chỉ nhìn vào audio</a></li>
+    <li><a href="#tại-sao-một-trang-thương-mại-điện-tử-lại-muốn-fingerprint-người-dùng">Tại sao một trang thương mại điện tử lại muốn fingerprint người dùng?</a></li>
+    <li><a href="#webaudio-fingerprint-nghe-đáng-sợ-nhưng-firefox-đã-làm-nó-bớt-đáng-sợ-khá-nhiều">WebAudio fingerprint nghe đáng sợ, nhưng Firefox đã làm nó bớt đáng sợ khá nhiều</a></li>
+    <li><a href="#và-thế-mới-buồn-cười-fingerprint-có-thể-không-hiệu-quả-nhưng-vẫn-làm-hỏng-bluetooth">Và thế mới buồn cười: fingerprint có thể không hiệu quả, nhưng vẫn làm hỏng Bluetooth</a></li>
+    <li><a href="#tại-sao-bấm-mute-tab-vẫn-không-cứu-được">Tại sao bấm Mute tab vẫn không cứu được?</a></li>
+    <li><a href="#offlineaudiocontext-còn-thú-vị-hơn"><code>OfflineAudioContext</code> còn thú vị hơn</a></li>
+    <li><a href="#một-waveform-có-thể-nhận-diện-cpu-như-thế-nào">Một waveform có thể nhận diện CPU như thế nào?</a></li>
+    <li><a href="#fingerprinting-không-cần-một-phép-đo-thần-kỳ">Fingerprinting không cần một phép đo thần kỳ</a></li>
+    <li><a href="#còn-brave-thì-sao">Còn Brave thì sao?</a></li>
+    <li><a href="#vậy-có-phải-aliexpress-đang-nghe-lén-microphone-không">Vậy có phải AliExpress đang nghe lén microphone không?</a></li>
+    <li><a href="#có-thể-tự-kiểm-tra-kiểu-này-không">Có thể tự kiểm tra kiểu này không?</a></li>
+    <li><a href="#nếu-muốn-chặn-thì-sao">Nếu muốn chặn thì sao?</a></li>
+    <li><a href="#điều-thú-vị-nhất-không-phải-aliexpress">Điều thú vị nhất không phải AliExpress</a></li>
+    <li><a href="#một-bug-nhỏ-đã-làm-lộ-một-hệ-thống-lớn">Một bug nhỏ đã làm lộ một hệ thống lớn</a></li>
+    <li><a href="#tổng-kết">Tổng kết</a></li>
+    <li><a href="#tham-khảo">Tham khảo</a></li>
+  </ul>
+</nav>
+  </div>
+</div><section class="recent-posts row card component">
+  <div class="card-header">
+    <h2 class="card-title">Bài gần đây</h2>
+  </div>
+  <div class="card-body">
+    <ul class="post-list"><li>
+        <a href="https://www.phamduytung.com/blog/2026-09-02-fourier/">Biến đổi Fourier: xé một đường cong hỗn loạn thành những con sóng hình sin
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-09-02-becker/">Lý thuyết Becker: Khi tội phạm cũng là một bài toán kinh tế
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-09-02-festunger/">Định luật Festinger: 10% là chuyện xảy ra, 90% là cách ta phản ứng
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-08-24-ly-thuyet-tro-choi-tu-te-khong-thanh-con-moi/">Lý thuyết trò chơi: Tử tế mà không biến mình thành con mồi
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-08-23-webaudio-im-lang-van-giu-tai-nghe-bluetooth/">WebAudio im lặng: Vì sao một trang web vẫn giữ tai nghe Bluetooth của bạn
+</a>
+      </li></ul>
+  </div>
+</section><section class="series-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/series">series</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/series/kh%C3%B3a-h%E1%BB%8Dc-python-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học Python Căn Bản">
+            Khóa Học Python Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="https://www.phamduytung.com/series/kh%C3%B3a-h%E1%BB%8Dc-c&#43;&#43;-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học C&#43;&#43; Căn Bản">
+            Khóa Học C&#43;&#43; Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="https://www.phamduytung.com/series/machine-learning-dataset/" class="badge rounded post-taxonomy" title="Machine Learning Dataset">
+            Machine Learning Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a><a href="https://www.phamduytung.com/series/ch%E1%BB%A9ng-kho%C3%A1n-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Chứng Khoán Căn Bản">
+            Chứng Khoán Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">1</span></a></div>
+      </div>
+    </section><section class="tools-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/tools">tools</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/tools/tool-random/" class="badge rounded post-taxonomy" title="Tool Random">
+            Tool Random<span class="badge badge-sm text-white bg-accent ms-1">3</span></a></div>
+      </div>
+    </section><section class="categories-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/categories">categories</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/categories/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="https://www.phamduytung.com/categories/c&#43;&#43;/" class="badge rounded post-taxonomy" title="C&#43;&#43;">
+            C&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="https://www.phamduytung.com/categories/dataset/" class="badge rounded post-taxonomy" title="Dataset">
+            Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a></div>
+      </div>
+    </section><section class="tags-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/tags">tags</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/tags/machine-learning/" class="badge rounded post-taxonomy" title="Machine Learning">
+            Machine Learning<span class="badge badge-sm text-white bg-accent ms-1">29</span></a><a href="https://www.phamduytung.com/tags/deep-learning/" class="badge rounded post-taxonomy" title="Deep Learning">
+            Deep Learning<span class="badge badge-sm text-white bg-accent ms-1">25</span></a><a href="https://www.phamduytung.com/tags/llm/" class="badge rounded post-taxonomy" title="LLM">
+            LLM<span class="badge badge-sm text-white bg-accent ms-1">17</span></a><a href="https://www.phamduytung.com/tags/computer-vision/" class="badge rounded post-taxonomy" title="Computer Vision">
+            Computer Vision<span class="badge badge-sm text-white bg-accent ms-1">16</span></a><a href="https://www.phamduytung.com/tags/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">14</span></a><a href="https://www.phamduytung.com/tags/mathematics/" class="badge rounded post-taxonomy" title="Mathematics">
+            Mathematics<span class="badge badge-sm text-white bg-accent ms-1">12</span></a><a href="https://www.phamduytung.com/tags/ai-agent/" class="badge rounded post-taxonomy" title="Ai Agent">
+            Ai Agent<span class="badge badge-sm text-white bg-accent ms-1">10</span></a><a href="https://www.phamduytung.com/tags/tri%E1%BA%BFt-h%E1%BB%8Dc/" class="badge rounded post-taxonomy" title="Triết Học">
+            Triết Học<span class="badge badge-sm text-white bg-accent ms-1">8</span></a><a href="https://www.phamduytung.com/tags/ai/" class="badge rounded post-taxonomy" title="AI">
+            AI<span class="badge badge-sm text-white bg-accent ms-1">7</span></a><a href="https://www.phamduytung.com/tags/recommendation-system/" class="badge rounded post-taxonomy" title="Recommendation System">
+            Recommendation System<span class="badge badge-sm text-white bg-accent ms-1">7</span></a></div>
+      </div>
+    </section>
+    
+  </div>
+</aside>
+</div>
+    </main><footer class="footer mt-auto py-3 text-center container"><ul class="nav justify-content-between footer-memu mb-3"><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Community
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-facebook"></i>Facebook Group
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://github.com/AlexBlack2202/alexblack2202.github.io" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-github"></i>GitHub
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/contact/"><i class="fas fa-fw fa-info-circle"></i>Contact Us
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/faq/"><i class="fas fa-fw fa-question-circle"></i>Câu hỏi thường gặp
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Docs
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="/team_of_services" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-users"></i>Điều khoản sử dụng
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/privacy" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-lock"></i>Chính sách bảo mật
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Features
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="/utils/gen_paswords/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-key"></i>Tạo password ngẫu nhiên
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Liên kết khác
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">Netlify
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">facebook
+</a>
+        </li></ul></li></ul>
+<div class="copyright mb-2">
+  Copyright © 2016-2026 Phạm Duy Tùng. All Rights Reserved.
+</div>
+<div class="powered-by mb-2">
+  Website chia sẻ kiến thức của Phạm Duy Tùng và Đặng Thị Hằng. Vui lòng liên hệ email alexblack2202@gmail.com nếu bạn có thông tin cần trao đổi.
+</div></footer>
+<script src="https://www.phamduytung.com/js/main.111d51a8c754010f8399ca010e552d803e2d5170b361f8886ad04ec6c21ca551.js" integrity="sha256-ER1RqMdUAQ&#43;DmcoBDlUtgD4tUXCzYfiIatBOxsIcpVE=" crossorigin="anonymous" defer></script><script src="https://www.phamduytung.com/js/icons.min.cb4c9958dbc49e29ac644e168e82db2d0de9a741a15751cc5bf2b0af21eb2845.js" integrity="sha256-y0yZWNvEnimsZE4WjoLbLQ3pp0GhV1HMW/KwryHrKEU=" crossorigin="anonymous" defer></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('https:\/\/www.phamduytung.com\/service-worker.js').then(function(reg) {
+      console.log('Successfully registered service worker', reg);
+    }).catch(function(err) {
+      console.warn('Error whilst registering service worker', err);
+    });
+  });
+}
+</script><script src="https://www.phamduytung.com/js/viewer.min.28bcf5233e406dae6715f46c8b9e8ca7c6cbf347e8678f5a2bebe5369c3270bb.js" integrity="sha256-KLz1Iz5Aba5nFfRsi56Mp8bL80foZ49aK&#43;vlNpwycLs=" crossorigin="anonymous" defer></script><script defer src="https://www.phamduytung.com/js/katex.min.8582b9feadf92a2a977ed303b97d7713cf2754ccf2b4eb60d8be7453a21042c2.js" integrity="sha256-hYK5/q35KiqXftMDuX13E88nVMzytOtg2L50U6IQQsI=" crossorigin="anonymous"></script>
+
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-2WWQ5G9DKL"></script>
+      <script>
+        var doNotTrack = false;
+        if ( true ) {
+          var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
+          var doNotTrack = (dnt == "1" || dnt == "yes");
+        }
+        if (!doNotTrack) {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-2WWQ5G9DKL');
+        }
+      </script>
+<script  data-ad-client="ca-pub-4644989745435991"  async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4644989745435991"
+     crossorigin="anonymous"></script><script data-cfasync="false" type="text/javascript" data-adel="atag" src="//acscdn.com/script/atg.js" czid="eul3gyjdmm"></script>
+  </body>
+</html>

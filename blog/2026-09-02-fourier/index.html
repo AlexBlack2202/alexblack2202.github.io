@@ -1,0 +1,1349 @@
+<!doctype html><html lang="vi" data-palette="brown"
+   data-mode="light">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Biến đổi Fourier: xé một đường cong hỗn loạn thành những con sóng hình sin - Phạm Duy Tùng Machine Learning Blog</title>
+    <meta name="a.validate.02" content="1QZXZ8oi7g57H-GxBrBPkTYBydwii-Ic9iJu" /><link rel="apple-touch-icon" href="https://www.phamduytung.com/images/icons/icon-180x180.png" sizes="180x180">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/icon-32x32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/icon-16x16.png" sizes="16x16" type="image/png">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/favicon.ico">
+<link rel="manifest" href="https://www.phamduytung.com/manifest.json">
+<meta name="keywords" content="" />
+<meta name="description" content="Từ bài toán truyền nhiệt của Joseph Fourier, cuộc tranh luận với Laplace và Lagrange, đến chuỗi Fourier, FFT, Wi-Fi, 5G, JPEG, âm thanh, radar và MRI: vì sao rất nhiều công nghệ hiện đại đều sống nhờ một ý tưởng hơn 200 năm tuổi." /><meta name="robots" content="index, follow" />
+	<meta itemprop="name" content="Biến đổi Fourier: xé một đường cong hỗn loạn thành những con sóng hình sin">
+	<meta itemprop="description" content="Từ bài toán truyền nhiệt của Joseph Fourier, cuộc tranh luận với Laplace và Lagrange, đến chuỗi Fourier, FFT, Wi-Fi, 5G, JPEG, âm thanh, radar và MRI: vì sao rất nhiều công nghệ hiện đại đều sống nhờ một ý tưởng hơn 200 năm tuổi.">
+	<meta itemprop="datePublished" content="2026-09-02T00:00:00+03:00">
+	<meta itemprop="dateModified" content="2026-09-02T00:00:00+03:00">
+	<meta itemprop="wordCount" content="5532">
+	<meta itemprop="keywords" content="Fourier,Fft,Signal-Processing,Toan-Hoc,Lich-Su-Khoa-Hoc"><meta property="og:url" content="https://www.phamduytung.com/blog/2026-09-02-fourier/">
+	<meta property="og:site_name" content="Phạm Duy Tùng Machine Learning Blog">
+	<meta property="og:title" content="Biến đổi Fourier: xé một đường cong hỗn loạn thành những con sóng hình sin">
+	<meta property="og:description" content="Từ bài toán truyền nhiệt của Joseph Fourier, cuộc tranh luận với Laplace và Lagrange, đến chuỗi Fourier, FFT, Wi-Fi, 5G, JPEG, âm thanh, radar và MRI: vì sao rất nhiều công nghệ hiện đại đều sống nhờ một ý tưởng hơn 200 năm tuổi.">
+	<meta property="og:locale" content="vi_VN">
+	<meta property="og:type" content="article">
+		<meta property="article:section" content="blog">
+		<meta property="article:published_time" content="2026-09-02T00:00:00+03:00">
+		<meta property="article:modified_time" content="2026-09-02T00:00:00+03:00">
+		<meta property="article:tag" content="Fourier">
+		<meta property="article:tag" content="Fft">
+		<meta property="article:tag" content="Signal-Processing">
+		<meta property="article:tag" content="Toan-Hoc">
+		<meta property="article:tag" content="Lich-Su-Khoa-Hoc">
+
+	<meta name="twitter:card" content="summary">
+	<meta name="twitter:title" content="Biến đổi Fourier: xé một đường cong hỗn loạn thành những con sóng hình sin">
+	<meta name="twitter:description" content="Từ bài toán truyền nhiệt của Joseph Fourier, cuộc tranh luận với Laplace và Lagrange, đến chuỗi Fourier, FFT, Wi-Fi, 5G, JPEG, âm thanh, radar và MRI: vì sao rất nhiều công nghệ hiện đại đều sống nhờ một ý tưởng hơn 200 năm tuổi.">
+<meta property="og:image" content="https://www.phamduytung.com/images/brand-mark-flaming-book-red.png"/>
+  <meta name="twitter:image" content="https://www.phamduytung.com/images/brand-mark-flaming-book-red.png"/><link rel="stylesheet" href="https://www.phamduytung.com/css/main.min.1a7226fbd65768f38cdf02e59cdd28a35be617bb64b16963588e2b5b5797ce55.css" integrity="sha256-GnIm&#43;9ZXaPOM3wLlnN0oo1vmF7tksWljWI4rW1eXzlU=" crossorigin="anonymous"><link rel="stylesheet" href="https://www.phamduytung.com/css/katex.min.4d6aa053ca8a5675016fa2c9c48ee5359bfaafb8295184458af9d64abce84c47.css" integrity="sha256-TWqgU8qKVnUBb6LJxI7lNZv6r7gpUYRFivnWSrzoTEc=" crossorigin="anonymous">
+<link rel="stylesheet" href="https://www.phamduytung.com/css/viewer.min.3d228794bcedbbfa0412beb8fbc1ec6973202945e42af7004f742a4d7bd620ab.css" integrity="sha256-PSKHlLztu/oEEr64&#43;8HsaXMgKUXkKvcAT3QqTXvWIKs=" crossorigin="anonymous"><link rel="canonical" href="https://www.phamduytung.com/blog/2026-09-02-fourier/">
+<meta name="theme-color" content="#f7f5ff"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Phạm Duy Tùng"},"dateModified":"2026-09-02T00:00:00+03:00","datePublished":"2026-09-02T00:00:00+03:00","description":"Từ bài toán truyền nhiệt của Joseph Fourier, cuộc tranh luận với Laplace và Lagrange, đến chuỗi Fourier, FFT, Wi-Fi, 5G, JPEG, âm thanh, radar và MRI: vì sao rất nhiều công nghệ hiện đại đều sống nhờ một ý tưởng hơn 200 năm tuổi.","headline":"Biến đổi Fourier: xé một đường cong hỗn loạn thành những con sóng hình sin","image":["https://www.phamduytung.com/images/brand-mark-flaming-book-red.png"],"inLanguage":"vi","keywords":"fourier, fft, signal-processing, toan-hoc, lich-su-khoa-hoc","mainEntityOfPage":{"@id":"https://www.phamduytung.com/blog/2026-09-02-fourier/","@type":"WebPage"},"publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://www.phamduytung.com/images/brand-mark-flaming-book-red.png"},"name":"Phạm Duy Tùng Machine Learning Blog"},"url":"https://www.phamduytung.com/blog/2026-09-02-fourier/"}</script></head>
+  <body><script>const items=["mode","palette"];items.forEach(function(e){const t=localStorage.getItem("hbs-"+e);t&&document.body.parentElement.setAttribute("data-"+e,t)})</script><header><nav class="navbar top-app-bar top-app-bar-expand-lg fixed-top">
+  <div class="container pearl-navbar__inner">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Mở menu">
+      <i class="fas fa-bars"></i>
+    </button>
+
+    <a class="navbar-brand pearl-brand flex-grow-1 flex-lg-grow-0" href="https://www.phamduytung.com/">
+      <span class="pearl-brand__mark" aria-hidden="true">
+        <img src="https://www.phamduytung.com/images/brand-mark-flaming-book-red.png" alt="" width="42" height="42">
+      </span>
+      <span class="pearl-brand__copy">
+        <strong>Phạm Duy Tùng</strong>
+        <small>AI · DATA · SYSTEMS</small>
+      </span>
+    </a>
+
+    <div class="offcanvas offcanvas-bottom surface" tabindex="-1" id="offcanvasSocialShare" aria-labelledby="offcanvasSocialShare">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Share</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body">
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Twitter Share Button"
+      target="_blank" href="https://twitter.com/intent/tweet?title=Bi%e1%ba%bfn%20%c4%91%e1%bb%95i%20Fourier%3a%20x%c3%a9%20m%e1%bb%99t%20%c4%91%c6%b0%e1%bb%9dng%20cong%20h%e1%bb%97n%20lo%e1%ba%a1n%20th%c3%a0nh%20nh%e1%bb%afng%20con%20s%c3%b3ng%20h%c3%acnh%20sin&url=https%3a%2f%2fwww.phamduytung.com%2fblog%2f2026-09-02-fourier%2f">
+      <i class="fab fa-fw fa-twitter"></i> Twitter
+    </a>
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Facebook Share Button"
+      target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.phamduytung.com%2fblog%2f2026-09-02-fourier%2f">
+      <i class="fab fa-fw fa-facebook-f"></i> Facebook
+    </a>
+  </div>
+</div>
+    <button class="navbar-settings" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSettings"
+  aria-controls="offcanvasSettings" aria-label="Toggle settings">
+  <i class="fas fa-ellipsis-v"></i>
+</button>
+
+<div class="offcanvas offcanvas-end surface h-100" tabindex="-1" id="offcanvasSettings" aria-labelledby="offcanvasSettings">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Cài đặt</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body d-flex flex-column">
+
+
+
+<section class="setting">
+  <form class="font-size-switcher-form row">
+    <div class="col-auto">
+      <label for="fontSize" class="form-label"><i class="fas fa-fw fa-font"></i> Cỡ chữ</label>
+    </div>
+    <div class="col-auto ms-auto">
+      <input type="range" class="form-range" min="-2" max="2" id="fontSize">
+    </div>
+  </form>
+</section>
+
+
+
+<section class="setting actions d-flex justify-content-around mt-auto overflow-auto">
+  <a role="button" class="action action-go-back" href="javascript: window.history.back();">
+    <span class="action-icon"><i class="fas fa-2x fa-arrow-left"></i></span> Quay lại
+  </a>
+  <a role="button" class="action action-reload-page">
+    <span class="action-icon"><i class="fas fa-2x fa-redo-alt"></i></span> Tải lại
+  </a>
+  <a role="button" class="action action-copy-url">
+    <span class="action-icon"><i class="fas fa-2x fa-link"></i></span> Sao chép URL
+  </a><a class="action action-social-share" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSocialShare"
+    aria-controls="offcanvasSocialShare" aria-label="Toggle social share">
+    <span class="action-icon"><i class="fas fa-2x fa-share-alt"></i></span> Chia sẻ
+  </a></section>
+
+</div>
+</div>
+
+    <div class="collapse navbar-collapse" tabindex="-1" id="navbarSupportedContent" aria-labelledby="navbarSupportedContent">
+      <form class="search-bar my-1" action="https://www.phamduytung.com/search">
+  <div class="input-group input-group-sm">
+    <span class="btn btn-search disabled position-absolute left-0"><i class="fas fa-fw fa-search"></i></span>
+    <input class="form-control rounded-pill" name="q" type="search" aria-label="Search">
+  </div>
+</form>
+      <ul class="navbar-nav ms-auto"><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/series/">
+            <i class="fas fa-fw fa-columns"></i>Courses
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/tools/">
+            <i class="fas fa-fw fa-folder"></i>Tools
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/categories/">
+            <i class="fas fa-fw fa-folder"></i>Categories
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/archives/">
+            <i class="fas fa-fw fa-file-archive"></i>Archives
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/tags/">
+            <i class="fas fa-fw fa-tags"></i>Tags
+          </a>
+        </li><li class="nav-item dropdown">
+          <a class="nav-link" id="navbarDropdownSupport" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-fw fa-comments"></i>Community
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdownSupport"><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Facebook Group
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://github.com/AlexBlack2202/alexblack2202.github.io" target="_blank" rel="noopener noreferrer">
+                GitHub
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/contact/">
+                Contact
+              </a>
+            </li><li><hr class="dropdown-divider"></li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/faq/">
+                Câu hỏi thường gặp
+              </a>
+            </li></ul>
+        </li></ul>
+    </div>
+  </div>
+</nav>
+</header>
+<main role="main" class="container" style="line-height:1.7em">
+      <div class="row content">
+<div class="col-lg-9 col-md-8">
+  <div class="container"><nav class="row card component" aria-label="breadcrumb">
+  <div class="card-body">
+    <ol class="breadcrumb "><li class="breadcrumb-item"><a href="https://www.phamduytung.com/">Trang chủ</a></li><li class="breadcrumb-item"><a href="https://www.phamduytung.com/blog/">Blogs</a></li><li class="breadcrumb-item active">Biến đổi Fourier: xé một đường cong hỗn loạn thành những con sóng hình sin</li></ol>
+  </div>
+</nav>
+<div class="post-panel-wrapper">
+  <div class="d-flex flex-column component rounded post-panel">
+    
+    <a class="action action-panel-toggler" role="button" title="Panel toggler">
+      <i class="fas fa-fw fa-chevron-circle-down"></i>
+    </a>
+    <a id="sidebarToggler" class="action d-none d-lg-block" role="button" title="Sidebar toggler">
+  <i class="fas fa-fw fa-expand-alt" data-fa-transform="rotate-45"></i>
+</a>
+
+    
+
+    
+    
+    <a class="action" href="#post-comments" role="button" aria-label="Comments" title="Comments">
+  <i class="fas fa-fw fa-comments"></i>
+</a>
+    <a class="action" href="#postTOC" aria-controls="Table of contents" role="button" title="Table of contents">
+  <i class="fas fa-fw fa-list-alt"></i>
+</a>
+    
+  </div>
+</div>
+<article class="row card component mb-4 post">
+  <div class="card-header "><div class="bgcover" style="background-image:url(https://www.phamduytung.com/images/logo.webp)" aria-label="Biến đổi Fourier: xé một đường cong hỗn loạn thành những con sóng hình sin">
+      <div class="bgtrans">
+          <h1>Biến đổi Fourier: xé một đường cong hỗn loạn thành những con sóng hình sin
+</h1>
+      </div>
+  </div>
+</div>
+  <div class="card-body"><div class="post-meta">
+  <span class="post-date" title="tạo ngày 2026-09-02 04:00:00 &#43;0700 &#43;07.">
+    02/09/2026
+  </span><span class="post-reading-time">
+    26 phút đọc
+  </span><span class="post-taxonomies"><a href="https://www.phamduytung.com/tags/fourier/" class="badge post-taxonomy">fourier</a><a href="https://www.phamduytung.com/tags/fft/" class="badge post-taxonomy">fft</a><a href="https://www.phamduytung.com/tags/signal-processing/" class="badge post-taxonomy">signal-processing</a><a href="https://www.phamduytung.com/tags/toan-hoc/" class="badge post-taxonomy">toan-hoc</a><a href="https://www.phamduytung.com/tags/lich-su-khoa-hoc/" class="badge post-taxonomy">lich-su-khoa-hoc</a></span>
+</div>
+<div class="post-content mb-3"><hr>
+<div class="toc">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#đặt-vấn-đề-bên-trong-tiếng-alo-có-một-đống-sóng-đang-chen-nhau">Đặt vấn đề: bên trong tiếng &ldquo;alo&rdquo; có một đống sóng đang chen nhau</a></li>
+    <li><a href="#joseph-fourier-người-bắt-đầu-từ-một-cục-sắt-nóng">Joseph Fourier: người bắt đầu từ một cục sắt nóng</a></li>
+    <li><a href="#fracpartial-upartial-t">$$
+\frac{\partial u}{\partial t}</a></li>
+    <li><a href="#một-đường-cong-nhiệt-độ-có-thể-rất-xấu-xí">Một đường cong nhiệt độ có thể rất xấu xí</a></li>
+    <li><a href="#chuỗi-fourier-lego-dành-cho-đường-cong">Chuỗi Fourier: Lego dành cho đường cong</a></li>
+    <li><a href="#fx">$$
+f(x)</a></li>
+    <li><a href="#a_n">$$
+a_n</a></li>
+    <li><a href="#b_n">$$
+b_n</a></li>
+    <li><a href="#ví-dụ-điên-rồ-nhất-dùng-những-đường-cong-tròn-trịa-để-dựng-một-hình-vuông">Ví dụ điên rồ nhất: dùng những đường cong tròn trịa để dựng một hình vuông</a></li>
+    <li><a href="#fx-1">$$
+f(x)</a></li>
+    <li><a href="#năm-1807-fourier-mang-quả-bom-vào-viện-hàn-lâm">Năm 1807: Fourier mang quả bom vào Viện Hàn lâm</a></li>
+    <li><a href="#fourier-và-laplace-không-hẳn-là-hai-ông-già-cầm-ghế-đánh-nhau">Fourier và Laplace: không hẳn là hai ông già cầm ghế đánh nhau</a>
+      <ul>
+        <li><a href="#tầng-thứ-nhất-toán-học">Tầng thứ nhất: toán học</a></li>
+        <li><a href="#tầng-thứ-hai-vật-lý">Tầng thứ hai: vật lý</a></li>
+      </ul>
+    </li>
+    <li><a href="#rồi-fourier-thắng">Rồi Fourier thắng?</a></li>
+    <li><a href="#từ-chuỗi-fourier-đến-biến-đổi-fourier">Từ chuỗi Fourier đến biến đổi Fourier</a></li>
+    <li><a href="#fomega">$$
+F(\omega)</a></li>
+    <li><a href="#ft">$$
+f(t)</a></li>
+    <li><a href="#eitheta">$$
+e^{i\theta}</a></li>
+    <li><a href="#miền-thời-gian-và-miền-tần-số-nhìn-cùng-một-con-voi-bằng-hai-phía">Miền thời gian và miền tần số: nhìn cùng một con voi bằng hai phía</a></li>
+    <li><a href="#một-ví-dụ-bỏ-tiếng-ù-50-hz">Một ví dụ: bỏ tiếng ù 50 Hz</a></li>
+    <li><a href="#nhưng-máy-tính-không-có-thời-gian-tính-tích-phân-từ-âm-vô-cực-đến-dương-vô-cực">Nhưng máy tính không có thời gian tính tích phân từ âm vô cực đến dương vô cực</a></li>
+    <li><a href="#x_k">$$
+X_k</a></li>
+    <li><a href="#năm-2026-bạn-dùng-fourier-từ-lúc-vừa-thức-dậy">Năm 2026, bạn dùng Fourier từ lúc vừa thức dậy</a>
+      <ul>
+        <li><a href="#1-wi-fi-căn-phòng-đầy-những-con-sóng-vô-hình">1. Wi-Fi: căn phòng đầy những con sóng vô hình</a></li>
+        <li><a href="#2-4g-và-5g">2. 4G và 5G</a></li>
+        <li><a href="#3-ảnh-jpeg-fourier-có-một-người-em-họ-tên-dct">3. Ảnh JPEG: Fourier có một người em họ tên DCT</a></li>
+        <li><a href="#4-nhạc-và-giọng-nói-chia-âm-thanh-thành-những-dải-tần">4. Nhạc và giọng nói: chia âm thanh thành những dải tần</a></li>
+        <li><a href="#5-equalizer">5. Equalizer</a></li>
+        <li><a href="#6-tai-nghe-chống-ồn">6. Tai nghe chống ồn</a></li>
+        <li><a href="#7-microphone-họp-online-và-gọi-điện">7. Microphone, họp online và gọi điện</a></li>
+      </ul>
+    </li>
+    <li><a href="#8-radar-trên-ô-tô-một-con-chip-nghe-tiếng-vọng-của-chính-mình">8. Radar trên ô tô: một con chip nghe tiếng vọng của chính mình</a></li>
+    <li><a href="#9-mri-cơ-thể-con-người-xuất-hiện-từ-miền-tần-số">9. MRI: cơ thể con người xuất hiện từ miền tần số</a></li>
+    <li><a href="#10-ct-gom-những-cái-bóng-thành-một-cơ-thể">10. CT: gom những cái bóng thành một cơ thể</a></li>
+    <li><a href="#điều-fourier-thực-sự-phát-minh-không-chỉ-là-một-công-thức">Điều Fourier thực sự phát minh không chỉ là một công thức</a></li>
+    <li><a href="#fomega-1">$$
+F(\omega)</a></li>
+    <li><a href="#nhưng-tại-sao-lại-là-sin">Nhưng tại sao lại là sin?</a></li>
+    <li><a href="#fracddteiomega-t">$$
+\frac{d}{dt}e^{i\omega t}</a></li>
+    <li><a href="#fourier-không-phải-thần-có-những-thứ-ông-làm-không-đẹp">Fourier không phải thần: có những thứ ông làm không đẹp</a></li>
+    <li><a href="#một-chi-tiết-vui-ai-cũng-không-giết-được-fourier">Một chi tiết vui: AI cũng không giết được Fourier</a></li>
+    <li><a href="#một-cuộc-đối-đầu-rất-đẹp-giữa-fourier-và-laplace">Một cuộc đối đầu rất đẹp giữa Fourier và Laplace</a></li>
+    <li><a href="#có-một-thứ-rất-triết-học-nằm-bên-dưới-fourier">Có một thứ rất triết học nằm bên dưới Fourier</a></li>
+    <li><a href="#tổng-kết">Tổng kết</a></li>
+    <li><a href="#tham-khảo">Tham khảo</a></li>
+  </ul>
+</nav>
+  </div>
+<h1 id="đặt-vấn-đề-bên-trong-tiếng-alo-có-một-đống-sóng-đang-chen-nhau">Đặt vấn đề: bên trong tiếng “alo” có một đống sóng đang chen nhau<a class="anchor ms-1" href="#đặt-vấn-đề-bên-trong-tiếng-alo-có-một-đống-sóng-đang-chen-nhau"><i class="fas fa-link"></i></a></h1>
+<p>Không có âm thanh nào thật sự chỉ là <strong>một âm thanh</strong>.</p>
+<p>Giả sử bạn cầm điện thoại lên và nói:</p>
+<blockquote>
+<p>Alo, tối nay ăn gì?</p>
+</blockquote>
+<p>Tai chúng ta nghe thấy một câu nói.</p>
+<p>Nhưng cái microphone bé tí trong điện thoại lại nhìn thấy một thứ khác: một đường cong ngoằn ngoèo, lúc cao lúc thấp, run bần bật hàng chục nghìn lần mỗi giây.</p>
+<p>Trong đường cong ấy có giọng của bạn, tiếng quạt máy, tiếng xe ngoài đường, tiếng điều hòa, tiếng gió đập vào microphone, tiếng vọng từ bức tường, thậm chí có cả những nhiễu điện mà tai người chẳng hề biết chúng tồn tại.</p>
+<p>Một mớ mì.</p>
+<p>Và hơn hai trăm năm trước, một nhà toán học người Pháp tên <strong>Joseph Fourier</strong> đã đưa ra một ý tưởng hơi điên:</p>
+<p><strong>Có thể hiểu một đường cong phức tạp bằng cách tách nó thành nhiều sóng hình sin đơn giản.</strong></p>
+<p>Một sóng chậm.</p>
+<p>Một sóng nhanh.</p>
+<p>Một sóng rất nhỏ.</p>
+<p>Một sóng to hơn.</p>
+<p>Chồng chúng lên nhau.</p>
+<p>Bùm.</p>
+<p>Ta có thể tái tạo lại đường cong ban đầu.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">Sóng đơn giản 1     ~~~~~~~~
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">Sóng đơn giản 2     ~ ~ ~ ~ ~ ~ ~ ~
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">Sóng đơn giản 3     ∿∿∿∿∿∿∿∿∿∿∿∿∿
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">                   cộng lại
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">                       ↓
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">
+</span></span><span class="line"><span class="ln">10</span><span class="cl">Tín hiệu thật       _/\_/\/\___/\/\_/\/\__
+</span></span></code></pre></div><p>Nghe thì có vẻ như một trò toán học khá vô dụng.</p>
+<p>Nhưng tới năm 2026, mỗi lần chúng ta kết nối Wi-Fi, gọi điện thoại, nghe nhạc, gửi một bức ảnh JPEG, xem video, dùng tai nghe chống ồn, chụp MRI hay ngồi trên một chiếc ô tô có radar, hậu duệ của ý tưởng Fourier đang chạy đâu đó trong silicon.</p>
+<p>Không phải phép màu.</p>
+<p>Là hàng tỷ transistor đang cộng, nhân và xoay những con số để hỏi một câu rất cổ:</p>
+<p><strong>Trong cái thứ hỗn loạn này, đang có những con sóng nào?</strong></p>
+<h1 id="joseph-fourier-người-bắt-đầu-từ-một-cục-sắt-nóng">Joseph Fourier: người bắt đầu từ một cục sắt nóng<a class="anchor ms-1" href="#joseph-fourier-người-bắt-đầu-từ-một-cục-sắt-nóng"><i class="fas fa-link"></i></a></h1>
+<p>Jean-Baptiste Joseph Fourier sinh năm 1768 tại Auxerre, Pháp.</p>
+<p>Cuộc đời ông không giống hình ảnh một giáo sư toán ngồi yên trong thư viện.</p>
+<p>Fourier sống qua Cách mạng Pháp, từng bị bắt, từng đứng gần nguy cơ lên máy chém, học và sau đó giảng dạy tại École Polytechnique, tham gia đoàn viễn chinh Ai Cập của Napoleon, rồi được bổ nhiệm làm tỉnh trưởng Isère tại Grenoble.</p>
+<p>Ông từng học với hai quái vật toán học thời đó: <strong>Joseph-Louis Lagrange</strong> và <strong>Pierre-Simon Laplace</strong>. Fourier rất kính trọng Lagrange; với Laplace thì đánh giá của ông dè dặt hơn một chút. (<a href="https://mathshistory.st-andrews.ac.uk/Biographies/Fourier/?utm_source=chatgpt.com" title="Joseph Fourier (1768 - 1830) - Biography - MacTutor History of Mathematics" target="_blank" rel="noopener noreferrer">Maths History</a>)</p>
+<p>Nhưng thứ khiến Fourier trở nên bất tử không phải Napoleon.</p>
+<p>Không phải Ai Cập.</p>
+<p>Mà là&hellip; <strong>nhiệt</strong>.</p>
+<p>Khoảng năm 1804, Fourier bắt đầu suy nghĩ về một câu hỏi nghe cực kỳ bình thường:</p>
+<blockquote>
+<p>Nếu nung nóng một thanh sắt ở một đầu, nhiệt sẽ chạy sang đầu kia như thế nào?</p>
+</blockquote>
+<p>Nhìn bằng mắt thì chẳng có gì xảy ra.</p>
+<p>Thanh sắt vẫn nằm đó.</p>
+<p>Nhưng bên trong vật chất, năng lượng nhiệt đang lan đi.</p>
+<p>Fourier xây dựng phương trình mô tả quá trình này. Ở dạng một chiều đơn giản:</p>
+<h1 id="fracpartial-upartial-t">$$
+\frac{\partial u}{\partial t}<a class="anchor ms-1" href="#fracpartial-upartial-t"><i class="fas fa-link"></i></a></h1>
+<p>\alpha
+\frac{\partial^2 u}{\partial x^2}
+$$</p>
+<p>Trong đó:</p>
+<ul>
+<li>$u(x,t)$ là nhiệt độ tại vị trí $x$ và thời điểm $t$.</li>
+<li>$\alpha$ là hệ số khuếch tán nhiệt của vật liệu.</li>
+</ul>
+<p>Nhưng viết được phương trình mới chỉ là nửa trận đánh.</p>
+<p>Câu hỏi khó hơn là:</p>
+<p><strong>Giải nó thế nào?</strong></p>
+<h1 id="một-đường-cong-nhiệt-độ-có-thể-rất-xấu-xí">Một đường cong nhiệt độ có thể rất xấu xí<a class="anchor ms-1" href="#một-đường-cong-nhiệt-độ-có-thể-rất-xấu-xí"><i class="fas fa-link"></i></a></h1>
+<p>Giả sử ta có một thanh kim loại.</p>
+<p>Ban đầu:</p>
+<ul>
+<li>đoạn bên trái nóng 100°C,</li>
+<li>đoạn bên phải lạnh 0°C.</li>
+</ul>
+<p>Đồ thị nhiệt độ có thể giống như thế này:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Nhiệt độ
+</span></span><span class="line"><span class="ln">2</span><span class="cl">
+</span></span><span class="line"><span class="ln">3</span><span class="cl">100 ──────────────┐
+</span></span><span class="line"><span class="ln">4</span><span class="cl">                  │
+</span></span><span class="line"><span class="ln">5</span><span class="cl">                  │
+</span></span><span class="line"><span class="ln">6</span><span class="cl">  0               └──────────────
+</span></span><span class="line"><span class="ln">7</span><span class="cl">    ──────────────────────────────&gt; vị trí
+</span></span></code></pre></div><p>Có một cú gãy rất khó chịu ở giữa.</p>
+<p>Các phương pháp toán học thời đó rất thích những hàm đẹp.</p>
+<p>Trơn tru.</p>
+<p>Đạo hàm ngoan ngoãn.</p>
+<p>Không làm giáo sư đau đầu.</p>
+<p>Còn Fourier thì bảo đại ý:</p>
+<p><strong>Không sao. Tôi sẽ làm món này từ sin và cos.</strong></p>
+<p>Đây chính là chỗ quả bom nổ.</p>
+<h1 id="chuỗi-fourier-lego-dành-cho-đường-cong">Chuỗi Fourier: Lego dành cho đường cong<a class="anchor ms-1" href="#chuỗi-fourier-lego-dành-cho-đường-cong"><i class="fas fa-link"></i></a></h1>
+<p>Hãy tưởng tượng bạn có một đống Lego.</p>
+<p>Mỗi miếng Lego chỉ có một hình dạng đơn giản.</p>
+<p>Nhưng nếu có đủ nhiều miếng, bạn có thể xây:</p>
+<ul>
+<li>ngôi nhà,</li>
+<li>con tàu,</li>
+<li>con khủng long,</li>
+<li>hoặc một thứ mà trẻ con gọi là tàu vũ trụ nhưng người lớn nhìn không hiểu gì.</li>
+</ul>
+<p>Fourier làm điều tương tự với hàm số.</p>
+<p>Các viên Lego của ông là:</p>
+<p>$$
+\sin(x),\cos(x),
+$$</p>
+<p>$$
+\sin(2x),\cos(2x),
+$$</p>
+<p>$$
+\sin(3x),\cos(3x),
+$$</p>
+<p>và cứ thế tiếp tục.</p>
+<p>Một hàm tuần hoàn thích hợp có thể được biểu diễn thành:</p>
+<h1 id="fx">$$
+f(x)<a class="anchor ms-1" href="#fx"><i class="fas fa-link"></i></a></h1>
+<p>\frac{a_0}{2}
++
+\sum_{n=1}^{\infty}
+\left[
+a_n\cos(nx)+b_n\sin(nx)
+\right]
+$$</p>
+<p>Các hệ số được tính bằng:</p>
+<h1 id="a_n">$$
+a_n<a class="anchor ms-1" href="#a_n"><i class="fas fa-link"></i></a></h1>
+<p>\frac{1}{\pi}
+\int_{-\pi}^{\pi}
+f(x)\cos(nx),dx
+$$</p>
+<p>và:</p>
+<h1 id="b_n">$$
+b_n<a class="anchor ms-1" href="#b_n"><i class="fas fa-link"></i></a></h1>
+<p>\frac{1}{\pi}
+\int_{-\pi}^{\pi}
+f(x)\sin(nx),dx
+$$</p>
+<p>Nhìn công thức hơi dữ.</p>
+<p>Nhưng ý nghĩa lại rất trẻ con.</p>
+<p>Ta đang hỏi đường cong:</p>
+<blockquote>
+<p>Này, trong người mày có bao nhiêu sóng chậm?</p>
+</blockquote>
+<p>Rồi:</p>
+<blockquote>
+<p>Có bao nhiêu sóng nhanh gấp đôi?</p>
+</blockquote>
+<p>Rồi:</p>
+<blockquote>
+<p>Nhanh gấp ba?</p>
+</blockquote>
+<p>Rồi:</p>
+<blockquote>
+<p>Nhanh gấp bốn?</p>
+</blockquote>
+<p>Mỗi $a_n$, $b_n$ chính là câu trả lời.</p>
+<h1 id="ví-dụ-điên-rồ-nhất-dùng-những-đường-cong-tròn-trịa-để-dựng-một-hình-vuông">Ví dụ điên rồ nhất: dùng những đường cong tròn trịa để dựng một hình vuông<a class="anchor ms-1" href="#ví-dụ-điên-rồ-nhất-dùng-những-đường-cong-tròn-trịa-để-dựng-một-hình-vuông"><i class="fas fa-link"></i></a></h1>
+<p>Hãy lấy sóng vuông:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">     ┌───────┐       ┌───────┐
+</span></span><span class="line"><span class="ln">2</span><span class="cl">     │       │       │       │
+</span></span><span class="line"><span class="ln">3</span><span class="cl">─────┘       └───────┘       └────
+</span></span></code></pre></div><p>Nó chẳng giống sin tí nào.</p>
+<p>Sin thì mềm mại:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">       /¯\       /¯\
+</span></span><span class="line"><span class="ln">2</span><span class="cl">______/   \_____/   \______
+</span></span><span class="line"><span class="ln">3</span><span class="cl">      \   /     \   /
+</span></span><span class="line"><span class="ln">4</span><span class="cl">       \_/       \_/
+</span></span></code></pre></div><p>Thế nhưng ta có thể viết sóng vuông bằng:</p>
+<h1 id="fx-1">$$
+f(x)<a class="anchor ms-1" href="#fx-1"><i class="fas fa-link"></i></a></h1>
+<p>\frac{4}{\pi}
+\left(
+\sin x
++
+\frac{1}{3}\sin 3x
++
+\frac{1}{5}\sin 5x
++
+\frac{1}{7}\sin 7x
++\cdots
+\right)
+$$</p>
+<p>Chỉ lấy sóng đầu tiên:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">     ~~~~~~~
+</span></span></code></pre></div><p>Khá tệ.</p>
+<p>Thêm vài harmonic:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">    /¯¯¯\____/¯¯¯\
+</span></span></code></pre></div><p>Thêm vài chục harmonic:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">   ┌──────┐     ┌──────┐
+</span></span><span class="line"><span class="ln">2</span><span class="cl">───┘      └─────┘      └───
+</span></span></code></pre></div><p>Nó bắt đầu giống sóng vuông một cách đáng sợ.</p>
+<p>Đây là một trong những điểm khiến ý tưởng Fourier đầu thế kỷ XIX trở nên gây tranh cãi.</p>
+<p>Ông không chỉ nói:</p>
+<blockquote>
+<p>Tôi biết cách giải phương trình nhiệt.</p>
+</blockquote>
+<p>Ông gần như đang nói:</p>
+<blockquote>
+<p>Những đường cong xấu xí mà các ông nghĩ không thể xử lý được, tôi có thể tháo chúng ra thành những con sóng sạch sẽ.</p>
+</blockquote>
+<p>Vấn đề là các nhà toán học lớn nhất thế giới lúc đó chưa chắc đã chịu nuốt chuyện này.</p>
+<h1 id="năm-1807-fourier-mang-quả-bom-vào-viện-hàn-lâm">Năm 1807: Fourier mang quả bom vào Viện Hàn lâm<a class="anchor ms-1" href="#năm-1807-fourier-mang-quả-bom-vào-viện-hàn-lâm"><i class="fas fa-link"></i></a></h1>
+<p>Ngày 21 tháng 12 năm 1807, Fourier trình bày bản thảo về sự truyền nhiệt trong vật rắn trước Institut de France.</p>
+<p>Một ủy ban được thành lập gồm:</p>
+<ul>
+<li>Lagrange,</li>
+<li>Laplace,</li>
+<li>Monge,</li>
+<li>Lacroix.</li>
+</ul>
+<p>Bản thảo chứa hai thứ cực kỳ quan trọng:</p>
+<ol>
+<li>phương trình mô tả khuếch tán nhiệt,</li>
+<li>kỹ thuật biểu diễn nghiệm bằng các chuỗi lượng giác mà ngày nay gọi là <strong>Fourier series</strong>. (<a href="https://mathshistory.st-andrews.ac.uk/Biographies/Fourier/?utm_source=chatgpt.com" title="Joseph Fourier (1768 - 1830) - Biography - MacTutor History of Mathematics" target="_blank" rel="noopener noreferrer">Maths History</a>)</li>
+</ol>
+<p>Và rồi vấn đề bắt đầu xuất hiện.</p>
+<p>Các nguồn lịch sử không hoàn toàn mô tả phản ứng của từng người giống nhau.</p>
+<p>MacTutor ghi nhận rằng <strong>Lagrange và Laplace đều phản đối hoặc chưa bị thuyết phục bởi việc Fourier khai triển các hàm thành chuỗi lượng giác</strong>. (<a href="https://mathshistory.st-andrews.ac.uk/Biographies/Fourier/?utm_source=chatgpt.com" title="Joseph Fourier (1768 - 1830) - Biography - MacTutor History of Mathematics" target="_blank" rel="noopener noreferrer">Maths History</a>)</p>
+<p>Trong khi một khảo cứu lịch sử khác thuộc <em>Dictionary of Scientific Biography</em> mô tả tình hình tinh tế hơn: <strong>Laplace, Monge và Lacroix nhìn chung nghiêng về phía chấp nhận công trình, còn Lagrange mới là người phản đối mạnh nhất</strong>. (<a href="https://mathshistory.st-andrews.ac.uk/DSB/Fourier.pdf?utm_source=chatgpt.com" title="encyclopedia.com" target="_blank" rel="noopener noreferrer">Maths History</a>)</p>
+<p>Vì vậy, nếu kể câu chuyện này thành:</p>
+<blockquote>
+<p>Fourier đấu tay đôi với Laplace.</p>
+</blockquote>
+<p>thì hơi giống biến lịch sử toán học thành phim Marvel.</p>
+<p>Sự thật thú vị hơn nhiều.</p>
+<h1 id="fourier-và-laplace-không-hẳn-là-hai-ông-già-cầm-ghế-đánh-nhau">Fourier và Laplace: không hẳn là hai ông già cầm ghế đánh nhau<a class="anchor ms-1" href="#fourier-và-laplace-không-hẳn-là-hai-ông-già-cầm-ghế-đánh-nhau"><i class="fas fa-link"></i></a></h1>
+<p>Fourier và Laplace có ít nhất <strong>hai tầng bất đồng</strong>.</p>
+<h2 id="tầng-thứ-nhất-toán-học">Tầng thứ nhất: toán học<a class="anchor ms-1" href="#tầng-thứ-nhất-toán-học"><i class="fas fa-link"></i></a></h2>
+<p>Fourier dùng một ý tưởng cực kỳ rộng:</p>
+<blockquote>
+<p>Một phân bố nhiệt ban đầu rất tổng quát có thể được phân tích bằng các thành phần lượng giác.</p>
+</blockquote>
+<p>Ngày nay sinh viên kỹ thuật nhìn chuyện đó và bảo:</p>
+<blockquote>
+<p>Ờ, Fourier series.</p>
+</blockquote>
+<p>Nhưng năm 1807 chưa có cái đặc quyền nhìn ngược lịch sử như chúng ta.</p>
+<p>Khái niệm:</p>
+<ul>
+<li>hàm số,</li>
+<li>hội tụ,</li>
+<li>tính liên tục,</li>
+<li>tính khả tích,</li>
+</ul>
+<p>chưa được xây dựng chặt chẽ như toán hiện đại.</p>
+<p>Nói một hàm có góc nhọn, thậm chí gián đoạn, lại có thể được biểu diễn bằng vô hạn hàm sin trơn tru là một tuyên bố rất mạnh.</p>
+<p>Nếu tôi sống năm 1807 chắc cũng hỏi:</p>
+<blockquote>
+<p>Ông chắc chưa?</p>
+</blockquote>
+<p>Phản biện của những người như Lagrange và Laplace vì vậy không phải ngu ngốc.</p>
+<p>Nó buộc toán học thế kỷ XIX sau đó phải trả lời hàng loạt câu hỏi sâu hơn:</p>
+<p><strong>Chuỗi Fourier hội tụ khi nào?</strong></p>
+<p><strong>Hội tụ về cái gì?</strong></p>
+<p><strong>Nếu hàm bị nhảy thì sao?</strong></p>
+<p>Từ đây xuất hiện những con người như Dirichlet, Riemann, Lebesgue và cả một mảng lớn của giải tích hiện đại.</p>
+<p>Nói hơi kịch tính một chút:</p>
+<p>Fourier muốn giải một cục sắt nóng.</p>
+<p>Cuối cùng ông làm toán học phải định nghĩa lại xem <strong>&ldquo;hàm số&rdquo; thực sự là cái quái gì</strong>.</p>
+<h2 id="tầng-thứ-hai-vật-lý">Tầng thứ hai: vật lý<a class="anchor ms-1" href="#tầng-thứ-hai-vật-lý"><i class="fas fa-link"></i></a></h2>
+<p>Laplace vẫn làm việc trong truyền thống <strong>caloric theory</strong>, coi nhiệt như một loại chất lỏng vô hình — <em>caloric</em> — có thể chuyển từ vật này sang vật khác.</p>
+<p>Fourier chọn con đường khác.</p>
+<p>Ông không nhất thiết phải tuyên bố bản chất cuối cùng của nhiệt là cái gì.</p>
+<p>Ông hỏi:</p>
+<blockquote>
+<p>Cho tôi nhiệt độ ở đây, nhiệt độ ở kia, tính dẫn nhiệt của vật liệu và điều kiện biên. Tôi sẽ tính dòng nhiệt.</p>
+</blockquote>
+<p>Đó là một thay đổi triết học rất lớn.</p>
+<p>Laplace muốn tiến sâu xuống cơ chế vi mô của tự nhiên.</p>
+<p>Fourier nói gần như:</p>
+<p><strong>Tôi chưa cần biết con quỷ nhỏ nào đang mang nhiệt chạy trong vật chất. Tôi có thể xây dựng một định luật vĩ mô đo được và dự đoán được trước.</strong></p>
+<p>Các lý thuyết nhiệt của Laplace sau đó dần mất vị trí; tài liệu lịch sử ghi nhận caloric theory của ông không phù hợp với những phát triển của Petit và Fourier. (<a href="https://mathshistory.st-andrews.ac.uk/Biographies/Laplace/?utm_source=chatgpt.com" title="Pierre-Simon Laplace (1749 - 1827) - Biography - MacTutor History of Mathematics" target="_blank" rel="noopener noreferrer">Maths History</a>)</p>
+<p>Đây mới là xung đột thú vị nhất.</p>
+<p>Không phải hai con người.</p>
+<p>Mà là hai cách hỏi tự nhiên.</p>
+<h1 id="rồi-fourier-thắng">Rồi Fourier thắng?<a class="anchor ms-1" href="#rồi-fourier-thắng"><i class="fas fa-link"></i></a></h1>
+<p>Không đơn giản như vậy.</p>
+<p>Năm 1811, Viện Hàn lâm tổ chức giải thưởng về bài toán truyền nhiệt.</p>
+<p>Fourier gửi phiên bản mở rộng của công trình.</p>
+<p>Ông <strong>được trao giải</strong>.</p>
+<p>Nhưng hội đồng vẫn phê bình công trình về tính chặt chẽ và tính tổng quát. (<a href="https://mathshistory.st-andrews.ac.uk/Biographies/Fourier/?utm_source=chatgpt.com" title="Joseph Fourier (1768 - 1830) - Biography - MacTutor History of Mathematics" target="_blank" rel="noopener noreferrer">Maths History</a>)</p>
+<p>Đến năm 1822, tác phẩm lớn:</p>
+<p><strong>Théorie analytique de la chaleur — Lý thuyết giải tích về nhiệt</strong></p>
+<p>được xuất bản.</p>
+<p>Từ đó, con quái vật đã thoát khỏi chuồng.</p>
+<p>Fourier analysis bắt đầu sống một cuộc đời chẳng còn liên quan riêng đến nhiệt nữa.</p>
+<h1 id="từ-chuỗi-fourier-đến-biến-đổi-fourier">Từ chuỗi Fourier đến biến đổi Fourier<a class="anchor ms-1" href="#từ-chuỗi-fourier-đến-biến-đổi-fourier"><i class="fas fa-link"></i></a></h1>
+<p>Chuỗi Fourier đặc biệt thích hợp với tín hiệu tuần hoàn.</p>
+<p>Nhưng tiếng nói của bạn đâu có lặp vô hạn.</p>
+<p>Một tiếng:</p>
+<blockquote>
+<p>Alo.</p>
+</blockquote>
+<p>xảy ra rồi biến mất.</p>
+<p>Ta cần một phiên bản rộng hơn.</p>
+<p>Đó là <strong>Fourier Transform</strong>.</p>
+<p>Với tín hiệu liên tục $f(t)$:</p>
+<h1 id="fomega">$$
+F(\omega)<a class="anchor ms-1" href="#fomega"><i class="fas fa-link"></i></a></h1>
+<p>\int_{-\infty}^{\infty}
+f(t)e^{-i\omega t},dt
+$$</p>
+<p>Và biến đổi ngược:</p>
+<h1 id="ft">$$
+f(t)<a class="anchor ms-1" href="#ft"><i class="fas fa-link"></i></a></h1>
+<p>\frac{1}{2\pi}
+\int_{-\infty}^{\infty}
+F(\omega)e^{i\omega t},d\omega
+$$</p>
+<p>Đừng để số phức $e^{i\omega t}$ dọa.</p>
+<p>Euler đã cho chúng ta:</p>
+<h1 id="eitheta">$$
+e^{i\theta}<a class="anchor ms-1" href="#eitheta"><i class="fas fa-link"></i></a></h1>
+<p>\cos\theta+i\sin\theta
+$$</p>
+<p>Nên sâu bên dưới, Fourier Transform vẫn đang làm đúng trò cũ:</p>
+<p><strong>hỏi tín hiệu có bao nhiêu dao động ở từng tần số.</strong></p>
+<h1 id="miền-thời-gian-và-miền-tần-số-nhìn-cùng-một-con-voi-bằng-hai-phía">Miền thời gian và miền tần số: nhìn cùng một con voi bằng hai phía<a class="anchor ms-1" href="#miền-thời-gian-và-miền-tần-số-nhìn-cùng-một-con-voi-bằng-hai-phía"><i class="fas fa-link"></i></a></h1>
+<p>Giả sử ta ghi một hợp âm piano.</p>
+<p>Trong miền thời gian:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">amplitude
+</span></span><span class="line"><span class="ln">2</span><span class="cl">   │
+</span></span><span class="line"><span class="ln">3</span><span class="cl">   │ /\_/\/\_/\/\/\__/\/\_/\
+</span></span><span class="line"><span class="ln">4</span><span class="cl">   │/                       \_
+</span></span><span class="line"><span class="ln">5</span><span class="cl">───┴─────────────────────────── time
+</span></span></code></pre></div><p>Trông như một đống rối.</p>
+<p>Fourier Transform có thể biến nó thành:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">energy
+</span></span><span class="line"><span class="ln">2</span><span class="cl">  │
+</span></span><span class="line"><span class="ln">3</span><span class="cl">  │      █
+</span></span><span class="line"><span class="ln">4</span><span class="cl">  │      █       █
+</span></span><span class="line"><span class="ln">5</span><span class="cl">  │  █   █       █       █
+</span></span><span class="line"><span class="ln">6</span><span class="cl">──┴────────────────────────── frequency
+</span></span><span class="line"><span class="ln">7</span><span class="cl">    261 329     392      ...
+</span></span></code></pre></div><p>Đột nhiên ta nhìn thấy các nốt.</p>
+<p>Cùng một tín hiệu.</p>
+<p>Nhưng đổi góc nhìn.</p>
+<p>Đây là điều khiến Fourier analysis mạnh đến mức hơi kỳ quái.</p>
+<p>Trong miền thời gian, một vấn đề có thể rất khó.</p>
+<p>Sang miền tần số, nó có thể trở nên ngu ngốc đến mức dễ.</p>
+<h1 id="một-ví-dụ-bỏ-tiếng-ù-50-hz">Một ví dụ: bỏ tiếng ù 50 Hz<a class="anchor ms-1" href="#một-ví-dụ-bỏ-tiếng-ù-50-hz"><i class="fas fa-link"></i></a></h1>
+<p>Giả sử microphone ghi:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">giọng nói + tiếng ù điện 50 Hz
+</span></span></code></pre></div><p>Trong miền thời gian, hai thứ trộn vào nhau.</p>
+<p>Nhưng Fourier Transform có thể cho ta thấy:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln"> 1</span><span class="cl">phổ tần số
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">│
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">│                giọng nói
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">│      █       █████████████
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">│      █
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">│      █
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">└──────┬──────────────────────
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">      50 Hz
+</span></span><span class="line"><span class="ln">10</span><span class="cl">    tiếng ù
+</span></span></code></pre></div><p>Ta giảm thành phần 50 Hz xuống.</p>
+<p>Sau đó biến đổi ngược.</p>
+<p>Tiếng ù biến mất hoặc giảm mạnh.</p>
+<p>Đó là nền tảng của rất nhiều kỹ thuật lọc tín hiệu.</p>
+<h1 id="nhưng-máy-tính-không-có-thời-gian-tính-tích-phân-từ-âm-vô-cực-đến-dương-vô-cực">Nhưng máy tính không có thời gian tính tích phân từ âm vô cực đến dương vô cực<a class="anchor ms-1" href="#nhưng-máy-tính-không-có-thời-gian-tính-tích-phân-từ-âm-vô-cực-đến-dương-vô-cực"><i class="fas fa-link"></i></a></h1>
+<p>Máy tính không nhìn thấy hàm liên tục.</p>
+<p>Nó nhìn thấy mẫu:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">0.12
+</span></span><span class="line"><span class="ln">2</span><span class="cl">0.18
+</span></span><span class="line"><span class="ln">3</span><span class="cl">0.31
+</span></span><span class="line"><span class="ln">4</span><span class="cl">0.27
+</span></span><span class="line"><span class="ln">5</span><span class="cl">0.05
+</span></span><span class="line"><span class="ln">6</span><span class="cl">...
+</span></span></code></pre></div><p>Ta dùng <strong>Discrete Fourier Transform — DFT</strong>:</p>
+<h1 id="x_k">$$
+X_k<a class="anchor ms-1" href="#x_k"><i class="fas fa-link"></i></a></h1>
+<p>\sum_{n=0}^{N-1}
+x_n
+e^{-i2\pi kn/N}
+$$</p>
+<p>Nếu tính trực tiếp, với $N$ mẫu ta cần cỡ:</p>
+<p>$$
+O(N^2)
+$$</p>
+<p>phép toán.</p>
+<p>Với tín hiệu lớn, hơi căng.</p>
+<p>Rồi tới <strong>Fast Fourier Transform — FFT</strong>.</p>
+<p>FFT không phải một biến đổi mới.</p>
+<p>Nó tính <strong>chính DFT đó</strong>, nhưng thông minh hơn.</p>
+<p>Các thuật toán FFT kiểu Cooley–Tukey có thể giảm độ phức tạp xuống khoảng:</p>
+<p>$$
+O(N\log N)
+$$</p>
+<p>IEEE mô tả FFT chính là động cơ tính toán khiến phân tích phổ thời gian thực trở nên thực tế trong các hệ thống xử lý tín hiệu hiện đại. (<a href="https://technav.ieee.org/topic/fourier-transform/?utm_source=chatgpt.com" title="Fourier Transform | IEEE Technology Navigator" target="_blank" rel="noopener noreferrer">IEEE Technology Navigator</a>)</p>
+<p>Ví dụ với:</p>
+<p>$$
+N = 1,048,576 = 2^{20}
+$$</p>
+<p>tính kiểu ngây thơ có quy mô khoảng:</p>
+<p>$$
+N^2 \approx 1.1\times10^{12}
+$$</p>
+<p>trong khi FFT có quy mô:</p>
+<p>$$
+N\log_2N
+\approx
+20,971,520
+$$</p>
+<p>Một bên hơn <strong>một nghìn tỷ</strong>.</p>
+<p>Một bên khoảng <strong>21 triệu</strong>.</p>
+<p>Tự nhiên một ý tưởng toán học từ thế kỷ XIX có thể chạy hàng nghìn lần mỗi giây trong một con chip bé bằng móng tay.</p>
+<p>Xong thuật toán, quá dễ.</p>
+<p>Phần còn lại chỉ là xây cả nền văn minh viễn thông quanh nó.</p>
+<h1 id="năm-2026-bạn-dùng-fourier-từ-lúc-vừa-thức-dậy">Năm 2026, bạn dùng Fourier từ lúc vừa thức dậy<a class="anchor ms-1" href="#năm-2026-bạn-dùng-fourier-từ-lúc-vừa-thức-dậy"><i class="fas fa-link"></i></a></h1>
+<p>Điều buồn cười là phần lớn chúng ta chưa bao giờ chủ động &ldquo;dùng Fourier&rdquo;.</p>
+<p>Fourier tự dùng chúng ta.</p>
+<h2 id="1-wi-fi-căn-phòng-đầy-những-con-sóng-vô-hình">1. Wi-Fi: căn phòng đầy những con sóng vô hình<a class="anchor ms-1" href="#1-wi-fi-căn-phòng-đầy-những-con-sóng-vô-hình"><i class="fas fa-link"></i></a></h2>
+<p>Bạn mở điện thoại.</p>
+<p>Điện thoại kết nối Wi-Fi.</p>
+<p>Một gói dữ liệu đi qua không khí.</p>
+<p>Không có chữ A, chữ B hay JSON nào bay giữa phòng cả.</p>
+<p>Chỉ có điện trường dao động.</p>
+<p>Wi-Fi hiện đại sử dụng họ kỹ thuật <strong>OFDM/OFDMA</strong>.</p>
+<p>Ý tưởng là chia dữ liệu thành nhiều luồng nhỏ rồi truyền đồng thời trên nhiều sóng mang có tần số khác nhau.</p>
+<p>Phía phát sử dụng <strong>IFFT</strong> để tạo tín hiệu.</p>
+<p>Phía nhận sử dụng <strong>FFT</strong> để tách chúng ra.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl">flowchart LR
+</span></span><span class="line"><span class="ln">2</span><span class="cl">    A[Bits dữ liệu] --&gt; B[Chia lên nhiều subcarrier]
+</span></span><span class="line"><span class="ln">3</span><span class="cl">    B --&gt; C[IFFT]
+</span></span><span class="line"><span class="ln">4</span><span class="cl">    C --&gt; D[Sóng điện từ bay trong phòng]
+</span></span><span class="line"><span class="ln">5</span><span class="cl">    D --&gt; E[FFT]
+</span></span><span class="line"><span class="ln">6</span><span class="cl">    E --&gt; F[Tách từng subcarrier]
+</span></span><span class="line"><span class="ln">7</span><span class="cl">    F --&gt; G[Bits dữ liệu]
+</span></span></code></pre></div><p>OFDM hoặc OFDMA xuất hiện trong nhiều thế hệ Wi-Fi, trong 4G LTE và 5G NR. (<a href="https://technav.ieee.org/topic/ofdm/?utm_source=chatgpt.com" title="OFDM | IEEE Technology Navigator" target="_blank" rel="noopener noreferrer">IEEE Technology Navigator</a>)</p>
+<p>Mỗi lần bạn vuốt một video, phía dưới cái ngón tay tưởng như vô hại ấy là một đám transistor đang phân tách và tái hợp những sóng sin với tốc độ kinh khủng.</p>
+<p>Không có gì hoàn toàn &ldquo;không dây&rdquo;.</p>
+<p>Chỉ có những dây đã được thay bằng <strong>trường điện từ</strong>.</p>
+<h2 id="2-4g-và-5g">2. 4G và 5G<a class="anchor ms-1" href="#2-4g-và-5g"><i class="fas fa-link"></i></a></h2>
+<p>Đi ra khỏi Wi-Fi.</p>
+<p>Điện thoại chuyển sang mạng di động.</p>
+<p>Fourier vẫn chưa chịu tha.</p>
+<p>5G NR tiếp tục sử dụng OFDM với nhiều khoảng cách subcarrier khác nhau.</p>
+<p>Một trạm phát không đơn giản hét:</p>
+<blockquote>
+<p>Đây là video con mèo của anh Tùng!</p>
+</blockquote>
+<p>Nó lấy dữ liệu số, chia thành symbol, đặt chúng lên hàng trăm hoặc hàng nghìn thành phần tần số, chạy IFFT, đưa kết quả sang DAC, khuếch đại, rồi antenna biến những con số ấy thành trường điện từ.</p>
+<p>Ở đầu kia quá trình chạy ngược lại.</p>
+<p>Sóng.</p>
+<p>ADC.</p>
+<p>FFT.</p>
+<p>Symbol.</p>
+<p>Bit.</p>
+<p>Packet.</p>
+<p>Video con mèo.</p>
+<p>Một chuỗi vật lý rất dài chỉ để chúng ta xem một con mèo ngã khỏi bàn.</p>
+<h2 id="3-ảnh-jpeg-fourier-có-một-người-em-họ-tên-dct">3. Ảnh JPEG: Fourier có một người em họ tên DCT<a class="anchor ms-1" href="#3-ảnh-jpeg-fourier-có-một-người-em-họ-tên-dct"><i class="fas fa-link"></i></a></h2>
+<p>Bạn chụp ảnh.</p>
+<p>Cảm biến có thể tạo ra hàng chục triệu pixel.</p>
+<p>Nếu lưu tất cả dữ liệu thô, ảnh rất lớn.</p>
+<p>JPEG cổ điển chia ảnh thành các block, thường là $8\times8$, rồi sử dụng <strong>Discrete Cosine Transform — DCT</strong>. JPEG Committee mô tả legacy JPEG là định dạng nén mất dữ liệu dựa trên DCT. (<a href="https://jpeg.org/jpeg/?langsel=it&amp;utm_source=chatgpt.com" title="JPEG - JPEG 1" target="_blank" rel="noopener noreferrer">JPEG</a>)</p>
+<p>DCT không phải Fourier Transform y hệt từng dấu chấm.</p>
+<p>Nhưng nó thuộc cùng gia đình tư tưởng:</p>
+<p><strong>thay vì mô tả từng pixel, hãy mô tả lượng cấu trúc ở từng tần số không gian.</strong></p>
+<p>Một vùng trời xanh phẳng?</p>
+<p>Phần lớn năng lượng nằm ở tần số thấp.</p>
+<p>Một đống tóc rối?</p>
+<p>Rất nhiều tần số cao.</p>
+<p>Sau DCT, JPEG có thể nói:</p>
+<blockquote>
+<p>Những chi tiết mà mắt người khó nhận ra này&hellip; vứt bớt nhé.</p>
+</blockquote>
+<p>Và bức ảnh 20 MB có thể biến thành vài MB.</p>
+<p>Không phải vì máy tính hiểu &ldquo;bầu trời&rdquo;.</p>
+<p>Nó hiểu các hệ số.</p>
+<h2 id="4-nhạc-và-giọng-nói-chia-âm-thanh-thành-những-dải-tần">4. Nhạc và giọng nói: chia âm thanh thành những dải tần<a class="anchor ms-1" href="#4-nhạc-và-giọng-nói-chia-âm-thanh-thành-những-dải-tần"><i class="fas fa-link"></i></a></h2>
+<p>Các codec âm thanh hiện đại thường sử dụng các biến đổi họ hàng gần với Fourier, đặc biệt là <strong>MDCT — Modified Discrete Cosine Transform</strong>.</p>
+<p>AAC sử dụng IMDCT trong chuỗi giải mã, và các codec transform audio hiện đại tiếp tục dựa mạnh vào MDCT. (<a href="https://www.loc.gov/preservation/digital/formats/fdd/fdd000036.shtml?utm_source=chatgpt.com" title="Advanced Audio Coding (MPEG-2)" target="_blank" rel="noopener noreferrer">Library of Congress</a>)</p>
+<p>Ý tưởng vẫn quen thuộc:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">âm thanh phức tạp
+</span></span><span class="line"><span class="ln">2</span><span class="cl">       ↓
+</span></span><span class="line"><span class="ln">3</span><span class="cl">phân tích thành các thành phần phổ
+</span></span><span class="line"><span class="ln">4</span><span class="cl">       ↓
+</span></span><span class="line"><span class="ln">5</span><span class="cl">xem tai người nhạy với phần nào
+</span></span><span class="line"><span class="ln">6</span><span class="cl">       ↓
+</span></span><span class="line"><span class="ln">7</span><span class="cl">dành nhiều bit cho phần quan trọng
+</span></span><span class="line"><span class="ln">8</span><span class="cl">       ↓
+</span></span><span class="line"><span class="ln">9</span><span class="cl">dành ít bit cho phần khó nghe
+</span></span></code></pre></div><p>Bạn nghe được bài hát.</p>
+<p>Nhưng thiết bị không nhất thiết lưu toàn bộ dao động ban đầu.</p>
+<p>Nó lưu một mô tả thông minh hơn về những thành phần tạo ra dao động đó.</p>
+<h2 id="5-equalizer">5. Equalizer<a class="anchor ms-1" href="#5-equalizer"><i class="fas fa-link"></i></a></h2>
+<p>Trong ứng dụng nghe nhạc bạn kéo:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Bass      +4 dB
+</span></span><span class="line"><span class="ln">2</span><span class="cl">Mid       -1 dB
+</span></span><span class="line"><span class="ln">3</span><span class="cl">Treble    +2 dB
+</span></span></code></pre></div><p>Bạn đang yêu cầu hệ thống:</p>
+<blockquote>
+<p>Tăng năng lượng ở vùng tần số thấp.</p>
+</blockquote>
+<blockquote>
+<p>Giảm một số vùng giữa.</p>
+</blockquote>
+<blockquote>
+<p>Tăng vùng cao.</p>
+</blockquote>
+<p>Từ góc nhìn Fourier, đây là thao tác cực kỳ tự nhiên.</p>
+<p>Thay vì đánh nhau trực tiếp với một đường waveform khổng lồ, ta đi sang miền tần số rồi sửa từng vùng.</p>
+<h2 id="6-tai-nghe-chống-ồn">6. Tai nghe chống ồn<a class="anchor ms-1" href="#6-tai-nghe-chống-ồn"><i class="fas fa-link"></i></a></h2>
+<p>Tai nghe chống ồn chủ động cần đo âm thanh môi trường và sinh ra tín hiệu để triệt bớt nó.</p>
+<p>Không phải mọi thuật toán ANC đều bắt buộc dùng Fourier trực tiếp; nhiều bộ lọc thích nghi hoạt động trong miền thời gian.</p>
+<p>Nhưng các hệ thống xử lý âm thanh phức tạp thường sử dụng FFT, STFT hoặc frequency-domain adaptive filtering để phân tích và xử lý tín hiệu hiệu quả.</p>
+<p>Nguyên lý triết học vẫn rất Fourier:</p>
+<p><strong>một tiếng ồn khổng lồ có thể được hiểu bằng cấu trúc tần số của nó.</strong></p>
+<h2 id="7-microphone-họp-online-và-gọi-điện">7. Microphone, họp online và gọi điện<a class="anchor ms-1" href="#7-microphone-họp-online-và-gọi-điện"><i class="fas fa-link"></i></a></h2>
+<p>Một cuộc gọi video có thể phải xử lý:</p>
+<ul>
+<li>echo,</li>
+<li>tiếng quạt,</li>
+<li>tiếng bàn phím,</li>
+<li>giọng nói,</li>
+<li>nhiều người cùng nói,</li>
+<li>reverberation.</li>
+</ul>
+<p>Một kỹ thuật đặc biệt phổ biến là <strong>Short-Time Fourier Transform — STFT</strong>.</p>
+<p>Thay vì Fourier Transform toàn bộ đoạn âm thanh dài 10 phút, ta cắt nó thành những cửa sổ nhỏ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">|----|----|----|----|----|
+</span></span><span class="line"><span class="ln">2</span><span class="cl"> 20ms 20ms 20ms 20ms ...
+</span></span></code></pre></div><p>Rồi phân tích phổ của từng cửa sổ.</p>
+<p>Ta nhận được <strong>spectrogram</strong>:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Tần số
+</span></span><span class="line"><span class="ln">2</span><span class="cl">  ↑
+</span></span><span class="line"><span class="ln">3</span><span class="cl">8k│   ░░
+</span></span><span class="line"><span class="ln">4</span><span class="cl">4k│ █▒░ █▒
+</span></span><span class="line"><span class="ln">5</span><span class="cl">2k│████████▒
+</span></span><span class="line"><span class="ln">6</span><span class="cl">1k│████████████
+</span></span><span class="line"><span class="ln">7</span><span class="cl">  │
+</span></span><span class="line"><span class="ln">8</span><span class="cl">  └────────────────→ thời gian
+</span></span></code></pre></div><p>Đây là một cách biến âm thanh thành hình ảnh hai chiều:</p>
+<ul>
+<li>trục ngang: thời gian,</li>
+<li>trục đứng: tần số,</li>
+<li>độ sáng: năng lượng.</li>
+</ul>
+<p>Rất nhiều hệ thống speech recognition và machine learning về âm thanh đã lớn lên trên kiểu biểu diễn này.</p>
+<h1 id="8-radar-trên-ô-tô-một-con-chip-nghe-tiếng-vọng-của-chính-mình">8. Radar trên ô tô: một con chip nghe tiếng vọng của chính mình<a class="anchor ms-1" href="#8-radar-trên-ô-tô-một-con-chip-nghe-tiếng-vọng-của-chính-mình"><i class="fas fa-link"></i></a></h1>
+<p>Xe dùng FMCW radar phát ra các sóng điện từ có tần số thay đổi theo thời gian.</p>
+<p>Sóng đập vào:</p>
+<ul>
+<li>xe phía trước,</li>
+<li>lan can,</li>
+<li>người đi bộ,</li>
+</ul>
+<p>rồi quay về.</p>
+<p>Tín hiệu phát và tín hiệu nhận tạo ra một <strong>beat frequency</strong>.</p>
+<p>FFT có thể giúp biến tần số beat đó thành khoảng cách.</p>
+<p>Một FFT khác theo chiều thời gian có thể giúp tìm Doppler, tức vận tốc.</p>
+<p>Với nhiều antenna, xử lý phổ còn có thể hỗ trợ ước lượng góc.</p>
+<p>Một đám dữ liệu ADC trông cực kỳ khó hiểu biến thành:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Object A:
+</span></span><span class="line"><span class="ln">2</span><span class="cl">distance = 31.4 m
+</span></span><span class="line"><span class="ln">3</span><span class="cl">velocity = -7.2 m/s
+</span></span><span class="line"><span class="ln">4</span><span class="cl">
+</span></span><span class="line"><span class="ln">5</span><span class="cl">Object B:
+</span></span><span class="line"><span class="ln">6</span><span class="cl">distance = 48.1 m
+</span></span><span class="line"><span class="ln">7</span><span class="cl">velocity = +0.3 m/s
+</span></span></code></pre></div><p>Chiếc xe không &ldquo;nhìn&rdquo; vật thể theo cách mắt người nhìn.</p>
+<p>Nó nghe một dàn hợp xướng điện từ rồi dùng toán học tách từng giọng.</p>
+<h1 id="9-mri-cơ-thể-con-người-xuất-hiện-từ-miền-tần-số">9. MRI: cơ thể con người xuất hiện từ miền tần số<a class="anchor ms-1" href="#9-mri-cơ-thể-con-người-xuất-hiện-từ-miền-tần-số"><i class="fas fa-link"></i></a></h1>
+<p>Đây có lẽ là ứng dụng đẹp nhất.</p>
+<p>Máy MRI không đơn giản chụp một bức ảnh bên trong cơ thể giống camera.</p>
+<p>Dữ liệu MRI được thu trong một không gian gọi là <strong>k-space</strong>.</p>
+<p>K-space không phải bức ảnh mà bác sĩ muốn xem.</p>
+<p>Nó là một biểu diễn theo <strong>spatial frequency</strong>.</p>
+<p>Fourier Transform liên kết k-space với image space. Khi dữ liệu nằm trên lưới Cartesian, FFT có thể tính phép biến đổi này rất hiệu quả. (<a href="https://pubmed.ncbi.nlm.nih.gov/18430861/?utm_source=chatgpt.com" title="An introduction to the Fourier transform: relationship to MRI." target="_blank" rel="noopener noreferrer">PubMed</a>)</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl">flowchart LR
+</span></span><span class="line"><span class="ln">2</span><span class="cl">    A[Tín hiệu MRI] --&gt; B[k-space]
+</span></span><span class="line"><span class="ln">3</span><span class="cl">    B --&gt; C[Inverse Fourier Transform]
+</span></span><span class="line"><span class="ln">4</span><span class="cl">    C --&gt; D[Ảnh mô]
+</span></span><span class="line"><span class="ln">5</span><span class="cl">    D --&gt; E[Bác sĩ]
+</span></span></code></pre></div><p>Một con người nằm trong nam châm khổng lồ.</p>
+<p>Các proton hydro phản ứng với trường từ.</p>
+<p>Cuộn dây nhận những tín hiệu điện rất nhỏ.</p>
+<p>Những tín hiệu ấy trở thành số.</p>
+<p>Những con số đi qua Fourier Transform.</p>
+<p>Và cuối cùng màn hình xuất hiện hình ảnh bộ não.</p>
+<p>Từ dao động vô hình thành giải phẫu hữu hình.</p>
+<p>Nếu Fourier sống lại chắc cũng hơi đứng hình.</p>
+<h1 id="10-ct-gom-những-cái-bóng-thành-một-cơ-thể">10. CT: gom những cái bóng thành một cơ thể<a class="anchor ms-1" href="#10-ct-gom-những-cái-bóng-thành-một-cơ-thể"><i class="fas fa-link"></i></a></h1>
+<p>CT lại có một bài toán khác.</p>
+<p>Máy chiếu tia X qua cơ thể từ rất nhiều góc.</p>
+<p>Mỗi phép đo chỉ giống như một cái bóng.</p>
+<p>Một cái bóng không đủ.</p>
+<p>Nhưng hàng trăm, hàng nghìn phép chiếu từ nhiều góc có thể được dùng để tái dựng lát cắt bên trong cơ thể.</p>
+<p><strong>Fourier Slice Theorem</strong> tạo ra mối liên hệ đẹp giữa Fourier Transform một chiều của phép chiếu và một lát cắt trong Fourier Transform hai chiều của vật thể. (<a href="https://www.ncbi.nlm.nih.gov/books/NBK546157/?utm_source=chatgpt.com" title="Computed Tomography - Medical Imaging Systems - NCBI Bookshelf" target="_blank" rel="noopener noreferrer">NCBI</a>)</p>
+<p>Nói kiểu sáu tuổi:</p>
+<blockquote>
+<p>Chụp cái bóng của con gấu từ rất nhiều phía.</p>
+</blockquote>
+<blockquote>
+<p>Mỗi cái bóng cho ta một chút thông tin.</p>
+</blockquote>
+<blockquote>
+<p>Ghép đủ thông tin lại.</p>
+</blockquote>
+<blockquote>
+<p>Ta đoán được con gấu bên trong có hình gì.</p>
+</blockquote>
+<p>Tất nhiên toán thật không hiền như vậy.</p>
+<p>Nhưng tinh thần là thế.</p>
+<h1 id="điều-fourier-thực-sự-phát-minh-không-chỉ-là-một-công-thức">Điều Fourier thực sự phát minh không chỉ là một công thức<a class="anchor ms-1" href="#điều-fourier-thực-sự-phát-minh-không-chỉ-là-một-công-thức"><i class="fas fa-link"></i></a></h1>
+<p>Ta có thể học Fourier theo kiểu:</p>
+<h1 id="fomega-1">$$
+F(\omega)<a class="anchor ms-1" href="#fomega-1"><i class="fas fa-link"></i></a></h1>
+<p>\int f(t)e^{-i\omega t}dt
+$$</p>
+<p>Học thuộc.</p>
+<p>Thi xong.</p>
+<p>Quên.</p>
+<p>Khá phí.</p>
+<p>Điều sâu hơn Fourier để lại là <strong>một cách suy nghĩ</strong>.</p>
+<p>Giả sử một hệ thống quá phức tạp.</p>
+<p>Đừng nhất thiết đánh nhau với toàn bộ hệ thống cùng lúc.</p>
+<p>Hãy hỏi:</p>
+<blockquote>
+<p>Có thể chọn một bộ thành phần đơn giản hơn sao cho thứ phức tạp này chỉ là tổng của chúng không?</p>
+</blockquote>
+<p>Fourier chọn sin và cos.</p>
+<p>Linear algebra chọn eigenvector.</p>
+<p>PCA chọn principal components.</p>
+<p>Wavelet chọn những hàm cơ sở vừa cục bộ về vị trí vừa cục bộ về scale.</p>
+<p>Quantum mechanics biểu diễn trạng thái bằng các vector trong Hilbert space.</p>
+<p>Deep learning liên tục biến dữ liệu qua những không gian biểu diễn khác nhau.</p>
+<p>Một trong những trò lâu đời nhất của toán học hóa ra là:</p>
+<p><strong>đổi hệ tọa độ cho tới khi vấn đề bớt ngu người.</strong></p>
+<h1 id="nhưng-tại-sao-lại-là-sin">Nhưng tại sao lại là sin?<a class="anchor ms-1" href="#nhưng-tại-sao-lại-là-sin"><i class="fas fa-link"></i></a></h1>
+<p>Đây là câu hỏi đẹp.</p>
+<p>Không phải Fourier bốc thăm trúng hình sin.</p>
+<p>Sin và cos có một tính chất đặc biệt.</p>
+<p>Đạo hàm của chúng vẫn là sin và cos:</p>
+<p>$$
+\frac{d}{dx}\sin x = \cos x
+$$</p>
+<p>$$
+\frac{d^2}{dx^2}\sin x = -\sin x
+$$</p>
+<p>Điều đó khiến chúng cực kỳ hợp với những phương trình chứa đạo hàm như:</p>
+<ul>
+<li>phương trình nhiệt,</li>
+<li>phương trình sóng,</li>
+<li>phương trình điện từ.</li>
+</ul>
+<p>Trong ngôn ngữ hiện đại, các exponential phức:</p>
+<p>$$
+e^{i\omega t}
+$$</p>
+<p>là <strong>eigenfunctions</strong> của nhiều toán tử tuyến tính quan trọng.</p>
+<p>Ví dụ:</p>
+<h1 id="fracddteiomega-t">$$
+\frac{d}{dt}e^{i\omega t}<a class="anchor ms-1" href="#fracddteiomega-t"><i class="fas fa-link"></i></a></h1>
+<p>i\omega e^{i\omega t}
+$$</p>
+<p>Một phép đạo hàm đáng sợ bỗng biến thành phép nhân với $i\omega$.</p>
+<p>Đây chính là một phần ma thuật.</p>
+<p>Trong miền thời gian:</p>
+<p>$$
+\frac{d}{dt}
+$$</p>
+<p>là một toán tử.</p>
+<p>Trong miền Fourier:</p>
+<p>$$
+\frac{d}{dt}
+\longleftrightarrow
+i\omega
+$$</p>
+<p>Đạo hàm biến thành phép nhân.</p>
+<p>Tương tự, convolution:</p>
+<p>$$
+y(t)=x(t)*h(t)
+$$</p>
+<p>sang miền Fourier trở thành:</p>
+<p>$$
+Y(\omega)=X(\omega)H(\omega)
+$$</p>
+<p>Một phép convolution dài ngoằng trở thành phép nhân từng phần tử.</p>
+<p>Máy tính cực kỳ thích chuyện này.</p>
+<h1 id="fourier-không-phải-thần-có-những-thứ-ông-làm-không-đẹp">Fourier không phải thần: có những thứ ông làm không đẹp<a class="anchor ms-1" href="#fourier-không-phải-thần-có-những-thứ-ông-làm-không-đẹp"><i class="fas fa-link"></i></a></h1>
+<p>Fourier basis có một nhược điểm lớn:</p>
+<p><strong>một con sóng sin kéo dài mãi mãi.</strong></p>
+<p>Nếu tín hiệu có một sự kiện rất ngắn:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">______________/\________________
+</span></span></code></pre></div><p>Fourier Transform cho biết có những tần số nào.</p>
+<p>Nhưng thông tin &ldquo;nó xảy ra lúc nào&rdquo; không phải lúc nào cũng rõ.</p>
+<p>Đó là lý do chúng ta có:</p>
+<ul>
+<li>STFT,</li>
+<li>wavelet transform,</li>
+<li>filter banks,</li>
+<li>cosine transforms,</li>
+<li>nhiều phương pháp time-frequency khác.</li>
+</ul>
+<p>JPEG 2000 chẳng hạn sử dụng <strong>wavelet transform</strong>, không phải DCT của JPEG truyền thống. (<a href="https://jpeg.org/jpeg2000/index.html?utm_source=chatgpt.com" title="JPEG - JPEG 2000" target="_blank" rel="noopener noreferrer">JPEG</a>)</p>
+<p>Trong thực tế, Fourier không phải cây búa duy nhất.</p>
+<p>Nhưng ông là một trong những người đã dạy cả thế giới rằng:</p>
+<blockquote>
+<p>Có thể hiểu một tín hiệu bằng cách đổi cách biểu diễn nó.</p>
+</blockquote>
+<h1 id="một-chi-tiết-vui-ai-cũng-không-giết-được-fourier">Một chi tiết vui: AI cũng không giết được Fourier<a class="anchor ms-1" href="#một-chi-tiết-vui-ai-cũng-không-giết-được-fourier"><i class="fas fa-link"></i></a></h1>
+<p>Năm 2026 chúng ta rất thích nói:</p>
+<blockquote>
+<p>Neural network sẽ học hết.</p>
+</blockquote>
+<p>Nhưng ngay cả trong hệ thống machine learning hiện đại, những ý tưởng spectral vẫn xuất hiện liên tục.</p>
+<p>Ta có:</p>
+<ul>
+<li>Fourier features,</li>
+<li>spectral convolution,</li>
+<li>neural operators,</li>
+<li>frequency-domain filtering,</li>
+<li>FFT acceleration,</li>
+<li>Fourier imaging,</li>
+<li>signal preprocessing.</li>
+</ul>
+<p>Ngay cả MRI hiện đại kết hợp machine learning vẫn tiếp tục dựa trên cấu trúc Fourier của quá trình đo. Một nghiên cứu năm 2026 về non-Cartesian MRI còn đề xuất mô hình trực tiếp dựa trên Fourier-domain basis expansion để cải thiện chất lượng ảnh hoặc giảm chi phí tính toán. (<a href="https://pubmed.ncbi.nlm.nih.gov/42422590/?utm_source=chatgpt.com" title="A New k-Space Model for Non-Cartesian Fourier Imaging - PubMed" target="_blank" rel="noopener noreferrer">PubMed</a>)</p>
+<p>AI không xóa toán cũ.</p>
+<p>Nó thường ngồi lên một núi toán cũ rồi giả vờ như mình tự mọc ra.</p>
+<h1 id="một-cuộc-đối-đầu-rất-đẹp-giữa-fourier-và-laplace">Một cuộc đối đầu rất đẹp giữa Fourier và Laplace<a class="anchor ms-1" href="#một-cuộc-đối-đầu-rất-đẹp-giữa-fourier-và-laplace"><i class="fas fa-link"></i></a></h1>
+<p>Nếu phải nén cả câu chuyện Fourier–Laplace vào một hình ảnh, mình sẽ hình dung thế này.</p>
+<p>Laplace đứng trước tự nhiên và hỏi:</p>
+<blockquote>
+<p>Cơ chế sâu bên dưới của ngươi là gì?</p>
+</blockquote>
+<p>Fourier đứng bên cạnh và hỏi:</p>
+<blockquote>
+<p>Nếu ta chưa biết cơ chế sâu nhất, ta có thể mô tả chính xác thứ đo được không?</p>
+</blockquote>
+<p>Hai câu hỏi đều quan trọng.</p>
+<p>Khoa học hiện đại cần cả hai.</p>
+<p>Ta muốn biết electron là gì.</p>
+<p>Nhưng kỹ sư làm antenna không thể chờ vật lý hoàn thành &ldquo;Theory of Everything&rdquo; rồi mới xây Wi-Fi.</p>
+<p>Ta muốn hiểu mọi chi tiết của não.</p>
+<p>Nhưng bác sĩ cần MRI ngay hôm nay.</p>
+<p>Ta muốn hiểu âm thanh ở cấp độ vật lý.</p>
+<p>Nhưng điện thoại vẫn phải lọc tiếng quạt trong 10 mili giây.</p>
+<p>Fourier để lại một thái độ rất kỹ sư:</p>
+<p><strong>Nếu thế giới quá phức tạp, hãy tìm một biểu diễn khiến nó dễ tính hơn.</strong></p>
+<h1 id="có-một-thứ-rất-triết-học-nằm-bên-dưới-fourier">Có một thứ rất triết học nằm bên dưới Fourier<a class="anchor ms-1" href="#có-một-thứ-rất-triết-học-nằm-bên-dưới-fourier"><i class="fas fa-link"></i></a></h1>
+<p>Ta nghe một bài hát.</p>
+<p>Ta tưởng đó là một thứ.</p>
+<p>Fourier nói:</p>
+<p>Không.</p>
+<p>Nó có thể là hàng nghìn dao động.</p>
+<p>Ta nhìn một bức ảnh.</p>
+<p>Ta tưởng đó là hàng triệu pixel.</p>
+<p>Fourier nói:</p>
+<p>Có thể nhìn nó như một tập hợp tần số không gian.</p>
+<p>Ta nhìn tín hiệu Wi-Fi.</p>
+<p>Ta tưởng đó là một đám điện từ hỗn loạn.</p>
+<p>Fourier nói:</p>
+<p>Tách nó ra.</p>
+<p>Mỗi subcarrier chỉ là một phần của câu chuyện.</p>
+<p>Có lẽ đó là lý do Fourier analysis tồn tại lâu đến vậy.</p>
+<p>Nó không đơn thuần là toán về sóng.</p>
+<p>Nó là một bài học về nhận thức:</p>
+<p><strong>Một thứ trông phức tạp trong một cách nhìn có thể cực kỳ đơn giản trong một cách nhìn khác.</strong></p>
+<h1 id="tổng-kết">Tổng kết<a class="anchor ms-1" href="#tổng-kết"><i class="fas fa-link"></i></a></h1>
+<p>Hơn hai trăm năm trước, Fourier chỉ muốn hiểu nhiệt truyền trong vật rắn như thế nào.</p>
+<p>Để giải bài toán đó, ông đưa ra một ý tưởng gây tranh cãi: biểu diễn những phân bố phức tạp bằng tổng của các hàm lượng giác đơn giản.</p>
+<p>Lagrange phản đối mạnh. Laplace ít nhất cũng từng có những dè dặt toán học, mặc dù các sử liệu khác nhau về mức độ phản đối của ông; đồng thời quan niệm vật lý về nhiệt của Laplace cũng khác đáng kể với cách tiếp cận vĩ mô của Fourier. Vì vậy &ldquo;cuộc chiến Fourier–Laplace&rdquo; nên hiểu là một cuộc va chạm về <strong>phương pháp toán học và cách mô hình hóa tự nhiên</strong>, hơn là một cuộc thù cá nhân đơn giản. (<a href="https://mathshistory.st-andrews.ac.uk/Biographies/Fourier/?utm_source=chatgpt.com" title="Joseph Fourier (1768 - 1830) - Biography - MacTutor History of Mathematics" target="_blank" rel="noopener noreferrer">Maths History</a>)</p>
+<p>Rồi chuỗi Fourier dẫn tới Fourier Transform.</p>
+<p>Fourier Transform dẫn tới DFT.</p>
+<p>FFT khiến việc tính DFT trở nên đủ nhanh để nhét vào chip.</p>
+<p>Và từ đó, cái ý tưởng sinh ra bên cạnh một thanh kim loại nóng bò vào:</p>
+<ul>
+<li>Wi-Fi,</li>
+<li>4G,</li>
+<li>5G,</li>
+<li>JPEG,</li>
+<li>codec âm thanh,</li>
+<li>microphone,</li>
+<li>radar,</li>
+<li>CT,</li>
+<li>MRI,</li>
+<li>và vô số hệ thống xử lý tín hiệu mà chúng ta sử dụng mỗi ngày.</li>
+</ul>
+<p>Ta vuốt màn hình một cái.</p>
+<p>Một packet được tạo ra.</p>
+<p>Các bit được mã hóa.</p>
+<p>IFFT biến chúng thành waveform.</p>
+<p>DAC biến số thành điện áp.</p>
+<p>Antenna đẩy trường điện từ vào căn phòng.</p>
+<p>Sóng đập vào tường, bàn, người, cửa kính.</p>
+<p>Antenna bên kia thu chúng về.</p>
+<p>ADC biến điện áp thành số.</p>
+<p>FFT lại tách đám hỗn loạn thành những thành phần có thể hiểu được.</p>
+<p>Cuối cùng một bức ảnh hiện lên màn hình.</p>
+<p>Và ở đâu đó rất sâu dưới lớp kính, silicon và giao diện bóng bẩy ấy vẫn còn một ý tưởng từ năm 1807:</p>
+<p><strong>Thứ phức tạp có thể chỉ là rất nhiều thứ đơn giản đang chồng lên nhau.</strong></p>
+<p>Cảm ơn các bạn đã quan tâm và theo dõi bài viết, hẹn gặp lại ở các bài viết tiếp theo.</p>
+<h1 id="tham-khảo">Tham khảo<a class="anchor ms-1" href="#tham-khảo"><i class="fas fa-link"></i></a></h1>
+<ul>
+<li><a href="https://mathshistory.st-andrews.ac.uk/Biographies/Fourier/?utm_source=chatgpt.com" target="_blank" rel="noopener noreferrer">Joseph Fourier – MacTutor History of Mathematics</a></li>
+<li><a href="https://mathshistory.st-andrews.ac.uk/DSB/Fourier.pdf?utm_source=chatgpt.com" target="_blank" rel="noopener noreferrer">Fourier – Dictionary of Scientific Biography, bản lưu tại MacTutor</a></li>
+<li><a href="https://mathshistory.st-andrews.ac.uk/Biographies/Laplace/?utm_source=chatgpt.com" target="_blank" rel="noopener noreferrer">Pierre-Simon Laplace – MacTutor History of Mathematics</a></li>
+<li><a href="https://technav.ieee.org/topic/fourier-transform/?utm_source=chatgpt.com" target="_blank" rel="noopener noreferrer">Fourier Transform – IEEE Technology Navigator</a></li>
+<li><a href="https://technav.ieee.org/topic/ofdm/?utm_source=chatgpt.com" target="_blank" rel="noopener noreferrer">OFDM – IEEE Technology Navigator</a></li>
+<li><a href="https://jpeg.org/jpeg/?utm_source=chatgpt.com" target="_blank" rel="noopener noreferrer">JPEG 1 – JPEG Committee</a></li>
+<li><a href="https://jpeg.org/jpeg2000/index.html?utm_source=chatgpt.com" target="_blank" rel="noopener noreferrer">JPEG 2000 – JPEG Committee</a></li>
+<li><a href="https://www.loc.gov/preservation/digital/formats/fdd/fdd000036.shtml?utm_source=chatgpt.com" target="_blank" rel="noopener noreferrer">Advanced Audio Coding – Library of Congress</a></li>
+<li><a href="https://pubmed.ncbi.nlm.nih.gov/18430861/?utm_source=chatgpt.com" target="_blank" rel="noopener noreferrer">Fourier Transform và MRI – PubMed</a></li>
+<li><a href="https://www.ncbi.nlm.nih.gov/books/NBK546157/?utm_source=chatgpt.com" target="_blank" rel="noopener noreferrer">Computed Tomography và Fourier Slice Theorem – NCBI Bookshelf</a></li>
+</ul>
+</div></div>
+  <div class="card-footer"><div class="post-navs d-flex justify-content-evenly"><div class="post-nav post-prev">
+    <i class="fas fa-fw fa-chevron-left"></i>
+    <a href="https://www.phamduytung.com/blog/2026-09-02-festunger/">Định luật Festinger: 10% là chuyện xảy ra, 90% là cách ta phản ứng
+</a>
+  </div></div></div>
+</article><div class="card component row post-comments" id="post-comments">
+  <div class="card-header">
+    <h2 class="card-title">Bình luận</h2>
+  </div>
+  <div class="card-body"><script src="https://utteranc.es/client.js"
+  repo="AlexBlack2202/utterances"
+  issue-term="pathname"
+  label="comment"
+  theme="github-dark"
+  crossorigin="anonymous"
+  async>
+</script></div>
+</div></div>
+</div><aside class="col-lg-3 col-md-4 sidebar d-flex">
+  <div class="container d-flex flex-column">
+    
+    <a href="https://www.buymeacoffee.com/alexblack28"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=🍎&slug=alexblack28&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" /></a><div class="post-toc row mb-4 card component" id="postTOC">
+  <div class="card-header">
+    <h2 class="card-title">Mục lục</h2>
+  </div>
+  <div class="card-body">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#đặt-vấn-đề-bên-trong-tiếng-alo-có-một-đống-sóng-đang-chen-nhau">Đặt vấn đề: bên trong tiếng &ldquo;alo&rdquo; có một đống sóng đang chen nhau</a></li>
+    <li><a href="#joseph-fourier-người-bắt-đầu-từ-một-cục-sắt-nóng">Joseph Fourier: người bắt đầu từ một cục sắt nóng</a></li>
+    <li><a href="#fracpartial-upartial-t">$$
+\frac{\partial u}{\partial t}</a></li>
+    <li><a href="#một-đường-cong-nhiệt-độ-có-thể-rất-xấu-xí">Một đường cong nhiệt độ có thể rất xấu xí</a></li>
+    <li><a href="#chuỗi-fourier-lego-dành-cho-đường-cong">Chuỗi Fourier: Lego dành cho đường cong</a></li>
+    <li><a href="#fx">$$
+f(x)</a></li>
+    <li><a href="#a_n">$$
+a_n</a></li>
+    <li><a href="#b_n">$$
+b_n</a></li>
+    <li><a href="#ví-dụ-điên-rồ-nhất-dùng-những-đường-cong-tròn-trịa-để-dựng-một-hình-vuông">Ví dụ điên rồ nhất: dùng những đường cong tròn trịa để dựng một hình vuông</a></li>
+    <li><a href="#fx-1">$$
+f(x)</a></li>
+    <li><a href="#năm-1807-fourier-mang-quả-bom-vào-viện-hàn-lâm">Năm 1807: Fourier mang quả bom vào Viện Hàn lâm</a></li>
+    <li><a href="#fourier-và-laplace-không-hẳn-là-hai-ông-già-cầm-ghế-đánh-nhau">Fourier và Laplace: không hẳn là hai ông già cầm ghế đánh nhau</a>
+      <ul>
+        <li><a href="#tầng-thứ-nhất-toán-học">Tầng thứ nhất: toán học</a></li>
+        <li><a href="#tầng-thứ-hai-vật-lý">Tầng thứ hai: vật lý</a></li>
+      </ul>
+    </li>
+    <li><a href="#rồi-fourier-thắng">Rồi Fourier thắng?</a></li>
+    <li><a href="#từ-chuỗi-fourier-đến-biến-đổi-fourier">Từ chuỗi Fourier đến biến đổi Fourier</a></li>
+    <li><a href="#fomega">$$
+F(\omega)</a></li>
+    <li><a href="#ft">$$
+f(t)</a></li>
+    <li><a href="#eitheta">$$
+e^{i\theta}</a></li>
+    <li><a href="#miền-thời-gian-và-miền-tần-số-nhìn-cùng-một-con-voi-bằng-hai-phía">Miền thời gian và miền tần số: nhìn cùng một con voi bằng hai phía</a></li>
+    <li><a href="#một-ví-dụ-bỏ-tiếng-ù-50-hz">Một ví dụ: bỏ tiếng ù 50 Hz</a></li>
+    <li><a href="#nhưng-máy-tính-không-có-thời-gian-tính-tích-phân-từ-âm-vô-cực-đến-dương-vô-cực">Nhưng máy tính không có thời gian tính tích phân từ âm vô cực đến dương vô cực</a></li>
+    <li><a href="#x_k">$$
+X_k</a></li>
+    <li><a href="#năm-2026-bạn-dùng-fourier-từ-lúc-vừa-thức-dậy">Năm 2026, bạn dùng Fourier từ lúc vừa thức dậy</a>
+      <ul>
+        <li><a href="#1-wi-fi-căn-phòng-đầy-những-con-sóng-vô-hình">1. Wi-Fi: căn phòng đầy những con sóng vô hình</a></li>
+        <li><a href="#2-4g-và-5g">2. 4G và 5G</a></li>
+        <li><a href="#3-ảnh-jpeg-fourier-có-một-người-em-họ-tên-dct">3. Ảnh JPEG: Fourier có một người em họ tên DCT</a></li>
+        <li><a href="#4-nhạc-và-giọng-nói-chia-âm-thanh-thành-những-dải-tần">4. Nhạc và giọng nói: chia âm thanh thành những dải tần</a></li>
+        <li><a href="#5-equalizer">5. Equalizer</a></li>
+        <li><a href="#6-tai-nghe-chống-ồn">6. Tai nghe chống ồn</a></li>
+        <li><a href="#7-microphone-họp-online-và-gọi-điện">7. Microphone, họp online và gọi điện</a></li>
+      </ul>
+    </li>
+    <li><a href="#8-radar-trên-ô-tô-một-con-chip-nghe-tiếng-vọng-của-chính-mình">8. Radar trên ô tô: một con chip nghe tiếng vọng của chính mình</a></li>
+    <li><a href="#9-mri-cơ-thể-con-người-xuất-hiện-từ-miền-tần-số">9. MRI: cơ thể con người xuất hiện từ miền tần số</a></li>
+    <li><a href="#10-ct-gom-những-cái-bóng-thành-một-cơ-thể">10. CT: gom những cái bóng thành một cơ thể</a></li>
+    <li><a href="#điều-fourier-thực-sự-phát-minh-không-chỉ-là-một-công-thức">Điều Fourier thực sự phát minh không chỉ là một công thức</a></li>
+    <li><a href="#fomega-1">$$
+F(\omega)</a></li>
+    <li><a href="#nhưng-tại-sao-lại-là-sin">Nhưng tại sao lại là sin?</a></li>
+    <li><a href="#fracddteiomega-t">$$
+\frac{d}{dt}e^{i\omega t}</a></li>
+    <li><a href="#fourier-không-phải-thần-có-những-thứ-ông-làm-không-đẹp">Fourier không phải thần: có những thứ ông làm không đẹp</a></li>
+    <li><a href="#một-chi-tiết-vui-ai-cũng-không-giết-được-fourier">Một chi tiết vui: AI cũng không giết được Fourier</a></li>
+    <li><a href="#một-cuộc-đối-đầu-rất-đẹp-giữa-fourier-và-laplace">Một cuộc đối đầu rất đẹp giữa Fourier và Laplace</a></li>
+    <li><a href="#có-một-thứ-rất-triết-học-nằm-bên-dưới-fourier">Có một thứ rất triết học nằm bên dưới Fourier</a></li>
+    <li><a href="#tổng-kết">Tổng kết</a></li>
+    <li><a href="#tham-khảo">Tham khảo</a></li>
+  </ul>
+</nav>
+  </div>
+</div><section class="recent-posts row card component">
+  <div class="card-header">
+    <h2 class="card-title">Bài gần đây</h2>
+  </div>
+  <div class="card-body">
+    <ul class="post-list"><li>
+        <a href="https://www.phamduytung.com/blog/2026-09-02-fourier/">Biến đổi Fourier: xé một đường cong hỗn loạn thành những con sóng hình sin
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-09-02-becker/">Lý thuyết Becker: Khi tội phạm cũng là một bài toán kinh tế
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-09-02-festunger/">Định luật Festinger: 10% là chuyện xảy ra, 90% là cách ta phản ứng
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-08-24-ly-thuyet-tro-choi-tu-te-khong-thanh-con-moi/">Lý thuyết trò chơi: Tử tế mà không biến mình thành con mồi
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-08-23-webaudio-im-lang-van-giu-tai-nghe-bluetooth/">WebAudio im lặng: Vì sao một trang web vẫn giữ tai nghe Bluetooth của bạn
+</a>
+      </li></ul>
+  </div>
+</section><section class="series-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/series">series</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/series/kh%C3%B3a-h%E1%BB%8Dc-python-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học Python Căn Bản">
+            Khóa Học Python Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="https://www.phamduytung.com/series/kh%C3%B3a-h%E1%BB%8Dc-c&#43;&#43;-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học C&#43;&#43; Căn Bản">
+            Khóa Học C&#43;&#43; Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="https://www.phamduytung.com/series/machine-learning-dataset/" class="badge rounded post-taxonomy" title="Machine Learning Dataset">
+            Machine Learning Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a><a href="https://www.phamduytung.com/series/ch%E1%BB%A9ng-kho%C3%A1n-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Chứng Khoán Căn Bản">
+            Chứng Khoán Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">1</span></a></div>
+      </div>
+    </section><section class="tools-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/tools">tools</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/tools/tool-random/" class="badge rounded post-taxonomy" title="Tool Random">
+            Tool Random<span class="badge badge-sm text-white bg-accent ms-1">3</span></a></div>
+      </div>
+    </section><section class="categories-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/categories">categories</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/categories/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="https://www.phamduytung.com/categories/c&#43;&#43;/" class="badge rounded post-taxonomy" title="C&#43;&#43;">
+            C&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="https://www.phamduytung.com/categories/dataset/" class="badge rounded post-taxonomy" title="Dataset">
+            Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a></div>
+      </div>
+    </section><section class="tags-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/tags">tags</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/tags/machine-learning/" class="badge rounded post-taxonomy" title="Machine Learning">
+            Machine Learning<span class="badge badge-sm text-white bg-accent ms-1">29</span></a><a href="https://www.phamduytung.com/tags/deep-learning/" class="badge rounded post-taxonomy" title="Deep Learning">
+            Deep Learning<span class="badge badge-sm text-white bg-accent ms-1">25</span></a><a href="https://www.phamduytung.com/tags/llm/" class="badge rounded post-taxonomy" title="LLM">
+            LLM<span class="badge badge-sm text-white bg-accent ms-1">17</span></a><a href="https://www.phamduytung.com/tags/computer-vision/" class="badge rounded post-taxonomy" title="Computer Vision">
+            Computer Vision<span class="badge badge-sm text-white bg-accent ms-1">16</span></a><a href="https://www.phamduytung.com/tags/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">14</span></a><a href="https://www.phamduytung.com/tags/mathematics/" class="badge rounded post-taxonomy" title="Mathematics">
+            Mathematics<span class="badge badge-sm text-white bg-accent ms-1">12</span></a><a href="https://www.phamduytung.com/tags/ai-agent/" class="badge rounded post-taxonomy" title="Ai Agent">
+            Ai Agent<span class="badge badge-sm text-white bg-accent ms-1">10</span></a><a href="https://www.phamduytung.com/tags/tri%E1%BA%BFt-h%E1%BB%8Dc/" class="badge rounded post-taxonomy" title="Triết Học">
+            Triết Học<span class="badge badge-sm text-white bg-accent ms-1">8</span></a><a href="https://www.phamduytung.com/tags/ai/" class="badge rounded post-taxonomy" title="AI">
+            AI<span class="badge badge-sm text-white bg-accent ms-1">7</span></a><a href="https://www.phamduytung.com/tags/recommendation-system/" class="badge rounded post-taxonomy" title="Recommendation System">
+            Recommendation System<span class="badge badge-sm text-white bg-accent ms-1">7</span></a></div>
+      </div>
+    </section>
+    
+  </div>
+</aside>
+</div>
+    </main><footer class="footer mt-auto py-3 text-center container"><ul class="nav justify-content-between footer-memu mb-3"><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Community
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-facebook"></i>Facebook Group
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://github.com/AlexBlack2202/alexblack2202.github.io" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-github"></i>GitHub
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/contact/"><i class="fas fa-fw fa-info-circle"></i>Contact Us
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/faq/"><i class="fas fa-fw fa-question-circle"></i>Câu hỏi thường gặp
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Docs
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="/team_of_services" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-users"></i>Điều khoản sử dụng
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/privacy" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-lock"></i>Chính sách bảo mật
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Features
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="/utils/gen_paswords/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-key"></i>Tạo password ngẫu nhiên
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Liên kết khác
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">Netlify
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">facebook
+</a>
+        </li></ul></li></ul>
+<div class="copyright mb-2">
+  Copyright © 2016-2026 Phạm Duy Tùng. All Rights Reserved.
+</div>
+<div class="powered-by mb-2">
+  Website chia sẻ kiến thức của Phạm Duy Tùng và Đặng Thị Hằng. Vui lòng liên hệ email alexblack2202@gmail.com nếu bạn có thông tin cần trao đổi.
+</div></footer>
+<script src="https://www.phamduytung.com/js/main.111d51a8c754010f8399ca010e552d803e2d5170b361f8886ad04ec6c21ca551.js" integrity="sha256-ER1RqMdUAQ&#43;DmcoBDlUtgD4tUXCzYfiIatBOxsIcpVE=" crossorigin="anonymous" defer></script><script src="https://www.phamduytung.com/js/icons.min.cb4c9958dbc49e29ac644e168e82db2d0de9a741a15751cc5bf2b0af21eb2845.js" integrity="sha256-y0yZWNvEnimsZE4WjoLbLQ3pp0GhV1HMW/KwryHrKEU=" crossorigin="anonymous" defer></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('https:\/\/www.phamduytung.com\/service-worker.js').then(function(reg) {
+      console.log('Successfully registered service worker', reg);
+    }).catch(function(err) {
+      console.warn('Error whilst registering service worker', err);
+    });
+  });
+}
+</script><script src="https://www.phamduytung.com/js/viewer.min.28bcf5233e406dae6715f46c8b9e8ca7c6cbf347e8678f5a2bebe5369c3270bb.js" integrity="sha256-KLz1Iz5Aba5nFfRsi56Mp8bL80foZ49aK&#43;vlNpwycLs=" crossorigin="anonymous" defer></script><script defer src="https://www.phamduytung.com/js/katex.min.8582b9feadf92a2a977ed303b97d7713cf2754ccf2b4eb60d8be7453a21042c2.js" integrity="sha256-hYK5/q35KiqXftMDuX13E88nVMzytOtg2L50U6IQQsI=" crossorigin="anonymous"></script>
+
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-2WWQ5G9DKL"></script>
+      <script>
+        var doNotTrack = false;
+        if ( true ) {
+          var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
+          var doNotTrack = (dnt == "1" || dnt == "yes");
+        }
+        if (!doNotTrack) {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-2WWQ5G9DKL');
+        }
+      </script>
+<script  data-ad-client="ca-pub-4644989745435991"  async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4644989745435991"
+     crossorigin="anonymous"></script><script data-cfasync="false" type="text/javascript" data-adel="atag" src="//acscdn.com/script/atg.js" czid="eul3gyjdmm"></script>
+  </body>
+</html>

@@ -1,0 +1,1511 @@
+<!doctype html><html lang="vi" data-palette="brown"
+   data-mode="light">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Optimal Transport – Toán học của việc chuyển một đống cát sang một đống cát khác - Phạm Duy Tùng Machine Learning Blog</title>
+    <meta name="a.validate.02" content="1QZXZ8oi7g57H-GxBrBPkTYBydwii-Ic9iJu" /><link rel="apple-touch-icon" href="https://www.phamduytung.com/images/icons/icon-180x180.png" sizes="180x180">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/icon-32x32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/icon-16x16.png" sizes="16x16" type="image/png">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/favicon.ico">
+<link rel="manifest" href="https://www.phamduytung.com/manifest.json">
+<meta name="keywords" content="" />
+<meta name="description" content="Optimal Transport tìm cách biến một phân bố vật chất thành phân bố khác với tổng chi phí di chuyển nhỏ nhất. Từ bài toán chở đất của Monge đến Wasserstein Distance và Sinkhorn trong Machine Learning." /><meta name="robots" content="index, follow" />
+	<meta itemprop="name" content="Optimal Transport – Toán học của việc chuyển một đống cát sang một đống cát khác">
+	<meta itemprop="description" content="Optimal Transport tìm cách biến một phân bố vật chất thành phân bố khác với tổng chi phí di chuyển nhỏ nhất. Từ bài toán chở đất của Monge đến Wasserstein Distance và Sinkhorn trong Machine Learning.">
+	<meta itemprop="datePublished" content="2026-08-21T00:00:00+07:00">
+	<meta itemprop="dateModified" content="2026-08-21T00:00:00+07:00">
+	<meta itemprop="wordCount" content="4485">
+	<meta itemprop="image" content="https://www.phamduytung.com/images/posts/2026-08-21-van-chuyen-toi-uu/cover-pearl-glass.png">
+	<meta itemprop="keywords" content="Mathematics,Optimal-Transport,Wasserstein,Machine Learning,Optimization"><meta property="og:url" content="https://www.phamduytung.com/blog/2026-08-21-van-chuyen-toi-uu/">
+	<meta property="og:site_name" content="Phạm Duy Tùng Machine Learning Blog">
+	<meta property="og:title" content="Optimal Transport – Toán học của việc chuyển một đống cát sang một đống cát khác">
+	<meta property="og:description" content="Optimal Transport tìm cách biến một phân bố vật chất thành phân bố khác với tổng chi phí di chuyển nhỏ nhất. Từ bài toán chở đất của Monge đến Wasserstein Distance và Sinkhorn trong Machine Learning.">
+	<meta property="og:locale" content="vi_VN">
+	<meta property="og:type" content="article">
+		<meta property="article:section" content="blog">
+		<meta property="article:published_time" content="2026-08-21T00:00:00+07:00">
+		<meta property="article:modified_time" content="2026-08-21T00:00:00+07:00">
+		<meta property="article:tag" content="Mathematics">
+		<meta property="article:tag" content="Optimal-Transport">
+		<meta property="article:tag" content="Wasserstein">
+		<meta property="article:tag" content="Machine Learning">
+		<meta property="article:tag" content="Optimization">
+		<meta property="og:image" content="https://www.phamduytung.com/images/posts/2026-08-21-van-chuyen-toi-uu/cover-pearl-glass.png">
+
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:image" content="https://www.phamduytung.com/images/posts/2026-08-21-van-chuyen-toi-uu/cover-pearl-glass.png">
+	<meta name="twitter:title" content="Optimal Transport – Toán học của việc chuyển một đống cát sang một đống cát khác">
+	<meta name="twitter:description" content="Optimal Transport tìm cách biến một phân bố vật chất thành phân bố khác với tổng chi phí di chuyển nhỏ nhất. Từ bài toán chở đất của Monge đến Wasserstein Distance và Sinkhorn trong Machine Learning.">
+<link rel="stylesheet" href="https://www.phamduytung.com/css/main.min.1a7226fbd65768f38cdf02e59cdd28a35be617bb64b16963588e2b5b5797ce55.css" integrity="sha256-GnIm&#43;9ZXaPOM3wLlnN0oo1vmF7tksWljWI4rW1eXzlU=" crossorigin="anonymous"><link rel="stylesheet" href="https://www.phamduytung.com/css/katex.min.4d6aa053ca8a5675016fa2c9c48ee5359bfaafb8295184458af9d64abce84c47.css" integrity="sha256-TWqgU8qKVnUBb6LJxI7lNZv6r7gpUYRFivnWSrzoTEc=" crossorigin="anonymous">
+<link rel="stylesheet" href="https://www.phamduytung.com/css/viewer.min.3d228794bcedbbfa0412beb8fbc1ec6973202945e42af7004f742a4d7bd620ab.css" integrity="sha256-PSKHlLztu/oEEr64&#43;8HsaXMgKUXkKvcAT3QqTXvWIKs=" crossorigin="anonymous"><link rel="canonical" href="https://www.phamduytung.com/blog/2026-08-21-van-chuyen-toi-uu/">
+<meta name="theme-color" content="#f7f5ff"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Phạm Duy Tùng"},"dateModified":"2026-08-21T00:00:00+07:00","datePublished":"2026-08-21T00:00:00+07:00","description":"Optimal Transport tìm cách biến một phân bố vật chất thành phân bố khác với tổng chi phí di chuyển nhỏ nhất. Từ bài toán chở đất của Monge đến Wasserstein Distance và Sinkhorn trong Machine Learning.","headline":"Optimal Transport – Toán học của việc chuyển một đống cát sang một đống cát khác","image":["https://www.phamduytung.com/images/posts/2026-08-21-van-chuyen-toi-uu/cover-pearl-glass.png"],"inLanguage":"vi","keywords":"mathematics, optimal-transport, wasserstein, machine-learning, optimization","mainEntityOfPage":{"@id":"https://www.phamduytung.com/blog/2026-08-21-van-chuyen-toi-uu/","@type":"WebPage"},"publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://www.phamduytung.com/images/brand-mark-flaming-book-red.png"},"name":"Phạm Duy Tùng Machine Learning Blog"},"url":"https://www.phamduytung.com/blog/2026-08-21-van-chuyen-toi-uu/"}</script></head>
+  <body><script>const items=["mode","palette"];items.forEach(function(e){const t=localStorage.getItem("hbs-"+e);t&&document.body.parentElement.setAttribute("data-"+e,t)})</script><header><nav class="navbar top-app-bar top-app-bar-expand-lg fixed-top">
+  <div class="container pearl-navbar__inner">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Mở menu">
+      <i class="fas fa-bars"></i>
+    </button>
+
+    <a class="navbar-brand pearl-brand flex-grow-1 flex-lg-grow-0" href="https://www.phamduytung.com/">
+      <span class="pearl-brand__mark" aria-hidden="true">
+        <img src="https://www.phamduytung.com/images/brand-mark-flaming-book-red.png" alt="" width="42" height="42">
+      </span>
+      <span class="pearl-brand__copy">
+        <strong>Phạm Duy Tùng</strong>
+        <small>AI · DATA · SYSTEMS</small>
+      </span>
+    </a>
+
+    <div class="offcanvas offcanvas-bottom surface" tabindex="-1" id="offcanvasSocialShare" aria-labelledby="offcanvasSocialShare">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Share</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body">
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Twitter Share Button"
+      target="_blank" href="https://twitter.com/intent/tweet?title=Optimal%20Transport%20%e2%80%93%20To%c3%a1n%20h%e1%bb%8dc%20c%e1%bb%a7a%20vi%e1%bb%87c%20chuy%e1%bb%83n%20m%e1%bb%99t%20%c4%91%e1%bb%91ng%20c%c3%a1t%20sang%20m%e1%bb%99t%20%c4%91%e1%bb%91ng%20c%c3%a1t%20kh%c3%a1c&url=https%3a%2f%2fwww.phamduytung.com%2fblog%2f2026-08-21-van-chuyen-toi-uu%2f">
+      <i class="fab fa-fw fa-twitter"></i> Twitter
+    </a>
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Facebook Share Button"
+      target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.phamduytung.com%2fblog%2f2026-08-21-van-chuyen-toi-uu%2f">
+      <i class="fab fa-fw fa-facebook-f"></i> Facebook
+    </a>
+  </div>
+</div>
+    <button class="navbar-settings" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSettings"
+  aria-controls="offcanvasSettings" aria-label="Toggle settings">
+  <i class="fas fa-ellipsis-v"></i>
+</button>
+
+<div class="offcanvas offcanvas-end surface h-100" tabindex="-1" id="offcanvasSettings" aria-labelledby="offcanvasSettings">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Cài đặt</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body d-flex flex-column">
+
+
+
+<section class="setting">
+  <form class="font-size-switcher-form row">
+    <div class="col-auto">
+      <label for="fontSize" class="form-label"><i class="fas fa-fw fa-font"></i> Cỡ chữ</label>
+    </div>
+    <div class="col-auto ms-auto">
+      <input type="range" class="form-range" min="-2" max="2" id="fontSize">
+    </div>
+  </form>
+</section>
+
+
+
+<section class="setting actions d-flex justify-content-around mt-auto overflow-auto">
+  <a role="button" class="action action-go-back" href="javascript: window.history.back();">
+    <span class="action-icon"><i class="fas fa-2x fa-arrow-left"></i></span> Quay lại
+  </a>
+  <a role="button" class="action action-reload-page">
+    <span class="action-icon"><i class="fas fa-2x fa-redo-alt"></i></span> Tải lại
+  </a>
+  <a role="button" class="action action-copy-url">
+    <span class="action-icon"><i class="fas fa-2x fa-link"></i></span> Sao chép URL
+  </a><a class="action action-social-share" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSocialShare"
+    aria-controls="offcanvasSocialShare" aria-label="Toggle social share">
+    <span class="action-icon"><i class="fas fa-2x fa-share-alt"></i></span> Chia sẻ
+  </a></section>
+
+</div>
+</div>
+
+    <div class="collapse navbar-collapse" tabindex="-1" id="navbarSupportedContent" aria-labelledby="navbarSupportedContent">
+      <form class="search-bar my-1" action="https://www.phamduytung.com/search">
+  <div class="input-group input-group-sm">
+    <span class="btn btn-search disabled position-absolute left-0"><i class="fas fa-fw fa-search"></i></span>
+    <input class="form-control rounded-pill" name="q" type="search" aria-label="Search">
+  </div>
+</form>
+      <ul class="navbar-nav ms-auto"><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/series/">
+            <i class="fas fa-fw fa-columns"></i>Courses
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/tools/">
+            <i class="fas fa-fw fa-folder"></i>Tools
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/categories/">
+            <i class="fas fa-fw fa-folder"></i>Categories
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/archives/">
+            <i class="fas fa-fw fa-file-archive"></i>Archives
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/tags/">
+            <i class="fas fa-fw fa-tags"></i>Tags
+          </a>
+        </li><li class="nav-item dropdown">
+          <a class="nav-link" id="navbarDropdownSupport" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-fw fa-comments"></i>Community
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdownSupport"><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Facebook Group
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://github.com/AlexBlack2202/alexblack2202.github.io" target="_blank" rel="noopener noreferrer">
+                GitHub
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/contact/">
+                Contact
+              </a>
+            </li><li><hr class="dropdown-divider"></li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/faq/">
+                Câu hỏi thường gặp
+              </a>
+            </li></ul>
+        </li></ul>
+    </div>
+  </div>
+</nav>
+</header>
+<main role="main" class="container" style="line-height:1.7em">
+      <div class="row content">
+<div class="col-lg-9 col-md-8">
+  <div class="container"><nav class="row card component" aria-label="breadcrumb">
+  <div class="card-body">
+    <ol class="breadcrumb "><li class="breadcrumb-item"><a href="https://www.phamduytung.com/">Trang chủ</a></li><li class="breadcrumb-item"><a href="https://www.phamduytung.com/blog/">Blogs</a></li><li class="breadcrumb-item active">Optimal Transport – Toán học của việc chuyển một đống cát sang một đống cát khác</li></ol>
+  </div>
+</nav>
+<div class="post-panel-wrapper">
+  <div class="d-flex flex-column component rounded post-panel">
+    
+    <a class="action action-panel-toggler" role="button" title="Panel toggler">
+      <i class="fas fa-fw fa-chevron-circle-down"></i>
+    </a>
+    <a id="sidebarToggler" class="action d-none d-lg-block" role="button" title="Sidebar toggler">
+  <i class="fas fa-fw fa-expand-alt" data-fa-transform="rotate-45"></i>
+</a>
+
+    
+
+    
+    
+    <a class="action" href="#post-comments" role="button" aria-label="Comments" title="Comments">
+  <i class="fas fa-fw fa-comments"></i>
+</a>
+    <a class="action" href="#postTOC" aria-controls="Table of contents" role="button" title="Table of contents">
+  <i class="fas fa-fw fa-list-alt"></i>
+</a>
+    
+  </div>
+</div>
+<article class="row card component mb-4 post">
+  <div class="card-header "><div class="bgcover" style="background-image:url(https://www.phamduytung.com/images/posts/2026-08-21-van-chuyen-toi-uu/cover-pearl-glass.png)" aria-label="Optimal Transport – Toán học của việc chuyển một đống cát sang một đống cát khác">
+      <div class="bgtrans">
+          <h1>Optimal Transport – Toán học của việc chuyển một đống cát sang một đống cát khác
+</h1>
+      </div>
+  </div>
+</div>
+  <div class="card-body"><div class="post-meta">
+  <span class="post-date" title="tạo ngày 2026-08-21 00:00:00 &#43;0700 &#43;07.">
+    21/08/2026
+  </span><span class="post-reading-time">
+    22 phút đọc
+  </span><span class="post-taxonomies"><a href="https://www.phamduytung.com/tags/mathematics/" class="badge post-taxonomy">mathematics</a><a href="https://www.phamduytung.com/tags/optimal-transport/" class="badge post-taxonomy">optimal-transport</a><a href="https://www.phamduytung.com/tags/wasserstein/" class="badge post-taxonomy">wasserstein</a><a href="https://www.phamduytung.com/tags/machine-learning/" class="badge post-taxonomy">machine learning</a><a href="https://www.phamduytung.com/tags/optimization/" class="badge post-taxonomy">optimization</a></span>
+</div>
+<div class="post-content mb-3"><div class="toc">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#đặt-vấn-đề">Đặt vấn đề</a></li>
+    <li><a href="#bài-toán-chính">Bài toán chính</a></li>
+    <li><a href="#từ-đống-cát-đến-phân-bố-xác-suất">Từ đống cát đến phân bố xác suất</a>
+      <ul>
+        <li><a href="#bài-toán-của-monge">Bài toán của Monge</a></li>
+      </ul>
+    </li>
+    <li><a href="#kantorovich-thôi-thì-chia-nhỏ-đống-cát-đi">Kantorovich: thôi thì chia nhỏ đống cát đi</a></li>
+    <li><a href="#optimal-transport-dạng-rời-rạc">Optimal Transport dạng rời rạc</a></li>
+    <li><a href="#một-ví-dụ-nhỏ-tới-mức-trẻ-sáu-tuổi-cũng-giải-được">Một ví dụ nhỏ tới mức trẻ sáu tuổi cũng giải được</a></li>
+    <li><a href="#wasserstein-distance">Wasserstein Distance</a></li>
+    <li><a href="#w_pmunu">$$
+W_p(\mu,\nu)</a>
+      <ul>
+        <li><a href="#vì-sao-không-dùng-euclidean-distance-cho-khỏe">Vì sao không dùng Euclidean Distance cho khỏe?</a></li>
+      </ul>
+    </li>
+    <li><a href="#một-điểm-khá-kỳ-quặc-nhưng-cực-kỳ-quan-trọng">Một điểm khá kỳ quặc nhưng cực kỳ quan trọng</a></li>
+    <li><a href="#một-phân-bố-thật-sự-là-gì">Một phân bố thật sự là gì?</a></li>
+    <li><a href="#ví-dụ-so-sánh-hai-hình-ảnh">Ví dụ: so sánh hai hình ảnh</a></li>
+    <li><a href="#ví-dụ-hai-document-dùng-từ-hơi-khác-nhau">Ví dụ: hai document dùng từ hơi khác nhau</a></li>
+    <li><a href="#c_ij">$$
+C_{ij}</a></li>
+    <li><a href="#vấn-đề-optimal-transport-chính-xác-khá-đắt">Vấn đề: Optimal Transport chính xác khá đắt</a></li>
+    <li><a href="#sinkhorn-cho-đống-cát-một-chút-entropy">Sinkhorn: cho đống cát một chút entropy</a>
+      <ul>
+        <li><a href="#langle-pcrangle">$$
+\min_P
+\langle P,C\rangle</a></li>
+      </ul>
+    </li>
+    <li><a href="#hp">$$
+H(P)</a></li>
+    <li><a href="#k_ij">$$
+K_{ij}</a></li>
+    <li><a href="#u">$$
+u</a></li>
+    <li><a href="#v">$$
+v</a></li>
+    <li><a href="#sinkhorn-bằng-python">Sinkhorn bằng Python</a></li>
+    <li><a href="#tham-số-epsilon-thực-sự-làm-gì">Tham số epsilon thực sự làm gì?</a>
+      <ul>
+        <li>
+          <ul>
+            <li><a href="#epsilon-rất-nhỏ">Epsilon rất nhỏ</a></li>
+            <li><a href="#epsilon-lớn">Epsilon lớn</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+    <li><a href="#optimal-transport-trong-machine-learning">Optimal Transport trong Machine Learning</a>
+      <ul>
+        <li><a href="#so-sánh-distribution">So sánh distribution</a></li>
+        <li><a href="#generative-model">Generative Model</a></li>
+        <li><a href="#domain-adaptation">Domain adaptation</a></li>
+        <li><a href="#clustering-và-barycenter">Clustering và barycenter</a></li>
+        <li><a href="#differentiable-sorting">Differentiable sorting</a></li>
+      </ul>
+    </li>
+    <li><a href="#optimal-transport-đang-đo-khoảng-cách-giữa-những-thế-giới">Optimal Transport đang đo khoảng cách giữa những thế giới</a></li>
+    <li><a href="#wasserstein-space">Wasserstein space</a></li>
+    <li><a href="#một-ví-dụ-cực-nhỏ">Một ví dụ cực nhỏ</a></li>
+    <li><a href="#w_1">$$
+W_1</a></li>
+    <li><a href="#05times10">0.5\times10</a></li>
+    <li><a href="#w_1-1">$$
+W_1</a></li>
+    <li><a href="#05times100">0.5\times100</a></li>
+    <li><a href="#ưu-điểm-và-hạn-chế">Ưu điểm và hạn chế</a></li>
+    <li><a href="#một-tư-duy-thú-vị-hơn-về-dữ-liệu">Một tư duy thú vị hơn về dữ liệu</a></li>
+    <li><a href="#tổng-kết">Tổng kết</a></li>
+    <li><a href="#texttransport-cost">$$
+\text{Transport Cost}</a></li>
+    <li><a href="#tham-khảo">Tham khảo</a></li>
+  </ul>
+</nav>
+  </div>
+<h1 id="đặt-vấn-đề">Đặt vấn đề<a class="anchor ms-1" href="#đặt-vấn-đề"><i class="fas fa-link"></i></a></h1>
+<p>Không có gì tự nhiên biến mất.</p>
+<p>Một đống cát nằm bên trái sân không thể nhắm mắt một cái rồi <em>bụp</em>, xuất hiện thành một đống cát hình con vịt ở bên phải sân.</p>
+<p>Muốn biến đống cát thứ nhất thành đống cát thứ hai, từng hạt cát phải đi đâu đó.</p>
+<p>Có hạt đi 1 mét.</p>
+<p>Có hạt đi 5 mét.</p>
+<p>Có hạt xui xẻo bị xúc lên xe cút kít, chạy vòng qua cái cây, đi tận 20 mét chỉ vì người xúc cát hôm đó có một niềm tin kỳ lạ vào đường vòng.</p>
+<p>Và mỗi mét di chuyển đều có giá.</p>
+<p>Một kilogram cát đi 1 mét chắc chắn rẻ hơn một kilogram cát đi 100 mét.</p>
+<p>Từ một câu hỏi nghe giống việc của công nhân công trường:</p>
+<blockquote>
+<p><strong>Phải chuyển cát như thế nào để tốn ít công nhất?</strong></p>
+</blockquote>
+<p>toán học sinh ra cả một lĩnh vực rất đẹp:</p>
+<p><strong>Optimal Transport – vận chuyển tối ưu.</strong></p>
+<p>Trực giác của Wasserstein Distance: khoảng cách giữa hai phân bố chính là lượng &ldquo;công&rdquo; tối thiểu cần bỏ ra để chuyển khối lượng của phân bố này thành phân bố kia.</p>
+<p>Nghe thì có vẻ chỉ liên quan tới xe tải và đất đá.</p>
+<p>Nhưng rồi người ta phát hiện ra một chuyện hơi ngáo:</p>
+<p><strong>ảnh cũng có thể xem như một đống vật chất.</strong></p>
+<p><strong>xác suất cũng có thể xem như một đống vật chất.</strong></p>
+<p><strong>embedding cũng có thể xem như một đám vật chất lơ lửng trong không gian nhiều chiều.</strong></p>
+<p>Và thế là bài toán chở đất thế kỷ XVIII bò thẳng vào Computer Vision, Machine Learning, Generative Model, NLP và Data Science.</p>
+<h1 id="bài-toán-chính">Bài toán chính<a class="anchor ms-1" href="#bài-toán-chính"><i class="fas fa-link"></i></a></h1>
+<p>Giả sử có hai làng.</p>
+<p>Làng A có ba kho gạo:</p>
+<table>
+	<thead>
+			<tr>
+					<th>Kho</th>
+					<th style="text-align: right">Lượng gạo</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>A1</td>
+					<td style="text-align: right">30 tấn</td>
+			</tr>
+			<tr>
+					<td>A2</td>
+					<td style="text-align: right">20 tấn</td>
+			</tr>
+			<tr>
+					<td>A3</td>
+					<td style="text-align: right">50 tấn</td>
+			</tr>
+	</tbody>
+</table>
+<p>Tổng cộng:</p>
+<p>$$
+30 + 20 + 50 = 100
+$$</p>
+<p>tấn gạo.</p>
+<p>Ở phía bên kia có ba cửa hàng cần nhận:</p>
+<table>
+	<thead>
+			<tr>
+					<th>Cửa hàng</th>
+					<th style="text-align: right">Nhu cầu</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>B1</td>
+					<td style="text-align: right">40 tấn</td>
+			</tr>
+			<tr>
+					<td>B2</td>
+					<td style="text-align: right">10 tấn</td>
+			</tr>
+			<tr>
+					<td>B3</td>
+					<td style="text-align: right">50 tấn</td>
+			</tr>
+	</tbody>
+</table>
+<p>Cũng đúng 100 tấn.</p>
+<p>Bây giờ vấn đề bắt đầu xuất hiện.</p>
+<p>Kho A1 có thể chở gạo tới B1, B2 hoặc B3.</p>
+<p>A2 cũng vậy.</p>
+<p>A3 cũng vậy.</p>
+<p>Nếu khoảng cách khác nhau thì giá vận chuyển cũng khác nhau.</p>
+<p>Ví dụ:</p>
+<p>$$
+C =
+\begin{bmatrix}
+1 &amp; 4 &amp; 7 <br>
+2 &amp; 3 &amp; 5 <br>
+6 &amp; 4 &amp; 1
+\end{bmatrix}
+$$</p>
+<p>Trong đó:</p>
+<p>$$
+C_{ij}
+$$</p>
+<p>là chi phí vận chuyển <strong>một đơn vị hàng hóa từ kho $i$ đến cửa hàng $j$</strong>.</p>
+<p>Chẳng hạn:</p>
+<ul>
+<li>A1 → B1 có cost 1.</li>
+<li>A1 → B3 có cost 7.</li>
+<li>A3 → B3 chỉ có cost 1.</li>
+</ul>
+<p>Nếu chúng ta ngu ngơ chở hết hàng từ A1 sang B3 trong khi B1 nằm ngay cạnh A1 thì toán học sẽ đứng bên đường nhìn chúng ta bằng ánh mắt khá thất vọng.</p>
+<p>Mục tiêu của Optimal Transport là tìm:</p>
+<blockquote>
+<p><strong>Bao nhiêu hàng nên đi từ mỗi A sang mỗi B để toàn bộ nhu cầu được đáp ứng và tổng chi phí nhỏ nhất?</strong></p>
+</blockquote>
+<h1 id="từ-đống-cát-đến-phân-bố-xác-suất">Từ đống cát đến phân bố xác suất<a class="anchor ms-1" href="#từ-đống-cát-đến-phân-bố-xác-suất"><i class="fas fa-link"></i></a></h1>
+<p>Đây là bước quan trọng nhất.</p>
+<p>Ta tạm quên kho hàng.</p>
+<p>Giả sử có một phân bố:</p>
+<p>$$
+\mu
+$$</p>
+<p>và muốn biến nó thành:</p>
+<p>$$
+\nu
+$$</p>
+<p>Ta có thể tưởng tượng $\mu$ là một đống cát màu vàng và $\nu$ là hình dạng mà chúng ta muốn đống cát đó trở thành.</p>
+<p>Optimal Transport hỏi:</p>
+<blockquote>
+<p>Từng phần khối lượng của $\mu$ nên được chuyển tới đâu trong $\nu$?</p>
+</blockquote>
+<p>Nếu chuyển một lượng vật chất $m$ qua khoảng cách $d$, một cost rất tự nhiên là:</p>
+<p>$$
+cost = m \times d
+$$</p>
+<p>Đưa 1 kg đi 10 mét có cost:</p>
+<p>$$
+10
+$$</p>
+<p>Đưa 5 kg đi 10 mét:</p>
+<p>$$
+50
+$$</p>
+<p>Không có ma thuật.</p>
+<p>Không có teleport.</p>
+<p>Chỉ có vật chất, khoảng cách và một hóa đơn vận chuyển đang âm thầm lớn lên.</p>
+<h2 id="bài-toán-của-monge">Bài toán của Monge<a class="anchor ms-1" href="#bài-toán-của-monge"><i class="fas fa-link"></i></a></h2>
+<p>Optimal Transport bắt đầu từ Gaspard Monge vào năm 1781.</p>
+<p>Monge nghiên cứu một bài toán rất thực tế: di chuyển đất từ những nơi đang dư sang những nơi cần đắp đất sao cho tổng công sức nhỏ nhất.</p>
+<p>Ta có một ánh xạ:</p>
+<p>$$
+T(x)
+$$</p>
+<p>nghĩa là:</p>
+<blockquote>
+<p>khối lượng nằm tại $x$ sẽ được đưa tới $T(x)$.</p>
+</blockquote>
+<p>Bài toán Monge có dạng:</p>
+<p>$$
+\min_T \int c(x,T(x)),d\mu(x)
+$$</p>
+<p>với điều kiện:</p>
+<p>$$
+T_{#}\mu = \nu
+$$</p>
+<p>Ký hiệu trông hơi giống một con nhện bị rơi vào bàn phím, nhưng ý tưởng rất đơn giản.</p>
+<p>Ta tìm một phép biến đổi $T$ sao cho:</p>
+<ul>
+<li>toàn bộ phân bố ban đầu $\mu$ được biến thành $\nu$;</li>
+<li>tổng chi phí di chuyển là nhỏ nhất.</li>
+</ul>
+<p>Nếu:</p>
+<p>$$
+c(x,y)=|x-y|
+$$</p>
+<p>thì chúng ta đang phạt theo khoảng cách.</p>
+<p>Nếu:</p>
+<p>$$
+c(x,y)=|x-y|^2
+$$</p>
+<p>thì những chuyến đi xa bị phạt nặng hơn.</p>
+<p>Nhưng bài toán của Monge có một hạn chế.</p>
+<p>Một điểm $x$ chỉ được gửi tới <strong>một</strong> điểm $T(x)$.</p>
+<p>Không được chia nhỏ.</p>
+<p>Giống như có một xe tải chứa 10 tấn gạo nhưng luật kỳ quặc của vũ trụ nói:</p>
+<blockquote>
+<p>Xe này chỉ được giao cho đúng một cửa hàng.</p>
+</blockquote>
+<p>Trong thực tế, ta thường muốn 6 tấn đi cửa hàng A, 4 tấn đi cửa hàng B.</p>
+<p>Và đó là lúc Kantorovich bước vào.</p>
+<h1 id="kantorovich-thôi-thì-chia-nhỏ-đống-cát-đi">Kantorovich: thôi thì chia nhỏ đống cát đi<a class="anchor ms-1" href="#kantorovich-thôi-thì-chia-nhỏ-đống-cát-đi"><i class="fas fa-link"></i></a></h1>
+<p>Leonid Kantorovich đưa ra một cách nhìn linh hoạt hơn.</p>
+<p>Thay vì hỏi:</p>
+<blockquote>
+<p>điểm $x$ phải đi tới đâu?</p>
+</blockquote>
+<p>ta hỏi:</p>
+<blockquote>
+<p>bao nhiêu vật chất từ $x$ nên đi tới mỗi $y$?</p>
+</blockquote>
+<p>Ta sử dụng một <strong>transport plan</strong>:</p>
+<p>$$
+\gamma(x,y)
+$$</p>
+<p>Nó mô tả lượng vật chất đi từ $x$ sang $y$.</p>
+<p>Bài toán trở thành:</p>
+<p>$$
+\min_{\gamma}
+\int c(x,y)d\gamma(x,y)
+$$</p>
+<p>với điều kiện hai marginal distribution của $\gamma$ phải bằng $\mu$ và $\nu$.</p>
+<p>Nói bằng tiếng người:</p>
+<ul>
+<li>không được tạo thêm cát;</li>
+<li>không được làm cát biến mất;</li>
+<li>cuối cùng phải tạo đúng đống cát mà ta muốn.</li>
+</ul>
+<p>Đây chính là formulation được sử dụng rất nhiều trong Optimal Transport hiện đại. (<a href="https://optimaltransport.github.io/book/" title="The Book - Computational Optimal Transport" target="_blank" rel="noopener noreferrer">Optimal Transport</a>)</p>
+<h1 id="optimal-transport-dạng-rời-rạc">Optimal Transport dạng rời rạc<a class="anchor ms-1" href="#optimal-transport-dạng-rời-rạc"><i class="fas fa-link"></i></a></h1>
+<p>Trong Computer Science, chúng ta thường không có một đám mây xác suất liên tục đẹp như sách giáo khoa.</p>
+<p>Ta có vector.</p>
+<p>Giả sử:</p>
+<p>$$
+a =
+\begin{bmatrix}
+0.5 <br>
+0.5
+\end{bmatrix}
+$$</p>
+<p>và:</p>
+<p>$$
+b =
+\begin{bmatrix}
+0.3 <br>
+0.7
+\end{bmatrix}
+$$</p>
+<p>Ta cần tìm ma trận:</p>
+<p>$$
+P =
+\begin{bmatrix}
+P_{11} &amp; P_{12} <br>
+P_{21} &amp; P_{22}
+\end{bmatrix}
+$$</p>
+<p>Trong đó:</p>
+<p>$$
+P_{ij}
+$$</p>
+<p>là lượng mass được chuyển từ điểm $i$ của $a$ sang điểm $j$ của $b$.</p>
+<p>Các hàng phải thỏa:</p>
+<p>$$
+P\mathbf{1}=a
+$$</p>
+<p>và các cột phải thỏa:</p>
+<p>$$
+P^T\mathbf{1}=b
+$$</p>
+<p>Nói cách khác:</p>
+<p>khối lượng đi ra phải đúng bằng lượng đang có.</p>
+<p>Khối lượng đi vào phải đúng bằng lượng cần nhận.</p>
+<p>Bài toán là:</p>
+<p>$$
+\min_P \sum_{i,j}P_{ij}C_{ij}
+$$</p>
+<p>hay viết gọn:</p>
+<p>$$
+\min_P \langle P,C\rangle
+$$</p>
+<p>với:</p>
+<p>$$
+P_{ij}\ge 0
+$$</p>
+<p>Đây là một bài toán <strong>linear programming</strong>.</p>
+<p>Nghe thì có vẻ đơn giản.</p>
+<p>Và đúng.</p>
+<p>Về mặt ý tưởng thì khá đơn giản.</p>
+<p>Xong thuật toán, quá dễ.</p>
+<p>Còn chuyện chạy nó trên vài triệu điểm dữ liệu thì toán học bắt đầu cười.</p>
+<h1 id="một-ví-dụ-nhỏ-tới-mức-trẻ-sáu-tuổi-cũng-giải-được">Một ví dụ nhỏ tới mức trẻ sáu tuổi cũng giải được<a class="anchor ms-1" href="#một-ví-dụ-nhỏ-tới-mức-trẻ-sáu-tuổi-cũng-giải-được"><i class="fas fa-link"></i></a></h1>
+<p>Giả sử có hai đống kẹo.</p>
+<p>Ban đầu:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">A        B
+</span></span><span class="line"><span class="ln">2</span><span class="cl">●●●      ●
+</span></span></code></pre></div><p>Ta có:</p>
+<p>$$
+\mu=(3,1)
+$$</p>
+<p>Nhưng muốn cuối cùng thành:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">A        B
+</span></span><span class="line"><span class="ln">2</span><span class="cl">●        ●●●
+</span></span></code></pre></div><p>tức:</p>
+<p>$$
+\nu=(1,3)
+$$</p>
+<p>Ta phải chuyển:</p>
+<p>$$
+2
+$$</p>
+<p>viên kẹo từ A sang B.</p>
+<p>Giả sử A và B cách nhau 5 mét.</p>
+<p>Chi phí:</p>
+<p>$$
+2\times5=10
+$$</p>
+<p>Đó chính là trực giác của Optimal Transport.</p>
+<p>Không hỏi hai vector khác nhau bao nhiêu.</p>
+<p>Không chỉ nhìn:</p>
+<p>$$
+(3,1)-(1,3)
+$$</p>
+<p>Mà hỏi:</p>
+<blockquote>
+<p><strong>phải thực sự di chuyển bao nhiêu vật chất, và đi bao xa, để biến cái này thành cái kia?</strong></p>
+</blockquote>
+<p>Đây là sự khác biệt rất quan trọng.</p>
+<h1 id="wasserstein-distance">Wasserstein Distance<a class="anchor ms-1" href="#wasserstein-distance"><i class="fas fa-link"></i></a></h1>
+<p>Từ Optimal Transport, ta có một họ khoảng cách nổi tiếng gọi là <strong>Wasserstein Distance</strong>.</p>
+<p>Với $p\ge1$:</p>
+<h1 id="w_pmunu">$$
+W_p(\mu,\nu)<a class="anchor ms-1" href="#w_pmunu"><i class="fas fa-link"></i></a></h1>
+<p>\left(
+\inf_{\gamma\in\Pi(\mu,\nu)}
+\int
+d(x,y)^p
+d\gamma(x,y)
+\right)^{1/p}
+$$</p>
+<p>Đừng để công thức làm mình hoảng.</p>
+<p>Nó chỉ đang nói:</p>
+<ol>
+<li>thử tất cả những cách hợp lệ để chuyển $\mu$ thành $\nu$;</li>
+<li>tính chi phí của từng cách;</li>
+<li>chọn cách rẻ nhất.</li>
+</ol>
+<p>Với $p=1$:</p>
+<p>$$
+W_1
+$$</p>
+<p>có trực giác cực kỳ đẹp.</p>
+<p>Nó gần với câu hỏi:</p>
+<blockquote>
+<p>Cần bao nhiêu công để xúc đống đất này thành đống đất kia?</p>
+</blockquote>
+<p>Vì vậy trong Computer Vision người ta còn gọi nó là:</p>
+<p><strong>Earth Mover&rsquo;s Distance – khoảng cách của người xúc đất.</strong></p>
+<h2 id="vì-sao-không-dùng-euclidean-distance-cho-khỏe">Vì sao không dùng Euclidean Distance cho khỏe?<a class="anchor ms-1" href="#vì-sao-không-dùng-euclidean-distance-cho-khỏe"><i class="fas fa-link"></i></a></h2>
+<p>Giả sử hai histogram:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">A:
+</span></span><span class="line"><span class="ln">2</span><span class="cl">
+</span></span><span class="line"><span class="ln">3</span><span class="cl">0 0 0 1 0 0 0
+</span></span><span class="line"><span class="ln">4</span><span class="cl">
+</span></span><span class="line"><span class="ln">5</span><span class="cl">B:
+</span></span><span class="line"><span class="ln">6</span><span class="cl">
+</span></span><span class="line"><span class="ln">7</span><span class="cl">0 0 0 0 1 0 0
+</span></span></code></pre></div><p>Đỉnh của B chỉ dịch sang bên phải đúng một ô.</p>
+<p>Về mặt hình học, hai phân bố rất giống nhau.</p>
+<p>Chỉ cần bê toàn bộ mass đi một bước.</p>
+<p>Optimal Transport hiểu điều đó.</p>
+<p>Nhưng nếu dùng một số metric chỉ so sánh từng bin độc lập, chúng ta có thể mất thông tin rằng:</p>
+<blockquote>
+<p>bin số 4 nằm ngay cạnh bin số 5.</p>
+</blockquote>
+<p>Optimal Transport không chỉ nhìn <strong>bao nhiêu mass khác nhau</strong>.</p>
+<p>Nó còn biết:</p>
+<blockquote>
+<p><strong>mass nằm ở đâu.</strong></p>
+</blockquote>
+<p>Đây chính là một trong những sức mạnh quan trọng của Wasserstein distance khi không gian nền có một metric có ý nghĩa. (<a href="https://optimaltransport.github.io/book/" title="The Book - Computational Optimal Transport" target="_blank" rel="noopener noreferrer">Optimal Transport</a>)</p>
+<h1 id="một-điểm-khá-kỳ-quặc-nhưng-cực-kỳ-quan-trọng">Một điểm khá kỳ quặc nhưng cực kỳ quan trọng<a class="anchor ms-1" href="#một-điểm-khá-kỳ-quặc-nhưng-cực-kỳ-quan-trọng"><i class="fas fa-link"></i></a></h1>
+<p>Giả sử có:</p>
+<p>$$
+\mu=\delta_0
+$$</p>
+<p>toàn bộ xác suất nằm tại 0.</p>
+<p>Và:</p>
+<p>$$
+\nu=\delta_{100}
+$$</p>
+<p>toàn bộ xác suất nằm tại 100.</p>
+<p>Hai phân bố hoàn toàn không overlap.</p>
+<p>Nếu chỉ nhìn phần giao nhau, chúng có vẻ xa nhau khủng khiếp theo một cách khá thiếu thông tin.</p>
+<p>Nhưng Wasserstein nói rất rõ:</p>
+<blockquote>
+<p>À, chỉ cần bê một đơn vị mass từ 0 tới 100.</p>
+</blockquote>
+<p>Do đó:</p>
+<p>$$
+W_1(\delta_0,\delta_{100})=100
+$$</p>
+<p>Nếu target dịch từ 100 xuống 99:</p>
+<p>$$
+W_1(\delta_0,\delta_{99})=99
+$$</p>
+<p>Khoảng cách giảm một cách mượt mà.</p>
+<p>Và tính chất tưởng như nhỏ này lại trở nên rất hữu ích trong Machine Learning.</p>
+<h1 id="một-phân-bố-thật-sự-là-gì">Một phân bố thật sự là gì?<a class="anchor ms-1" href="#một-phân-bố-thật-sự-là-gì"><i class="fas fa-link"></i></a></h1>
+<p>Đến đây có một cú lừa nhận thức khá thú vị.</p>
+<p>Ta thường nghĩ distribution là một biểu đồ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">      █
+</span></span><span class="line"><span class="ln">2</span><span class="cl">    █ █
+</span></span><span class="line"><span class="ln">3</span><span class="cl">  █ █ █
+</span></span><span class="line"><span class="ln">4</span><span class="cl">█ █ █ █
+</span></span></code></pre></div><p>Nhưng Optimal Transport không quan tâm đó có phải cát thật hay không.</p>
+<p>Một distribution có thể là:</p>
+<ul>
+<li>histogram màu của ảnh;</li>
+<li>vị trí pixel;</li>
+<li>phân bố từ trong một document;</li>
+<li>một tập embedding;</li>
+<li>một point cloud 3D;</li>
+<li>tập tế bào trong dữ liệu sinh học;</li>
+<li>xác suất mà một neural network sinh ra;</li>
+<li>khách hàng phân bố trong không gian hành vi.</li>
+</ul>
+<p>Chỉ cần ta định nghĩa được:</p>
+<blockquote>
+<p><strong>di chuyển từ điểm $i$ tới điểm $j$ tốn bao nhiêu?</strong></p>
+</blockquote>
+<p>thì Optimal Transport bắt đầu hoạt động.</p>
+<p>Và đây mới là phần sâu nhất.</p>
+<p>Optimal Transport thực ra không chỉ đo:</p>
+<blockquote>
+<p>hai phân bố khác nhau bao nhiêu?</p>
+</blockquote>
+<p>Nó hỏi một câu vật lý hơn:</p>
+<blockquote>
+<p><strong>cần bao nhiêu công để biến thế giới thứ nhất thành thế giới thứ hai?</strong></p>
+</blockquote>
+<h1 id="ví-dụ-so-sánh-hai-hình-ảnh">Ví dụ: so sánh hai hình ảnh<a class="anchor ms-1" href="#ví-dụ-so-sánh-hai-hình-ảnh"><i class="fas fa-link"></i></a></h1>
+<p>Giả sử có một ảnh:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">⬛⬛⬛⬛⬛
+</span></span><span class="line"><span class="ln">2</span><span class="cl">⬛⬛⬜⬛⬛
+</span></span><span class="line"><span class="ln">3</span><span class="cl">⬛⬛⬛⬛⬛
+</span></span></code></pre></div><p>và ảnh thứ hai:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">⬛⬛⬛⬛⬛
+</span></span><span class="line"><span class="ln">2</span><span class="cl">⬛⬛⬛⬜⬛
+</span></span><span class="line"><span class="ln">3</span><span class="cl">⬛⬛⬛⬛⬛
+</span></span></code></pre></div><p>Chấm trắng chỉ dịch sang phải một pixel.</p>
+<p>Nếu coi pixel trắng là mass:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">(x=2,y=1)
+</span></span></code></pre></div><p>chuyển sang:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">(x=3,y=1)
+</span></span></code></pre></div><p>thì transport cost chỉ bằng khoảng cách giữa hai pixel.</p>
+<p>Optimal Transport hiểu:</p>
+<blockquote>
+<p>Đây gần như cùng một thứ, chỉ bị dịch nhẹ.</p>
+</blockquote>
+<p>Tư duy này từng khiến Earth Mover&rsquo;s Distance trở thành một công cụ tự nhiên trong Computer Vision.</p>
+<h1 id="ví-dụ-hai-document-dùng-từ-hơi-khác-nhau">Ví dụ: hai document dùng từ hơi khác nhau<a class="anchor ms-1" href="#ví-dụ-hai-document-dùng-từ-hơi-khác-nhau"><i class="fas fa-link"></i></a></h1>
+<p>Giả sử document A:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">con mèo đang ngủ
+</span></span></code></pre></div><p>Document B:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">con mèo đang nằm
+</span></span></code></pre></div><p>Nếu chỉ dùng Bag-of-Words:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">ngủ != nằm
+</span></span></code></pre></div><p>Hai từ khác nhau hoàn toàn.</p>
+<p>Nhưng giả sử embedding của:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">ngủ
+</span></span></code></pre></div><p>và:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">nằm
+</span></span></code></pre></div><p>ở gần nhau.</p>
+<p>Ta có thể định nghĩa:</p>
+<h1 id="c_ij">$$
+C_{ij}<a class="anchor ms-1" href="#c_ij"><i class="fas fa-link"></i></a></h1>
+<p>|e_i-e_j|
+$$</p>
+<p>trong đó $e_i$ và $e_j$ là embedding của hai từ.</p>
+<p>Optimal Transport có thể chuyển một phần mass của từ <strong>ngủ</strong> sang từ <strong>nằm</strong> với cost nhỏ.</p>
+<p>Đây chính là tinh thần đứng sau những phương pháp như <strong>Word Mover&rsquo;s Distance</strong>.</p>
+<p>Nó không hỏi:</p>
+<blockquote>
+<p>hai document có bao nhiêu từ giống hệt nhau?</p>
+</blockquote>
+<p>Mà hỏi:</p>
+<blockquote>
+<p>cần di chuyển ý nghĩa của document này bao xa để biến thành document kia?</p>
+</blockquote>
+<p>Một câu hỏi nghe hơi triết học.</p>
+<p>Nhưng cuối cùng nó vẫn chỉ là một ma trận cost.</p>
+<h1 id="vấn-đề-optimal-transport-chính-xác-khá-đắt">Vấn đề: Optimal Transport chính xác khá đắt<a class="anchor ms-1" href="#vấn-đề-optimal-transport-chính-xác-khá-đắt"><i class="fas fa-link"></i></a></h1>
+<p>Giả sử mỗi phân bố có:</p>
+<p>$$
+n
+$$</p>
+<p>điểm.</p>
+<p>Transport plan chứa khoảng:</p>
+<p>$$
+n^2
+$$</p>
+<p>biến.</p>
+<p>Nếu:</p>
+<p>$$
+n=1,000
+$$</p>
+<p>thì đã có:</p>
+<p>$$
+1,000,000
+$$</p>
+<p>ô trong transport matrix.</p>
+<p>Nếu:</p>
+<p>$$
+n=100,000
+$$</p>
+<p>thì về lý thuyết ma trận đầy đủ có:</p>
+<p>$$
+10^{10}
+$$</p>
+<p>ô.</p>
+<p>Mười tỷ.</p>
+<p>Lúc này chiếc xe tải chở cát tưởng tượng của chúng ta chưa kịp chạy thì RAM đã nằm xuống trước.</p>
+<p>Optimal Transport cổ điển thường dẫn tới một bài toán linear programming và chi phí tính toán nhanh chóng trở thành trở ngại khi kích thước support lớn. Đây chính là một trong những động lực quan trọng dẫn tới các phương pháp OT xấp xỉ và regularized OT. (<a href="https://papers.nips.cc/paper/2013/file/af21d0c97db2e27e13572cbf59eb343d-Paper.pdf" title="Sinkhorn Distances: Lightspeed Computation of Optimal Transport" target="_blank" rel="noopener noreferrer">NeurIPS Papers</a>)</p>
+<h1 id="sinkhorn-cho-đống-cát-một-chút-entropy">Sinkhorn: cho đống cát một chút entropy<a class="anchor ms-1" href="#sinkhorn-cho-đống-cát-một-chút-entropy"><i class="fas fa-link"></i></a></h1>
+<p>Năm 2013, Marco Cuturi giới thiệu một ý tưởng cực kỳ có ảnh hưởng trong Machine Learning:</p>
+<p>thêm <strong>entropy regularization</strong> vào Optimal Transport. (<a href="https://papers.nips.cc/paper/2013/file/af21d0c97db2e27e13572cbf59eb343d-Paper.pdf" title="Sinkhorn Distances: Lightspeed Computation of Optimal Transport" target="_blank" rel="noopener noreferrer">NeurIPS Papers</a>)</p>
+<p>Thay vì giải:</p>
+<p>$$
+\min_P \langle P,C\rangle
+$$</p>
+<p>ta giải gần dạng:</p>
+<h2 id="langle-pcrangle">$$
+\min_P
+\langle P,C\rangle<a class="anchor ms-1" href="#langle-pcrangle"><i class="fas fa-link"></i></a></h2>
+<p>\varepsilon H(P)
+$$</p>
+<p>trong đó:</p>
+<h1 id="hp">$$
+H(P)<a class="anchor ms-1" href="#hp"><i class="fas fa-link"></i></a></h1>
+<p>-\sum_{i,j}P_{ij}\log P_{ij}
+$$</p>
+<p>Entropy khuyến khích transport plan bớt cực đoan.</p>
+<p>Nói theo kiểu đời thường:</p>
+<p>Optimal Transport bình thường nói:</p>
+<blockquote>
+<p>Hàng này tốt nhất đi đường này. Đi hết.</p>
+</blockquote>
+<p>Entropy nói:</p>
+<blockquote>
+<p>Bình tĩnh. Chia đều ra một chút cũng được.</p>
+</blockquote>
+<p>Thoạt nhìn có vẻ chúng ta vừa phá bài toán.</p>
+<p>Nhưng đổi lại, bài toán có cấu trúc cực kỳ thuận lợi.</p>
+<p>Ta đặt:</p>
+<h1 id="k_ij">$$
+K_{ij}<a class="anchor ms-1" href="#k_ij"><i class="fas fa-link"></i></a></h1>
+<p>e^{-C_{ij}/\varepsilon}
+$$</p>
+<p>Transport plan có dạng:</p>
+<p>$$
+P =
+\mathrm{diag}(u)
+K
+\mathrm{diag}(v)
+$$</p>
+<p>Và sau đó lặp:</p>
+<h1 id="u">$$
+u<a class="anchor ms-1" href="#u"><i class="fas fa-link"></i></a></h1>
+<p>\frac{a}{Kv}
+$$</p>
+<h1 id="v">$$
+v<a class="anchor ms-1" href="#v"><i class="fas fa-link"></i></a></h1>
+<p>\frac{b}{K^Tu}
+$$</p>
+<p>Chỉ thế thôi.</p>
+<p>Lặp qua lặp lại việc scale hàng và cột.</p>
+<p>Đó là <strong>Sinkhorn iteration</strong>.</p>
+<p>Nghe có vẻ đáng ngờ vì một bài toán linear programming to như con voi vừa biến thành vài phép nhân ma trận.</p>
+<p>Nhưng đó chính là điều khiến entropic Optimal Transport trở nên đặc biệt hữu ích trong Machine Learning: phép tính có thể vectorize và chạy rất tốt trên GPU. Công trình của Cuturi cho thấy regularization này có thể làm việc tính OT nhanh hơn rất nhiều so với các solver transport cổ điển trong các thiết lập được thử nghiệm. (<a href="https://papers.nips.cc/paper/2013/file/af21d0c97db2e27e13572cbf59eb343d-Paper.pdf" title="Sinkhorn Distances: Lightspeed Computation of Optimal Transport" target="_blank" rel="noopener noreferrer">NeurIPS Papers</a>)</p>
+<h1 id="sinkhorn-bằng-python">Sinkhorn bằng Python<a class="anchor ms-1" href="#sinkhorn-bằng-python"><i class="fas fa-link"></i></a></h1>
+<p>Một phiên bản cực kỳ tối giản:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl"><span class="k">def</span> <span class="nf">sinkhorn</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">epsilon</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">n_iter</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">    <span class="n">K</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">C</span> <span class="o">/</span> <span class="n">epsilon</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">    <span class="n">u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">    <span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_iter</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">        <span class="n">u</span> <span class="o">=</span> <span class="n">a</span> <span class="o">/</span> <span class="p">(</span><span class="n">K</span> <span class="o">@</span> <span class="n">v</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl">        <span class="n">v</span> <span class="o">=</span> <span class="n">b</span> <span class="o">/</span> <span class="p">(</span><span class="n">K</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">u</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl">
+</span></span><span class="line"><span class="ln">13</span><span class="cl">    <span class="n">P</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="o">@</span> <span class="n">K</span> <span class="o">@</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">14</span><span class="cl">
+</span></span><span class="line"><span class="ln">15</span><span class="cl">    <span class="k">return</span> <span class="n">P</span>
+</span></span></code></pre></div><p>Ví dụ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">])</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">])</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl"><span class="n">C</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">    <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">    <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl"><span class="p">])</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl"><span class="n">P</span> <span class="o">=</span> <span class="n">sinkhorn</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">C</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">
+</span></span><span class="line"><span class="ln">11</span><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="n">P</span><span class="p">)</span>
+</span></span></code></pre></div><p><code>P[i, j]</code> cho biết lượng mass được chuyển:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">i → j
+</span></span></code></pre></div><p>Trong production chúng ta tất nhiên sẽ cần xử lý thêm:</p>
+<ul>
+<li>numerical stability;</li>
+<li>log-domain Sinkhorn;</li>
+<li>convergence criterion;</li>
+<li>batch processing;</li>
+<li>GPU;</li>
+<li>sparse structure;</li>
+<li>lựa chọn $\varepsilon$.</li>
+</ul>
+<p>Nhưng ý tưởng cốt lõi vẫn chỉ là vậy.</p>
+<p>Một đống cát.</p>
+<p>Một đống cát khác.</p>
+<p>Một ma trận khoảng cách.</p>
+<p>Rồi toán học ngồi tìm cách xúc.</p>
+<h1 id="tham-số-epsilon-thực-sự-làm-gì">Tham số epsilon thực sự làm gì?<a class="anchor ms-1" href="#tham-số-epsilon-thực-sự-làm-gì"><i class="fas fa-link"></i></a></h1>
+<p>Trong Sinkhorn ta có:</p>
+<p>$$
+\varepsilon
+$$</p>
+<p>Nếu $\varepsilon$ nhỏ:</p>
+<p>transport plan tiến gần hơn tới Optimal Transport không regularize.</p>
+<p>Mass thường tập trung hơn.</p>
+<p>Nhưng bài toán cũng khó tính số hơn.</p>
+<p>Nếu $\varepsilon$ lớn:</p>
+<p>transport plan mượt hơn.</p>
+<p>Mass có thể được rải ra nhiều đường đi hơn.</p>
+<p>Tính toán thường dễ hơn, nhưng kết quả lệch xa hơn khỏi OT gốc.</p>
+<p>Có thể tưởng tượng $\varepsilon$ giống mức độ khó tính của ông quản lý vận tải.</p>
+<h3 id="epsilon-rất-nhỏ">Epsilon rất nhỏ<a class="anchor ms-1" href="#epsilon-rất-nhỏ"><i class="fas fa-link"></i></a></h3>
+<p>Ông nói:</p>
+<blockquote>
+<p>Chỉ chọn những tuyến rẻ nhất. Không có tình cảm.</p>
+</blockquote>
+<h3 id="epsilon-lớn">Epsilon lớn<a class="anchor ms-1" href="#epsilon-lớn"><i class="fas fa-link"></i></a></h3>
+<p>Ông nói:</p>
+<blockquote>
+<p>Tuyến này đắt thêm chút cũng được. Anh em chia hàng ra đi cho vui.</p>
+</blockquote>
+<p>Trong thực tế đây là trade-off giữa:</p>
+<ul>
+<li>độ chính xác với OT ban đầu;</li>
+<li>numerical stability;</li>
+<li>tốc độ hội tụ;</li>
+<li>độ smooth.</li>
+</ul>
+<h1 id="optimal-transport-trong-machine-learning">Optimal Transport trong Machine Learning<a class="anchor ms-1" href="#optimal-transport-trong-machine-learning"><i class="fas fa-link"></i></a></h1>
+<p>Optimal Transport ngày nay xuất hiện ở rất nhiều nơi.</p>
+<h2 id="so-sánh-distribution">So sánh distribution<a class="anchor ms-1" href="#so-sánh-distribution"><i class="fas fa-link"></i></a></h2>
+<p>Đây là trường hợp trực tiếp nhất.</p>
+<p>Cho:</p>
+<p>$$
+P_{data}
+$$</p>
+<p>và:</p>
+<p>$$
+P_{model}
+$$</p>
+<p>ta muốn đo chúng khác nhau bao nhiêu.</p>
+<p>Thay vì chỉ hỏi hai density overlap bao nhiêu, Wasserstein Distance đo công cần thiết để biến distribution này thành distribution kia.</p>
+<h2 id="generative-model">Generative Model<a class="anchor ms-1" href="#generative-model"><i class="fas fa-link"></i></a></h2>
+<p>Wasserstein GAN là một ví dụ nổi tiếng về việc sử dụng hình học Wasserstein để xây dựng objective cho generative model.</p>
+<p>Trực giác vẫn vậy.</p>
+<p>Generator tạo ra một đám probability mass.</p>
+<p>Data thật là một đám probability mass khác.</p>
+<p>Training cố gắng kéo hai thế giới lại gần nhau.</p>
+<p>Không phải bằng teleport.</p>
+<p>Mà bằng khoảng cách của transport.</p>
+<h2 id="domain-adaptation">Domain adaptation<a class="anchor ms-1" href="#domain-adaptation"><i class="fas fa-link"></i></a></h2>
+<p>Giả sử dữ liệu train đến từ:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">camera A
+</span></span></code></pre></div><p>nhưng production lại dùng:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">camera B
+</span></span></code></pre></div><p>Feature distribution có thể lệch nhau.</p>
+<p>Ta có:</p>
+<p>$$
+P_{source}
+$$</p>
+<p>và:</p>
+<p>$$
+P_{target}
+$$</p>
+<p>Optimal Transport có thể xây dựng coupling giữa chúng.</p>
+<p>Hiểu đơn giản:</p>
+<blockquote>
+<p>điểm nào trong thế giới source tương ứng gần nhất với điểm nào trong thế giới target?</p>
+</blockquote>
+<h2 id="clustering-và-barycenter">Clustering và barycenter<a class="anchor ms-1" href="#clustering-và-barycenter"><i class="fas fa-link"></i></a></h2>
+<p>Nếu trung bình hai số:</p>
+<p>$$
+10
+$$</p>
+<p>và:</p>
+<p>$$
+20
+$$</p>
+<p>ta được:</p>
+<p>$$
+15
+$$</p>
+<p>Nhưng trung bình <strong>hai distribution</strong> thì sao?</p>
+<p>Trong không gian Wasserstein, ta có khái niệm:</p>
+<p><strong>Wasserstein barycenter.</strong></p>
+<p>Ta tìm một distribution nằm “ở giữa” nhiều distribution khác theo geometry của transport.</p>
+<p>Điều này hữu ích trong:</p>
+<ul>
+<li>image processing;</li>
+<li>statistics;</li>
+<li>clustering;</li>
+<li>shape analysis;</li>
+<li>machine learning.</li>
+</ul>
+<h2 id="differentiable-sorting">Differentiable sorting<a class="anchor ms-1" href="#differentiable-sorting"><i class="fas fa-link"></i></a></h2>
+<p>Một thứ nghe khá bất ngờ:</p>
+<p>sorting cũng có thể nhìn như một assignment problem.</p>
+<p>Người ta đã dùng entropic Optimal Transport để tạo các approximation có khả năng differentiation cho ranking và sorting, từ đó đưa những thao tác vốn rời rạc này vào pipeline gradient-based. (<a href="https://papers.nips.cc/paper/8910-differentiable-ranking-and-sorting-using-optimal-transport" title="Differentiable Ranking and Sorting using Optimal Transport" target="_blank" rel="noopener noreferrer">NeurIPS Papers</a>)</p>
+<p>Optimal Transport cứ như một ông chú ban đầu chỉ nhận việc chở cát.</p>
+<p>Rồi một ngày ta quay lại.</p>
+<p>Ông đang:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">sort tensor trên GPU.
+</span></span></code></pre></div><p>Không ai biết chuyện đã đi xa tới mức này từ lúc nào.</p>
+<h1 id="optimal-transport-đang-đo-khoảng-cách-giữa-những-thế-giới">Optimal Transport đang đo khoảng cách giữa những thế giới<a class="anchor ms-1" href="#optimal-transport-đang-đo-khoảng-cách-giữa-những-thế-giới"><i class="fas fa-link"></i></a></h1>
+<p>Có một cách nhìn mà mình khá thích.</p>
+<p>Khoảng cách Euclid hỏi:</p>
+<blockquote>
+<p>Điểm A cách điểm B bao xa?</p>
+</blockquote>
+<p>Optimal Transport hỏi:</p>
+<blockquote>
+<p><strong>Cả thế giới A cần thay đổi bao nhiêu để trở thành thế giới B?</strong></p>
+</blockquote>
+<p>Một người đang đứng ở tọa độ:</p>
+<p>$$
+(1,2)
+$$</p>
+<p>có thể dịch sang:</p>
+<p>$$
+(2,2)
+$$</p>
+<p>Đó là geometry của điểm.</p>
+<p>Nhưng một thành phố có:</p>
+<ul>
+<li>hàng triệu người;</li>
+<li>nhà cửa;</li>
+<li>xe cộ;</li>
+<li>hàng hóa;</li>
+<li>dòng tiền;</li>
+</ul>
+<p>muốn biến thành một thành phố khác thì không còn một điểm nào để đo nữa.</p>
+<p>Ta cần nói về <strong>phân bố</strong>.</p>
+<p>Và lúc đó geometry cũng phải trưởng thành theo.</p>
+<p>Optimal Transport cung cấp một geometry cho probability distributions.</p>
+<p>Đây là lý do khái niệm Wasserstein space lại sâu hơn rất nhiều so với câu chuyện xúc cát ban đầu.</p>
+<h1 id="wasserstein-space">Wasserstein space<a class="anchor ms-1" href="#wasserstein-space"><i class="fas fa-link"></i></a></h1>
+<p>Nếu mỗi distribution được xem như một “điểm”, ta có thể tạo một không gian mà:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">mỗi điểm = một distribution
+</span></span></code></pre></div><p>và khoảng cách giữa hai điểm là:</p>
+<p>$$
+W_p(\mu,\nu)
+$$</p>
+<p>Bỗng nhiên distribution có thể:</p>
+<ul>
+<li>cách nhau;</li>
+<li>di chuyển;</li>
+<li>có đường đi;</li>
+<li>có midpoint;</li>
+<li>có barycenter.</li>
+</ul>
+<p>Một distribution không còn là một biểu đồ chết nằm trên slide PowerPoint.</p>
+<p>Nó trở thành một vật thể hình học.</p>
+<p>Ta thậm chí có thể hỏi:</p>
+<blockquote>
+<p>Con đường ngắn nhất từ distribution A tới distribution B là gì?</p>
+</blockquote>
+<p>Với Wasserstein geometry, câu hỏi đó có ý nghĩa toán học.</p>
+<p>Nếu A là một đám mây và B là một đám mây khác, ta có thể tưởng tượng từng hạt của đám mây đầu tiên trôi dần sang vị trí mới.</p>
+<p>Không phải A biến mất rồi B xuất hiện.</p>
+<p>Mà có một quá trình ở giữa.</p>
+<p>Một lịch sử.</p>
+<p>Một chuyển động.</p>
+<p>Một con đường.</p>
+<h1 id="một-ví-dụ-cực-nhỏ">Một ví dụ cực nhỏ<a class="anchor ms-1" href="#một-ví-dụ-cực-nhỏ"><i class="fas fa-link"></i></a></h1>
+<p>Giả sử:</p>
+<p>$$
+\mu=
+\begin{bmatrix}
+0.5<br>
+0.5
+\end{bmatrix}
+$$</p>
+<p>và:</p>
+<p>$$
+\nu=
+\begin{bmatrix}
+1<br>
+0
+\end{bmatrix}
+$$</p>
+<p>Hai vị trí cách nhau:</p>
+<p>$$
+10
+$$</p>
+<p>đơn vị.</p>
+<p>Ban đầu:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">A       B
+</span></span><span class="line"><span class="ln">2</span><span class="cl">
+</span></span><span class="line"><span class="ln">3</span><span class="cl">50%     50%
+</span></span></code></pre></div><p>Cuối cùng:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">A       B
+</span></span><span class="line"><span class="ln">2</span><span class="cl">
+</span></span><span class="line"><span class="ln">3</span><span class="cl">100%     0%
+</span></span></code></pre></div><p>Ta không phải di chuyển toàn bộ mass.</p>
+<p>Chỉ cần chuyển:</p>
+<p>$$
+0.5
+$$</p>
+<p>từ B sang A.</p>
+<p>Do đó:</p>
+<h1 id="w_1">$$
+W_1<a class="anchor ms-1" href="#w_1"><i class="fas fa-link"></i></a></h1>
+<h1 id="05times10">0.5\times10<a class="anchor ms-1" href="#05times10"><i class="fas fa-link"></i></a></h1>
+<p>5
+$$</p>
+<p>Nếu khoảng cách tăng lên 100:</p>
+<h1 id="w_1-1">$$
+W_1<a class="anchor ms-1" href="#w_1-1"><i class="fas fa-link"></i></a></h1>
+<h1 id="05times100">0.5\times100<a class="anchor ms-1" href="#05times100"><i class="fas fa-link"></i></a></h1>
+<p>50
+$$</p>
+<p>Đây chính là linh hồn của Wasserstein Distance:</p>
+<p>$$
+\boxed{
+\text{distance}
+\approx
+\text{mass moved}
+\times
+\text{distance moved}
+}
+$$</p>
+<p>Trong bài toán tổng quát tất nhiên mọi thứ phức tạp hơn.</p>
+<p>Nhưng nếu quên hết công thức của bài viết này, chỉ cần nhớ cái hộp trên là đủ.</p>
+<h1 id="ưu-điểm-và-hạn-chế">Ưu điểm và hạn chế<a class="anchor ms-1" href="#ưu-điểm-và-hạn-chế"><i class="fas fa-link"></i></a></h1>
+<p>Optimal Transport hấp dẫn vì nó đưa geometry của không gian dữ liệu vào việc so sánh distribution.</p>
+<p>Một vài ưu điểm:</p>
+<ul>
+<li>Có trực giác vật lý rất rõ.</li>
+<li>Biết được các vị trí trong distribution gần hay xa nhau.</li>
+<li>Có thể cho kết quả có ý nghĩa ngay cả khi hai distribution ít hoặc không overlap.</li>
+<li>Transport plan cho ta không chỉ một con số distance mà còn một coupling giữa hai distribution.</li>
+<li>Có nhiều ứng dụng trong Computer Vision, NLP, statistics và Machine Learning.</li>
+</ul>
+<p>Nhưng không có bữa trưa miễn phí.</p>
+<p>Các vấn đề thường gặp:</p>
+<ul>
+<li>Exact Optimal Transport có thể rất đắt.</li>
+<li>Cost matrix có thể cần $O(nm)$ bộ nhớ.</li>
+<li>Kết quả phụ thuộc mạnh vào cách định nghĩa ground cost.</li>
+<li>Trong không gian rất nhiều chiều, distance cũng có thể gặp vấn đề thống kê.</li>
+<li>Entropic regularization như Sinkhorn chỉ là một phiên bản regularized, không hoàn toàn giống OT gốc.</li>
+<li>Chọn $\varepsilon$ không hợp lý có thể làm transport plan quá mượt hoặc khó hội tụ.</li>
+</ul>
+<p>Đặc biệt, câu hỏi:</p>
+<blockquote>
+<p><strong>Cost giữa hai điểm là gì?</strong></p>
+</blockquote>
+<p>không hề nhỏ.</p>
+<p>Nếu ta định nghĩa cost ngu thì Optimal Transport sẽ rất ngoan ngoãn tối ưu một bài toán ngu cho chúng ta.</p>
+<p>Máy tính không có nghĩa vụ cứu con người khỏi metric do chính con người nghĩ ra.</p>
+<h1 id="một-tư-duy-thú-vị-hơn-về-dữ-liệu">Một tư duy thú vị hơn về dữ liệu<a class="anchor ms-1" href="#một-tư-duy-thú-vị-hơn-về-dữ-liệu"><i class="fas fa-link"></i></a></h1>
+<p>Trong nhiều thuật toán truyền thống, dữ liệu được coi như những con số đứng yên.</p>
+<p>Optimal Transport gợi ý một cách nghĩ khác.</p>
+<p>Dữ liệu có thể là <strong>vật chất có thể di chuyển</strong>.</p>
+<p>Probability không chỉ là một con số.</p>
+<p>Nó là một lượng mass.</p>
+<p>Một histogram không chỉ là một mảng:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln">1</span><span class="cl"><span class="p">[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">]</span>
+</span></span></code></pre></div><p>Nó là bốn đống vật chất nằm tại bốn vị trí.</p>
+<p>Muốn biến histogram này thành histogram khác, vật chất phải chảy.</p>
+<p>Và ngay khi ta đặt câu hỏi:</p>
+<blockquote>
+<p>nó phải chảy theo đường nào?</p>
+</blockquote>
+<p>thì optimization xuất hiện.</p>
+<p>Đặt thêm:</p>
+<blockquote>
+<p>đường nào rẻ nhất?</p>
+</blockquote>
+<p>Optimal Transport xuất hiện.</p>
+<p>Đặt thêm:</p>
+<blockquote>
+<p>khoảng cách tối thiểu đó có thể dùng làm metric không?</p>
+</blockquote>
+<p>Wasserstein xuất hiện.</p>
+<p>Đặt thêm:</p>
+<blockquote>
+<p>nhưng giải linear programming chậm quá?</p>
+</blockquote>
+<p>Sinkhorn xuất hiện.</p>
+<p>Một chuỗi toán học dài hàng trăm năm đôi khi bắt đầu chỉ bằng một người đứng trước đống đất và nghĩ:</p>
+<blockquote>
+<p>Có cách nào xúc cái này ít mệt hơn không?</p>
+</blockquote>
+<h1 id="tổng-kết">Tổng kết<a class="anchor ms-1" href="#tổng-kết"><i class="fas fa-link"></i></a></h1>
+<p>Optimal Transport giải một câu hỏi rất đơn giản:</p>
+<blockquote>
+<p><strong>Làm thế nào biến một phân bố thành một phân bố khác với tổng chi phí di chuyển thấp nhất?</strong></p>
+</blockquote>
+<p>Ý tưởng chính có thể tóm lại bằng:</p>
+<h1 id="texttransport-cost">$$
+\text{Transport Cost}<a class="anchor ms-1" href="#texttransport-cost"><i class="fas fa-link"></i></a></h1>
+<p>\sum
+\text{mass}
+\times
+\text{distance}
+$$</p>
+<p>Monge xem mỗi vị trí được chuyển tới một vị trí khác.</p>
+<p>Kantorovich cho phép chia mass ra thành nhiều phần và mô tả việc vận chuyển bằng một transport plan.</p>
+<p>Từ đó ta có Wasserstein Distance: một cách đo khoảng cách giữa các probability distribution dựa trên lượng công tối thiểu để biến distribution này thành distribution kia.</p>
+<p>Và khi bài toán trở nên quá lớn, entropic regularization cùng Sinkhorn algorithm giúp tạo ra những phiên bản OT có khả năng tính toán hiệu quả hơn nhiều, mở đường cho hàng loạt ứng dụng trong Machine Learning. (<a href="https://papers.nips.cc/paper/2013/hash/af21d0c97db2e27e13572cbf59eb343d-Abstract.html" title="Sinkhorn Distances: Lightspeed Computation of Optimal Transport" target="_blank" rel="noopener noreferrer">NeurIPS Papers</a>)</p>
+<p>Nhưng phần mình thích nhất về Optimal Transport không nằm ở thuật toán.</p>
+<p>Nó nằm ở cách nhìn.</p>
+<p>Hai distribution không phải hai vật thể xa lạ phải đem ra so bằng một con số tùy tiện.</p>
+<p>Ta có thể tưởng tượng một distribution <strong>chảy</strong> thành distribution kia.</p>
+<p>Từng hạt probability rời vị trí cũ.</p>
+<p>Băng qua không gian.</p>
+<p>Trả một cái giá cho từng centimet toán học mà nó đi qua.</p>
+<p>Và giữa vô số cách mà thế giới thứ nhất có thể biến thành thế giới thứ hai, Optimal Transport chỉ hỏi một câu:</p>
+<blockquote>
+<p><strong>Con đường nào ít tốn kém nhất?</strong></p>
+</blockquote>
+<p>Một câu hỏi về đống cát.</p>
+<p>Nhưng cũng là một câu hỏi về geometry.</p>
+<p>Về xác suất.</p>
+<p>Về optimization.</p>
+<p>Và, vì một lý do nào đó mà những nhà toán học thế kỷ XVIII chắc cũng chưa nghĩ ra, về những neural network đang chạy trên GPU hơn hai trăm năm sau.</p>
+<h1 id="tham-khảo">Tham khảo<a class="anchor ms-1" href="#tham-khảo"><i class="fas fa-link"></i></a></h1>
+<ul>
+<li>Gabriel Peyré, Marco Cuturi, <em>Computational Optimal Transport</em>: <a href="https://optimaltransport.github.io/book/" target="_blank" rel="noopener noreferrer">https://optimaltransport.github.io/book/</a></li>
+<li>Gabriel Peyré, Marco Cuturi, <em>Computational Optimal Transport</em>, arXiv:1803.00567: <a href="https://optimaltransport.github.io/pdf/ComputationalOT.pdf" target="_blank" rel="noopener noreferrer">https://optimaltransport.github.io/pdf/ComputationalOT.pdf</a></li>
+<li>Marco Cuturi, <em>Sinkhorn Distances: Lightspeed Computation of Optimal Transport</em>, NeurIPS 2013: <a href="https://papers.nips.cc/paper/4927-sinkhorn-distances-lightspeed-computation-of-optimal-transport" target="_blank" rel="noopener noreferrer">https://papers.nips.cc/paper/4927-sinkhorn-distances-lightspeed-computation-of-optimal-transport</a></li>
+<li>Python Optimal Transport (POT): <a href="https://pythonot.github.io/" target="_blank" rel="noopener noreferrer">https://pythonot.github.io/</a></li>
+<li>Cédric Villani, <em>Optimal Transport: Old and New</em>, Springer, 2009.</li>
+</ul>
+</div></div>
+  <div class="card-footer"><div class="post-navs d-flex justify-content-evenly"><div class="post-nav post-prev">
+    <i class="fas fa-fw fa-chevron-left"></i>
+    <a href="https://www.phamduytung.com/blog/2026-08-21-so-p-adic/">Số p-adic: Khi 1 và 1025 hóa ra lại đứng sát cạnh nhau
+</a>
+  </div><div class="post-nav post-next">
+    <a href="https://www.phamduytung.com/blog/2026-08-21-octonion-bat-nguyen-so/">Octonion – Bát nguyên số: khi toán học bẻ gãy cả dấu ngoặc
+</a>
+    <i class="fas fa-fw fa-chevron-right"></i>
+  </div></div></div>
+</article><div class="card component row post-comments" id="post-comments">
+  <div class="card-header">
+    <h2 class="card-title">Bình luận</h2>
+  </div>
+  <div class="card-body"><script src="https://utteranc.es/client.js"
+  repo="AlexBlack2202/utterances"
+  issue-term="pathname"
+  label="comment"
+  theme="github-dark"
+  crossorigin="anonymous"
+  async>
+</script></div>
+</div></div>
+</div><aside class="col-lg-3 col-md-4 sidebar d-flex">
+  <div class="container d-flex flex-column">
+    
+    <a href="https://www.buymeacoffee.com/alexblack28"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=🍎&slug=alexblack28&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" /></a><div class="post-toc row mb-4 card component" id="postTOC">
+  <div class="card-header">
+    <h2 class="card-title">Mục lục</h2>
+  </div>
+  <div class="card-body">
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#đặt-vấn-đề">Đặt vấn đề</a></li>
+    <li><a href="#bài-toán-chính">Bài toán chính</a></li>
+    <li><a href="#từ-đống-cát-đến-phân-bố-xác-suất">Từ đống cát đến phân bố xác suất</a>
+      <ul>
+        <li><a href="#bài-toán-của-monge">Bài toán của Monge</a></li>
+      </ul>
+    </li>
+    <li><a href="#kantorovich-thôi-thì-chia-nhỏ-đống-cát-đi">Kantorovich: thôi thì chia nhỏ đống cát đi</a></li>
+    <li><a href="#optimal-transport-dạng-rời-rạc">Optimal Transport dạng rời rạc</a></li>
+    <li><a href="#một-ví-dụ-nhỏ-tới-mức-trẻ-sáu-tuổi-cũng-giải-được">Một ví dụ nhỏ tới mức trẻ sáu tuổi cũng giải được</a></li>
+    <li><a href="#wasserstein-distance">Wasserstein Distance</a></li>
+    <li><a href="#w_pmunu">$$
+W_p(\mu,\nu)</a>
+      <ul>
+        <li><a href="#vì-sao-không-dùng-euclidean-distance-cho-khỏe">Vì sao không dùng Euclidean Distance cho khỏe?</a></li>
+      </ul>
+    </li>
+    <li><a href="#một-điểm-khá-kỳ-quặc-nhưng-cực-kỳ-quan-trọng">Một điểm khá kỳ quặc nhưng cực kỳ quan trọng</a></li>
+    <li><a href="#một-phân-bố-thật-sự-là-gì">Một phân bố thật sự là gì?</a></li>
+    <li><a href="#ví-dụ-so-sánh-hai-hình-ảnh">Ví dụ: so sánh hai hình ảnh</a></li>
+    <li><a href="#ví-dụ-hai-document-dùng-từ-hơi-khác-nhau">Ví dụ: hai document dùng từ hơi khác nhau</a></li>
+    <li><a href="#c_ij">$$
+C_{ij}</a></li>
+    <li><a href="#vấn-đề-optimal-transport-chính-xác-khá-đắt">Vấn đề: Optimal Transport chính xác khá đắt</a></li>
+    <li><a href="#sinkhorn-cho-đống-cát-một-chút-entropy">Sinkhorn: cho đống cát một chút entropy</a>
+      <ul>
+        <li><a href="#langle-pcrangle">$$
+\min_P
+\langle P,C\rangle</a></li>
+      </ul>
+    </li>
+    <li><a href="#hp">$$
+H(P)</a></li>
+    <li><a href="#k_ij">$$
+K_{ij}</a></li>
+    <li><a href="#u">$$
+u</a></li>
+    <li><a href="#v">$$
+v</a></li>
+    <li><a href="#sinkhorn-bằng-python">Sinkhorn bằng Python</a></li>
+    <li><a href="#tham-số-epsilon-thực-sự-làm-gì">Tham số epsilon thực sự làm gì?</a>
+      <ul>
+        <li>
+          <ul>
+            <li><a href="#epsilon-rất-nhỏ">Epsilon rất nhỏ</a></li>
+            <li><a href="#epsilon-lớn">Epsilon lớn</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+    <li><a href="#optimal-transport-trong-machine-learning">Optimal Transport trong Machine Learning</a>
+      <ul>
+        <li><a href="#so-sánh-distribution">So sánh distribution</a></li>
+        <li><a href="#generative-model">Generative Model</a></li>
+        <li><a href="#domain-adaptation">Domain adaptation</a></li>
+        <li><a href="#clustering-và-barycenter">Clustering và barycenter</a></li>
+        <li><a href="#differentiable-sorting">Differentiable sorting</a></li>
+      </ul>
+    </li>
+    <li><a href="#optimal-transport-đang-đo-khoảng-cách-giữa-những-thế-giới">Optimal Transport đang đo khoảng cách giữa những thế giới</a></li>
+    <li><a href="#wasserstein-space">Wasserstein space</a></li>
+    <li><a href="#một-ví-dụ-cực-nhỏ">Một ví dụ cực nhỏ</a></li>
+    <li><a href="#w_1">$$
+W_1</a></li>
+    <li><a href="#05times10">0.5\times10</a></li>
+    <li><a href="#w_1-1">$$
+W_1</a></li>
+    <li><a href="#05times100">0.5\times100</a></li>
+    <li><a href="#ưu-điểm-và-hạn-chế">Ưu điểm và hạn chế</a></li>
+    <li><a href="#một-tư-duy-thú-vị-hơn-về-dữ-liệu">Một tư duy thú vị hơn về dữ liệu</a></li>
+    <li><a href="#tổng-kết">Tổng kết</a></li>
+    <li><a href="#texttransport-cost">$$
+\text{Transport Cost}</a></li>
+    <li><a href="#tham-khảo">Tham khảo</a></li>
+  </ul>
+</nav>
+  </div>
+</div><section class="recent-posts row card component">
+  <div class="card-header">
+    <h2 class="card-title">Bài gần đây</h2>
+  </div>
+  <div class="card-body">
+    <ul class="post-list"><li>
+        <a href="https://www.phamduytung.com/blog/2026-09-02-fourier/">Biến đổi Fourier: xé một đường cong hỗn loạn thành những con sóng hình sin
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-09-02-becker/">Lý thuyết Becker: Khi tội phạm cũng là một bài toán kinh tế
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-09-02-festunger/">Định luật Festinger: 10% là chuyện xảy ra, 90% là cách ta phản ứng
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-08-24-ly-thuyet-tro-choi-tu-te-khong-thanh-con-moi/">Lý thuyết trò chơi: Tử tế mà không biến mình thành con mồi
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-08-23-webaudio-im-lang-van-giu-tai-nghe-bluetooth/">WebAudio im lặng: Vì sao một trang web vẫn giữ tai nghe Bluetooth của bạn
+</a>
+      </li></ul>
+  </div>
+</section><section class="series-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/series">series</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/series/kh%C3%B3a-h%E1%BB%8Dc-python-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học Python Căn Bản">
+            Khóa Học Python Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="https://www.phamduytung.com/series/kh%C3%B3a-h%E1%BB%8Dc-c&#43;&#43;-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học C&#43;&#43; Căn Bản">
+            Khóa Học C&#43;&#43; Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="https://www.phamduytung.com/series/machine-learning-dataset/" class="badge rounded post-taxonomy" title="Machine Learning Dataset">
+            Machine Learning Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a><a href="https://www.phamduytung.com/series/ch%E1%BB%A9ng-kho%C3%A1n-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Chứng Khoán Căn Bản">
+            Chứng Khoán Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">1</span></a></div>
+      </div>
+    </section><section class="tools-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/tools">tools</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/tools/tool-random/" class="badge rounded post-taxonomy" title="Tool Random">
+            Tool Random<span class="badge badge-sm text-white bg-accent ms-1">3</span></a></div>
+      </div>
+    </section><section class="categories-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/categories">categories</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/categories/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="https://www.phamduytung.com/categories/c&#43;&#43;/" class="badge rounded post-taxonomy" title="C&#43;&#43;">
+            C&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="https://www.phamduytung.com/categories/dataset/" class="badge rounded post-taxonomy" title="Dataset">
+            Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a></div>
+      </div>
+    </section><section class="tags-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/tags">tags</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/tags/machine-learning/" class="badge rounded post-taxonomy" title="Machine Learning">
+            Machine Learning<span class="badge badge-sm text-white bg-accent ms-1">29</span></a><a href="https://www.phamduytung.com/tags/deep-learning/" class="badge rounded post-taxonomy" title="Deep Learning">
+            Deep Learning<span class="badge badge-sm text-white bg-accent ms-1">25</span></a><a href="https://www.phamduytung.com/tags/llm/" class="badge rounded post-taxonomy" title="LLM">
+            LLM<span class="badge badge-sm text-white bg-accent ms-1">17</span></a><a href="https://www.phamduytung.com/tags/computer-vision/" class="badge rounded post-taxonomy" title="Computer Vision">
+            Computer Vision<span class="badge badge-sm text-white bg-accent ms-1">16</span></a><a href="https://www.phamduytung.com/tags/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">14</span></a><a href="https://www.phamduytung.com/tags/mathematics/" class="badge rounded post-taxonomy" title="Mathematics">
+            Mathematics<span class="badge badge-sm text-white bg-accent ms-1">12</span></a><a href="https://www.phamduytung.com/tags/ai-agent/" class="badge rounded post-taxonomy" title="Ai Agent">
+            Ai Agent<span class="badge badge-sm text-white bg-accent ms-1">10</span></a><a href="https://www.phamduytung.com/tags/tri%E1%BA%BFt-h%E1%BB%8Dc/" class="badge rounded post-taxonomy" title="Triết Học">
+            Triết Học<span class="badge badge-sm text-white bg-accent ms-1">8</span></a><a href="https://www.phamduytung.com/tags/ai/" class="badge rounded post-taxonomy" title="AI">
+            AI<span class="badge badge-sm text-white bg-accent ms-1">7</span></a><a href="https://www.phamduytung.com/tags/recommendation-system/" class="badge rounded post-taxonomy" title="Recommendation System">
+            Recommendation System<span class="badge badge-sm text-white bg-accent ms-1">7</span></a></div>
+      </div>
+    </section>
+    
+  </div>
+</aside>
+</div>
+    </main><footer class="footer mt-auto py-3 text-center container"><ul class="nav justify-content-between footer-memu mb-3"><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Community
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-facebook"></i>Facebook Group
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://github.com/AlexBlack2202/alexblack2202.github.io" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-github"></i>GitHub
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/contact/"><i class="fas fa-fw fa-info-circle"></i>Contact Us
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/faq/"><i class="fas fa-fw fa-question-circle"></i>Câu hỏi thường gặp
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Docs
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="/team_of_services" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-users"></i>Điều khoản sử dụng
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/privacy" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-lock"></i>Chính sách bảo mật
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Features
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="/utils/gen_paswords/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-key"></i>Tạo password ngẫu nhiên
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Liên kết khác
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">Netlify
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">facebook
+</a>
+        </li></ul></li></ul>
+<div class="copyright mb-2">
+  Copyright © 2016-2026 Phạm Duy Tùng. All Rights Reserved.
+</div>
+<div class="powered-by mb-2">
+  Website chia sẻ kiến thức của Phạm Duy Tùng và Đặng Thị Hằng. Vui lòng liên hệ email alexblack2202@gmail.com nếu bạn có thông tin cần trao đổi.
+</div></footer>
+<script src="https://www.phamduytung.com/js/main.111d51a8c754010f8399ca010e552d803e2d5170b361f8886ad04ec6c21ca551.js" integrity="sha256-ER1RqMdUAQ&#43;DmcoBDlUtgD4tUXCzYfiIatBOxsIcpVE=" crossorigin="anonymous" defer></script><script src="https://www.phamduytung.com/js/icons.min.cb4c9958dbc49e29ac644e168e82db2d0de9a741a15751cc5bf2b0af21eb2845.js" integrity="sha256-y0yZWNvEnimsZE4WjoLbLQ3pp0GhV1HMW/KwryHrKEU=" crossorigin="anonymous" defer></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('https:\/\/www.phamduytung.com\/service-worker.js').then(function(reg) {
+      console.log('Successfully registered service worker', reg);
+    }).catch(function(err) {
+      console.warn('Error whilst registering service worker', err);
+    });
+  });
+}
+</script><script src="https://www.phamduytung.com/js/viewer.min.28bcf5233e406dae6715f46c8b9e8ca7c6cbf347e8678f5a2bebe5369c3270bb.js" integrity="sha256-KLz1Iz5Aba5nFfRsi56Mp8bL80foZ49aK&#43;vlNpwycLs=" crossorigin="anonymous" defer></script><script defer src="https://www.phamduytung.com/js/katex.min.8582b9feadf92a2a977ed303b97d7713cf2754ccf2b4eb60d8be7453a21042c2.js" integrity="sha256-hYK5/q35KiqXftMDuX13E88nVMzytOtg2L50U6IQQsI=" crossorigin="anonymous"></script>
+
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-2WWQ5G9DKL"></script>
+      <script>
+        var doNotTrack = false;
+        if ( true ) {
+          var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
+          var doNotTrack = (dnt == "1" || dnt == "yes");
+        }
+        if (!doNotTrack) {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-2WWQ5G9DKL');
+        }
+      </script>
+<script  data-ad-client="ca-pub-4644989745435991"  async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4644989745435991"
+     crossorigin="anonymous"></script><script data-cfasync="false" type="text/javascript" data-adel="atag" src="//acscdn.com/script/atg.js" czid="eul3gyjdmm"></script>
+  </body>
+</html>
