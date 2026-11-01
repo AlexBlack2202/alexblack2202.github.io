@@ -9,8 +9,8 @@
 <link rel="icon" href="https://www.phamduytung.com/images/icons/icon-16x16.png" sizes="16x16" type="image/png">
 <link rel="icon" href="https://www.phamduytung.com/images/icons/favicon.ico">
 <link rel="manifest" href="https://www.phamduytung.com/manifest.json">
-<meta name="keywords" content="" />
-<meta name="description" content="Chào các bạn, sau một thời gian ở ẩn, chúng ta lại tiếp tục với việc thực chiến AI, ở bài viết này, chúng ta sẽ train mô hình AI Reinforcement Learning với tựa game đã đi vào bao nhiêu thế hệ trẻ thơ, Mario, tuy nhiên, để bắt đầu bài viết, mình sẽ note lại một vài ý về Reinforcement Learning, Q learning, và cải tiến của Deep Q-Network là Double Deep Q-Network , trong phần code mình sẽ sử dụng  Double Deep Q-Network" /><meta name="robots" content="index, follow, max-image-preview:large"><meta property="og:title" content="Sử dụng mô hình Double DQN  huấn luyện mô hình Reinforcement Learning với game mario">
+
+<meta name="description" content="Chào các bạn, sau một thời gian ở ẩn, chúng ta lại tiếp tục với việc thực chiến AI, ở bài viết này, chúng ta sẽ train mô hình AI Reinforcement Learning với tựa game đã đi vào bao nhiêu thế hệ trẻ thơ, Mario, tuy nhiên, để bắt đầu bài viết, mình sẽ note lại một vài ý về Reinforcement Learning, Q …" /><meta name="robots" content="index, follow, max-image-preview:large"><meta property="og:title" content="Sử dụng mô hình Double DQN  huấn luyện mô hình Reinforcement Learning với game mario">
 <meta property="og:description" content="Chào các bạn, sau một thời gian ở ẩn, chúng ta lại tiếp tục với việc thực chiến AI, ở bài viết này, chúng ta sẽ train mô hình AI Reinforcement Learning với tựa game đã đi vào bao nhiêu thế hệ trẻ thơ, Mario, tuy nhiên, để bắt đầu bài viết, mình sẽ note lại một vài ý về Reinforcement Learning, Q …">
 <meta property="og:type" content="article">
 <meta property="og:url" content="https://www.phamduytung.com/blog/2024-10-27-mario-reinfomation-learning-double-dqn/">
@@ -19,9 +19,9 @@
 <meta property="og:image" content="https://www.phamduytung.com/site-images/posts/2024-10-27-mario-reinfomation-learning-double-dqn/cover-pearl-glass_hu_1ad6b29f88d1ce70.webp" data-image-budget="100000"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="675"><meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Sử dụng mô hình Double DQN  huấn luyện mô hình Reinforcement Learning với game mario">
 <meta name="twitter:description" content="Chào các bạn, sau một thời gian ở ẩn, chúng ta lại tiếp tục với việc thực chiến AI, ở bài viết này, chúng ta sẽ train mô hình AI Reinforcement Learning với tựa game đã đi vào bao nhiêu thế hệ trẻ thơ, Mario, tuy nhiên, để bắt đầu bài viết, mình sẽ note lại một vài ý về Reinforcement Learning, Q …">
-<meta name="twitter:image" content="https://www.phamduytung.com/site-images/posts/2024-10-27-mario-reinfomation-learning-double-dqn/cover-pearl-glass_hu_1ad6b29f88d1ce70.webp" data-image-budget="100000"><meta property="article:published_time" content="2024-10-27T00:19:00&#43;03:00"><meta property="article:modified_time" content="2024-10-27T00:19:00&#43;03:00"><meta property="article:section" content="blog"><meta property="article:tag" content="reinforcement learning"><meta property="article:tag" content="deep reinforcement learning"><meta property="article:tag" content="game ai"><link rel="stylesheet" href="https://www.phamduytung.com/css/main.min.7094996c41a22844b2cfb2120c771154b3c152ea301b01f10f140c20d6dad25d.css" integrity="sha256-cJSZbEGiKESyz7ISDHcRVLPBUuowGwHxDxQMINba0l0=" crossorigin="anonymous"><link rel="stylesheet" href="https://www.phamduytung.com/css/katex.min.4d6aa053ca8a5675016fa2c9c48ee5359bfaafb8295184458af9d64abce84c47.css" integrity="sha256-TWqgU8qKVnUBb6LJxI7lNZv6r7gpUYRFivnWSrzoTEc=" crossorigin="anonymous">
+<meta name="twitter:image" content="https://www.phamduytung.com/site-images/posts/2024-10-27-mario-reinfomation-learning-double-dqn/cover-pearl-glass_hu_1ad6b29f88d1ce70.webp" data-image-budget="100000"><meta property="article:published_time" content="2024-10-27T00:19:00&#43;03:00"><meta property="article:modified_time" content="2024-10-27T00:19:00&#43;03:00"><meta property="article:section" content="blog"><meta property="article:tag" content="reinforcement learning"><meta property="article:tag" content="deep reinforcement learning"><meta property="article:tag" content="game ai"><link rel="stylesheet" href="https://www.phamduytung.com/css/main.min.0558a043598454ca5f6300bbe4bab466b3141cb8632ec005d8872a3a188ed894.css" integrity="sha256-BVigQ1mEVMpfYwC75Lq0ZrMUHLhjLsAF2IcqOhiO2JQ=" crossorigin="anonymous"><link rel="stylesheet" href="https://www.phamduytung.com/css/katex.min.4d6aa053ca8a5675016fa2c9c48ee5359bfaafb8295184458af9d64abce84c47.css" integrity="sha256-TWqgU8qKVnUBb6LJxI7lNZv6r7gpUYRFivnWSrzoTEc=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://www.phamduytung.com/css/viewer.min.3d228794bcedbbfa0412beb8fbc1ec6973202945e42af7004f742a4d7bd620ab.css" integrity="sha256-PSKHlLztu/oEEr64&#43;8HsaXMgKUXkKvcAT3QqTXvWIKs=" crossorigin="anonymous"><link rel="canonical" href="https://www.phamduytung.com/blog/2024-10-27-mario-reinfomation-learning-double-dqn/">
-<meta name="theme-color" content="#f7f5ff"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Phạm Duy Tùng"},"dateModified":"2024-10-27T00:19:00+03:00","datePublished":"2024-10-27T00:19:00+03:00","description":"Chào các bạn, sau một thời gian ở ẩn, chúng ta lại tiếp tục với việc thực chiến AI, ở bài viết này, chúng ta sẽ train mô hình AI Reinforcement Learning với tựa game đã đi vào bao nhiêu thế hệ trẻ thơ, Mario, tuy nhiên, để bắt đầu bài viết, mình sẽ note lại một vài ý về Reinforcement Learning, Q …","headline":"Sử dụng mô hình Double DQN  huấn luyện mô hình Reinforcement Learning với game mario","image":["https://www.phamduytung.com/site-images/posts/2024-10-27-mario-reinfomation-learning-double-dqn/cover-pearl-glass_hu_1ad6b29f88d1ce70.webp"],"inLanguage":"vi","keywords":"reinforcement learning, deep reinforcement learning, game ai","mainEntityOfPage":{"@id":"https://www.phamduytung.com/blog/2024-10-27-mario-reinfomation-learning-double-dqn/","@type":"WebPage"},"publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://www.phamduytung.com/site-images/brand-mark-flaming-book-red_hu_45318b168da512af.webp"},"name":"Phạm Duy Tùng Machine Learning Blog"},"url":"https://www.phamduytung.com/blog/2024-10-27-mario-reinfomation-learning-double-dqn/"}</script></head>
+<meta name="theme-color" content="#f7f5ff"><script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@id":"https://www.phamduytung.com/blog/2024-10-27-mario-reinfomation-learning-double-dqn/#article","@type":"BlogPosting","author":[{"@type":"Person","name":"Phạm Duy Tùng","sameAs":["https://github.com/AlexBlack2202","https://www.linkedin.com/in/tung-pham-duy/"],"url":"https://www.phamduytung.com/about/"}],"dateModified":"2024-10-27T00:19:00+03:00","datePublished":"2024-10-27T00:19:00+03:00","description":"Chào các bạn, sau một thời gian ở ẩn, chúng ta lại tiếp tục với việc thực chiến AI, ở bài viết này, chúng ta sẽ train mô hình AI Reinforcement Learning với tựa game đã đi vào bao nhiêu thế hệ trẻ thơ, Mario, tuy nhiên, để bắt đầu bài viết, mình sẽ note lại một vài ý về Reinforcement Learning, Q …","headline":"Sử dụng mô hình Double DQN  huấn luyện mô hình Reinforcement Learning với game mario","image":["https://www.phamduytung.com/site-images/posts/2024-10-27-mario-reinfomation-learning-double-dqn/cover-pearl-glass_hu_1ad6b29f88d1ce70.webp"],"inLanguage":"vi","keywords":"reinforcement learning, deep reinforcement learning, game ai","mainEntityOfPage":{"@id":"https://www.phamduytung.com/blog/2024-10-27-mario-reinfomation-learning-double-dqn/","@type":"WebPage"},"publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://www.phamduytung.com/site-images/brand-mark-flaming-book-red_hu_45318b168da512af.webp"},"name":"Phạm Duy Tùng Machine Learning Blog","url":"https://www.phamduytung.com/"},"url":"https://www.phamduytung.com/blog/2024-10-27-mario-reinfomation-learning-double-dqn/","wordCount":6910},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","item":"https://www.phamduytung.com/","name":"Trang chủ","position":1},{"@type":"ListItem","item":"https://www.phamduytung.com/blog/","name":"Blogs","position":2},{"@type":"ListItem","item":"https://www.phamduytung.com/blog/2024-10-27-mario-reinfomation-learning-double-dqn/","name":"Sử dụng mô hình Double DQN  huấn luyện mô hình Reinforcement Learning với game mario","position":3}]}]}</script></head>
   <body><script>const items=["mode","palette"];items.forEach(function(e){const t=localStorage.getItem("hbs-"+e);t&&document.body.parentElement.setAttribute("data-"+e,t)})</script><header><nav class="navbar top-app-bar top-app-bar-expand-lg fixed-top">
   <div class="container pearl-navbar__inner">
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
@@ -113,6 +113,10 @@
   </div>
 </form>
       <ul class="navbar-nav ms-auto"><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/chu-de/">
+            <i class="fas fa-fw fa-list-alt"></i>Chủ đề
+          </a>
+        </li><li class="nav-item">
           <a class="nav-link" href="https://www.phamduytung.com/series/">
             <i class="fas fa-fw fa-columns"></i>Courses
           </a>
@@ -155,6 +159,11 @@
               <a class="dropdown-item"
                 href="https://www.phamduytung.com/faq/">
                 Câu hỏi thường gặp
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/about/">
+                Giới thiệu tác giả
               </a>
             </li></ul>
         </li><li class="nav-item">
@@ -199,7 +208,7 @@
 </div>
 <article class="row card component mb-4 post">
   <div class="card-header"><div class="bgcover">
-      <img src="/site-images/posts/2024-10-27-mario-reinfomation-learning-double-dqn/cover-pearl-glass_hu_1ad6b29f88d1ce70.webp" alt="" data-image-budget="100000" class="pearl-cover-image" srcset="/site-images/posts/2024-10-27-mario-reinfomation-learning-double-dqn/cover-pearl-glass_hu_7bc77a8f26be8d4b.webp 480w, /site-images/posts/2024-10-27-mario-reinfomation-learning-double-dqn/cover-pearl-glass_hu_686e68b96309de27.webp 768w, /site-images/posts/2024-10-27-mario-reinfomation-learning-double-dqn/cover-pearl-glass_hu_1ad6b29f88d1ce70.webp 1200w" sizes="(min-width: 1200px) 960px, (min-width: 768px) 70vw, 100vw" width="1200" height="675"
+      <img src="/site-images/posts/2024-10-27-mario-reinfomation-learning-double-dqn/cover-pearl-glass_hu_1ad6b29f88d1ce70.webp" alt="Sử dụng mô hình Double DQN  huấn luyện mô hình Reinforcement Learning với game mario" data-image-budget="100000" class="pearl-cover-image" srcset="/site-images/posts/2024-10-27-mario-reinfomation-learning-double-dqn/cover-pearl-glass_hu_7bc77a8f26be8d4b.webp 480w, /site-images/posts/2024-10-27-mario-reinfomation-learning-double-dqn/cover-pearl-glass_hu_686e68b96309de27.webp 768w, /site-images/posts/2024-10-27-mario-reinfomation-learning-double-dqn/cover-pearl-glass_hu_1ad6b29f88d1ce70.webp 1200w" sizes="(min-width: 1200px) 960px, (min-width: 768px) 70vw, 100vw" width="1200" height="675"
   loading="eager" decoding="async" fetchpriority="high">
 
       <div class="bgtrans">
@@ -208,7 +217,11 @@
       </div>
     </div>
   </div>
-  <div class="card-body"><div class="post-meta">
+  <div class="card-body"><div class="post-byline">
+  <i class="fas fa-fw fa-user"></i>
+  <span>Tác giả:</span>
+  <a href="https://www.phamduytung.com/about/" rel="author">Phạm Duy Tùng</a>
+</div><div class="post-meta">
   <span class="post-date" title="tạo ngày 2024-10-27 04:19:00 &#43;0700 &#43;07.">
     27/10/2024
   </span><span class="post-reading-time">
@@ -267,8 +280,8 @@
 </nav>
   </div>
 <p>Chào các bạn, sau một thời gian ở ẩn, chúng ta lại tiếp tục với việc thực chiến AI, ở bài viết này, chúng ta sẽ train mô hình AI Reinforcement Learning với tựa game đã đi vào bao nhiêu thế hệ trẻ thơ, Mario, tuy nhiên, để bắt đầu bài viết, mình sẽ note lại một vài ý về Reinforcement Learning, Q learning, và cải tiến của Deep Q-Network là Double Deep Q-Network , trong phần code mình sẽ sử dụng  Double Deep Q-Network</p>
-<h1 id="i-lý-thuyết-căn-bản-reinforcement-learning">I. Lý thuyết căn bản Reinforcement Learning<a class="anchor ms-1" href="#i-lý-thuyết-căn-bản-reinforcement-learning"><i class="fas fa-link"></i></a></h1>
-<h2 id="các-thành-phần-cơ-bản-của-reinforcement-learning">Các thành phần cơ bản của Reinforcement Learning<a class="anchor ms-1" href="#các-thành-phần-cơ-bản-của-reinforcement-learning"><i class="fas fa-link"></i></a></h2>
+<h2 id="i-lý-thuyết-căn-bản-reinforcement-learning">I. Lý thuyết căn bản Reinforcement Learning<a class="anchor ms-1" href="#i-lý-thuyết-căn-bản-reinforcement-learning"><i class="fas fa-link"></i></a></h2>
+<h3 id="các-thành-phần-cơ-bản-của-reinforcement-learning">Các thành phần cơ bản của Reinforcement Learning<a class="anchor ms-1" href="#các-thành-phần-cơ-bản-của-reinforcement-learning"><i class="fas fa-link"></i></a></h3>
 <p>Theo lý thuyết Reinforcement Learning, chúng ta cần các thành phần sau:</p>
 <p>Agent: là đối tượng giữ các hành động (Action), thực hiện các hành động</p>
 <p>Environment : Môi trường xung quanh nơi agent tương tác</p>
@@ -281,7 +294,7 @@
 <p>Vì chúng ta không biết khi nào hành động kết thúc, nên rewards sẽ là một chuỗi vô hạn các reward sau thời điểm action xảy ra, tính từ thời điểm t_0 ban đầu.</p>
 <p>Chuỗi vô hạn không có hội tụ, nên người ta chế (trick) sẽ thêm 1 tham số là discount factor hay discount rate, để chuỗi này hội tụ.</p>
 <p>Lý thuyết toán học đứng đằng sau là Markov decision process và sử dụng nền tản là phương trình Bellman, Markov decision process đã được đề xuất từ năm 1950s, bạn có thể tra google để tìm hiểu thêm. Giờ mình hiểu là có lý thuyết toán học đảm bảo chuỗi này hội tụ rồi, triển thôi.</p>
-<h3 id="lý-thuyết-toán-học">Lý thuyết toán học<a class="anchor ms-1" href="#lý-thuyết-toán-học"><i class="fas fa-link"></i></a></h3>
+<h4 id="lý-thuyết-toán-học">Lý thuyết toán học<a class="anchor ms-1" href="#lý-thuyết-toán-học"><i class="fas fa-link"></i></a></h4>
 <p>Ở mục này mình đề cập một chút về Markov decision process và phương trình Bellman, các bạn có thể bỏ qua nếu thấy ngán, mình note lại để sau này khỏi mất công tìm</p>
 <p>Phương trình của Markov Decision Process (MDP) chính là biểu thức mô tả cách giá trị của các trạng thái hoặc hành động được cập nhật thông qua quá trình ra quyết định. Tuy nhiên, bản thân <strong>MDP</strong> không có một phương trình duy nhất cụ thể, mà thường được mô tả qua các thành phần cơ bản như tập trạng thái, hành động, xác suất chuyển trạng thái, phần thưởng, và hệ số chiết khấu.</p>
 <p>Phương trình chính xác nhất liên quan đến MDP là <strong>phương trình Bellman</strong>, mà chúng ta có thể viết theo hai dạng: dạng <strong>hàm giá trị trạng thái</strong> và dạng <strong>hàm giá trị hành động</strong>. Hai phương trình này thể hiện rõ cách tính toán tổng phần thưởng kỳ vọng.</p>
@@ -292,42 +305,36 @@
 <ul>
 <li><strong>S (State space)</strong>: Tập hợp các trạng thái có thể xảy ra trong môi trường.</li>
 <li><strong>A (Action space)</strong>: Tập hợp các hành động mà người ra quyết định (agent) có thể thực hiện ở mỗi trạng thái.</li>
-<li><strong>P (Transition probability)</strong>: Xác suất chuyển trạng thái ( P(s&rsquo;|s, a) ), biểu thị xác suất trạng thái kế tiếp ( s&rsquo; ) xảy ra khi thực hiện hành động ( a ) tại trạng thái ( s ).</li>
-<li><strong>R (Reward function)</strong>: Hàm thưởng ( R(s, a) ), là phần thưởng tức thì nhận được khi thực hiện hành động ( a ) tại trạng thái ( s ).</li>
-<li><strong>$(\gamma) (Discount factor)$</strong>: Hệ số chiết khấu $( \gamma \in [0, 1] )$, xác định mức độ ưu tiên cho phần thưởng tức thì so với phần thưởng trong tương lai. Khi $( \gamma )$ gần bằng 1, giá trị các phần thưởng trong tương lai càng được đánh giá cao.</li>
+<li><strong>P (Transition probability)</strong>: Xác suất chuyển trạng thái \( P(s'|s, a) \), biểu thị xác suất trạng thái kế tiếp \( s' \) xảy ra khi thực hiện hành động \( a \) tại trạng thái \( s \).</li>
+<li><strong>R (Reward function)</strong>: Hàm thưởng \( R(s, a) \), là phần thưởng tức thì nhận được khi thực hiện hành động \( a \) tại trạng thái \( s \).</li>
+<li><strong>$\gamma$ (Discount factor)</strong>: Hệ số chiết khấu $\gamma \in [0, 1]$, xác định mức độ ưu tiên cho phần thưởng tức thì so với phần thưởng trong tương lai. Khi $\gamma$ gần bằng 1, giá trị các phần thưởng trong tương lai càng được đánh giá cao.</li>
 </ul>
-<p>Mục tiêu của MDP là tìm ra <strong>chính sách tối ưu - optimal policy</strong> $( \pi^* )$, tức là một chuỗi các hành động giúp tối đa hóa tổng phần thưởng kỳ vọng trong dài hạn.</p>
+<p>Mục tiêu của MDP là tìm ra <strong>chính sách tối ưu - optimal policy</strong> $\pi^*$, tức là một chuỗi các hành động giúp tối đa hóa tổng phần thưởng kỳ vọng trong dài hạn.</p>
 <ol start="2">
 <li><strong>Phương trình Bellman</strong></li>
 </ol>
 <p>Phương trình Bellman mô tả mối quan hệ đệ quy giữa giá trị của một trạng thái hoặc một hành động với các trạng thái kế tiếp hoặc hành động tiếp theo. Nó thường được sử dụng để tính toán giá trị kỳ vọng của các trạng thái hoặc hành động, giúp đánh giá và tìm ra chính sách tối ưu.</p>
-<p>a. <strong>Phương trình Bellman cho hàm giá trị trạng thái ( V(s) )</strong></p>
-<p>Hàm giá trị trạng thái ( V(s) ) cho biết tổng phần thưởng kỳ vọng khi bắt đầu từ trạng thái ( s ) và theo chính sách tối ưu. Phương trình Bellman cho hàm giá trị trạng thái là:</p>
-<p>$$
-[
-V(s) = \max_{a} \left[ R(s, a) + \gamma \sum_{s&rsquo;} P(s&rsquo;|s, a)V(s&rsquo;) \right]
-]
-$$</p>
-<p>Ở đây:</p>
+<p>a. <strong>Phương trình Bellman cho hàm giá trị trạng thái \( V(s) \)</strong></p>
+<p>Hàm giá trị trạng thái \( V(s) \) cho biết tổng phần thưởng kỳ vọng khi bắt đầu từ trạng thái \( s \) và theo chính sách tối ưu. Phương trình Bellman cho hàm giá trị trạng thái là:</p>
+$$
+V(s) = \max_{a} \left[ R(s, a) + \gamma \sum_{s'} P(s'|s, a)V(s') \right]
+$$<p>Ở đây:</p>
 <ul>
-<li>( V(s) ) là giá trị của trạng thái ( s ).</li>
-<li>( R(s, a) ) là phần thưởng nhận được khi thực hiện hành động ( a ) tại trạng thái ( s ).</li>
-<li>( P(s&rsquo;|s, a) ) là xác suất chuyển từ trạng thái ( s ) sang trạng thái ( s&rsquo; ) khi thực hiện hành động ( a ).</li>
-<li>$( \gamma )$ là hệ số chiết khấu, và $( \sum_{s&rsquo;} P(s&rsquo;|s, a)V(s&rsquo;) )$ là giá trị kỳ vọng của các trạng thái tiếp theo.</li>
+<li>\( V(s) \) là giá trị của trạng thái \( s \).</li>
+<li>\( R(s, a) \) là phần thưởng nhận được khi thực hiện hành động \( a \) tại trạng thái \( s \).</li>
+<li>\( P(s'|s, a) \) là xác suất chuyển từ trạng thái \( s \) sang trạng thái \( s' \) khi thực hiện hành động \( a \).</li>
+<li>$\gamma$ là hệ số chiết khấu, và $\sum_{s'} P(s'|s, a)V(s')$ là giá trị kỳ vọng của các trạng thái tiếp theo.</li>
 </ul>
-<p>b. <strong>Phương trình Bellman cho hàm giá trị hành động ( Q(s, a) )</strong></p>
-<p>Hàm giá trị hành động ( Q(s, a) ) biểu diễn tổng phần thưởng kỳ vọng khi bắt đầu từ trạng thái ( s ), thực hiện hành động ( a ), và sau đó tiếp tục theo chính sách tối ưu. Phương trình Bellman cho hàm giá trị hành động là:</p>
-<p>$$
-[
-Q(s, a) = R(s, a) + \gamma \sum_{s&rsquo;} P(s&rsquo;|s, a) \max_{a&rsquo;} Q(s&rsquo;, a&rsquo;)
-]
-$$</p>
-<p>Ở đây:</p>
+<p>b. <strong>Phương trình Bellman cho hàm giá trị hành động \( Q(s, a) \)</strong></p>
+<p>Hàm giá trị hành động \( Q(s, a) \) biểu diễn tổng phần thưởng kỳ vọng khi bắt đầu từ trạng thái \( s \), thực hiện hành động \( a \), và sau đó tiếp tục theo chính sách tối ưu. Phương trình Bellman cho hàm giá trị hành động là:</p>
+$$
+Q(s, a) = R(s, a) + \gamma \sum_{s'} P(s'|s, a) \max_{a'} Q(s', a')
+$$<p>Ở đây:</p>
 <ul>
-<li>( Q(s, a) ) là giá trị của hành động ( a ) ở trạng thái ( s ).</li>
-<li>( \max_{a&rsquo;} Q(s&rsquo;, a&rsquo;) ) là giá trị tối ưu của hành động tiếp theo ở trạng thái kế tiếp ( s&rsquo; ).</li>
+<li>\( Q(s, a) \) là giá trị của hành động \( a \) ở trạng thái \( s \).</li>
+<li>\( \max_{a'} Q(s', a') \) là giá trị tối ưu của hành động tiếp theo ở trạng thái kế tiếp \( s' \).</li>
 </ul>
-<h2 id="q-learning">Q-Learning<a class="anchor ms-1" href="#q-learning"><i class="fas fa-link"></i></a></h2>
+<h3 id="q-learning">Q-Learning<a class="anchor ms-1" href="#q-learning"><i class="fas fa-link"></i></a></h3>
 <p>Q-learning là một thuật toán trong nhóm học tăng cường (reinforcement learning) , thuộc nhóm  model-free, value-based, off-policy. Thuật toán sẽ  tìm ra chuỗi hành động tốt nhất dựa trên trạng thái hiện tại của agent. “Q” đại diện cho chất lượng. Chất lượng biểu thị giá trị của hành động trong việc tối đa hóa (cực đại hóa) phần thưởng ở tương lai.</p>
 <p>Có một số key word cần làm rõ một chút.</p>
 <p>Chúng ta có hai nhóm thuật toán là model-base và model-free</p>
@@ -357,41 +364,38 @@ $$</p>
 <p>on-policy  nó không chỉ dùng chính sách hiện tại mà còn điều chỉnh và cải thiện chính sách đó liên tục dựa trên những gì đã học được từ mỗi hành động. Như cách bạn tiếp tục hoàn thiện chiến lược chơi game của mình mỗi lần chơi dựa trên những gì đã trải qua.</p>
 </li>
 </ul>
-<h3 id="các-khái-niệm-trong-q-learning">Các khái niệm trong Q-learning<a class="anchor ms-1" href="#các-khái-niệm-trong-q-learning"><i class="fas fa-link"></i></a></h3>
+<h4 id="các-khái-niệm-trong-q-learning">Các khái niệm trong Q-learning<a class="anchor ms-1" href="#các-khái-niệm-trong-q-learning"><i class="fas fa-link"></i></a></h4>
 <p>Kế thừa các key trong Reinforcement Learning, chúng ta có</p>
 <p>States(s) : vị trí hiện tại của agent trong environment</p>
 <p>Action(a) : Hành động của agent trong một state cụ thể</p>
 <p>Rewards : Giá trị phần thưởng  hoặc giá trị phạt khi một Action xảy ra</p>
 <p>Episodes: Kết thúc state, khi Agent không thể thực hiện một action mới. Episodes xảy ra khi agent phá đảo hoặc agent bị die</p>
 <p>$Q(S_t+1, a)$ : Giá trị kỳ vọng đạt được  Q value ở state t+1 và hành động a</p>
-<h3 id="cách-q-learning-hoạt-động">Cách Q-learning hoạt động<a class="anchor ms-1" href="#cách-q-learning-hoạt-động"><i class="fas fa-link"></i></a></h3>
-<h4 id="q-table">Q-Table<a class="anchor ms-1" href="#q-table"><i class="fas fa-link"></i></a></h4>
+<h4 id="cách-q-learning-hoạt-động">Cách Q-learning hoạt động<a class="anchor ms-1" href="#cách-q-learning-hoạt-động"><i class="fas fa-link"></i></a></h4>
+<h5 id="q-table">Q-Table<a class="anchor ms-1" href="#q-table"><i class="fas fa-link"></i></a></h5>
 <p>Q-Table về cơ bản là một bảng tra cứu, trong đó mỗi hàng đại diện cho một trạng thái có thể có, và mỗi cột đại diện cho một hành động có thể thực hiện. Bảng này lưu trữ các giá trị Q-values (phần thưởng kỳ vọng) cho mỗi cặp trạng thái-hành động. Theo thời gian, Agent sẽ cập nhật bảng này để học cách lựa chọn hành động tốt nhất trong mỗi trạng thái.</p>
-<h4 id="q-value">Q-value<a class="anchor ms-1" href="#q-value"><i class="fas fa-link"></i></a></h4>
+<h5 id="q-value">Q-value<a class="anchor ms-1" href="#q-value"><i class="fas fa-link"></i></a></h5>
 <p>Q-value đại diện cho phần thưởng tương lai, kỳ vọng mà Agent sẽ nhận được khi thực hiện một hành động nhất định từ trạng thái hiện tại, và sau đó thực hiện theo  policy tốt nhất (tối đa hóa phần thưởng).</p>
-<h4 id="q-learning-function">Q-learning Function<a class="anchor ms-1" href="#q-learning-function"><i class="fas fa-link"></i></a></h4>
+<h5 id="q-learning-function">Q-learning Function<a class="anchor ms-1" href="#q-learning-function"><i class="fas fa-link"></i></a></h5>
 <p>Là một model-free reinforcement learning, sử dụng phương trình Bellman, cập nhật bảng Q thông qua việc học từ sự tương tác với môi trường. Khi Agent thực hiện một hành động, nó sẽ quan sát phần thưởng và trạng thái mới mà nó chuyển đến. Thuật toán sau đó sẽ cập nhật giá trị Q cho cặp trạng thái-hành động đó theo quy tắc cập nhật sau:</p>
-<p>$$
-[
-Q(s, a) \leftarrow Q(s, a) + \alpha \left( r + \gamma \max_a&rsquo; Q(s&rsquo;, a&rsquo;) - Q(s, a) \right)
-]
-$$</p>
-<p>Trong đó:</p>
+$$
+  Q(s, a) \leftarrow Q(s, a) + \alpha \left( r + \gamma \max_a' Q(s', a') - Q(s, a) \right)
+$$<p>Trong đó:</p>
 <ul>
-<li>$( Q(s, a) )$ là giá trị Q cho trạng thái ( s ) và hành động ( a )</li>
-<li>$( \alpha )$ là tốc độ học (quyết định mức độ mà thông tin mới ghi đè thông tin cũ)</li>
-<li>$( r )$ là phần thưởng nhận được sau khi thực hiện hành động ( a ) ở trạng thái ( s )</li>
-<li>$( \gamma )$ là hệ số chiết khấu (xác định mức độ phần thưởng tương lai được tính đến)</li>
-<li>$( \max_a&rsquo; Q(s&rsquo;, a&rsquo;) )$ là phần thưởng kỳ vọng lớn nhất cho trạng thái tiếp theo ( s&rsquo; ) sau hành động ( a&rsquo; )</li>
+<li>$Q(s, a)$ là giá trị Q cho trạng thái \( s \) và hành động \( a \)</li>
+<li>$\alpha$ là tốc độ học (quyết định mức độ mà thông tin mới ghi đè thông tin cũ)</li>
+<li>$r$ là phần thưởng nhận được sau khi thực hiện hành động \( a \) ở trạng thái \( s \)</li>
+<li>$\gamma$ là hệ số chiết khấu (xác định mức độ phần thưởng tương lai được tính đến)</li>
+<li>$\max_a' Q(s', a')$ là phần thưởng kỳ vọng lớn nhất cho trạng thái tiếp theo \( s' \) sau hành động \( a' \)</li>
 </ul>
 <p>Theo thời gian, Agent sử dụng Q-learning sẽ dần dần hoàn thiện bảng Q của mình và học được cách thực hiện các hành động tối ưu cho mỗi trạng thái để tối đa hóa phần thưởng kỳ vọng.</p>
-<h4 id="q-learning-algorithm">Q-learning algorithm<a class="anchor ms-1" href="#q-learning-algorithm"><i class="fas fa-link"></i></a></h4>
+<h5 id="q-learning-algorithm">Q-learning algorithm<a class="anchor ms-1" href="#q-learning-algorithm"><i class="fas fa-link"></i></a></h5>
 <p>Init Q_table -&gt; Choose action -&gt; Do action -&gt; Mesure reward -&gt; Update Q Table -&gt; Choose action &hellip;</p>
-<h5 id="init-q_table">Init Q_table<a class="anchor ms-1" href="#init-q_table"><i class="fas fa-link"></i></a></h5>
+<h6 id="init-q_table">Init Q_table<a class="anchor ms-1" href="#init-q_table"><i class="fas fa-link"></i></a></h6>
 <p>Xây dựng bảng bao gồm hàng là các state, cột là các action , đầu tiên có thể khởi tạo giá trị của bảng này là 0.</p>
-<h5 id="choose-action">Choose action<a class="anchor ms-1" href="#choose-action"><i class="fas fa-link"></i></a></h5>
+<h6 id="choose-action">Choose action<a class="anchor ms-1" href="#choose-action"><i class="fas fa-link"></i></a></h6>
 <p>Ở lần chạy đầu tiên, chúng ta có thể random action, ở lần chạy sau, chúng ta lấy action ở bảng Q Table ở trên</p>
-<h5 id="do-action">Do action<a class="anchor ms-1" href="#do-action"><i class="fas fa-link"></i></a></h5>
+<h6 id="do-action">Do action<a class="anchor ms-1" href="#do-action"><i class="fas fa-link"></i></a></h6>
 <p>Thực hiện chọn hành động và thực hiện hành động đến khi quá trình train dừng lại.</p>
 <p>Với mỗi lần Choose action và Do action, chúng ta sẽ:</p>
 <p>Ở lần chạy đầu tiên, chúng ta lấy ngẫu nhiên 1 hành động, sau đó Agent sẽ thực hiện hành động và nhận reward, update Q Table sử dụng  Q-learning Function đã nêu phía trên. Ở các lần chạy sau, chúng ta lấy ra hành động tốt nhất để Agent thực hiện hành động  và chúng ta lại update Q Table tiếp.</p>
@@ -417,12 +421,12 @@ $$</p>
 </ul>
 <p>Trong thực tế, các thuật toán như <strong>epsilon-greedy</strong> sử dụng một chiến lược kết hợp cả khám phá và khai thác, cho phép Agent thực hiện phần lớn các hành động khai thác nhưng đôi khi vẫn khám phá những hành động mới với một xác suất nhỏ (epsilon).</p>
 <p>Trong Q-learning, ở giai đoạn đầu, giá trị epsilon thường lớn để xác xuất Exploration xuất hiện nhiều, qua mỗi lần lặp, Agent càng ngày càng tự tin với các giá trị học được đã được cập nhật ở Q table, nên  giá trị Exploration ở các lần lặp sau sẽ giảm bớt, nhỏ đần, từ đó xác xuất chọn action từ Q table sẽ lớn hơn.</p>
-<h5 id="measuring-the-rewards">Measuring the Rewards<a class="anchor ms-1" href="#measuring-the-rewards"><i class="fas fa-link"></i></a></h5>
+<h6 id="measuring-the-rewards">Measuring the Rewards<a class="anchor ms-1" href="#measuring-the-rewards"><i class="fas fa-link"></i></a></h6>
 <p>Sau khi thực hiện hành động, chúng ta sẽ thu được kết quả và phần thưởng</p>
 <p>Có nhiều cách cho thưởng, tùy , một dạng đơn giản nhất đó là</p>
 <p>Nếu về đích , +1 điểm thưởng</p>
 <p>Nếu thất bại, chưa về đích , 0 điểm</p>
-<h5 id="update-q-table">Update Q Table<a class="anchor ms-1" href="#update-q-table"><i class="fas fa-link"></i></a></h5>
+<h6 id="update-q-table">Update Q Table<a class="anchor ms-1" href="#update-q-table"><i class="fas fa-link"></i></a></h6>
 <p>Trong Q-learning, khi một Agent cập nhật giá trị Q cho một cặp trạng thái-hành động, quá trình này dựa trên sự kết hợp giữa <strong>giá trị Q cũ (former Q-value)</strong> và <strong>giá trị Q mới ước tính (new Q-value estimation)</strong>. Đây là hai khía cạnh quan trọng của công thức cập nhật Q-value trong Q-learning:</p>
 <p><strong>Former Q-value (Giá trị Q cũ)</strong>:</p>
 <ul>
@@ -433,19 +437,16 @@ $$</p>
 <p>Trong công thức cập nhật Q-learning:</p>
 </li>
 </ul>
-<p>$$
-[
-Q(s, a) \leftarrow Q(s, a) + \alpha \left( r + \gamma \max_a&rsquo; Q(s&rsquo;, a&rsquo;) - Q(s, a) \right)
-]
-$$</p>
-<p>Phần <strong>$( Q(s, a) )$</strong> bên phải của dấu mũi tên là giá trị Q cũ.</p>
+$$
+     Q(s, a) \leftarrow Q(s, a) + \alpha \left( r + \gamma \max_a' Q(s', a') - Q(s, a) \right)
+$$<p>Phần <strong>$Q(s, a)$</strong> bên phải của dấu mũi tên là giá trị Q cũ.</p>
 <p><strong>New Q-value estimation (Giá trị Q mới ước tính)</strong>: Đây là giá trị Q được cập nhật dựa trên phần thưởng vừa nhận được và dự đoán phần thưởng trong tương lai (dựa trên trạng thái tiếp theo và hành động tốt nhất có thể thực hiện).</p>
-<p>Phần <strong>( r + \gamma \max_a&rsquo; Q(s&rsquo;, a&rsquo;) )</strong> trong công thức là phần thưởng mới và giá trị kỳ vọng của trạng thái tiếp theo. Điều này đại diện cho sự ước tính mới về phần thưởng nếu Agent tiếp tục thực hiện chính sách tối ưu từ trạng thái tiếp theo.</p>
+<p>Phần <strong>\( r + \gamma \max_a' Q(s', a') \)</strong> trong công thức là phần thưởng mới và giá trị kỳ vọng của trạng thái tiếp theo. Điều này đại diện cho sự ước tính mới về phần thưởng nếu Agent tiếp tục thực hiện chính sách tối ưu từ trạng thái tiếp theo.</p>
 <p><strong>Alpha (α) - Hệ số học (Learning Rate)</strong>:</p>
 <p>-<strong>Ý nghĩa</strong>: Alpha kiểm soát mức độ mà các giá trị Q hiện tại được cập nhật bằng thông tin mới. Nó quyết định xem tác nhân sẽ học nhanh chóng từ các trải nghiệm mới hay học dần dần.</p>
 <ul>
 <li>
-<p><strong>Phạm vi</strong>: $( 0 \leq \alpha \leq 1 )$</p>
+<p><strong>Phạm vi</strong>: $0 \leq \alpha \leq 1$</p>
 </li>
 <li>
 <p><strong>Giải thích</strong>:</p>
@@ -463,7 +464,7 @@ $$</p>
 <p><strong>Gamma (γ) - Hệ số chiết khấu (Discount Factor)</strong>:</p>
 <ul>
 <li><strong>Ý nghĩa</strong>: Gamma xác định mức độ mà tác nhân coi trọng các phần thưởng trong tương lai. Nó cho phép tác nhân cân nhắc giữa việc nhận phần thưởng ngay lập tức và phần thưởng tiềm năng trong tương lai.</li>
-<li><strong>Phạm vi</strong>: $( 0 \leq \gamma \leq 1 )$</li>
+<li><strong>Phạm vi</strong>: $0 \leq \gamma \leq 1$</li>
 <li><strong>Giải thích</strong>:
 <ul>
 <li><strong>γ = 0</strong>: Tác nhân chỉ quan tâm đến phần thưởng tức thì mà không để ý đến phần thưởng tương lai. Điều này khiến tác nhân chỉ tối ưu hóa cho lợi ích ngắn hạn.</li>
@@ -478,10 +479,10 @@ $$</p>
 <li><strong>Gamma (γ)</strong>: Điều chỉnh sự ưu tiên giữa phần thưởng hiện tại và phần thưởng trong tương lai.</li>
 </ul>
 <p>Cả hai tham số này ảnh hưởng trực tiếp đến hiệu quả học tập của tác nhân trong môi trường và cần được tinh chỉnh phù hợp cho từng bài toán cụ thể.</p>
-<h2 id="double-deep-q-network">Double Deep Q-Network<a class="anchor ms-1" href="#double-deep-q-network"><i class="fas fa-link"></i></a></h2>
+<h3 id="double-deep-q-network">Double Deep Q-Network<a class="anchor ms-1" href="#double-deep-q-network"><i class="fas fa-link"></i></a></h3>
 <p>Sau khi tìm hiểu Q learning, chúng ta sẽ tìm hiểu 1 cải tiến của nó là Double Deep Q-Network</p>
 <p><strong>Double Deep Q-Network (DDQN)</strong> là một cải tiến của <strong>Q-learning</strong> (cụ thể là DQN - Deep Q-Network) nhằm giải quyết một số vấn đề quan trọng trong quá trình học tập. So với Q-learning, DDQN giúp giảm <strong>sự thiên lệch ước lượng</strong> (overestimation bias) và cải thiện độ chính xác trong việc chọn hành động. Dưới đây là chi tiết về các cải tiến của DDQN so với Q-learning:</p>
-<h3 id="1-vấn-đề-của-q-learning-overestimation-bias">1. Vấn đề của Q-learning (Overestimation Bias):<a class="anchor ms-1" href="#1-vấn-đề-của-q-learning-overestimation-bias"><i class="fas fa-link"></i></a></h3>
+<h4 id="1-vấn-đề-của-q-learning-overestimation-bias">1. Vấn đề của Q-learning (Overestimation Bias):<a class="anchor ms-1" href="#1-vấn-đề-của-q-learning-overestimation-bias"><i class="fas fa-link"></i></a></h4>
 <ul>
 <li>
 <p><strong>Q-learning tiêu chuẩn</strong> (bao gồm cả DQN, phiên bản mở rộng với mạng nơ-ron) có xu hướng gặp phải vấn đề gọi là <strong>thiên lệch ước lượng quá mức (overestimation bias)</strong>. Khi tính toán giá trị Q, Q-learning chọn hành động dựa trên giá trị Q lớn nhất trong Q-table (hoặc mạng Q trong DQN). Tuy nhiên, do sự ngẫu nhiên trong môi trường và các lỗi nhỏ khi ước tính, tác nhân có thể đánh giá quá cao giá trị Q của một số hành động.</p>
@@ -490,13 +491,10 @@ $$</p>
 <p><strong>Công thức cập nhật Q-learning</strong>:</p>
 </li>
 </ul>
-<p>$$
-[
-Q(s, a) \leftarrow Q(s, a) + \alpha \left( r + \gamma \max_a Q(s&rsquo;, a&rsquo;) - Q(s, a) \right)
-]
-$$</p>
-<p>Trong đó, <strong>( \max_a Q(s&rsquo;, a&rsquo;) )</strong> chọn hành động có giá trị Q cao nhất cho trạng thái tiếp theo ( s&rsquo; ). Việc sử dụng cùng một mạng để chọn và đánh giá hành động này có thể dẫn đến thiên lệch khi các giá trị Q bị phóng đại một cách không chính xác.</p>
-<h3 id="2-cải-tiến-của-double-deep-q-network-ddqn">2. Cải tiến của Double Deep Q-Network (DDQN):<a class="anchor ms-1" href="#2-cải-tiến-của-double-deep-q-network-ddqn"><i class="fas fa-link"></i></a></h3>
+$$
+  Q(s, a) \leftarrow Q(s, a) + \alpha \left( r + \gamma \max_a Q(s', a') - Q(s, a) \right)
+$$<p>Trong đó, <strong>\( \max_a Q(s', a') \)</strong> chọn hành động có giá trị Q cao nhất cho trạng thái tiếp theo \( s' \). Việc sử dụng cùng một mạng để chọn và đánh giá hành động này có thể dẫn đến thiên lệch khi các giá trị Q bị phóng đại một cách không chính xác.</p>
+<h4 id="2-cải-tiến-của-double-deep-q-network-ddqn">2. Cải tiến của Double Deep Q-Network (DDQN):<a class="anchor ms-1" href="#2-cải-tiến-của-double-deep-q-network-ddqn"><i class="fas fa-link"></i></a></h4>
 <ul>
 <li>
 <p><strong>DDQN</strong> được phát triển để khắc phục vấn đề <strong>thiên lệch ước lượng quá mức</strong> trong Q-learning/DQN bằng cách <strong>tách biệt việc chọn hành động và đánh giá giá trị của hành động</strong>. Trong DDQN, hai mạng nơ-ron khác nhau được sử dụng để thực hiện hai nhiệm vụ này:</p>
@@ -509,40 +507,37 @@ $$</p>
 <p><strong>Công thức cập nhật DDQN</strong>:</p>
 </li>
 </ul>
-<p>$$
-[
-Q(s, a) \leftarrow Q(s, a) + \alpha \left( r + \gamma Q_{\text{target}}(s&rsquo;, \arg\max_a Q_{\text{main}}(s&rsquo;, a&rsquo;)) - Q(s, a) \right)
-]
-$$</p>
-<p>Trong đó:</p>
+$$
+  Q(s, a) \leftarrow Q(s, a) + \alpha \left( r + \gamma Q_{\text{target}}(s', \arg\max_a Q_{\text{main}}(s', a')) - Q(s, a) \right)
+$$<p>Trong đó:</p>
 <ul>
 <li>
-<p><strong>( Q_{\text{main}}(s&rsquo;, a&rsquo;) )</strong>: Mạng chính được dùng để chọn hành động tốt nhất tại trạng thái ( s&rsquo; ) (tức là hành động có giá trị Q cao nhất).</p>
+<p><strong>\( Q_{\text{main}}(s', a') \)</strong>: Mạng chính được dùng để chọn hành động tốt nhất tại trạng thái \( s' \) (tức là hành động có giá trị Q cao nhất).</p>
 </li>
 <li>
-<p><strong>( Q_{\text{target}}(s&rsquo;, a&rsquo;) )</strong>: Mạng mục tiêu được dùng để đánh giá giá trị Q của hành động đó.</p>
+<p><strong>\( Q_{\text{target}}(s', a') \)</strong>: Mạng mục tiêu được dùng để đánh giá giá trị Q của hành động đó.</p>
 </li>
 <li>
 <p><strong>Ý tưởng chính</strong>: Bằng cách sử dụng hai mạng riêng biệt (một để chọn hành động, một để đánh giá), DDQN tránh được việc phóng đại giá trị Q do cùng một mạng chọn và đánh giá hành động trong Q-learning/DQN tiêu chuẩn. Điều này giúp giảm thiên lệch và cải thiện hiệu quả học tập.</p>
 </li>
 </ul>
-<h3 id="3-lợi-ích-của-ddqn-so-với-dqnq-learning">3. Lợi ích của DDQN so với DQN/Q-learning:<a class="anchor ms-1" href="#3-lợi-ích-của-ddqn-so-với-dqnq-learning"><i class="fas fa-link"></i></a></h3>
+<h4 id="3-lợi-ích-của-ddqn-so-với-dqnq-learning">3. Lợi ích của DDQN so với DQN/Q-learning:<a class="anchor ms-1" href="#3-lợi-ích-của-ddqn-so-với-dqnq-learning"><i class="fas fa-link"></i></a></h4>
 <ul>
 <li><strong>Giảm thiên lệch ước lượng (Overestimation Bias)</strong>: DDQN cải thiện độ chính xác của ước tính giá trị Q bằng cách tách rời nhiệm vụ chọn và đánh giá hành động.</li>
 <li><strong>Học tập ổn định hơn</strong>: Việc giảm thiên lệch giúp DDQN ổn định hơn trong quá trình học tập, đặc biệt khi các tác nhân tương tác với những môi trường phức tạp và ngẫu nhiên.</li>
 <li><strong>Cải thiện độ hội tụ (Convergence)</strong>: Do các giá trị Q không bị phóng đại một cách sai lầm, quá trình học tập của tác nhân trở nên hiệu quả và nhanh hơn, giúp hệ thống hội tụ về giải pháp tốt hơn.</li>
 </ul>
-<h3 id="4-ví-dụ-trực-quan-về-sự-khác-biệt">4. Ví dụ trực quan về sự khác biệt:<a class="anchor ms-1" href="#4-ví-dụ-trực-quan-về-sự-khác-biệt"><i class="fas fa-link"></i></a></h3>
+<h4 id="4-ví-dụ-trực-quan-về-sự-khác-biệt">4. Ví dụ trực quan về sự khác biệt:<a class="anchor ms-1" href="#4-ví-dụ-trực-quan-về-sự-khác-biệt"><i class="fas fa-link"></i></a></h4>
 <ul>
-<li><strong>DQN</strong>: Nếu có hai hành động A và B, và DQN đánh giá hành động A có giá trị Q là 10 (thực tế là 8) và B là 9 (thực tế là 7), DQN sẽ chọn A vì $( \max(10, 9) = 10 )$. Tuy nhiên, giá trị thực của A chỉ là 8, dẫn đến đánh giá sai.</li>
+<li><strong>DQN</strong>: Nếu có hai hành động A và B, và DQN đánh giá hành động A có giá trị Q là 10 (thực tế là 8) và B là 9 (thực tế là 7), DQN sẽ chọn A vì $\max(10, 9) = 10$. Tuy nhiên, giá trị thực của A chỉ là 8, dẫn đến đánh giá sai.</li>
 <li><strong>DDQN</strong>: Trong DDQN, mạng chính sẽ chọn A, nhưng mạng mục tiêu sẽ đánh giá A dựa trên giá trị thực tế của nó, làm giảm khả năng phóng đại giá trị và giúp lựa chọn chính xác hơn.</li>
 </ul>
-<h3 id="5-tóm-tắt">5. Tóm tắt:<a class="anchor ms-1" href="#5-tóm-tắt"><i class="fas fa-link"></i></a></h3>
+<h4 id="5-tóm-tắt">5. Tóm tắt:<a class="anchor ms-1" href="#5-tóm-tắt"><i class="fas fa-link"></i></a></h4>
 <ul>
 <li><strong>Q-learning/DQN</strong>: Chỉ dùng một mạng để chọn và đánh giá, dễ gặp tình trạng ước lượng quá cao (overestimation).</li>
 <li><strong>DDQN</strong>: Tách biệt việc chọn và đánh giá hành động, giúp giảm thiên lệch và cải thiện quá trình học tập.</li>
 </ul>
-<h1 id="ii-thực-hành-với-chương-trình-mario">II. Thực hành với chương trình mario<a class="anchor ms-1" href="#ii-thực-hành-với-chương-trình-mario"><i class="fas fa-link"></i></a></h1>
+<h2 id="ii-thực-hành-với-chương-trình-mario">II. Thực hành với chương trình mario<a class="anchor ms-1" href="#ii-thực-hành-với-chương-trình-mario"><i class="fas fa-link"></i></a></h2>
 <p>Ở bài thực hành này, mình kế thừa code từ blog chính chủ của pytorch</p>
 <p>Train trò chơi mario sử dụng Reinforcement Learning</p>
 <p>các nguyên liệu cần thiết</p>
@@ -551,8 +546,8 @@ $$</p>
 </span></span><span class="line"><span class="ln">3</span><span class="cl"><span class="n">pip</span> <span class="n">install</span> <span class="n">tensordict</span><span class="o">==</span><span class="mf">0.3.0</span>
 </span></span><span class="line"><span class="ln">4</span><span class="cl"><span class="n">pip</span> <span class="n">install</span> <span class="n">torchrl</span><span class="o">==</span><span class="mf">0.3.0</span>
 </span></span></code></pre></div><p>Các bạn lưu ý sử dụng đúng phiên bản để khỏi bị lỗi</p>
-<h2 id="environment">Environment<a class="anchor ms-1" href="#environment"><i class="fas fa-link"></i></a></h2>
-<h3 id="khởi-tạo-môi-trường">Khởi tạo môi trường<a class="anchor ms-1" href="#khởi-tạo-môi-trường"><i class="fas fa-link"></i></a></h3>
+<h3 id="environment">Environment<a class="anchor ms-1" href="#environment"><i class="fas fa-link"></i></a></h3>
+<h4 id="khởi-tạo-môi-trường">Khởi tạo môi trường<a class="anchor ms-1" href="#khởi-tạo-môi-trường"><i class="fas fa-link"></i></a></h4>
 <p>Trong trò chơi mario, chúng ta có nhiều đối tượng khi chơi, là cây nấm , các ống trụ màu xanh, các viên gạch &hellip;</p>
 <p>Khi chúng ta thực hiện một hành động ( ấn nút trên Joypad ), trò chơi sẽ phản hồi lại next_state là hình ảnh của khung hình sau khi ta nhấn nút, reward, done, info</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl">
@@ -572,7 +567,7 @@ $$</p>
 </span></span><span class="line"><span class="ln">15</span><span class="cl"> <span class="mf">0.0</span><span class="p">,</span>
 </span></span><span class="line"><span class="ln">16</span><span class="cl"> <span class="kc">False</span><span class="p">,</span>
 </span></span><span class="line"><span class="ln">17</span><span class="cl"> <span class="p">{</span><span class="s1">&#39;coins&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;flag_get&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;life&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;score&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;stage&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;status&#39;</span><span class="p">:</span> <span class="s1">&#39;small&#39;</span><span class="p">,</span> <span class="s1">&#39;time&#39;</span><span class="p">:</span> <span class="mi">400</span><span class="p">,</span> <span class="s1">&#39;world&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;x_pos&#39;</span><span class="p">:</span> <span class="mi">40</span><span class="p">,</span> <span class="s1">&#39;y_pos&#39;</span><span class="p">:</span> <span class="mi">79</span><span class="p">}</span>
-</span></span></code></pre></div><h3 id="xử-lý-dữ-liệu">Xử lý dữ liệu<a class="anchor ms-1" href="#xử-lý-dữ-liệu"><i class="fas fa-link"></i></a></h3>
+</span></span></code></pre></div><h4 id="xử-lý-dữ-liệu">Xử lý dữ liệu<a class="anchor ms-1" href="#xử-lý-dữ-liệu"><i class="fas fa-link"></i></a></h4>
 <p>Dữ liệu của state là một hình có kích thước (240, 256, 3) , hệ bgr, chúng ta sẽ convert về GrayScale  (1 ,240, 256) và resize về hình vuông có kích thước 84x84 để tăng thời gian xử lý . Các bạn có thể thay đổi thành 112x112 hoặc 96x96 tùy thích.</p>
 <p>Ngoài ra, do hình trước khi ấn và hình sau khi ấn nút thường sẽ gần gần giống nhau, nên chúng ta sẽ thêm một lớp SkipFrame, hiểu đúng như tên, chúng ta sẽ cộng dồn giá trị reward để trả ra cho mô hình thực hiện cập nhật trọng số. Ví dụ SkipFrame(4), nghĩa là ta sẽ cộng dồn giá trị reward của 4 hình liên tiếp thành tổng reward và cập nhật trọng số, cái này giúp cho mô hình chạy nhanh hơn xíu mà vẫn đảm bảo thông tin, tất nhiên số lượng frame bị skip cần be bé thôi</p>
 <p>Chúng ta sẽ tạo các lớp , implement từ gym.Wrapper</p>
@@ -640,7 +635,7 @@ $$</p>
 </span></span><span class="line"><span class="ln">62</span><span class="cl">
 </span></span><span class="line"><span class="ln">63</span><span class="cl"><span class="n">env</span> <span class="o">=</span> <span class="n">FrameStack</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">num_stack</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
 </span></span></code></pre></div><p>Cuối cùng, chúng ta sẽ đóng các khai báo trên vào một FrameStack với số lượng lớp là 4, nghĩa là chúng ta sẽ đưa vào 4 hình có kích thước  (240, 256, 3), kết quả là  hình có kích thươc (4, 84, 84)</p>
-<h2 id="agent">Agent<a class="anchor ms-1" href="#agent"><i class="fas fa-link"></i></a></h2>
+<h3 id="agent">Agent<a class="anchor ms-1" href="#agent"><i class="fas fa-link"></i></a></h3>
 <p>Chúng ta chơi mario, nên tạo 1 Agent tên là mario , theo lý thuyết, chúng ta sẽ có các hành động cho agent</p>
 <ul>
 <li>
@@ -673,7 +668,7 @@ $$</p>
 </span></span><span class="line"><span class="ln">18</span><span class="cl">    <span class="k">def</span> <span class="nf">learn</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 </span></span><span class="line"><span class="ln">19</span><span class="cl">        <span class="s2">&#34;&#34;&#34;Update online action value (Q) function with a batch of experiences&#34;&#34;&#34;</span>
 </span></span><span class="line"><span class="ln">20</span><span class="cl">        <span class="k">pass</span>
-</span></span></code></pre></div><h3 id="act">Act<a class="anchor ms-1" href="#act"><i class="fas fa-link"></i></a></h3>
+</span></span></code></pre></div><h4 id="act">Act<a class="anchor ms-1" href="#act"><i class="fas fa-link"></i></a></h4>
 <p>Khi chơi mario, hành động chúng ta sẽ thực hiện sẽ là lấy  ngẫu nhiên 1 hành động trong tập lệnh (explore), hoặc là thực hiện lệnh tối ưu do mô hình gợi ý (exploit). Để đạt được tính năng này, chúng ta sẽ sử dụng exploration_rate để điều khiển xác xuất chọn explore hay exploit.</p>
 <p>Ngoài ra, do là mô hình AI, nên chúng ta cần xây dựng một lớp CNN tên là MarioNet  để hàm learn cập nhật trọng số</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl">
@@ -723,7 +718,7 @@ $$</p>
 </span></span><span class="line"><span class="ln">45</span><span class="cl">        <span class="c1"># increment step</span>
 </span></span><span class="line"><span class="ln">46</span><span class="cl">        <span class="bp">self</span><span class="o">.</span><span class="n">curr_step</span> <span class="o">+=</span> <span class="mi">1</span>
 </span></span><span class="line"><span class="ln">47</span><span class="cl">        <span class="k">return</span> <span class="n">action_idx</span>
-</span></span></code></pre></div><h3 id="remember">Remember<a class="anchor ms-1" href="#remember"><i class="fas fa-link"></i></a></h3>
+</span></span></code></pre></div><h4 id="remember">Remember<a class="anchor ms-1" href="#remember"><i class="fas fa-link"></i></a></h4>
 <p>Phần này gồm 2 hàm là cache và recall.  cache, hiểu đúng như tên, là lưu lại các giá trị state, next_state, action, reward, done. recall là lấy các giá trị đã được nhớ ra</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl">
 </span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="k">class</span> <span class="nc">Mario</span><span class="p">(</span><span class="n">Mario</span><span class="p">):</span>  <span class="c1"># subclassing for continuity</span>
@@ -764,7 +759,7 @@ $$</p>
 </span></span><span class="line"><span class="ln">37</span><span class="cl">        <span class="n">batch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">memory</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
 </span></span><span class="line"><span class="ln">38</span><span class="cl">        <span class="n">state</span><span class="p">,</span> <span class="n">next_state</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">done</span> <span class="o">=</span> <span class="p">(</span><span class="n">batch</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&#34;state&#34;</span><span class="p">,</span> <span class="s2">&#34;next_state&#34;</span><span class="p">,</span> <span class="s2">&#34;action&#34;</span><span class="p">,</span> <span class="s2">&#34;reward&#34;</span><span class="p">,</span> <span class="s2">&#34;done&#34;</span><span class="p">))</span>
 </span></span><span class="line"><span class="ln">39</span><span class="cl">        <span class="k">return</span> <span class="n">state</span><span class="p">,</span> <span class="n">next_state</span><span class="p">,</span> <span class="n">action</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(),</span> <span class="n">reward</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(),</span> <span class="n">done</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
-</span></span></code></pre></div><h3 id="learn">Learn<a class="anchor ms-1" href="#learn"><i class="fas fa-link"></i></a></h3>
+</span></span></code></pre></div><h4 id="learn">Learn<a class="anchor ms-1" href="#learn"><i class="fas fa-link"></i></a></h4>
 <p>Ở phần init trên, chúng ta có cái khai báo MarioNet, ở đây, chúng ta sử dụng mô hình DDQN  - Double Q-learning <a href="https://arxiv.org/pdf/1509.06461" target="_blank" rel="noopener noreferrer">https://arxiv.org/pdf/1509.06461</a></p>
 <p>DDQN sử dụng hai CNN đặt tên là Q_online và Q_target. Hai mô hình cnn này độc lập với nhau</p>
 <p>Chúng ta sẽ chia sẽ chung features  của Q_online và Q_target, nhưng FC classifiers sẽ độc lập nhau, các giá trị trọng số của Q_target sẽ bị frozen để ngăng cập nhật trọng số từ  backprop</p>
@@ -811,7 +806,7 @@ $$</p>
 </span></span><span class="line"><span class="ln">41</span><span class="cl">            <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
 </span></span><span class="line"><span class="ln">42</span><span class="cl">            <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="n">output_dim</span><span class="p">),</span>
 </span></span><span class="line"><span class="ln">43</span><span class="cl">        <span class="p">)</span>
-</span></span></code></pre></div><h4 id="estimate">Estimate<a class="anchor ms-1" href="#estimate"><i class="fas fa-link"></i></a></h4>
+</span></span></code></pre></div><h5 id="estimate">Estimate<a class="anchor ms-1" href="#estimate"><i class="fas fa-link"></i></a></h5>
 <p>Do chúng ta có 2 lớp cnn, nên chúng ta cần xây 2 hàm Estimate</p>
 <p>Với Q_online, chúng ta thực hiện infer, xong.</p>
 <p>Với Q_target, giá trị  reward hơi phức tạp một chút, phân tích chúng</p>
@@ -837,7 +832,7 @@ $$</p>
 </span></span><span class="line"><span class="ln">18</span><span class="cl">            <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">),</span> <span class="n">best_action</span>
 </span></span><span class="line"><span class="ln">19</span><span class="cl">        <span class="p">]</span>
 </span></span><span class="line"><span class="ln">20</span><span class="cl">        <span class="k">return</span> <span class="p">(</span><span class="n">reward</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">done</span><span class="o">.</span><span class="n">float</span><span class="p">())</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span> <span class="o">*</span> <span class="n">next_Q</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span>
-</span></span></code></pre></div><h4 id="cập-nhật-model">Cập nhật model<a class="anchor ms-1" href="#cập-nhật-model"><i class="fas fa-link"></i></a></h4>
+</span></span></code></pre></div><h5 id="cập-nhật-model">Cập nhật model<a class="anchor ms-1" href="#cập-nhật-model"><i class="fas fa-link"></i></a></h5>
 <p>Sử dụng cnn, nên chúng ta cần định nghĩa là loss và hàm optimizer, sau khi update trọng số của Q_online, chúng ta sẽ cập nhật trọng số đó cho Q_target</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl">
 </span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="k">class</span> <span class="nc">Mario</span><span class="p">(</span><span class="n">Mario</span><span class="p">):</span>
@@ -855,7 +850,7 @@ $$</p>
 </span></span><span class="line"><span class="ln">14</span><span class="cl">
 </span></span><span class="line"><span class="ln">15</span><span class="cl">    <span class="k">def</span> <span class="nf">sync_Q_target</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 </span></span><span class="line"><span class="ln">16</span><span class="cl">        <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">online</span><span class="o">.</span><span class="n">state_dict</span><span class="p">())</span>
-</span></span></code></pre></div><h4 id="save-checkpoint">Save checkpoint<a class="anchor ms-1" href="#save-checkpoint"><i class="fas fa-link"></i></a></h4>
+</span></span></code></pre></div><h5 id="save-checkpoint">Save checkpoint<a class="anchor ms-1" href="#save-checkpoint"><i class="fas fa-link"></i></a></h5>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="k">class</span> <span class="nc">Mario</span><span class="p">(</span><span class="n">Mario</span><span class="p">):</span>
 </span></span><span class="line"><span class="ln"> 2</span><span class="cl">    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 </span></span><span class="line"><span class="ln"> 3</span><span class="cl">        <span class="n">save_path</span> <span class="o">=</span> <span class="p">(</span>
@@ -866,7 +861,7 @@ $$</p>
 </span></span><span class="line"><span class="ln"> 8</span><span class="cl">            <span class="n">save_path</span><span class="p">,</span>
 </span></span><span class="line"><span class="ln"> 9</span><span class="cl">        <span class="p">)</span>
 </span></span><span class="line"><span class="ln">10</span><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;MarioNet saved to </span><span class="si">{</span><span class="n">save_path</span><span class="si">}</span><span class="s2"> at step </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">curr_step</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
-</span></span></code></pre></div><h4 id="gom-vào-hàm-learn">Gom vào hàm learn<a class="anchor ms-1" href="#gom-vào-hàm-learn"><i class="fas fa-link"></i></a></h4>
+</span></span></code></pre></div><h5 id="gom-vào-hàm-learn">Gom vào hàm learn<a class="anchor ms-1" href="#gom-vào-hàm-learn"><i class="fas fa-link"></i></a></h5>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl">
 </span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="k">class</span> <span class="nc">Mario</span><span class="p">(</span><span class="n">Mario</span><span class="p">):</span>
 </span></span><span class="line"><span class="ln"> 3</span><span class="cl">    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state_dim</span><span class="p">,</span> <span class="n">action_dim</span><span class="p">,</span> <span class="n">save_dir</span><span class="p">):</span>
@@ -901,7 +896,7 @@ $$</p>
 </span></span><span class="line"><span class="ln">32</span><span class="cl">        <span class="n">loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">update_Q_online</span><span class="p">(</span><span class="n">td_est</span><span class="p">,</span> <span class="n">td_tgt</span><span class="p">)</span>
 </span></span><span class="line"><span class="ln">33</span><span class="cl">
 </span></span><span class="line"><span class="ln">34</span><span class="cl">        <span class="k">return</span> <span class="p">(</span><span class="n">td_est</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span> <span class="n">loss</span><span class="p">)</span>
-</span></span></code></pre></div><h2 id="play">Play<a class="anchor ms-1" href="#play"><i class="fas fa-link"></i></a></h2>
+</span></span></code></pre></div><h3 id="play">Play<a class="anchor ms-1" href="#play"><i class="fas fa-link"></i></a></h3>
 <p>Chúng ta thực hiện learn 40000 lần</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl">
 </span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="n">use_cuda</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">is_available</span><span class="p">()</span>
@@ -949,7 +944,7 @@ $$</p>
 </span></span><span class="line"><span class="ln">44</span><span class="cl">
 </span></span><span class="line"><span class="ln">45</span><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">e</span> <span class="o">%</span> <span class="mi">20</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">e</span> <span class="o">==</span> <span class="n">episodes</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
 </span></span><span class="line"><span class="ln">46</span><span class="cl">        <span class="n">logger</span><span class="o">.</span><span class="n">record</span><span class="p">(</span><span class="n">episode</span><span class="o">=</span><span class="n">e</span><span class="p">,</span> <span class="n">epsilon</span><span class="o">=</span><span class="n">mario</span><span class="o">.</span><span class="n">exploration_rate</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="n">mario</span><span class="o">.</span><span class="n">curr_step</span><span class="p">)</span>
-</span></span></code></pre></div><h2 id="replay">Replay<a class="anchor ms-1" href="#replay"><i class="fas fa-link"></i></a></h2>
+</span></span></code></pre></div><h3 id="replay">Replay<a class="anchor ms-1" href="#replay"><i class="fas fa-link"></i></a></h3>
 <p>Ở hàm này, mình load model lên và cho auto chơi, sau vài vòng lặp cũng sẽ về đích được :)</p>
 <p>Ở đây, các bạn chú ý phiên bản gym 0.22.0, ở bài viết gốc họ xài gym 0.17.x nên không có hàm save video, phải tự viết lại, còn các bản cao hơn thì họ tách rõ biến done của env.step  thành 2 biến nên nếu bạn nào xài code thì sẽ bị lỗi.</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl">
@@ -1039,7 +1034,7 @@ $$</p>
 </span></span><span class="line"><span class="ln">85</span><span class="cl"><span class="c1"># Close the environment</span>
 </span></span><span class="line"><span class="ln">86</span><span class="cl"><span class="n">env</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 </span></span></code></pre></div><p>code chính chủ  <a href="https://pytorch.org/tutorials/intermediate/mario_rl_tutorial.html" target="_blank" rel="noopener noreferrer">https://pytorch.org/tutorials/intermediate/mario_rl_tutorial.html</a></p>
-<h2 id="kết-quả">Kết quả<a class="anchor ms-1" href="#kết-quả"><i class="fas fa-link"></i></a></h2>
+<h3 id="kết-quả">Kết quả<a class="anchor ms-1" href="#kết-quả"><i class="fas fa-link"></i></a></h3>
 <p>Đợi tầm 48h khi chạy bằng GPU, mình train bằng RTX 4060 TI 16G, khá lâu</p>
 <p>Nếu train với  phần cứng mạnh hơn, như RTX 4090, hoặc A100, hoặc đổi một model mạnh hơn như Proximal Policy Optimizatio, sẽ nhanh hơn</p>
 <p>Model trên mình train với level 1, để chạy auto cho level 2,3&hellip; 32, mình phải chạy 32 lần train tương ứng cho mỗi level.</p>
@@ -1049,7 +1044,7 @@ $$</p>
   Your browser does not support the video tag.
 </video>
 <p>Phần tiếp theo, mình sẽ train thử model PPO thay DDQN</p>
-<h1 id="iii-tham-khảo">III. Tham khảo<a class="anchor ms-1" href="#iii-tham-khảo"><i class="fas fa-link"></i></a></h1>
+<h2 id="iii-tham-khảo">III. Tham khảo<a class="anchor ms-1" href="#iii-tham-khảo"><i class="fas fa-link"></i></a></h2>
 <p><a href="https://arxiv.org/pdf/1509.06461" target="_blank" rel="noopener noreferrer">https://arxiv.org/pdf/1509.06461</a></p>
 <p><a href="https://www.geeksforgeeks.org/what-is-reinforcement-learning/" target="_blank" rel="noopener noreferrer">https://www.geeksforgeeks.org/what-is-reinforcement-learning/</a></p>
 <p><a href="https://pytorch.org/tutorials/intermediate/mario_rl_tutorial.html" target="_blank" rel="noopener noreferrer">https://pytorch.org/tutorials/intermediate/mario_rl_tutorial.html</a></p>
@@ -1066,7 +1061,29 @@ $$</p>
 </a>
     <i class="fas fa-fw fa-chevron-right"></i>
   </div></div></div>
-</article><div class="card component row post-comments" id="post-comments">
+</article><section class="related-posts row card component">
+    <div class="card-header">
+      <h2 class="card-title">Bài liên quan</h2>
+    </div>
+    <div class="card-body">
+      <ul class="post-list"><li>
+          <a href="https://www.phamduytung.com/blog/2020-12-26---tic-tac-toe/">Reinforcement Learning và tictactoe
+</a>
+          <span class="float-end post-date">27/12/2020
+</span>
+        </li><li>
+          <a href="https://www.phamduytung.com/blog/2021-08-12-china_chess_alpha_beta_ai/">Xây dựng chương trình AI đơn giản cho game cờ tướng
+</a>
+          <span class="float-end post-date">12/08/2021
+</span>
+        </li><li>
+          <a href="https://www.phamduytung.com/blog/2019-04-19-deep-learning-view/">Phân nhóm các thuật toán học máy
+</a>
+          <span class="float-end post-date">19/04/2019
+</span>
+        </li></ul>
+    </div>
+  </section><div class="card component row post-comments" id="post-comments">
   <div class="card-header">
     <h2 class="card-title">Bình luận</h2>
   </div>
@@ -1082,7 +1099,8 @@ $$</p>
 </div><aside class="col-lg-3 col-md-4 sidebar d-flex">
   <div class="container d-flex flex-column">
     
-    <a href="https://www.buymeacoffee.com/alexblack28"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=🍎&slug=alexblack28&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" /></a><div class="post-toc row mb-4 card component" id="postTOC">
+    <a href="https://www.buymeacoffee.com/alexblack28" rel="noopener"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=🍎&slug=alexblack28&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" alt="Buy me a coffee" loading="lazy" decoding="async" /></a>
+<div class="post-toc row mb-4 card component" id="postTOC">
   <div class="card-header">
     <h2 class="card-title">Mục lục</h2>
   </div>
@@ -1207,8 +1225,8 @@ $$</p>
             Llm<span class="badge badge-sm text-white bg-accent ms-1">17</span></a><a href="https://www.phamduytung.com/tags/computer-vision/" class="badge rounded post-taxonomy" title="Computer Vision">
             Computer Vision<span class="badge badge-sm text-white bg-accent ms-1">16</span></a><a href="https://www.phamduytung.com/tags/python/" class="badge rounded post-taxonomy" title="Python">
             Python<span class="badge badge-sm text-white bg-accent ms-1">14</span></a><a href="https://www.phamduytung.com/tags/mathematics/" class="badge rounded post-taxonomy" title="Mathematics">
-            Mathematics<span class="badge badge-sm text-white bg-accent ms-1">12</span></a><a href="https://www.phamduytung.com/tags/ai-agent/" class="badge rounded post-taxonomy" title="Ai Agent">
-            Ai Agent<span class="badge badge-sm text-white bg-accent ms-1">10</span></a><a href="https://www.phamduytung.com/tags/to%C3%A1n-h%E1%BB%8Dc/" class="badge rounded post-taxonomy" title="Toán Học">
+            Mathematics<span class="badge badge-sm text-white bg-accent ms-1">12</span></a><a href="https://www.phamduytung.com/tags/ai-agent/" class="badge rounded post-taxonomy" title="AI Agent">
+            AI Agent<span class="badge badge-sm text-white bg-accent ms-1">10</span></a><a href="https://www.phamduytung.com/tags/to%C3%A1n-h%E1%BB%8Dc/" class="badge rounded post-taxonomy" title="Toán Học">
             Toán Học<span class="badge badge-sm text-white bg-accent ms-1">8</span></a><a href="https://www.phamduytung.com/tags/tri%E1%BA%BFt-h%E1%BB%8Dc/" class="badge rounded post-taxonomy" title="Triết Học">
             Triết Học<span class="badge badge-sm text-white bg-accent ms-1">8</span></a><a href="https://www.phamduytung.com/tags/ai/" class="badge rounded post-taxonomy" title="Ai">
             Ai<span class="badge badge-sm text-white bg-accent ms-1">7</span></a></div>
@@ -1234,15 +1252,18 @@ $$</p>
         </li><li class="nav-item">
             <a class="nav-link" href="/faq/"><i class="fas fa-fw fa-question-circle"></i>Câu hỏi thường gặp
 </a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/about/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-user"></i>Giới thiệu tác giả
+</a>
         </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
       <li class="nav-item">
         <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Docs
 </a>
       </li><li class="nav-item">
-            <a class="nav-link" href="/team_of_services" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-users"></i>Điều khoản sử dụng
+            <a class="nav-link" href="/teamofservices/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-users"></i>Điều khoản sử dụng
 </a>
         </li><li class="nav-item">
-            <a class="nav-link" href="/privacy" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-lock"></i>Chính sách bảo mật
+            <a class="nav-link" href="/privacy/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-lock"></i>Chính sách bảo mật
 </a>
         </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
       <li class="nav-item">
@@ -1251,16 +1272,6 @@ $$</p>
       </li><li class="nav-item">
             <a class="nav-link" href="/utils/gen_paswords/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-key"></i>Tạo password ngẫu nhiên
 </a>
-        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
-      <li class="nav-item">
-        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Liên kết khác
-</a>
-      </li><li class="nav-item">
-            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">Netlify
-</a>
-        </li><li class="nav-item">
-            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">facebook
-</a>
         </li></ul></li></ul>
 <div class="copyright mb-2">
   Copyright © 2016-2026 Phạm Duy Tùng. All Rights Reserved.
@@ -1268,7 +1279,7 @@ $$</p>
 <div class="powered-by mb-2">
   Website chia sẻ kiến thức của Phạm Duy Tùng và Đặng Thị Hằng. Vui lòng liên hệ email alexblack2202@gmail.com nếu bạn có thông tin cần trao đổi.
 </div></footer>
-<script src="https://www.phamduytung.com/js/main.111d51a8c754010f8399ca010e552d803e2d5170b361f8886ad04ec6c21ca551.js" integrity="sha256-ER1RqMdUAQ&#43;DmcoBDlUtgD4tUXCzYfiIatBOxsIcpVE=" crossorigin="anonymous" defer></script><script src="https://www.phamduytung.com/js/icons.min.cb4c9958dbc49e29ac644e168e82db2d0de9a741a15751cc5bf2b0af21eb2845.js" integrity="sha256-y0yZWNvEnimsZE4WjoLbLQ3pp0GhV1HMW/KwryHrKEU=" crossorigin="anonymous" defer></script>
+<script src="https://www.phamduytung.com/js/main.e788bab0969e53541289578e23a0f66a2ec1102872a9d44b994c80d0601d588a.js" integrity="sha256-54i6sJaeU1QSiVeOI6D2ai7BEChyqdRLmUyA0GAdWIo=" crossorigin="anonymous" defer></script><script src="https://www.phamduytung.com/js/icons.min.cb4c9958dbc49e29ac644e168e82db2d0de9a741a15751cc5bf2b0af21eb2845.js" integrity="sha256-y0yZWNvEnimsZE4WjoLbLQ3pp0GhV1HMW/KwryHrKEU=" crossorigin="anonymous" defer></script>
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {

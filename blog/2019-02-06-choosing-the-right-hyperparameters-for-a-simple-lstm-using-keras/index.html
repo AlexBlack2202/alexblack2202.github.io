@@ -9,7 +9,7 @@
 <link rel="icon" href="https://www.phamduytung.com/images/icons/icon-16x16.png" sizes="16x16" type="image/png">
 <link rel="icon" href="https://www.phamduytung.com/images/icons/favicon.ico">
 <link rel="manifest" href="https://www.phamduytung.com/manifest.json">
-<meta name="keywords" content="" />
+
 <meta name="description" content="Khi bạn làm thực tế LSTM, rất khó để xác định số lượng node ẩn, số lớp của mô hình. Trong bài này, mình sẽ trình bày một công thức để giúp các bạn đỡ phải băng khoăn khi lựa chọn tham số." /><meta name="robots" content="index, follow, max-image-preview:large"><meta property="og:title" content="Lựa chọn siêu tham số cho mô hình LSTM đơn giản sử dụng Keras">
 <meta property="og:description" content="Khi bạn làm thực tế LSTM, rất khó để xác định số lượng node ẩn, số lớp của mô hình. Trong bài này, mình sẽ trình bày một công thức để giúp các bạn đỡ phải băng khoăn khi lựa chọn tham số.">
 <meta property="og:type" content="article">
@@ -19,9 +19,9 @@
 <meta property="og:image" content="https://www.phamduytung.com/site-images/posts/2019-02-06-choosing-the-right-hyperparameters-for-a-simple-lstm-using-keras/cover-pearl-glass_hu_ed0a915d9abcf97.webp" data-image-budget="100000"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="675"><meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Lựa chọn siêu tham số cho mô hình LSTM đơn giản sử dụng Keras">
 <meta name="twitter:description" content="Khi bạn làm thực tế LSTM, rất khó để xác định số lượng node ẩn, số lớp của mô hình. Trong bài này, mình sẽ trình bày một công thức để giúp các bạn đỡ phải băng khoăn khi lựa chọn tham số.">
-<meta name="twitter:image" content="https://www.phamduytung.com/site-images/posts/2019-02-06-choosing-the-right-hyperparameters-for-a-simple-lstm-using-keras/cover-pearl-glass_hu_ed0a915d9abcf97.webp" data-image-budget="100000"><meta property="article:published_time" content="2019-02-06T00:20:00&#43;03:00"><meta property="article:modified_time" content="2019-02-06T00:20:00&#43;03:00"><meta property="article:section" content="blog"><meta property="article:tag" content="deep learning"><meta property="article:tag" content="lstm"><meta property="article:tag" content="hyperparameter tuning"><link rel="stylesheet" href="https://www.phamduytung.com/css/main.min.7094996c41a22844b2cfb2120c771154b3c152ea301b01f10f140c20d6dad25d.css" integrity="sha256-cJSZbEGiKESyz7ISDHcRVLPBUuowGwHxDxQMINba0l0=" crossorigin="anonymous"><link rel="stylesheet" href="https://www.phamduytung.com/css/katex.min.4d6aa053ca8a5675016fa2c9c48ee5359bfaafb8295184458af9d64abce84c47.css" integrity="sha256-TWqgU8qKVnUBb6LJxI7lNZv6r7gpUYRFivnWSrzoTEc=" crossorigin="anonymous">
+<meta name="twitter:image" content="https://www.phamduytung.com/site-images/posts/2019-02-06-choosing-the-right-hyperparameters-for-a-simple-lstm-using-keras/cover-pearl-glass_hu_ed0a915d9abcf97.webp" data-image-budget="100000"><meta property="article:published_time" content="2019-02-06T00:20:00&#43;03:00"><meta property="article:modified_time" content="2019-02-06T00:20:00&#43;03:00"><meta property="article:section" content="blog"><meta property="article:tag" content="deep learning"><meta property="article:tag" content="lstm"><meta property="article:tag" content="hyperparameter tuning"><link rel="stylesheet" href="https://www.phamduytung.com/css/main.min.0558a043598454ca5f6300bbe4bab466b3141cb8632ec005d8872a3a188ed894.css" integrity="sha256-BVigQ1mEVMpfYwC75Lq0ZrMUHLhjLsAF2IcqOhiO2JQ=" crossorigin="anonymous"><link rel="stylesheet" href="https://www.phamduytung.com/css/katex.min.4d6aa053ca8a5675016fa2c9c48ee5359bfaafb8295184458af9d64abce84c47.css" integrity="sha256-TWqgU8qKVnUBb6LJxI7lNZv6r7gpUYRFivnWSrzoTEc=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://www.phamduytung.com/css/viewer.min.3d228794bcedbbfa0412beb8fbc1ec6973202945e42af7004f742a4d7bd620ab.css" integrity="sha256-PSKHlLztu/oEEr64&#43;8HsaXMgKUXkKvcAT3QqTXvWIKs=" crossorigin="anonymous"><link rel="canonical" href="https://www.phamduytung.com/blog/2019-02-06-choosing-the-right-hyperparameters-for-a-simple-lstm-using-keras/">
-<meta name="theme-color" content="#f7f5ff"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Phạm Duy Tùng"},"dateModified":"2019-02-06T00:20:00+03:00","datePublished":"2019-02-06T00:20:00+03:00","description":"Khi bạn làm thực tế LSTM, rất khó để xác định số lượng node ẩn, số lớp của mô hình. Trong bài này, mình sẽ trình bày một công thức để giúp các bạn đỡ phải băng khoăn khi lựa chọn tham số.","headline":"Lựa chọn siêu tham số cho mô hình LSTM đơn giản sử dụng Keras","image":["https://www.phamduytung.com/site-images/posts/2019-02-06-choosing-the-right-hyperparameters-for-a-simple-lstm-using-keras/cover-pearl-glass_hu_ed0a915d9abcf97.webp"],"inLanguage":"vi","keywords":"deep learning, lstm, hyperparameter tuning","mainEntityOfPage":{"@id":"https://www.phamduytung.com/blog/2019-02-06-choosing-the-right-hyperparameters-for-a-simple-lstm-using-keras/","@type":"WebPage"},"publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://www.phamduytung.com/site-images/brand-mark-flaming-book-red_hu_45318b168da512af.webp"},"name":"Phạm Duy Tùng Machine Learning Blog"},"url":"https://www.phamduytung.com/blog/2019-02-06-choosing-the-right-hyperparameters-for-a-simple-lstm-using-keras/"}</script></head>
+<meta name="theme-color" content="#f7f5ff"><script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@id":"https://www.phamduytung.com/blog/2019-02-06-choosing-the-right-hyperparameters-for-a-simple-lstm-using-keras/#article","@type":"BlogPosting","author":[{"@type":"Person","name":"Phạm Duy Tùng","sameAs":["https://github.com/AlexBlack2202","https://www.linkedin.com/in/tung-pham-duy/"],"url":"https://www.phamduytung.com/about/"}],"dateModified":"2019-02-06T00:20:00+03:00","datePublished":"2019-02-06T00:20:00+03:00","description":"Khi bạn làm thực tế LSTM, rất khó để xác định số lượng node ẩn, số lớp của mô hình. Trong bài này, mình sẽ trình bày một công thức để giúp các bạn đỡ phải băng khoăn khi lựa chọn tham số.","headline":"Lựa chọn siêu tham số cho mô hình LSTM đơn giản sử dụng Keras","image":["https://www.phamduytung.com/site-images/posts/2019-02-06-choosing-the-right-hyperparameters-for-a-simple-lstm-using-keras/cover-pearl-glass_hu_ed0a915d9abcf97.webp"],"inLanguage":"vi","keywords":"deep learning, lstm, hyperparameter tuning","mainEntityOfPage":{"@id":"https://www.phamduytung.com/blog/2019-02-06-choosing-the-right-hyperparameters-for-a-simple-lstm-using-keras/","@type":"WebPage"},"publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://www.phamduytung.com/site-images/brand-mark-flaming-book-red_hu_45318b168da512af.webp"},"name":"Phạm Duy Tùng Machine Learning Blog","url":"https://www.phamduytung.com/"},"url":"https://www.phamduytung.com/blog/2019-02-06-choosing-the-right-hyperparameters-for-a-simple-lstm-using-keras/","wordCount":2581},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","item":"https://www.phamduytung.com/","name":"Trang chủ","position":1},{"@type":"ListItem","item":"https://www.phamduytung.com/blog/","name":"Blogs","position":2},{"@type":"ListItem","item":"https://www.phamduytung.com/blog/2019-02-06-choosing-the-right-hyperparameters-for-a-simple-lstm-using-keras/","name":"Lựa chọn siêu tham số cho mô hình LSTM đơn giản sử dụng Keras","position":3}]}]}</script></head>
   <body><script>const items=["mode","palette"];items.forEach(function(e){const t=localStorage.getItem("hbs-"+e);t&&document.body.parentElement.setAttribute("data-"+e,t)})</script><header><nav class="navbar top-app-bar top-app-bar-expand-lg fixed-top">
   <div class="container pearl-navbar__inner">
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
@@ -113,6 +113,10 @@
   </div>
 </form>
       <ul class="navbar-nav ms-auto"><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/chu-de/">
+            <i class="fas fa-fw fa-list-alt"></i>Chủ đề
+          </a>
+        </li><li class="nav-item">
           <a class="nav-link" href="https://www.phamduytung.com/series/">
             <i class="fas fa-fw fa-columns"></i>Courses
           </a>
@@ -155,6 +159,11 @@
               <a class="dropdown-item"
                 href="https://www.phamduytung.com/faq/">
                 Câu hỏi thường gặp
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/about/">
+                Giới thiệu tác giả
               </a>
             </li></ul>
         </li><li class="nav-item">
@@ -199,7 +208,7 @@
 </div>
 <article class="row card component mb-4 post">
   <div class="card-header"><div class="bgcover">
-      <img src="/site-images/posts/2019-02-06-choosing-the-right-hyperparameters-for-a-simple-lstm-using-keras/cover-pearl-glass_hu_ed0a915d9abcf97.webp" alt="" data-image-budget="100000" class="pearl-cover-image" srcset="/site-images/posts/2019-02-06-choosing-the-right-hyperparameters-for-a-simple-lstm-using-keras/cover-pearl-glass_hu_24d03262a9e1994a.webp 480w, /site-images/posts/2019-02-06-choosing-the-right-hyperparameters-for-a-simple-lstm-using-keras/cover-pearl-glass_hu_5d33087ddcbbb3bf.webp 768w, /site-images/posts/2019-02-06-choosing-the-right-hyperparameters-for-a-simple-lstm-using-keras/cover-pearl-glass_hu_ed0a915d9abcf97.webp 1200w" sizes="(min-width: 1200px) 960px, (min-width: 768px) 70vw, 100vw" width="1200" height="675"
+      <img src="/site-images/posts/2019-02-06-choosing-the-right-hyperparameters-for-a-simple-lstm-using-keras/cover-pearl-glass_hu_ed0a915d9abcf97.webp" alt="Lựa chọn siêu tham số cho mô hình LSTM đơn giản sử dụng Keras" data-image-budget="100000" class="pearl-cover-image" srcset="/site-images/posts/2019-02-06-choosing-the-right-hyperparameters-for-a-simple-lstm-using-keras/cover-pearl-glass_hu_24d03262a9e1994a.webp 480w, /site-images/posts/2019-02-06-choosing-the-right-hyperparameters-for-a-simple-lstm-using-keras/cover-pearl-glass_hu_5d33087ddcbbb3bf.webp 768w, /site-images/posts/2019-02-06-choosing-the-right-hyperparameters-for-a-simple-lstm-using-keras/cover-pearl-glass_hu_ed0a915d9abcf97.webp 1200w" sizes="(min-width: 1200px) 960px, (min-width: 768px) 70vw, 100vw" width="1200" height="675"
   loading="eager" decoding="async" fetchpriority="high">
 
       <div class="bgtrans">
@@ -208,12 +217,16 @@
       </div>
     </div>
   </div>
-  <div class="card-body"><div class="post-meta">
+  <div class="card-body"><div class="post-byline">
+  <i class="fas fa-fw fa-user"></i>
+  <span>Tác giả:</span>
+  <a href="https://www.phamduytung.com/about/" rel="author">Phạm Duy Tùng</a>
+</div><div class="post-meta">
   <span class="post-date" title="tạo ngày 2019-02-06 04:20:00 &#43;0700 &#43;07.">
     06/02/2019
   </span><span class="post-reading-time">
     13 phút đọc
-  </span><span class="post-taxonomies"><a href="https://www.phamduytung.com/tags/deep-learning/" class="badge post-taxonomy">Deep Learning</a><a href="https://www.phamduytung.com/tags/lstm/" class="badge post-taxonomy">LSTM</a><a href="https://www.phamduytung.com/tags/hyperparameter-tuning/" class="badge post-taxonomy">hyperparameter tuning</a></span>
+  </span><span class="post-taxonomies"><a href="https://www.phamduytung.com/tags/deep-learning/" class="badge post-taxonomy">Deep Learning</a><a href="https://www.phamduytung.com/tags/lstm/" class="badge post-taxonomy">lstm</a><a href="https://www.phamduytung.com/tags/hyperparameter-tuning/" class="badge post-taxonomy">hyperparameter tuning</a></span>
 </div>
 <div class="post-content mb-3"><div class="toc">
     <nav id="TableOfContents">
@@ -233,9 +246,9 @@
   </ul>
 </nav>
   </div>
-<h1 id="mở-đầu">Mở đầu<a class="anchor ms-1" href="#mở-đầu"><i class="fas fa-link"></i></a></h1>
+<h2 id="mở-đầu">Mở đầu<a class="anchor ms-1" href="#mở-đầu"><i class="fas fa-link"></i></a></h2>
 <p>Việc xây dựng một mô hình machine learning chưa bao giờ thật sự dễ dàng. Rất nhiều bài báo chỉ &ldquo;show hàng&rdquo; những thứ cao siêu, những thứ chỉ nằm trong sự tưởng tượng của chính các nhà báo. Còn khi đọc các bài báo khoa học về machine learning, tác giả công bố cho chúng ta những mô hình rất tốt, giải quyết một domain nhỏ vấn đề của họ. Tuy nhiên, có một thứ họ không/ chưa công bố. Đó là cách thức họ lựa chọn số lượng note ẩn, số lượng layer trong mô hình neural network. Trong bài viết này, chúng ta sẽ xây dựng mô hình LSTM đơn giản để dự đoán giới tính khi biết tên một người, và thử tìm xem công thức để chọn ra tham số &ldquo;đủ tốt&rdquo; là như thế nào.</p>
-<h1 id="chẩn-bị-dữ-liệu">Chẩn bị dữ liệu<a class="anchor ms-1" href="#chẩn-bị-dữ-liệu"><i class="fas fa-link"></i></a></h1>
+<h2 id="chẩn-bị-dữ-liệu">Chẩn bị dữ liệu<a class="anchor ms-1" href="#chẩn-bị-dữ-liệu"><i class="fas fa-link"></i></a></h2>
 <p>Tập dữ liệu ở đây có khoảng 500000 tên kèm giới tính. Đầu tiên mình sẽ làm sạch dữ liệu bằng cách chỉ lấy giới tính là &rsquo;m&rsquo; và &lsquo;f&rsquo;, loại bỏ những tên quá ngắn (có ít hơn 3 ký tự)</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="n">filepath</span> <span class="o">=</span> <span class="s1">&#39;firstnames.csv&#39;</span>
 </span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="n">max_rows</span> <span class="o">=</span> <span class="mi">500000</span> <span class="c1"># Reduction due to memory limitations</span>
@@ -314,26 +327,22 @@
 </span></span><span class="line"><span class="ln">12</span><span class="cl"><span class="n">test_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">name_encoding</span><span class="p">(</span><span class="n">normalize</span><span class="p">(</span><span class="n">name</span><span class="p">))</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">test</span><span class="p">[</span><span class="n">predictor_col</span><span class="p">]])</span>
 </span></span><span class="line"><span class="ln">13</span><span class="cl"><span class="n">test_y</span> <span class="o">=</span> <span class="n">lable_encoding</span><span class="p">(</span><span class="n">test</span><span class="o">.</span><span class="n">gender</span><span class="p">)</span>
 </span></span></code></pre></div><p>Vậy là chúng ta đã có chuẩn bị xong dữ liệu đầy đủ rồi đó. Bây giờ chúng ta xây dựng mô hình thôi.</p>
-<h1 id="xây-dựng-mô-hình">Xây dựng mô hình<a class="anchor ms-1" href="#xây-dựng-mô-hình"><i class="fas fa-link"></i></a></h1>
+<h2 id="xây-dựng-mô-hình">Xây dựng mô hình<a class="anchor ms-1" href="#xây-dựng-mô-hình"><i class="fas fa-link"></i></a></h2>
 <p>Có rất nhiều cách để chọn tham số cho mô hình, ví dụ như ở <a href="https://stats.stackexchange.com/questions/95495/guideline-to-select-the-hyperparameters-in-deep-learning" target="_blank" rel="noopener noreferrer">https://stats.stackexchange.com/questions/95495/guideline-to-select-the-hyperparameters-in-deep-learning</a>
 liệt kê ra 4 cách là Manual Search, Grid Search, Random Search, Bayesian Optimization. Tuy nhiên,  những cách trên đều khá tốn thời gian và đòi hỏi người kỹ sư phải có am hiểu nhất định.</p>
 <p>Ở đây, chúng ta sử dụng một công thức được đưa ra trong link <a href="https://stats.stackexchange.com/questions/181/how-to-choose-the-number-of-hidden-layers-and-nodes-in-a-feedforward-neural-netw/136542#136542" target="_blank" rel="noopener noreferrer">https://stats.stackexchange.com/questions/181/how-to-choose-the-number-of-hidden-layers-and-nodes-in-a-feedforward-neural-netw/136542#136542</a>, cụ thể</p>
-<p>$$ N_h = \frac{N_s}{(\alpha * (N_i + N_o))}$$</p>
-<p>Trong đó Ni là số lượng input neural, No là số lượng output neural, Ns là số lượng element trong tập dữ liệu train. alpha là một con số trade-off đại diện cho tỷ lệ thuộc đoạn [2-10].</p>
+$$ N_h = \frac{N_s}{(\alpha * (N_i + N_o))}$$<p>Trong đó Ni là số lượng input neural, No là số lượng output neural, Ns là số lượng element trong tập dữ liệu train. alpha là một con số trade-off đại diện cho tỷ lệ thuộc đoạn [2-10].</p>
 <p>Một lưu ý ở đây là bạn có thể dựa vào công thức và số alpha mà ước lượng xem rằng bạn đã có đủ dữ liệu mẫu hay chưa. Một ví dụ đơn giản là giả sử bạn có 10,000 mẫu dữ liệu, input số từ 0 đến 9, output là 64, chọn alpha ở mức nhỏ nhất là 2, vậy theo công thức số neural ẩn là 10000/(2<em>64</em>10) = 7.8 ~ 8. Nếu bạn tăng số alpha lên thì số hidden layer còn ít nữa. Điều trên chứng tỏ rằng số lượng mẫu của bạn chưa đủ, còn thiếu quá nhiều.  Nếu bạn tăng gấp 100 lần số dữ liệu mẫu, thì con số có vẻ hợp lý hơn.</p>
 <p>Trong tập dữ liệu, mình có:</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln">1</span><span class="cl"><span class="n">The</span> <span class="nb">input</span> <span class="n">vector</span> <span class="n">will</span> <span class="n">have</span> <span class="n">the</span> <span class="n">shape</span>  <span class="p">{</span><span class="mi">17</span><span class="p">}</span> <span class="n">x</span> <span class="p">{</span><span class="mi">82</span><span class="p">}</span>
 </span></span><span class="line"><span class="ln">2</span><span class="cl"><span class="n">Train</span> <span class="nb">len</span><span class="p">:</span>  <span class="p">(</span><span class="mi">21883</span><span class="p">,</span> <span class="mi">17</span><span class="p">,</span> <span class="mi">82</span><span class="p">)</span> <span class="mi">36473</span>
 </span></span></code></pre></div><p>Tổng cộng N_s là 21883, Ni là 17, No là 82, chọn alpha là 2 thì mình có 21883/(2<em>17</em>82) = 7.8 ~ 8. Một con số khá nhỏ, chứng tỏ dữ liệu của mình còn quá ít.</p>
 <p>Đối với tập dữ liệu nhỏ như thế này, mình thường sẽ áp dụng công thức sau:</p>
-<p>$$ N_h= \beta* (N_i + N_o) $$</p>
-<p>Với beta là một con số thực thuộc nửa đoạn (0,1]. Thông thường sẽ là 2/3. Kết quả là số lượng neural của mình khoảng 929.333 node. Thông thường, mình sẽ chọn số neural là một con số là bội số của 2, ở đây 929 gần với 2^10 nhất, nên mình chọn số neural là 2^10.</p>
+$$ N_h= \beta* (N_i + N_o) $$<p>Với beta là một con số thực thuộc nửa đoạn (0,1]. Thông thường sẽ là 2/3. Kết quả là số lượng neural của mình khoảng 929.333 node. Thông thường, mình sẽ chọn số neural là một con số là bội số của 2, ở đây 929 gần với 2^10 nhất, nên mình chọn số neural là 2^10.</p>
 <p>Tóm lại, mình sẽ theo quy tắc</p>
 <p>Nếu dữ liệu nhiều:</p>
-<p>$$ N_h = \frac{N_s}{(\alpha * (N_i + N_o))}$$</p>
-<p>Nếu dữ liệu ít</p>
-<p>$$ N_h= \frac{2}{3}* (N_i + N_o) $$</p>
-<p>Làm tròn lên bằng với bội số của 2 mũ gần nhất.</p>
+$$ N_h = \frac{N_s}{(\alpha * (N_i + N_o))}$$<p>Nếu dữ liệu ít</p>
+$$ N_h= \frac{2}{3}* (N_i + N_o) $$<p>Làm tròn lên bằng với bội số của 2 mũ gần nhất.</p>
 <p>Một lưu ý nhỏ là số lượng node càng nhiều thì tỷ lệ overfit càng cao, và thời gian huấn luyện càng lâu. Do đó, bạn nên trang bị máy có cấu hình kha khá một chút, tốt hơn hết là nên có GPU đi kèm. Ngoài ra, bạn nên chuẩn bị càng nhiều dữ liệu càng tốt. Một kinh nghiệm của mình rút ra trong quá trình làm Machine Learning là nếu không có nhiều dữ liệu, thì đừng cố thử áp dụng các phương pháp ML trên nó.</p>
 <p>Mô hình mình xây dựng như sau:</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl">
@@ -472,7 +481,39 @@ liệt kê ra 4 cách là Manual Search, Grid Search, Random Search, Bayesian Op
 </a>
     <i class="fas fa-fw fa-chevron-right"></i>
   </div></div></div>
-</article><div class="card component row post-comments" id="post-comments">
+</article><section class="related-posts row card component">
+    <div class="card-header">
+      <h2 class="card-title">Bài liên quan</h2>
+    </div>
+    <div class="card-body">
+      <ul class="post-list"><li>
+          <a href="https://www.phamduytung.com/blog/2026-08-15-transformer-attention-ky-nguyen-ai/">Transformer: Khi máy tính thôi đọc từng chữ một và một kỷ nguyên mới bắt đầu
+</a>
+          <span class="float-end post-date">15/08/2026
+</span>
+        </li><li>
+          <a href="https://www.phamduytung.com/blog/2018-11-10-stock-prediction_lsmt/">Dự đoán giá chứng khoán SP500 sử dụng LSTM
+</a>
+          <span class="float-end post-date">10/11/2018
+</span>
+        </li><li>
+          <a href="https://www.phamduytung.com/blog/2019-05-27-alexnet/">Tìm hiểu mạng AlexNet, mô hình giành chiến thắng tại cuộc thi ILSVRC 2012
+</a>
+          <span class="float-end post-date">27/05/2019
+</span>
+        </li><li>
+          <a href="https://www.phamduytung.com/blog/2019-05-26-mobilenetv1/">Tìm hiểu mạng MobileNetV1
+</a>
+          <span class="float-end post-date">25/05/2019
+</span>
+        </li><li>
+          <a href="https://www.phamduytung.com/blog/2019-05-05-deep-learning-dropout/">Dropout là gì? Cách dropout chống overfitting trong Deep Learning (kèm code)
+</a>
+          <span class="float-end post-date">05/05/2019
+</span>
+        </li></ul>
+    </div>
+  </section><div class="card component row post-comments" id="post-comments">
   <div class="card-header">
     <h2 class="card-title">Bình luận</h2>
   </div>
@@ -488,7 +529,8 @@ liệt kê ra 4 cách là Manual Search, Grid Search, Random Search, Bayesian Op
 </div><aside class="col-lg-3 col-md-4 sidebar d-flex">
   <div class="container d-flex flex-column">
     
-    <a href="https://www.buymeacoffee.com/alexblack28"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=🍎&slug=alexblack28&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" /></a><div class="post-toc row mb-4 card component" id="postTOC">
+    <a href="https://www.buymeacoffee.com/alexblack28" rel="noopener"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=🍎&slug=alexblack28&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" alt="Buy me a coffee" loading="lazy" decoding="async" /></a>
+<div class="post-toc row mb-4 card component" id="postTOC">
   <div class="card-header">
     <h2 class="card-title">Mục lục</h2>
   </div>
@@ -571,8 +613,8 @@ liệt kê ra 4 cách là Manual Search, Grid Search, Random Search, Bayesian Op
             Llm<span class="badge badge-sm text-white bg-accent ms-1">17</span></a><a href="https://www.phamduytung.com/tags/computer-vision/" class="badge rounded post-taxonomy" title="Computer Vision">
             Computer Vision<span class="badge badge-sm text-white bg-accent ms-1">16</span></a><a href="https://www.phamduytung.com/tags/python/" class="badge rounded post-taxonomy" title="Python">
             Python<span class="badge badge-sm text-white bg-accent ms-1">14</span></a><a href="https://www.phamduytung.com/tags/mathematics/" class="badge rounded post-taxonomy" title="Mathematics">
-            Mathematics<span class="badge badge-sm text-white bg-accent ms-1">12</span></a><a href="https://www.phamduytung.com/tags/ai-agent/" class="badge rounded post-taxonomy" title="Ai Agent">
-            Ai Agent<span class="badge badge-sm text-white bg-accent ms-1">10</span></a><a href="https://www.phamduytung.com/tags/to%C3%A1n-h%E1%BB%8Dc/" class="badge rounded post-taxonomy" title="Toán Học">
+            Mathematics<span class="badge badge-sm text-white bg-accent ms-1">12</span></a><a href="https://www.phamduytung.com/tags/ai-agent/" class="badge rounded post-taxonomy" title="AI Agent">
+            AI Agent<span class="badge badge-sm text-white bg-accent ms-1">10</span></a><a href="https://www.phamduytung.com/tags/to%C3%A1n-h%E1%BB%8Dc/" class="badge rounded post-taxonomy" title="Toán Học">
             Toán Học<span class="badge badge-sm text-white bg-accent ms-1">8</span></a><a href="https://www.phamduytung.com/tags/tri%E1%BA%BFt-h%E1%BB%8Dc/" class="badge rounded post-taxonomy" title="Triết Học">
             Triết Học<span class="badge badge-sm text-white bg-accent ms-1">8</span></a><a href="https://www.phamduytung.com/tags/ai/" class="badge rounded post-taxonomy" title="Ai">
             Ai<span class="badge badge-sm text-white bg-accent ms-1">7</span></a></div>
@@ -598,15 +640,18 @@ liệt kê ra 4 cách là Manual Search, Grid Search, Random Search, Bayesian Op
         </li><li class="nav-item">
             <a class="nav-link" href="/faq/"><i class="fas fa-fw fa-question-circle"></i>Câu hỏi thường gặp
 </a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/about/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-user"></i>Giới thiệu tác giả
+</a>
         </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
       <li class="nav-item">
         <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Docs
 </a>
       </li><li class="nav-item">
-            <a class="nav-link" href="/team_of_services" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-users"></i>Điều khoản sử dụng
+            <a class="nav-link" href="/teamofservices/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-users"></i>Điều khoản sử dụng
 </a>
         </li><li class="nav-item">
-            <a class="nav-link" href="/privacy" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-lock"></i>Chính sách bảo mật
+            <a class="nav-link" href="/privacy/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-lock"></i>Chính sách bảo mật
 </a>
         </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
       <li class="nav-item">
@@ -615,16 +660,6 @@ liệt kê ra 4 cách là Manual Search, Grid Search, Random Search, Bayesian Op
       </li><li class="nav-item">
             <a class="nav-link" href="/utils/gen_paswords/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-key"></i>Tạo password ngẫu nhiên
 </a>
-        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
-      <li class="nav-item">
-        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Liên kết khác
-</a>
-      </li><li class="nav-item">
-            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">Netlify
-</a>
-        </li><li class="nav-item">
-            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">facebook
-</a>
         </li></ul></li></ul>
 <div class="copyright mb-2">
   Copyright © 2016-2026 Phạm Duy Tùng. All Rights Reserved.
@@ -632,7 +667,7 @@ liệt kê ra 4 cách là Manual Search, Grid Search, Random Search, Bayesian Op
 <div class="powered-by mb-2">
   Website chia sẻ kiến thức của Phạm Duy Tùng và Đặng Thị Hằng. Vui lòng liên hệ email alexblack2202@gmail.com nếu bạn có thông tin cần trao đổi.
 </div></footer>
-<script src="https://www.phamduytung.com/js/main.111d51a8c754010f8399ca010e552d803e2d5170b361f8886ad04ec6c21ca551.js" integrity="sha256-ER1RqMdUAQ&#43;DmcoBDlUtgD4tUXCzYfiIatBOxsIcpVE=" crossorigin="anonymous" defer></script><script src="https://www.phamduytung.com/js/icons.min.cb4c9958dbc49e29ac644e168e82db2d0de9a741a15751cc5bf2b0af21eb2845.js" integrity="sha256-y0yZWNvEnimsZE4WjoLbLQ3pp0GhV1HMW/KwryHrKEU=" crossorigin="anonymous" defer></script>
+<script src="https://www.phamduytung.com/js/main.e788bab0969e53541289578e23a0f66a2ec1102872a9d44b994c80d0601d588a.js" integrity="sha256-54i6sJaeU1QSiVeOI6D2ai7BEChyqdRLmUyA0GAdWIo=" crossorigin="anonymous" defer></script><script src="https://www.phamduytung.com/js/icons.min.cb4c9958dbc49e29ac644e168e82db2d0de9a741a15751cc5bf2b0af21eb2845.js" integrity="sha256-y0yZWNvEnimsZE4WjoLbLQ3pp0GhV1HMW/KwryHrKEU=" crossorigin="anonymous" defer></script>
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {

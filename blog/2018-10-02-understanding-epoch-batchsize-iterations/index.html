@@ -3,25 +3,25 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Phân biệt Epoch - Batch size và Iterations - Phạm Duy Tùng</title>
+    <title>Epoch, Batch size và Iteration là gì? Phân biệt dễ hiểu kèm ví dụ và code - Phạm Duy Tùng</title>
     <meta name="a.validate.02" content="1QZXZ8oi7g57H-GxBrBPkTYBydwii-Ic9iJu" /><link rel="apple-touch-icon" href="https://www.phamduytung.com/images/icons/icon-180x180.png" sizes="180x180">
 <link rel="icon" href="https://www.phamduytung.com/images/icons/icon-32x32.png" sizes="32x32" type="image/png">
 <link rel="icon" href="https://www.phamduytung.com/images/icons/icon-16x16.png" sizes="16x16" type="image/png">
 <link rel="icon" href="https://www.phamduytung.com/images/icons/favicon.ico">
 <link rel="manifest" href="https://www.phamduytung.com/manifest.json">
-<meta name="keywords" content="" />
-<meta name="description" content="Trong bài viết này, chúng ta sẽ tìm hiểu kỹ hơn 3 khái niệm Epoch, Batch Size và Iteration, bổ sung thêm repeat." /><meta name="robots" content="index, follow, max-image-preview:large"><meta property="og:title" content="Phân biệt Epoch - Batch size và Iterations">
-<meta property="og:description" content="Trong bài viết này, chúng ta sẽ tìm hiểu kỹ hơn 3 khái niệm Epoch, Batch Size và Iteration, bổ sung thêm repeat.">
+
+<meta name="description" content="Epoch là một lượt duyệt hết dữ liệu huấn luyện, batch size là số mẫu mỗi lần cập nhật trọng số, iteration là số lần cập nhật. Kèm công thức, code và thí nghiệm." /><meta name="robots" content="index, follow, max-image-preview:large"><meta property="og:title" content="Epoch, Batch size và Iteration là gì? Phân biệt dễ hiểu kèm ví dụ và code">
+<meta property="og:description" content="Epoch là một lượt duyệt hết dữ liệu huấn luyện, batch size là số mẫu mỗi lần cập nhật trọng số, iteration là số lần cập nhật. Kèm công thức, code và thí nghiệm.">
 <meta property="og:type" content="article">
 <meta property="og:url" content="https://www.phamduytung.com/blog/2018-10-02-understanding-epoch-batchsize-iterations/">
 <meta property="og:site_name" content="Phạm Duy Tùng Machine Learning Blog">
 <meta property="og:locale" content="vi_VN">
 <meta property="og:image" content="https://www.phamduytung.com/site-images/posts/2018-10-02-understanding-epoch-batchsize-iterations/cover-pearl-glass_hu_9c09146f31b63c69.webp" data-image-budget="100000"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="675"><meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Phân biệt Epoch - Batch size và Iterations">
-<meta name="twitter:description" content="Trong bài viết này, chúng ta sẽ tìm hiểu kỹ hơn 3 khái niệm Epoch, Batch Size và Iteration, bổ sung thêm repeat.">
-<meta name="twitter:image" content="https://www.phamduytung.com/site-images/posts/2018-10-02-understanding-epoch-batchsize-iterations/cover-pearl-glass_hu_9c09146f31b63c69.webp" data-image-budget="100000"><meta property="article:published_time" content="2018-10-02T00:19:00&#43;03:00"><meta property="article:modified_time" content="2018-10-02T00:19:00&#43;03:00"><meta property="article:section" content="blog"><meta property="article:tag" content="machine learning"><meta property="article:tag" content="deep learning"><meta property="article:tag" content="model training"><link rel="stylesheet" href="https://www.phamduytung.com/css/main.min.7094996c41a22844b2cfb2120c771154b3c152ea301b01f10f140c20d6dad25d.css" integrity="sha256-cJSZbEGiKESyz7ISDHcRVLPBUuowGwHxDxQMINba0l0=" crossorigin="anonymous"><link rel="stylesheet" href="https://www.phamduytung.com/css/katex.min.4d6aa053ca8a5675016fa2c9c48ee5359bfaafb8295184458af9d64abce84c47.css" integrity="sha256-TWqgU8qKVnUBb6LJxI7lNZv6r7gpUYRFivnWSrzoTEc=" crossorigin="anonymous">
+<meta name="twitter:title" content="Epoch, Batch size và Iteration là gì? Phân biệt dễ hiểu kèm ví dụ và code">
+<meta name="twitter:description" content="Epoch là một lượt duyệt hết dữ liệu huấn luyện, batch size là số mẫu mỗi lần cập nhật trọng số, iteration là số lần cập nhật. Kèm công thức, code và thí nghiệm.">
+<meta name="twitter:image" content="https://www.phamduytung.com/site-images/posts/2018-10-02-understanding-epoch-batchsize-iterations/cover-pearl-glass_hu_9c09146f31b63c69.webp" data-image-budget="100000"><meta property="article:published_time" content="2018-10-02T00:19:00&#43;03:00"><meta property="article:modified_time" content="2026-11-01T09:00:00&#43;07:00"><meta property="article:section" content="blog"><meta property="article:tag" content="machine learning"><meta property="article:tag" content="deep learning"><meta property="article:tag" content="model training"><meta property="article:tag" content="pytorch"><link rel="stylesheet" href="https://www.phamduytung.com/css/main.min.0558a043598454ca5f6300bbe4bab466b3141cb8632ec005d8872a3a188ed894.css" integrity="sha256-BVigQ1mEVMpfYwC75Lq0ZrMUHLhjLsAF2IcqOhiO2JQ=" crossorigin="anonymous"><link rel="stylesheet" href="https://www.phamduytung.com/css/katex.min.4d6aa053ca8a5675016fa2c9c48ee5359bfaafb8295184458af9d64abce84c47.css" integrity="sha256-TWqgU8qKVnUBb6LJxI7lNZv6r7gpUYRFivnWSrzoTEc=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://www.phamduytung.com/css/viewer.min.3d228794bcedbbfa0412beb8fbc1ec6973202945e42af7004f742a4d7bd620ab.css" integrity="sha256-PSKHlLztu/oEEr64&#43;8HsaXMgKUXkKvcAT3QqTXvWIKs=" crossorigin="anonymous"><link rel="canonical" href="https://www.phamduytung.com/blog/2018-10-02-understanding-epoch-batchsize-iterations/">
-<meta name="theme-color" content="#f7f5ff"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Phạm Duy Tùng"},"dateModified":"2018-10-02T00:19:00+03:00","datePublished":"2018-10-02T00:19:00+03:00","description":"Trong bài viết này, chúng ta sẽ tìm hiểu kỹ hơn 3 khái niệm Epoch, Batch Size và Iteration, bổ sung thêm repeat.","headline":"Phân biệt Epoch - Batch size và Iterations","image":["https://www.phamduytung.com/site-images/posts/2018-10-02-understanding-epoch-batchsize-iterations/cover-pearl-glass_hu_9c09146f31b63c69.webp"],"inLanguage":"vi","keywords":"machine learning, deep learning, model training","mainEntityOfPage":{"@id":"https://www.phamduytung.com/blog/2018-10-02-understanding-epoch-batchsize-iterations/","@type":"WebPage"},"publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://www.phamduytung.com/site-images/brand-mark-flaming-book-red_hu_45318b168da512af.webp"},"name":"Phạm Duy Tùng Machine Learning Blog"},"url":"https://www.phamduytung.com/blog/2018-10-02-understanding-epoch-batchsize-iterations/"}</script></head>
+<meta name="theme-color" content="#f7f5ff"><script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@id":"https://www.phamduytung.com/blog/2018-10-02-understanding-epoch-batchsize-iterations/#article","@type":"BlogPosting","author":[{"@type":"Person","name":"Phạm Duy Tùng","sameAs":["https://github.com/AlexBlack2202","https://www.linkedin.com/in/tung-pham-duy/"],"url":"https://www.phamduytung.com/about/"}],"dateModified":"2026-11-01T09:00:00+07:00","datePublished":"2018-10-02T00:19:00+03:00","description":"Epoch là một lượt duyệt hết dữ liệu huấn luyện, batch size là số mẫu mỗi lần cập nhật trọng số, iteration là số lần cập nhật. Kèm công thức, code và thí nghiệm.","headline":"Epoch, Batch size và Iteration là gì? Phân biệt dễ hiểu kèm ví dụ và code","image":["https://www.phamduytung.com/site-images/posts/2018-10-02-understanding-epoch-batchsize-iterations/cover-pearl-glass_hu_9c09146f31b63c69.webp"],"inLanguage":"vi","keywords":"machine learning, deep learning, model training, pytorch","mainEntityOfPage":{"@id":"https://www.phamduytung.com/blog/2018-10-02-understanding-epoch-batchsize-iterations/","@type":"WebPage"},"publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://www.phamduytung.com/site-images/brand-mark-flaming-book-red_hu_45318b168da512af.webp"},"name":"Phạm Duy Tùng Machine Learning Blog","url":"https://www.phamduytung.com/"},"url":"https://www.phamduytung.com/blog/2018-10-02-understanding-epoch-batchsize-iterations/","wordCount":2966},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","item":"https://www.phamduytung.com/","name":"Trang chủ","position":1},{"@type":"ListItem","item":"https://www.phamduytung.com/blog/","name":"Blogs","position":2},{"@type":"ListItem","item":"https://www.phamduytung.com/blog/2018-10-02-understanding-epoch-batchsize-iterations/","name":"Epoch, Batch size và Iteration là gì? Phân biệt dễ hiểu kèm ví dụ và code","position":3}]}]}</script></head>
   <body><script>const items=["mode","palette"];items.forEach(function(e){const t=localStorage.getItem("hbs-"+e);t&&document.body.parentElement.setAttribute("data-"+e,t)})</script><header><nav class="navbar top-app-bar top-app-bar-expand-lg fixed-top">
   <div class="container pearl-navbar__inner">
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
@@ -50,7 +50,7 @@
   </div>
   <div class="offcanvas-body">
     <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Twitter Share Button"
-      target="_blank" href="https://twitter.com/intent/tweet?title=Ph%c3%a2n%20bi%e1%bb%87t%20Epoch%20-%20Batch%20size%20v%c3%a0%20Iterations&url=https%3a%2f%2fwww.phamduytung.com%2fblog%2f2018-10-02-understanding-epoch-batchsize-iterations%2f">
+      target="_blank" href="https://twitter.com/intent/tweet?title=Epoch%2c%20Batch%20size%20v%c3%a0%20Iteration%20l%c3%a0%20g%c3%ac%3f%20Ph%c3%a2n%20bi%e1%bb%87t%20d%e1%bb%85%20hi%e1%bb%83u%20k%c3%a8m%20v%c3%ad%20d%e1%bb%a5%20v%c3%a0%20code&url=https%3a%2f%2fwww.phamduytung.com%2fblog%2f2018-10-02-understanding-epoch-batchsize-iterations%2f">
       <i class="fab fa-fw fa-twitter"></i> Twitter
     </a>
     <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Facebook Share Button"
@@ -113,6 +113,10 @@
   </div>
 </form>
       <ul class="navbar-nav ms-auto"><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/chu-de/">
+            <i class="fas fa-fw fa-list-alt"></i>Chủ đề
+          </a>
+        </li><li class="nav-item">
           <a class="nav-link" href="https://www.phamduytung.com/series/">
             <i class="fas fa-fw fa-columns"></i>Courses
           </a>
@@ -156,6 +160,11 @@
                 href="https://www.phamduytung.com/faq/">
                 Câu hỏi thường gặp
               </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/about/">
+                Giới thiệu tác giả
+              </a>
             </li></ul>
         </li><li class="nav-item">
           <a class="nav-link" href="https://www.phamduytung.com/xem-truyen/">
@@ -171,7 +180,7 @@
 <div class="col-lg-9 col-md-8">
   <div class="container"><nav class="row card component" aria-label="breadcrumb">
   <div class="card-body">
-    <ol class="breadcrumb "><li class="breadcrumb-item"><a href="https://www.phamduytung.com/">Trang chủ</a></li><li class="breadcrumb-item"><a href="https://www.phamduytung.com/blog/">Blogs</a></li><li class="breadcrumb-item active">Phân biệt Epoch - Batch size và Iterations</li></ol>
+    <ol class="breadcrumb "><li class="breadcrumb-item"><a href="https://www.phamduytung.com/">Trang chủ</a></li><li class="breadcrumb-item"><a href="https://www.phamduytung.com/blog/">Blogs</a></li><li class="breadcrumb-item active">Epoch, Batch size và Iteration là gì? Phân biệt dễ hiểu kèm ví dụ và code</li></ol>
   </div>
 </nav>
 <div class="post-panel-wrapper">
@@ -199,141 +208,381 @@
 </div>
 <article class="row card component mb-4 post">
   <div class="card-header"><div class="bgcover">
-      <img src="/site-images/posts/2018-10-02-understanding-epoch-batchsize-iterations/cover-pearl-glass_hu_9c09146f31b63c69.webp" alt="" data-image-budget="100000" class="pearl-cover-image" srcset="/site-images/posts/2018-10-02-understanding-epoch-batchsize-iterations/cover-pearl-glass_hu_821c63607f4fade7.webp 480w, /site-images/posts/2018-10-02-understanding-epoch-batchsize-iterations/cover-pearl-glass_hu_b82b1d1b2712e3a.webp 768w, /site-images/posts/2018-10-02-understanding-epoch-batchsize-iterations/cover-pearl-glass_hu_9c09146f31b63c69.webp 1200w" sizes="(min-width: 1200px) 960px, (min-width: 768px) 70vw, 100vw" width="1200" height="675"
+      <img src="/site-images/posts/2018-10-02-understanding-epoch-batchsize-iterations/cover-pearl-glass_hu_9c09146f31b63c69.webp" alt="Epoch, Batch size và Iteration là gì? Phân biệt dễ hiểu kèm ví dụ và code" data-image-budget="100000" class="pearl-cover-image" srcset="/site-images/posts/2018-10-02-understanding-epoch-batchsize-iterations/cover-pearl-glass_hu_821c63607f4fade7.webp 480w, /site-images/posts/2018-10-02-understanding-epoch-batchsize-iterations/cover-pearl-glass_hu_b82b1d1b2712e3a.webp 768w, /site-images/posts/2018-10-02-understanding-epoch-batchsize-iterations/cover-pearl-glass_hu_9c09146f31b63c69.webp 1200w" sizes="(min-width: 1200px) 960px, (min-width: 768px) 70vw, 100vw" width="1200" height="675"
   loading="eager" decoding="async" fetchpriority="high">
 
       <div class="bgtrans">
-        <h1>Phân biệt Epoch - Batch size và Iterations
+        <h1>Epoch, Batch size và Iteration là gì? Phân biệt dễ hiểu kèm ví dụ và code
 </h1>
       </div>
     </div>
   </div>
-  <div class="card-body"><div class="post-meta">
-  <span class="post-date" title="tạo ngày 2018-10-02 04:19:00 &#43;0700 &#43;07.">
+  <div class="card-body"><div class="post-byline">
+  <i class="fas fa-fw fa-user"></i>
+  <span>Tác giả:</span>
+  <a href="https://www.phamduytung.com/about/" rel="author">Phạm Duy Tùng</a>
+</div><div class="post-meta">
+  <span class="post-date" title="tạo ngày 2018-10-02 04:19:00 &#43;0700 &#43;07, cập nhật ngày 2026-11-01 09:00:00 &#43;0700 &#43;07.">
     02/10/2018
   </span><span class="post-reading-time">
-    8 phút đọc
-  </span><span class="post-taxonomies"><a href="https://www.phamduytung.com/tags/machine-learning/" class="badge post-taxonomy">machine learning</a><a href="https://www.phamduytung.com/tags/deep-learning/" class="badge post-taxonomy">Deep Learning</a><a href="https://www.phamduytung.com/tags/model-training/" class="badge post-taxonomy">model training</a></span>
+    14 phút đọc
+  </span><span class="post-taxonomies"><a href="https://www.phamduytung.com/tags/machine-learning/" class="badge post-taxonomy">machine learning</a><a href="https://www.phamduytung.com/tags/deep-learning/" class="badge post-taxonomy">Deep Learning</a><a href="https://www.phamduytung.com/tags/model-training/" class="badge post-taxonomy">model training</a><a href="https://www.phamduytung.com/tags/pytorch/" class="badge post-taxonomy">pytorch</a></span>
 </div>
-<div class="post-content mb-3"><div class="toc">
-    <nav id="TableOfContents">
-  <ul>
-    <li><a href="#lời-mở-đầu">Lời mở đầu</a></li>
-    <li><a href="#khái-niện-epoch">Khái niện Epoch</a></li>
-    <li><a href="#batch-size">Batch Size</a>
-      <ul>
-        <li><a href="#iterations">Iterations</a></li>
-        <li><a href="#tại-sao-phải-dùng-hơn-1-epoch">Tại sao phải dùng hơn 1 Epoch.</a></li>
-        <li><a href="#số-lần-lặp-tối-ưu-là-bao-nhiêu">Số lần lặp tối ưu là bao nhiêu?</a></li>
-      </ul>
-    </li>
-    <li><a href="#repeat">Repeat</a>
-      <ul>
-        <li><a href="#regularization-images">Regularization Images</a></li>
-      </ul>
-    </li>
-  </ul>
-</nav>
-  </div>
-<h1 id="lời-mở-đầu">Lời mở đầu<a class="anchor ms-1" href="#lời-mở-đầu"><i class="fas fa-link"></i></a></h1>
-<p>Khi mới bắt đầu bước vào thế giới của ML/DL chúng ta sẽ bắt gặp các thuật ngữ Epoch - Batch size và Iterations. Và sẽ cảm thấy bối rối vì chúng khá giống nhau, nhưng thực tế là chúng khác xa nhau.</p>
-<p>Để cho dễ hình dung, mình lấy ví dụ về việc ăn cơm. Chúng ta không thể ăn một lần hết một chén cơm được, mà phải mỗi lần ăn phải xúc từng muỗn ăn. Xúc lần lượt khi hết bát thứ nhất, chúng ta lại ăn tiếp bát thứ 2, bát thứ 3 &hellip; đến khi no, kết thúc bữa ăn.</p>
-<p>Liên tưởng giữa việt ăn cơm và các thuật ngữ epoch, batch size, iteration như sau:</p>
-<ul>
-<li>
-<p>batch size: Số hạt cơm trong 1 lần xúc.</p>
-</li>
-<li>
-<p>Iteration : Số lần xúc cơm hết 1 bát.</p>
-</li>
-<li>
-<p>epoch : Số bát cơm bạn ăn trong 1 bữa ăn.</p>
-</li>
-</ul>
-<p>Hết phần diễn giải bằng ví dụ. Đến phần viết hàn lâm bên dưới, nếu bạn nào đã hiểu rồi thì có thể bỏ qua, bạn nào muốn đào sâu thêm lý do thì xem mình diễn giải bên dưới.</p>
-<p>Để hiểu rõ sự khác biệt giữa chúng, các bạn cần tìm hiểu một khái niệm vô cùng quan trọng trong machine learning - Gradient Descent.</p>
-<p>Định nghĩa ngắn gọn của Gradient Descent:</p>
-<p>Gradient Descent là thuật toán lặp tối ưu (iteractive optimization algorithm) được sử dụng trong machine learning để tìm kết quả tốt nhất (minima of a curve).</p>
-<p>Trong đó:</p>
-<p>..* Gradient có nghĩa là tỷ lệ của độ nghiêng của đường dốc.</p>
-<p>..* Descent là từ viết tắt của decending - nghĩa là giảm.</p>
-<p>Thuật toán sẽ lặp đi lặp lại nhiều lần để tìm ra được cực tiểu.</p>
-<p><img class="img-fluid" alt="Hình ảnh" src="https://www.phamduytung.com/blog/2018-10-02-understanding-epoch-batchsize-iterations/images/gradient.gif" loading="lazy"  title="Hình ảnh"
+<div class="post-content mb-3"><p><strong>Epoch</strong> là một lượt mô hình được &ldquo;xem&rdquo; toàn bộ dữ liệu huấn luyện. <strong>Batch size</strong> là số mẫu đưa vào mô hình trước mỗi lần cập nhật trọng số. <strong>Iteration</strong> (nhiều thư viện gọi là <em>step</em>) là một lần cập nhật như vậy. Với 2.000 mẫu và batch size 32, mỗi epoch có 63 iteration; huấn luyện 10 epoch nghĩa là trọng số được cập nhật 630 lần.</p>
+<p>Ba thuật ngữ này xuất hiện trong mọi dòng log huấn luyện nhưng rất dễ bị dùng lẫn. Bài viết giải thích chúng bằng một ví dụ đời thường, công thức tính, code PyTorch và Keras chạy được, một thí nghiệm nhỏ về ảnh hưởng của batch size, và những chỗ hay nhầm khi đọc log Hugging Face hoặc khi train LoRA.</p>
+<blockquote>
+<p><strong>Cập nhật 11/2026:</strong> bài viết năm 2018 được viết lại toàn bộ: thêm công thức, code đã chạy thử, thí nghiệm về batch size, phần gradient accumulation và tham số <em>repeat</em> khi huấn luyện LoRA.</p>
+<p>Code và số liệu trong bài chạy với Python 3.13, NumPy 2.5, PyTorch 2.15 (CPU), Keras 3.15 (backend PyTorch) và scikit-learn 1.9.</p>
+</blockquote>
+<h2 id="tóm-tắt-nhanh">Tóm tắt nhanh<a class="anchor ms-1" href="#tóm-tắt-nhanh"><i class="fas fa-link"></i></a></h2>
+<table>
+	<thead>
+			<tr>
+					<th>Thuật ngữ</th>
+					<th>Nghĩa</th>
+					<th>Ví dụ: 2.000 mẫu, batch size 32, 10 epoch</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>Batch size</td>
+					<td>Số mẫu dùng cho một lần cập nhật trọng số</td>
+					<td>32 mẫu</td>
+			</tr>
+			<tr>
+					<td>Iteration (step)</td>
+					<td>Một lần forward, backward và cập nhật trọng số trên một batch</td>
+					<td>63 iteration mỗi epoch</td>
+			</tr>
+			<tr>
+					<td>Epoch</td>
+					<td>Một lượt duyệt hết toàn bộ dữ liệu huấn luyện</td>
+					<td>10 epoch = 630 iteration</td>
+			</tr>
+	</tbody>
+</table>
+<p><img class="img-fluid" alt="Sơ đồ: 2.000 mẫu chia thành 63 batch; một epoch gồm 63 iteration; 10 epoch gồm 630 lần cập nhật trọng số" src="https://www.phamduytung.com/blog/2018-10-02-understanding-epoch-batchsize-iterations/epoch-batch-iteration.svg" loading="lazy"  title="Sơ đồ: 2.000 mẫu chia thành 63 batch; một epoch gồm 63 iteration; 10 epoch gồm 630 lần cập nhật trọng số"
   
    />
 
 </p>
-<p><a href="https://medium.com/onfido-tech/machine-learning-101-be2e0a86c96a" target="_blank" rel="noopener noreferrer">https://medium.com/onfido-tech/machine-learning-101-be2e0a86c96a</a> Nguồn ảnh</p>
-<p>Các bạn quan sát hình phía trên bên trái, ban đầu, bước nhảy khá lớn, nghĩa là giá trị cost lớn, và sau một vài lần lặp, điểm chấm đen đi xuống dần, và giá trị cost nhỏ dần theo. Mô hình hội tụ dần dần đến khi cost &lt;= epselon</p>
-<p>Chúng ta sử dụng thuật ngữ epochs, batch size, iterations khi chúng ta cần phải trainning mô hình machine learning, mà tập trainset của chúng ta quá (rất) lớn (vd 10 triệu mẫu, ví dụ train mô hình nhận dạng khuôn mặt với tập ms-celeb-1m). Lúc này các khái niệm trên mới trở nên rõ ràng, còn với trường hợp dữ liệu nhỏ thì chúng khá tương tự nhau.</p>
-<h1 id="khái-niện-epoch">Khái niện Epoch<a class="anchor ms-1" href="#khái-niện-epoch"><i class="fas fa-link"></i></a></h1>
-<p>Một Epoch được tính là khi chúng ta đưa tất cả dữ liệu trong tập train vào mạng neural network 1 lần. Ví dụ, bạn có 10 bức hình trong tập train, bạn đem hết toàn bộ 10 bức hình đó cho mô hình học ở lần thứ nhất, bạn đã train được một epoch. Sau đó, bạn lại quay lại vị trí  hình ban đầu rồi cho toàn bộ 10 bức hình đó học, bạn có thêm 1 epoch nữa, vậy là bạn đã train 2 epoch, bạn lặp lại việc này 100 lần , suy ra bạn đã train 100 epoch.</p>
-<p>Khi dữ liệu quá lớn, chúng ta không thể đưa hết tất cả tập dữ liệu vào để huấn luyện trong 1 lần train được, vì bạn cần một siêu máy tính có lượng RAM và GPU RAM cực lớn để lưu trữ toàn bộ hình ảnh trên, điều này là bất khả thi đối với người dùng bình thường, phòng lab nhỏ, hoặc các hệ thống máy tính hiện tại. Buộc lòng chúng ta phải chia nhỏ tập dữ liệu ra, và khái niệm batch hình thành.</p>
-<h1 id="batch-size">Batch Size<a class="anchor ms-1" href="#batch-size"><i class="fas fa-link"></i></a></h1>
-<p>Batch size là số lượng mẫu dữ liệu trong một lần train. Ví dụ, trong bài toán phân loại chó mèo, chọn batch size =32, nghĩa là 1 lần train ta sẽ cho ngẫu nhiên 32 bức nhìn chó hoặc mèo chạy lan truyền tiến trong mạng neural network. Tiếp theo bạn quăng tiếp 32 hình ngẫu nhiên, không lặp với các hình trước đó, vào mạng, quăng đến khi nào không còn hình nào có thể quăng vào nữa -&gt; bạn hoàn thành 1 epoch.</p>
-<h2 id="iterations">Iterations<a class="anchor ms-1" href="#iterations"><i class="fas fa-link"></i></a></h2>
-<p>Iterations là số lượng batchs cần để hoàn thành 1 epoch.</p>
-<p>$$Iterations = data size / batch size$$</p>
-<p>Ví dụ chúng ta có tập dữ liệu có 20,000 mẫu, batch size là 500, vậy chúng ta cần 40 lần lặp (iteration) để hoàn thành 1 epoch.</p>
-<h2 id="tại-sao-phải-dùng-hơn-1-epoch">Tại sao phải dùng hơn 1 Epoch.<a class="anchor ms-1" href="#tại-sao-phải-dùng-hơn-1-epoch"><i class="fas fa-link"></i></a></h2>
-<p>Câu trả lời ở đây là tại vì chúng ta đang dùng thuật toán tối ưu là Gradient Descent. Thuật toán này đòi hỏi chúng ta phải đem toàn bộ dữ liệu qua mạng một vài lần để tìm được kết quả tối ưu. Vì vậy, dùng 1 epoch thật sự không đủ để tìm được kết quả tốt nhất.</p>
-<p>Với việc chỉ sử dụng 1 lần lặp, xác suất rất cao là dữ liệu sẽ bị underfitting(như hình mô tả bên dưới).</p>
-<p><img class="img-fluid" alt="Hình ảnh" src="https://www.phamduytung.com/blog/2018-10-02-understanding-epoch-batchsize-iterations/images/overfit_underfit.png" loading="lazy"  title="Hình ảnh"
-  
-   />
-
-</p>
-<p>Khi số lần lặp tăng dần, trạng thái của mô hình sẽ chuyển dần từ underfitting sang optimal và sau đó là overfitting (thông thường là vậy, trừ khi mô hình huấn luyện của bạn đang sử dụng quá đơn giản, quá ít trọng số thì chúng không thể nào overfitting nổi).</p>
-<p>Chúng ta có thể dùng 1 epoch để huấn luyện mô hình, với điều kiện là ta sử dụng thuật toán tối ưu không phải là gradient descent.</p>
-<h2 id="số-lần-lặp-tối-ưu-là-bao-nhiêu">Số lần lặp tối ưu là bao nhiêu?<a class="anchor ms-1" href="#số-lần-lặp-tối-ưu-là-bao-nhiêu"><i class="fas fa-link"></i></a></h2>
-<p>Tiếc rằng không có câu trả lời cho câu hỏi này. Phụ thuộc hoàn toàn vào nhiều yếu tố. Mục tiêu chung là ta sẽ lặp đến khi nào hội tụ. Có một số phương pháp giúp chúng ta xác định mô hình đã đứng ở ngưỡng cực tiểu cục bộ rồi, không thể xuống hơn được nữa.</p>
-<p>Các bạn có thể tìm hiểu với từ khóa early stopping.</p>
-<h1 id="repeat">Repeat<a class="anchor ms-1" href="#repeat"><i class="fas fa-link"></i></a></h1>
-<p>update  13/01/2025</p>
-<p>Gần đây, với sự phát triển của stable diffusion và flux, chúng ta có thêm tham số Repeat, được hiểu là số lần 1 hình sẽ được lặp lại trong quá trình train.</p>
-<p>Hiểu đơn giản là khi train lora,  trong 1 batch, 1 hình trong batch đó sẽ Repeat x lần</p>
-<p>Mục tiêu của Repeat trong stable diffusion</p>
+<p>Hình dung toàn bộ dữ liệu huấn luyện là một nồi cơm. Không ai ăn cả nồi trong một miếng, nên ta xúc từng thìa:</p>
+<ul>
+<li><strong>Batch size</strong> là lượng cơm trong một thìa.</li>
+<li><strong>Iteration</strong> là một lần xúc và nuốt. Mỗi lần như vậy, mô hình &ldquo;tiêu hóa&rdquo; thêm một ít dữ liệu và chỉnh lại trọng số một chút.</li>
+<li><strong>Epoch</strong> là lúc ăn hết cả nồi một lượt. Ăn lại nồi đó lần nữa (thường đã đảo đều), ta bước sang epoch thứ hai.</li>
+</ul>
+<h2 id="vì-sao-phải-chia-dữ-liệu-thành-từng-batch">Vì sao phải chia dữ liệu thành từng batch?<a class="anchor ms-1" href="#vì-sao-phải-chia-dữ-liệu-thành-từng-batch"><i class="fas fa-link"></i></a></h2>
+<p>Huấn luyện mạng neural là tối ưu hàm mất mát bằng gradient descent: tính gradient của loss theo trọng số rồi bước một bước ngược hướng gradient. Nếu dùng một batch $\mathcal{B}_t$ gồm $B$ mẫu, một lần cập nhật có dạng:</p>
+$$
+w_{t+1} = w_t - \eta \cdot \frac{1}{B} \sum_{i \in \mathcal{B}_t} \nabla_w \ell(x_i, y_i; w_t)
+$$<p>Trong đó $\eta$ là learning rate và $\ell$ là loss của từng mẫu. Tùy cách chọn $B$, ta có ba biến thể:</p>
+<ul>
+<li><strong>Batch gradient descent</strong> ($B = N$): mỗi lần cập nhật dùng toàn bộ $N$ mẫu. Gradient chính xác nhưng tốn bộ nhớ và mỗi epoch chỉ cập nhật đúng một lần.</li>
+<li><strong>Stochastic gradient descent</strong> ($B = 1$): cập nhật sau từng mẫu. Rất nhiều bước nhưng gradient nhiễu và không tận dụng được khả năng tính song song của GPU.</li>
+<li><strong>Mini-batch gradient descent</strong> ($1 < B < N$): cách gần như mọi framework đang dùng. Khi PyTorch hay Keras nói &ldquo;SGD&rdquo;, thực chất là SGD trên mini-batch.</li>
+</ul>
+<p>Chia batch giải quyết hai việc cùng lúc: dữ liệu vừa với bộ nhớ GPU, và mô hình được cập nhật nhiều lần trong một epoch thay vì chỉ một lần. Cách bước từng bước như thế nào (SGD, Momentum, Adam&hellip;) là chủ đề của bài <a href="/blog/2018-11-01-overview-of-gradient-descent-optimization-algorithm/">Các thuật toán tối ưu Gradient Descent</a>.</p>
+<h2 id="epoch-là-gì">Epoch là gì?<a class="anchor ms-1" href="#epoch-là-gì"><i class="fas fa-link"></i></a></h2>
+<p>Một epoch kết thúc khi mọi mẫu trong tập huấn luyện đã đi qua mô hình đúng một lần. Thông thường dữ liệu được xáo trộn lại ở đầu mỗi epoch để thứ tự các batch không lặp lại.</p>
+<p>Một epoch hiếm khi đủ, vì mỗi lần cập nhật chỉ nhích trọng số một bước nhỏ. Khi số epoch tăng, mô hình thường đi từ <strong>underfitting</strong> (chưa học đủ), qua vùng <strong>vừa khớp</strong>, rồi sang <strong>overfitting</strong> (thuộc lòng dữ liệu huấn luyện, kém trên dữ liệu mới). Vì vậy số epoch là một siêu tham số phải chọn dựa trên tập validation, không phải &ldquo;càng nhiều càng tốt&rdquo;.</p>
+<h2 id="batch-size-là-gì">Batch size là gì?<a class="anchor ms-1" href="#batch-size-là-gì"><i class="fas fa-link"></i></a></h2>
+<p>Batch size là số mẫu được xử lý trước mỗi lần cập nhật trọng số. Trong Keras, <code>batch_size</code> mặc định là 32; trong PyTorch, <code>DataLoader</code> mặc định <code>batch_size=1</code> nên bạn gần như luôn phải đặt giá trị này.</p>
+<p>Batch size bị chặn trên bởi bộ nhớ GPU: ảnh lớn, mô hình lớn hoặc chuỗi văn bản dài đều làm batch tối đa nhỏ lại. Batch size cũng ảnh hưởng tới tốc độ học và chất lượng mô hình, như thí nghiệm bên dưới cho thấy.</p>
+<h2 id="iteration-step-là-gì">Iteration (step) là gì?<a class="anchor ms-1" href="#iteration-step-là-gì"><i class="fas fa-link"></i></a></h2>
+<p>Một iteration là một lần cập nhật trọng số trên một batch. Với $N$ mẫu và batch size $B$:</p>
+$$
+\text{iteration mỗi epoch} = \left\lceil \frac{N}{B} \right\rceil
+$$$$
+\text{tổng iteration} = \text{số epoch} \times \left\lceil \frac{N}{B} \right\rceil
+$$<p>Phép làm tròn lên $\lceil \cdot \rceil$ quan trọng: khi $N$ không chia hết cho $B$, batch cuối cùng nhỏ hơn. Một số ví dụ:</p>
+<table>
+	<thead>
+			<tr>
+					<th>Số mẫu $N$</th>
+					<th>Batch size $B$</th>
+					<th>Iteration mỗi epoch</th>
+					<th>Ghi chú</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>2.000</td>
+					<td>32</td>
+					<td>63</td>
+					<td>batch cuối có 16 mẫu</td>
+			</tr>
+			<tr>
+					<td>20.000</td>
+					<td>500</td>
+					<td>40</td>
+					<td>chia hết</td>
+			</tr>
+			<tr>
+					<td>50.000 (CIFAR-10)</td>
+					<td>128</td>
+					<td>391</td>
+					<td>batch cuối có 80 mẫu</td>
+			</tr>
+			<tr>
+					<td>1.281.167 (ImageNet-1k)</td>
+					<td>256</td>
+					<td>5.005</td>
+					<td>batch cuối có 143 mẫu</td>
+			</tr>
+	</tbody>
+</table>
+<p>Nếu đặt <code>drop_last=True</code> trong PyTorch, batch thiếu ở cuối bị bỏ đi và số iteration là $\lfloor N/B \rfloor$.</p>
+<h2 id="đếm-iteration-bằng-pytorch">Đếm iteration bằng PyTorch<a class="anchor ms-1" href="#đếm-iteration-bằng-pytorch"><i class="fas fa-link"></i></a></h2>
+<p>Đoạn code sau tạo 2.000 mẫu giả, chia batch 32 và in ra những con số ở trên:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="kn">import</span> <span class="nn">math</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="kn">import</span> <span class="nn">torch</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl"><span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">DataLoader</span><span class="p">,</span> <span class="n">TensorDataset</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl"><span class="n">N</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">EPOCHS</span> <span class="o">=</span> <span class="mi">2000</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">10</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl"><span class="n">dataset</span> <span class="o">=</span> <span class="n">TensorDataset</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="mi">20</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="p">(</span><span class="n">N</span><span class="p">,)))</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl"><span class="n">loader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">B</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="s2">&#34;iterations/epoch:&#34;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">loader</span><span class="p">),</span> <span class="s2">&#34;| công thức ceil(N/B):&#34;</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">N</span> <span class="o">/</span> <span class="n">B</span><span class="p">))</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">
+</span></span><span class="line"><span class="ln">11</span><span class="cl"><span class="n">sizes</span> <span class="o">=</span> <span class="p">[</span><span class="n">xb</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">xb</span><span class="p">,</span> <span class="n">yb</span> <span class="ow">in</span> <span class="n">loader</span><span class="p">]</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="s2">&#34;batch đầu:&#34;</span><span class="p">,</span> <span class="n">sizes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&#34;| batch cuối:&#34;</span><span class="p">,</span> <span class="n">sizes</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="s2">&#34;| tổng mẫu:&#34;</span><span class="p">,</span> <span class="nb">sum</span><span class="p">(</span><span class="n">sizes</span><span class="p">))</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl">
+</span></span><span class="line"><span class="ln">14</span><span class="cl"><span class="n">loader_drop</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">B</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">drop_last</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="s2">&#34;drop_last=True -&gt; iterations/epoch:&#34;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">loader_drop</span><span class="p">),</span> <span class="s2">&#34;| mẫu bị bỏ mỗi epoch:&#34;</span><span class="p">,</span> <span class="n">N</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">loader_drop</span><span class="p">)</span> <span class="o">*</span> <span class="n">B</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">16</span><span class="cl">
+</span></span><span class="line"><span class="ln">17</span><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="s2">&#34;tổng iteration sau&#34;</span><span class="p">,</span> <span class="n">EPOCHS</span><span class="p">,</span> <span class="s2">&#34;epoch:&#34;</span><span class="p">,</span> <span class="n">EPOCHS</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">loader</span><span class="p">))</span>
+</span></span></code></pre></div><p>Kết quả (PyTorch 2.15, CPU):</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">iterations/epoch: 63 | công thức ceil(N/B): 63
+</span></span><span class="line"><span class="ln">2</span><span class="cl">batch đầu: 32 | batch cuối: 16 | tổng mẫu: 2000
+</span></span><span class="line"><span class="ln">3</span><span class="cl">drop_last=True -&gt; iterations/epoch: 62 | mẫu bị bỏ mỗi epoch: 16
+</span></span><span class="line"><span class="ln">4</span><span class="cl">tổng iteration sau 10 epoch: 630
+</span></span></code></pre></div><h2 id="đọc-dòng-log-6363-trong-keras">Đọc dòng log “63/63” trong Keras<a class="anchor ms-1" href="#đọc-dòng-log-6363-trong-keras"><i class="fas fa-link"></i></a></h2>
+<p>Keras in số iteration của mỗi epoch ngay trong log. Đoạn code dưới chạy được với Keras 3 trên backend PyTorch, TensorFlow hoặc JAX:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="kn">import</span> <span class="nn">os</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&#34;KERAS_BACKEND&#34;</span><span class="p">,</span> <span class="s2">&#34;torch&#34;</span><span class="p">)</span>  <span class="c1"># chạy được với backend torch, tensorflow hoặc jax</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl"><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl"><span class="kn">import</span> <span class="nn">keras</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl"><span class="n">keras</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">set_random_seed</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>  <span class="c1"># cố định seed để chạy lại ra cùng kết quả</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl"><span class="n">N</span> <span class="o">=</span> <span class="mi">2000</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl"><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&#34;float32&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl"><span class="n">y</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&#34;float32&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">
+</span></span><span class="line"><span class="ln">11</span><span class="cl"><span class="n">model</span> <span class="o">=</span> <span class="n">keras</span><span class="o">.</span><span class="n">Sequential</span><span class="p">([</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl">    <span class="n">keras</span><span class="o">.</span><span class="n">Input</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">20</span><span class="p">,)),</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl">    <span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s2">&#34;relu&#34;</span><span class="p">),</span>
+</span></span><span class="line"><span class="ln">14</span><span class="cl">    <span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s2">&#34;sigmoid&#34;</span><span class="p">),</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl"><span class="p">])</span>
+</span></span><span class="line"><span class="ln">16</span><span class="cl"><span class="n">model</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">optimizer</span><span class="o">=</span><span class="s2">&#34;adam&#34;</span><span class="p">,</span> <span class="n">loss</span><span class="o">=</span><span class="s2">&#34;binary_crossentropy&#34;</span><span class="p">,</span> <span class="n">metrics</span><span class="o">=</span><span class="p">[</span><span class="s2">&#34;accuracy&#34;</span><span class="p">])</span>
+</span></span><span class="line"><span class="ln">17</span><span class="cl"><span class="n">history</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">18</span><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="s2">&#34;Số lần cập nhật trọng số:&#34;</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">iterations</span><span class="p">))</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">Epoch 1/3
+</span></span><span class="line"><span class="ln">2</span><span class="cl">63/63 - 0s - 4ms/step - accuracy: 0.5435 - loss: 0.6926
+</span></span><span class="line"><span class="ln">3</span><span class="cl">Epoch 2/3
+</span></span><span class="line"><span class="ln">4</span><span class="cl">63/63 - 0s - 5ms/step - accuracy: 0.5635 - loss: 0.6820
+</span></span><span class="line"><span class="ln">5</span><span class="cl">Epoch 3/3
+</span></span><span class="line"><span class="ln">6</span><span class="cl">63/63 - 0s - 7ms/step - accuracy: 0.5765 - loss: 0.6737
+</span></span><span class="line"><span class="ln">7</span><span class="cl">Số lần cập nhật trọng số: 189
+</span></span></code></pre></div><p><code>Epoch 1/3</code> là epoch hiện tại trên tổng số epoch. <code>63/63</code> là số batch đã chạy trên số batch của một epoch, tức 63 iteration. Biến <code>optimizer.iterations</code> đếm tổng số lần cập nhật: 3 × 63 = 189. Độ chính xác ở đây không quan trọng vì nhãn chỉ là dữ liệu giả.</p>
+<h2 id="thí-nghiệm-cùng-20-epoch-batch-size-khác-nhau">Thí nghiệm: cùng 20 epoch, batch size khác nhau<a class="anchor ms-1" href="#thí-nghiệm-cùng-20-epoch-batch-size-khác-nhau"><i class="fas fa-link"></i></a></h2>
+<p>Để thấy batch size ảnh hưởng thế nào, mình huấn luyện cùng một mạng nhỏ (64 → 128 → 10) trên bộ chữ số viết tay <code>digits</code> có sẵn trong scikit-learn (1.437 ảnh huấn luyện, 360 ảnh kiểm tra), giữ nguyên 20 epoch và SGD, chỉ đổi batch size. Mỗi cấu hình chạy 3 seed rồi lấy trung bình:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="kn">import</span> <span class="nn">math</span><span class="o">,</span> <span class="nn">time</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="kn">import</span> <span class="nn">torch</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl"><span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl"><span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">DataLoader</span><span class="p">,</span> <span class="n">TensorDataset</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl"><span class="kn">from</span> <span class="nn">sklearn.datasets</span> <span class="kn">import</span> <span class="n">load_digits</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl"><span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">train_test_split</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl"><span class="n">torch</span><span class="o">.</span><span class="n">set_num_threads</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl"><span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">load_digits</span><span class="p">(</span><span class="n">return_X_y</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl"><span class="n">X</span> <span class="o">=</span> <span class="n">X</span> <span class="o">/</span> <span class="mf">16.0</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl"><span class="n">X_tr</span><span class="p">,</span> <span class="n">X_te</span><span class="p">,</span> <span class="n">y_tr</span><span class="p">,</span> <span class="n">y_te</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">stratify</span><span class="o">=</span><span class="n">y</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl"><span class="n">X_tr</span><span class="p">,</span> <span class="n">X_te</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">X_tr</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">X_te</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl"><span class="n">y_tr</span><span class="p">,</span> <span class="n">y_te</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">y_tr</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">y_te</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">14</span><span class="cl">
+</span></span><span class="line"><span class="ln">15</span><span class="cl"><span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">lr</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">16</span><span class="cl">    <span class="n">torch</span><span class="o">.</span><span class="n">manual_seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">17</span><span class="cl">    <span class="n">model</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">),</span> <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+</span></span><span class="line"><span class="ln">18</span><span class="cl">    <span class="n">opt</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="n">lr</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">19</span><span class="cl">    <span class="n">loader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">TensorDataset</span><span class="p">(</span><span class="n">X_tr</span><span class="p">,</span> <span class="n">y_tr</span><span class="p">),</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">20</span><span class="cl">    <span class="n">steps</span><span class="p">,</span> <span class="n">t0</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">21</span><span class="cl">    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">epochs</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">22</span><span class="cl">        <span class="k">for</span> <span class="n">xb</span><span class="p">,</span> <span class="n">yb</span> <span class="ow">in</span> <span class="n">loader</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln">23</span><span class="cl">            <span class="n">loss</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">cross_entropy</span><span class="p">(</span><span class="n">model</span><span class="p">(</span><span class="n">xb</span><span class="p">),</span> <span class="n">yb</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">24</span><span class="cl">            <span class="n">opt</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">25</span><span class="cl">            <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">26</span><span class="cl">            <span class="n">opt</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">27</span><span class="cl">            <span class="n">steps</span> <span class="o">+=</span> <span class="mi">1</span>
+</span></span><span class="line"><span class="ln">28</span><span class="cl">    <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+</span></span><span class="line"><span class="ln">29</span><span class="cl">        <span class="n">acc</span> <span class="o">=</span> <span class="p">(</span><span class="n">model</span><span class="p">(</span><span class="n">X_te</span><span class="p">)</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="n">y_te</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">30</span><span class="cl">    <span class="k">return</span> <span class="n">steps</span><span class="p">,</span> <span class="n">acc</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">perf_counter</span><span class="p">()</span> <span class="o">-</span> <span class="n">t0</span>
+</span></span><span class="line"><span class="ln">31</span><span class="cl">
+</span></span><span class="line"><span class="ln">32</span><span class="cl"><span class="k">for</span> <span class="n">bs</span><span class="p">,</span> <span class="n">lr</span> <span class="ow">in</span> <span class="p">[(</span><span class="mi">8</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">),</span> <span class="p">(</span><span class="mi">32</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">),</span> <span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">),</span> <span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">),</span> <span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="mf">0.1</span> <span class="o">*</span> <span class="mi">512</span> <span class="o">/</span> <span class="mi">32</span><span class="p">)]:</span>
+</span></span><span class="line"><span class="ln">33</span><span class="cl">    <span class="n">res</span> <span class="o">=</span> <span class="p">[</span><span class="n">run</span><span class="p">(</span><span class="n">bs</span><span class="p">,</span> <span class="n">lr</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)]</span>
+</span></span><span class="line"><span class="ln">34</span><span class="cl">    <span class="n">acc</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">res</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">35</span><span class="cl">    <span class="n">t</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">res</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">36</span><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="n">bs</span><span class="p">,</span> <span class="n">lr</span><span class="p">,</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">X_tr</span><span class="p">)</span> <span class="o">/</span> <span class="n">bs</span><span class="p">),</span> <span class="n">res</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="nb">round</span><span class="p">(</span><span class="n">acc</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="nb">round</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+</span></span></code></pre></div><table>
+	<thead>
+			<tr>
+					<th>Batch size</th>
+					<th>Learning rate</th>
+					<th>Iteration mỗi epoch</th>
+					<th>Tổng số lần cập nhật</th>
+					<th>Accuracy test</th>
+					<th>Thời gian (CPU, 1 luồng)</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>8</td>
+					<td>0,1</td>
+					<td>180</td>
+					<td>3.600</td>
+					<td>0,975</td>
+					<td>2,33 s</td>
+			</tr>
+			<tr>
+					<td>32</td>
+					<td>0,1</td>
+					<td>45</td>
+					<td>900</td>
+					<td>0,965</td>
+					<td>0,75 s</td>
+			</tr>
+			<tr>
+					<td>128</td>
+					<td>0,1</td>
+					<td>12</td>
+					<td>240</td>
+					<td>0,931</td>
+					<td>0,37 s</td>
+			</tr>
+			<tr>
+					<td>512</td>
+					<td>0,1</td>
+					<td>3</td>
+					<td>60</td>
+					<td>0,836</td>
+					<td>0,28 s</td>
+			</tr>
+			<tr>
+					<td>512</td>
+					<td>1,6 (nhân 16 lần)</td>
+					<td>3</td>
+					<td>60</td>
+					<td>0,892</td>
+					<td>0,23 s</td>
+			</tr>
+	</tbody>
+</table>
+<p>Đọc bảng này:</p>
+<ul>
+<li><strong>Cùng số epoch, batch nhỏ cập nhật nhiều hơn.</strong> Batch 8 được cập nhật 3.600 lần, batch 512 chỉ 60 lần, nên batch 512 chưa kịp học xong (0,836).</li>
+<li><strong>Batch lớn chạy mỗi epoch nhanh hơn</strong>, vì ít vòng lặp Python hơn và mỗi phép nhân ma trận lớn hơn. Trên GPU, khoảng cách này còn rõ hơn. Sách <em>Deep Learning</em> của Goodfellow và cộng sự cũng lưu ý rằng batch quá nhỏ không tận dụng hết phần cứng nhiều lõi.</li>
+<li><strong>Tăng batch thì nên tăng learning rate.</strong> Nhân learning rate theo cùng tỉ lệ với batch size (quy tắc <em>linear scaling</em> trong bài báo của Goyal và cộng sự, 2017) kéo accuracy từ 0,836 lên 0,892. Nhóm tác giả còn dùng giai đoạn <em>warmup</em> (tăng dần learning rate ở đầu) để quy tắc này ổn định với batch hàng nghìn mẫu; thí nghiệm nhỏ ở đây không có warmup.</li>
+</ul>
+<p>Đây là bộ dữ liệu rất nhỏ chạy trên CPU, nên con số tuyệt đối không mang sang bài toán khác được; xu hướng thì giống nhau.</p>
+<h2 id="nên-chọn-batch-size-bao-nhiêu">Nên chọn batch size bao nhiêu?<a class="anchor ms-1" href="#nên-chọn-batch-size-bao-nhiêu"><i class="fas fa-link"></i></a></h2>
+<p>Không có một con số đúng cho mọi bài toán, nhưng có vài nguyên tắc dùng được ngay:</p>
 <ol>
-<li>
-<p>Balance the number of training images to the regularization images. The number of regularization images is larger than the training, so it is required to repeat training images for using all regularization images in the epoch.</p>
-</li>
-<li>
-<p>Control &lsquo;weight&rsquo; over folders. If you have high quality images and low quality images, you can set higher number of repeats for high quality images, and lower for low quality.</p>
-</li>
+<li><strong>Bắt đầu với 32 hoặc 64.</strong> Masters và Luschi (2018) báo cáo kết quả tốt nhất ổn định với batch từ 2 đến 32 trên các thí nghiệm của họ. Keskar và cộng sự (2016) chỉ ra batch rất lớn dễ hội tụ về các điểm cực tiểu &ldquo;nhọn&rdquo; và tổng quát hóa kém hơn.</li>
+<li><strong>Muốn huấn luyện nhanh hơn bằng batch lớn</strong> thì tăng learning rate theo batch size, thêm warmup và theo dõi validation loss.</li>
+<li><strong>Không bắt buộc là lũy thừa của 2.</strong> 32, 64, 128 là thói quen để khớp phần cứng; 48 hay 96 vẫn chạy bình thường.</li>
+<li><strong>Batch quá nhỏ làm BatchNorm kém ổn định</strong>, vì thống kê mean/variance tính trên quá ít mẫu. Khi đó cân nhắc LayerNorm hoặc GroupNorm (xem <a href="/blog/2022-02-25-normalization/">Các kỹ thuật chuẩn hóa trong Deep Learning</a>).</li>
+<li><strong>Thiếu bộ nhớ GPU</strong> thì dùng gradient accumulation (phần dưới) hoặc mixed precision thay vì ép batch xuống 1–2.</li>
 </ol>
-<h2 id="regularization-images">Regularization Images<a class="anchor ms-1" href="#regularization-images"><i class="fas fa-link"></i></a></h2>
-<p>Hình ảnh điều chỉnh (Regularization images) là các hình ảnh được sử dụng như một phần của quá trình điều chỉnh nhằm cải thiện sự ổn định và hiệu suất của các mô hình học sâu (deep learning).</p>
-<p>Quá trình này giúp ngăn mô hình học quá mức từ dữ liệu huấn luyện, duy trì sự cân bằng giữa các lớp, và bảo toàn tính linh hoạt trong việc tạo ra hình ảnh mới.</p>
-<p><strong>Regularization</strong> giúp giải quyết hai vấn đề chính: <strong>quá khớp (overfitting)</strong> và <strong>bảo toàn lớp (class preservation)</strong>.</p>
+<h2 id="nên-chọn-bao-nhiêu-epoch">Nên chọn bao nhiêu epoch?<a class="anchor ms-1" href="#nên-chọn-bao-nhiêu-epoch"><i class="fas fa-link"></i></a></h2>
+<p>Số epoch phụ thuộc vào kích thước dữ liệu, độ lớn mô hình và lịch learning rate, nên cách thực tế là để dữ liệu quyết định:</p>
+<ul>
+<li>Vẽ đường loss của tập train và tập validation theo từng epoch. Khi validation loss ngừng giảm rồi tăng lên trong khi train loss vẫn giảm, mô hình bắt đầu overfit.</li>
+<li>Dùng <strong>early stopping</strong>: dừng khi validation loss không cải thiện sau một số epoch (gọi là <em>patience</em>) và giữ lại trọng số tốt nhất. Keras có sẵn callback <code>keras.callbacks.EarlyStopping</code>; trong PyTorch bạn tự viết vài dòng hoặc dùng callback của Lightning.</li>
+<li>Fine-tune một mô hình đã huấn luyện sẵn thường chỉ cần vài epoch; huấn luyện từ đầu cần nhiều hơn hẳn.</li>
+</ul>
+<h2 id="gradient-accumulation-batch-lớn-trên-gpu-nhỏ">Gradient accumulation: batch lớn trên GPU nhỏ<a class="anchor ms-1" href="#gradient-accumulation-batch-lớn-trên-gpu-nhỏ"><i class="fas fa-link"></i></a></h2>
+<p>Khi GPU chỉ chứa được batch 8 mà bạn muốn hành vi gần với batch 32, có thể cộng dồn gradient qua 4 mini-batch rồi mới cập nhật trọng số một lần:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="kn">import</span> <span class="nn">torch</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl"><span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">DataLoader</span><span class="p">,</span> <span class="n">TensorDataset</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl"><span class="n">torch</span><span class="o">.</span><span class="n">manual_seed</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl"><span class="n">data</span> <span class="o">=</span> <span class="n">TensorDataset</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">2000</span><span class="p">,</span> <span class="mi">20</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="p">(</span><span class="mi">2000</span><span class="p">,)))</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl"><span class="n">loader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl"><span class="n">model</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">16</span><span class="p">),</span> <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl"><span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">AdamW</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl"><span class="n">accum_steps</span> <span class="o">=</span> <span class="mi">4</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl">
+</span></span><span class="line"><span class="ln">13</span><span class="cl"><span class="n">optimizer_steps</span> <span class="o">=</span> <span class="mi">0</span>
+</span></span><span class="line"><span class="ln">14</span><span class="cl"><span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl"><span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">xb</span><span class="p">,</span> <span class="n">yb</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">loader</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">16</span><span class="cl">    <span class="n">loss</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">cross_entropy</span><span class="p">(</span><span class="n">model</span><span class="p">(</span><span class="n">xb</span><span class="p">),</span> <span class="n">yb</span><span class="p">)</span> <span class="o">/</span> <span class="n">accum_steps</span>  <span class="c1"># chia để gradient là trung bình</span>
+</span></span><span class="line"><span class="ln">17</span><span class="cl">    <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>                                                 <span class="c1"># gradient được CỘNG DỒN vào .grad</span>
+</span></span><span class="line"><span class="ln">18</span><span class="cl">    <span class="k">if</span> <span class="n">i</span> <span class="o">%</span> <span class="n">accum_steps</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">i</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">loader</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">19</span><span class="cl">        <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">20</span><span class="cl">        <span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">21</span><span class="cl">        <span class="n">optimizer_steps</span> <span class="o">+=</span> <span class="mi">1</span>
+</span></span><span class="line"><span class="ln">22</span><span class="cl">
+</span></span><span class="line"><span class="ln">23</span><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="s2">&#34;mini-batch đã chạy (forward/backward):&#34;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">loader</span><span class="p">))</span>
+</span></span><span class="line"><span class="ln">24</span><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="s2">&#34;số lần cập nhật trọng số (optimizer step):&#34;</span><span class="p">,</span> <span class="n">optimizer_steps</span><span class="p">)</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">mini-batch đã chạy (forward/backward): 250
+</span></span><span class="line"><span class="ln">2</span><span class="cl">số lần cập nhật trọng số (optimizer step): 63
+</span></span></code></pre></div><p>Lúc này &ldquo;iteration&rdquo; theo nghĩa cập nhật trọng số chỉ còn 63 mỗi epoch, dù có 250 lần forward/backward. Batch hiệu dụng được tính như sau:</p>
+$$
+B_{\text{hiệu dụng}} = B_{\text{mỗi GPU}} \times \text{số bước cộng dồn} \times \text{số GPU}
+$$<p>Hugging Face <code>Trainer</code> dùng đúng hai tham số <code>per_device_train_batch_size</code> và <code>gradient_accumulation_steps</code>, và con số <em>step</em> trong log của nó là số lần optimizer cập nhật, không phải số mini-batch. Tài liệu của Hugging Face cũng lưu ý gradient accumulation chỉ giúp vừa bộ nhớ, không làm huấn luyện nhanh hơn một batch lớn thật.</p>
+<h2 id="repeat-khi-train-lora-stable-diffusion-flux-là-gì">Repeat khi train LoRA (Stable Diffusion, Flux) là gì?<a class="anchor ms-1" href="#repeat-khi-train-lora-stable-diffusion-flux-là-gì"><i class="fas fa-link"></i></a></h2>
+<p>Khi huấn luyện LoRA bằng bộ công cụ kohya-ss, bạn sẽ gặp thêm tham số <strong>repeat</strong> (<code>num_repeats</code> trong file cấu hình, hoặc tiền tố số trong tên thư mục như <code>10_tenconcept</code>). Repeat là số lần mỗi ảnh được lặp lại trong một epoch. Vì vậy số step mỗi epoch xấp xỉ:</p>
+$$
+\text{step mỗi epoch} \approx \frac{\text{số ảnh} \times \text{repeat}}{\text{batch size}}
+$$<p>Ví dụ 20 ảnh, repeat 10, batch size 2 cho khoảng 100 step mỗi epoch; 10 epoch là khoảng 1.000 step. Con số thực tế có thể nhỉnh hơn một chút khi bật chia nhóm ảnh theo kích thước (bucketing).</p>
+<p>Repeat thường được dùng để:</p>
+<ul>
+<li><strong>Cân bằng với ảnh regularization</strong> (ảnh cùng lớp với đối tượng, ví dụ ảnh &ldquo;người&rdquo; bất kỳ khi train một người cụ thể). Ý tưởng này đến từ <em>prior preservation loss</em> của DreamBooth: giữ cho mô hình không quên lớp chung trong lúc học đối tượng mới.</li>
+<li><strong>Đặt trọng số cho từng nhóm ảnh</strong>: nhóm ảnh chất lượng cao có repeat lớn hơn để mô hình học từ chúng nhiều hơn.</li>
+</ul>
+<h2 id="những-nhầm-lẫn-thường-gặp">Những nhầm lẫn thường gặp<a class="anchor ms-1" href="#những-nhầm-lẫn-thường-gặp"><i class="fas fa-link"></i></a></h2>
+<ul>
+<li><strong>Coi epoch và iteration là một.</strong> Một epoch gồm nhiều iteration; chỉ khi batch size bằng toàn bộ dữ liệu thì hai con số mới trùng nhau.</li>
+<li><strong>Nhầm step với mini-batch.</strong> Khi có gradient accumulation, số step (optimizer step) nhỏ hơn số mini-batch.</li>
+<li><strong>Nhầm batch mỗi GPU với batch tổng.</strong> Huấn luyện trên 4 GPU, mỗi GPU batch 16, thì mỗi lần cập nhật thực chất dùng 64 mẫu.</li>
+<li><strong>Quên batch cuối bị thiếu.</strong> Số iteration là làm tròn lên; với <code>drop_last=True</code> thì làm tròn xuống.</li>
+<li><strong>Đổi batch size mà giữ nguyên learning rate.</strong> Như thí nghiệm ở trên, batch tăng 16 lần mà learning rate giữ nguyên thì mô hình học chậm hẳn.</li>
+<li><strong>Tăng epoch để &ldquo;học cho kỹ&rdquo;.</strong> Quá nhiều epoch dẫn tới overfitting; hãy theo dõi validation loss.</li>
+</ul>
+<h2 id="câu-hỏi-thường-gặp">Câu hỏi thường gặp<a class="anchor ms-1" href="#câu-hỏi-thường-gặp"><i class="fas fa-link"></i></a></h2>
+<p><strong>1 epoch là gì?</strong>
+Là một lượt mô hình duyệt hết toàn bộ dữ liệu huấn luyện, mỗi mẫu đúng một lần.</p>
+<p><strong>Batch size bao nhiêu là tốt?</strong>
+Bắt đầu với 32 hoặc 64, tăng nếu GPU còn trống và cần huấn luyện nhanh hơn (kèm tăng learning rate), giảm nếu hết bộ nhớ hoặc kết quả validation kém đi.</p>
+<p><strong>Epoch càng nhiều càng tốt không?</strong>
+Không. Sau một số epoch nhất định, mô hình bắt đầu overfit. Dùng early stopping trên tập validation để dừng đúng lúc.</p>
+<p><strong>Iteration và step có khác nhau không?</strong>
+Thường là một: một lần cập nhật trọng số. Ngoại lệ là khi dùng gradient accumulation, lúc đó step là số lần optimizer cập nhật, còn số mini-batch thì nhiều hơn.</p>
+<p><strong>Batch size có ảnh hưởng đến độ chính xác không?</strong>
+Có. Batch size thay đổi số lần cập nhật mỗi epoch và độ nhiễu của gradient, nên ảnh hưởng tới cả tốc độ hội tụ lẫn khả năng tổng quát hóa.</p>
+<h2 id="đọc-thêm-trên-blog">Đọc thêm trên blog<a class="anchor ms-1" href="#đọc-thêm-trên-blog"><i class="fas fa-link"></i></a></h2>
+<ul>
+<li>Toàn bộ chủ đề: <a href="/chu-de/machine-learning-deep-learning/">Nền tảng Machine Learning &amp; Deep Learning</a></li>
+<li><a href="/blog/2018-11-01-overview-of-gradient-descent-optimization-algorithm/">Các thuật toán tối ưu Gradient Descent: SGD, Momentum, RMSprop, Adam, AdamW</a></li>
+<li><a href="/blog/2019-05-05-deep-learning-dropout/">Dropout là gì? Cách Dropout chống overfitting trong Deep Learning</a></li>
+<li><a href="/blog/2022-02-25-normalization/">Các kỹ thuật chuẩn hóa trong Deep Learning</a></li>
+<li><a href="/blog/2018-12-11-a-bunch-of-tips-and-tricks-for-training-deep-neural-networks/">Một số mẹo khi huấn luyện mạng deep neural network</a></li>
+<li><a href="/blog/2019-04-02-37-reason-neural-network-not-working/">Các lý do khiến mạng neural network không hoạt động</a></li>
+</ul>
+<h2 id="tài-liệu-tham-khảo">Tài liệu tham khảo<a class="anchor ms-1" href="#tài-liệu-tham-khảo"><i class="fas fa-link"></i></a></h2>
 <ol>
-<li>
-<p><strong>Bảo Toàn Lớp (Class Preservation):</strong></p>
-<ul>
-<li>Khi tạo ra các hình ảnh điều chỉnh, bạn đang định nghĩa một &ldquo;lớp&rdquo; của những gì bạn muốn nghịch đảo. Ví dụ, nếu bạn đang cố nghịch đảo một chiếc máy bay mới, bạn có thể tạo một loạt hình ảnh về máy bay để làm hình ảnh điều chỉnh.</li>
-<li>Điều này giúp đảm bảo rằng quá trình huấn luyện không bị lệch sang một lớp khác, chẳng hạn như &ldquo;ô tô&rdquo; hoặc &ldquo;xe đạp&rdquo;.</li>
-<li>Thậm chí, nó còn giúp ngăn việc mô hình bị nghiêng về hướng &ldquo;máy bay đồ chơi&rdquo; nếu bạn sử dụng các tham chiếu thực tế thay vì các diễn giải trừu tượng.</li>
-</ul>
-</li>
-<li>
-<p><strong>Chống Quá Khớp (Overfitting):</strong></p>
-<ul>
-<li>Những hình ảnh điều chỉnh này cũng được sử dụng trong quá trình huấn luyện để đảm bảo rằng các hình ảnh bạn đang cố nghịch đảo không bị quá khớp.</li>
-<li>Nếu quá khớp xảy ra, các hình ảnh được tạo ra có thể giống hệt với tập huấn luyện, làm mất khả năng chỉnh sửa của chúng.</li>
-<li>Một trong những vấn đề của nghịch đảo văn bản (textual inversion) là bạn có thể mất khả năng chỉnh sửa hình ảnh trong quá trình nghịch đảo, đặc biệt khi huấn luyện quá lâu. Việc thêm hình ảnh điều chỉnh vào quá trình huấn luyện giúp ngăn chặn vấn đề này.</li>
-</ul>
-</li>
-<li>
-<p><strong>Hiện Trạng Của Dreambooth:</strong></p>
-<ul>
-<li>Với cách triển khai hiện tại của <strong>Dreambooth</strong>, một số hiện tượng lệch hướng (drifting) vẫn có thể xảy ra. Ví dụ: nếu bạn nghịch đảo hình ảnh một con ếch, các thế hệ mới có thể có đặc điểm giống ếch.</li>
-<li>Tuy nhiên, mô hình vẫn hoạt động khá tốt miễn là bạn giữ mọi thứ hợp lý với dữ liệu đã huấn luyện.</li>
-</ul>
-</li>
+<li>Ian Goodfellow, Yoshua Bengio, Aaron Courville. <em>Deep Learning</em>, Chương 8: Optimization for Training Deep Models. <a href="https://www.deeplearningbook.org/contents/optimization.html" target="_blank" rel="noopener noreferrer">deeplearningbook.org</a></li>
+<li>Nitish Shirish Keskar và cộng sự (2016). <em>On Large-Batch Training for Deep Learning: Generalization Gap and Sharp Minima</em>. <a href="https://arxiv.org/abs/1609.04836" target="_blank" rel="noopener noreferrer">arXiv:1609.04836</a></li>
+<li>Priya Goyal và cộng sự (2017). <em>Accurate, Large Minibatch SGD: Training ImageNet in 1 Hour</em>. <a href="https://arxiv.org/abs/1706.02677" target="_blank" rel="noopener noreferrer">arXiv:1706.02677</a></li>
+<li>Dominic Masters, Carlo Luschi (2018). <em>Revisiting Small Batch Training for Deep Neural Networks</em>. <a href="https://arxiv.org/abs/1804.07612" target="_blank" rel="noopener noreferrer">arXiv:1804.07612</a></li>
+<li>PyTorch. <em>torch.utils.data</em> (DataLoader). <a href="https://docs.pytorch.org/docs/stable/data.html" target="_blank" rel="noopener noreferrer">docs.pytorch.org</a></li>
+<li>Keras. <em>Model training APIs</em> (fit, batch_size, epochs, steps_per_epoch). <a href="https://keras.io/api/models/model_training_apis/" target="_blank" rel="noopener noreferrer">keras.io</a></li>
+<li>Hugging Face. <em>Gradient accumulation</em>. <a href="https://huggingface.co/docs/transformers/en/grad_accumulation" target="_blank" rel="noopener noreferrer">huggingface.co</a></li>
+<li>kohya-ss/sd-scripts. <em>Dataset config</em> (num_repeats). <a href="https://github.com/kohya-ss/sd-scripts/blob/main/docs/config_README-en.md" target="_blank" rel="noopener noreferrer">github.com</a></li>
+<li>Nataniel Ruiz và cộng sự (2022). <em>DreamBooth: Fine Tuning Text-to-Image Diffusion Models for Subject-Driven Generation</em>. <a href="https://arxiv.org/abs/2208.12242" target="_blank" rel="noopener noreferrer">arXiv:2208.12242</a></li>
 </ol>
-<p>Tóm lại, hình ảnh điều chỉnh không chỉ giúp duy trì tính nguyên bản của lớp mà bạn đang làm việc, mà còn giảm nguy cơ quá khớp, cải thiện khả năng chỉnh sửa và tính linh hoạt của các hình ảnh được tạo ra.</p>
-<p>Nguồn của phần Regularization Images <a href="https://www.reddit.com/r/StableDiffusion/comments/xu1ill/comment/iqu81m7/" target="_blank" rel="noopener noreferrer">https://www.reddit.com/r/StableDiffusion/comments/xu1ill/comment/iqu81m7/</a></p>
-<p>Cảm ơn các bạn đã theo dõi bài viết.</p>
-<p>Nguồn: <a href="https://towardsdatascience.com/epoch-vs-iterations-vs-batch-size-4dfb9c7ce9c9" target="_blank" rel="noopener noreferrer">https://towardsdatascience.com/epoch-vs-iterations-vs-batch-size-4dfb9c7ce9c9</a></p>
 </div></div>
   <div class="card-footer"><div class="post-navs d-flex justify-content-evenly"><div class="post-nav post-prev">
     <i class="fas fa-fw fa-chevron-left"></i>
@@ -344,7 +593,39 @@
 </a>
     <i class="fas fa-fw fa-chevron-right"></i>
   </div></div></div>
-</article><div class="card component row post-comments" id="post-comments">
+</article><section class="related-posts row card component">
+    <div class="card-header">
+      <h2 class="card-title">Bài liên quan</h2>
+    </div>
+    <div class="card-body">
+      <ul class="post-list"><li>
+          <a href="https://www.phamduytung.com/blog/2025-01-31-pytorch2.6/">Pytorch 2.6
+</a>
+          <span class="float-end post-date">31/01/2025
+</span>
+        </li><li>
+          <a href="https://www.phamduytung.com/blog/2019-05-05-deep-learning-dropout/">Dropout là gì? Cách dropout chống overfitting trong Deep Learning (kèm code)
+</a>
+          <span class="float-end post-date">05/05/2019
+</span>
+        </li><li>
+          <a href="https://www.phamduytung.com/blog/2018-12-11-a-bunch-of-tips-and-tricks-for-training-deep-neural-networks/">Một số mẹo khi huấn luyện mạng deep neural network
+</a>
+          <span class="float-end post-date">11/12/2018
+</span>
+        </li><li>
+          <a href="https://www.phamduytung.com/blog/2018-11-01-overview-of-gradient-descent-optimization-algorithm/">Các thuật toán tối ưu Gradient Descent: SGD, Momentum, RMSprop, Adam và AdamW
+</a>
+          <span class="float-end post-date">29/10/2018
+</span>
+        </li><li>
+          <a href="https://www.phamduytung.com/blog/2018-06-15-understanding-alexnet/">Tìm hiểu về mạng neural network AlexNet
+</a>
+          <span class="float-end post-date">15/06/2018
+</span>
+        </li></ul>
+    </div>
+  </section><div class="card component row post-comments" id="post-comments">
   <div class="card-header">
     <h2 class="card-title">Bình luận</h2>
   </div>
@@ -360,29 +641,30 @@
 </div><aside class="col-lg-3 col-md-4 sidebar d-flex">
   <div class="container d-flex flex-column">
     
-    <a href="https://www.buymeacoffee.com/alexblack28"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=🍎&slug=alexblack28&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" /></a><div class="post-toc row mb-4 card component" id="postTOC">
+    <a href="https://www.buymeacoffee.com/alexblack28" rel="noopener"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=🍎&slug=alexblack28&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" alt="Buy me a coffee" loading="lazy" decoding="async" /></a>
+<div class="post-toc row mb-4 card component" id="postTOC">
   <div class="card-header">
     <h2 class="card-title">Mục lục</h2>
   </div>
   <div class="card-body">
-    <nav id="TableOfContents">
-  <ul>
-    <li><a href="#lời-mở-đầu">Lời mở đầu</a></li>
-    <li><a href="#khái-niện-epoch">Khái niện Epoch</a></li>
-    <li><a href="#batch-size">Batch Size</a>
-      <ul>
-        <li><a href="#iterations">Iterations</a></li>
-        <li><a href="#tại-sao-phải-dùng-hơn-1-epoch">Tại sao phải dùng hơn 1 Epoch.</a></li>
-        <li><a href="#số-lần-lặp-tối-ưu-là-bao-nhiêu">Số lần lặp tối ưu là bao nhiêu?</a></li>
-      </ul>
-    </li>
-    <li><a href="#repeat">Repeat</a>
-      <ul>
-        <li><a href="#regularization-images">Regularization Images</a></li>
-      </ul>
-    </li>
-  </ul>
-</nav>
+    <nav id="TableOfContents"><ul>
+        <li><a href="#tóm-tắt-nhanh">Tóm tắt nhanh</a></li>
+        <li><a href="#vì-sao-phải-chia-dữ-liệu-thành-từng-batch">Vì sao phải chia dữ liệu thành từng batch?</a></li>
+        <li><a href="#epoch-là-gì">Epoch là gì?</a></li>
+        <li><a href="#batch-size-là-gì">Batch size là gì?</a></li>
+        <li><a href="#iteration-step-là-gì">Iteration (step) là gì?</a></li>
+        <li><a href="#đếm-iteration-bằng-pytorch">Đếm iteration bằng PyTorch</a></li>
+        <li><a href="#đọc-dòng-log-6363-trong-keras">Đọc dòng log &ldquo;63/63&rdquo; trong Keras</a></li>
+        <li><a href="#thí-nghiệm-cùng-20-epoch-batch-size-khác-nhau">Thí nghiệm: cùng 20 epoch, batch size khác nhau</a></li>
+        <li><a href="#nên-chọn-batch-size-bao-nhiêu">Nên chọn batch size bao nhiêu?</a></li>
+        <li><a href="#nên-chọn-bao-nhiêu-epoch">Nên chọn bao nhiêu epoch?</a></li>
+        <li><a href="#gradient-accumulation-batch-lớn-trên-gpu-nhỏ">Gradient accumulation: batch lớn trên GPU nhỏ</a></li>
+        <li><a href="#repeat-khi-train-lora-stable-diffusion-flux-là-gì">Repeat khi train LoRA (Stable Diffusion, Flux) là gì?</a></li>
+        <li><a href="#những-nhầm-lẫn-thường-gặp">Những nhầm lẫn thường gặp</a></li>
+        <li><a href="#câu-hỏi-thường-gặp">Câu hỏi thường gặp</a></li>
+        <li><a href="#đọc-thêm-trên-blog">Đọc thêm trên blog</a></li>
+        <li><a href="#tài-liệu-tham-khảo">Tài liệu tham khảo</a></li>
+      </ul></nav>
   </div>
 </div><section class="recent-posts row card component">
   <div class="card-header">
@@ -454,8 +736,8 @@
             Llm<span class="badge badge-sm text-white bg-accent ms-1">17</span></a><a href="https://www.phamduytung.com/tags/computer-vision/" class="badge rounded post-taxonomy" title="Computer Vision">
             Computer Vision<span class="badge badge-sm text-white bg-accent ms-1">16</span></a><a href="https://www.phamduytung.com/tags/python/" class="badge rounded post-taxonomy" title="Python">
             Python<span class="badge badge-sm text-white bg-accent ms-1">14</span></a><a href="https://www.phamduytung.com/tags/mathematics/" class="badge rounded post-taxonomy" title="Mathematics">
-            Mathematics<span class="badge badge-sm text-white bg-accent ms-1">12</span></a><a href="https://www.phamduytung.com/tags/ai-agent/" class="badge rounded post-taxonomy" title="Ai Agent">
-            Ai Agent<span class="badge badge-sm text-white bg-accent ms-1">10</span></a><a href="https://www.phamduytung.com/tags/to%C3%A1n-h%E1%BB%8Dc/" class="badge rounded post-taxonomy" title="Toán Học">
+            Mathematics<span class="badge badge-sm text-white bg-accent ms-1">12</span></a><a href="https://www.phamduytung.com/tags/ai-agent/" class="badge rounded post-taxonomy" title="AI Agent">
+            AI Agent<span class="badge badge-sm text-white bg-accent ms-1">10</span></a><a href="https://www.phamduytung.com/tags/to%C3%A1n-h%E1%BB%8Dc/" class="badge rounded post-taxonomy" title="Toán Học">
             Toán Học<span class="badge badge-sm text-white bg-accent ms-1">8</span></a><a href="https://www.phamduytung.com/tags/tri%E1%BA%BFt-h%E1%BB%8Dc/" class="badge rounded post-taxonomy" title="Triết Học">
             Triết Học<span class="badge badge-sm text-white bg-accent ms-1">8</span></a><a href="https://www.phamduytung.com/tags/ai/" class="badge rounded post-taxonomy" title="Ai">
             Ai<span class="badge badge-sm text-white bg-accent ms-1">7</span></a></div>
@@ -481,15 +763,18 @@
         </li><li class="nav-item">
             <a class="nav-link" href="/faq/"><i class="fas fa-fw fa-question-circle"></i>Câu hỏi thường gặp
 </a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/about/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-user"></i>Giới thiệu tác giả
+</a>
         </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
       <li class="nav-item">
         <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Docs
 </a>
       </li><li class="nav-item">
-            <a class="nav-link" href="/team_of_services" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-users"></i>Điều khoản sử dụng
+            <a class="nav-link" href="/teamofservices/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-users"></i>Điều khoản sử dụng
 </a>
         </li><li class="nav-item">
-            <a class="nav-link" href="/privacy" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-lock"></i>Chính sách bảo mật
+            <a class="nav-link" href="/privacy/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-lock"></i>Chính sách bảo mật
 </a>
         </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
       <li class="nav-item">
@@ -498,16 +783,6 @@
       </li><li class="nav-item">
             <a class="nav-link" href="/utils/gen_paswords/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-key"></i>Tạo password ngẫu nhiên
 </a>
-        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
-      <li class="nav-item">
-        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Liên kết khác
-</a>
-      </li><li class="nav-item">
-            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">Netlify
-</a>
-        </li><li class="nav-item">
-            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">facebook
-</a>
         </li></ul></li></ul>
 <div class="copyright mb-2">
   Copyright © 2016-2026 Phạm Duy Tùng. All Rights Reserved.
@@ -515,7 +790,7 @@
 <div class="powered-by mb-2">
   Website chia sẻ kiến thức của Phạm Duy Tùng và Đặng Thị Hằng. Vui lòng liên hệ email alexblack2202@gmail.com nếu bạn có thông tin cần trao đổi.
 </div></footer>
-<script src="https://www.phamduytung.com/js/main.111d51a8c754010f8399ca010e552d803e2d5170b361f8886ad04ec6c21ca551.js" integrity="sha256-ER1RqMdUAQ&#43;DmcoBDlUtgD4tUXCzYfiIatBOxsIcpVE=" crossorigin="anonymous" defer></script><script src="https://www.phamduytung.com/js/icons.min.cb4c9958dbc49e29ac644e168e82db2d0de9a741a15751cc5bf2b0af21eb2845.js" integrity="sha256-y0yZWNvEnimsZE4WjoLbLQ3pp0GhV1HMW/KwryHrKEU=" crossorigin="anonymous" defer></script>
+<script src="https://www.phamduytung.com/js/main.e788bab0969e53541289578e23a0f66a2ec1102872a9d44b994c80d0601d588a.js" integrity="sha256-54i6sJaeU1QSiVeOI6D2ai7BEChyqdRLmUyA0GAdWIo=" crossorigin="anonymous" defer></script><script src="https://www.phamduytung.com/js/icons.min.cb4c9958dbc49e29ac644e168e82db2d0de9a741a15751cc5bf2b0af21eb2845.js" integrity="sha256-y0yZWNvEnimsZE4WjoLbLQ3pp0GhV1HMW/KwryHrKEU=" crossorigin="anonymous" defer></script>
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {

@@ -9,19 +9,19 @@
 <link rel="icon" href="https://www.phamduytung.com/images/icons/icon-16x16.png" sizes="16x16" type="image/png">
 <link rel="icon" href="https://www.phamduytung.com/images/icons/favicon.ico">
 <link rel="manifest" href="https://www.phamduytung.com/manifest.json">
-<meta name="keywords" content="" />
-<meta name="description" content="Ở bài viết này, chúng ta tìm hiểu một số mẹo khi huấn luyện mô hình sử dụng deep learning." /><meta name="robots" content="index, follow, max-image-preview:large"><meta property="og:title" content="Hệ thống gợi ý khoá học cho website DonorChoose.org">
-<meta property="og:description" content="Ở bài viết này, chúng ta tìm hiểu một số mẹo khi huấn luyện mô hình sử dụng deep learning.">
+
+<meta name="description" content="Xây dựng hệ thống gợi ý dự án cho nhà tài trợ trên DonorsChoose.org: phân tích dữ liệu quyên góp, rồi kết hợp Content-Based Filtering, Collaborative Filtering (SVD) và mô hình Hybrid." /><meta name="robots" content="index, follow, max-image-preview:large"><meta property="og:title" content="Hệ thống gợi ý khoá học cho website DonorChoose.org">
+<meta property="og:description" content="Xây dựng hệ thống gợi ý dự án cho nhà tài trợ trên DonorsChoose.org: phân tích dữ liệu quyên góp, rồi kết hợp Content-Based Filtering, Collaborative Filtering (SVD) và mô hình Hybrid.">
 <meta property="og:type" content="article">
 <meta property="og:url" content="https://www.phamduytung.com/blog/2019-01-03-donor-project-matching-with-recommender-systems/">
 <meta property="og:site_name" content="Phạm Duy Tùng Machine Learning Blog">
 <meta property="og:locale" content="vi_VN">
 <meta property="og:image" content="https://www.phamduytung.com/site-images/posts/2019-01-03-donor-project-matching-with-recommender-systems/cover-pearl-glass_hu_a6785310be947153.webp" data-image-budget="100000"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="675"><meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Hệ thống gợi ý khoá học cho website DonorChoose.org">
-<meta name="twitter:description" content="Ở bài viết này, chúng ta tìm hiểu một số mẹo khi huấn luyện mô hình sử dụng deep learning.">
-<meta name="twitter:image" content="https://www.phamduytung.com/site-images/posts/2019-01-03-donor-project-matching-with-recommender-systems/cover-pearl-glass_hu_a6785310be947153.webp" data-image-budget="100000"><meta property="article:published_time" content="2018-12-11T00:19:00&#43;03:00"><meta property="article:modified_time" content="2018-12-11T00:19:00&#43;03:00"><meta property="article:section" content="blog"><meta property="article:tag" content="machine learning"><meta property="article:tag" content="recommendation system"><meta property="article:tag" content="nlp"><link rel="stylesheet" href="https://www.phamduytung.com/css/main.min.7094996c41a22844b2cfb2120c771154b3c152ea301b01f10f140c20d6dad25d.css" integrity="sha256-cJSZbEGiKESyz7ISDHcRVLPBUuowGwHxDxQMINba0l0=" crossorigin="anonymous"><link rel="stylesheet" href="https://www.phamduytung.com/css/katex.min.4d6aa053ca8a5675016fa2c9c48ee5359bfaafb8295184458af9d64abce84c47.css" integrity="sha256-TWqgU8qKVnUBb6LJxI7lNZv6r7gpUYRFivnWSrzoTEc=" crossorigin="anonymous">
+<meta name="twitter:description" content="Xây dựng hệ thống gợi ý dự án cho nhà tài trợ trên DonorsChoose.org: phân tích dữ liệu quyên góp, rồi kết hợp Content-Based Filtering, Collaborative Filtering (SVD) và mô hình Hybrid.">
+<meta name="twitter:image" content="https://www.phamduytung.com/site-images/posts/2019-01-03-donor-project-matching-with-recommender-systems/cover-pearl-glass_hu_a6785310be947153.webp" data-image-budget="100000"><meta property="article:published_time" content="2018-12-11T00:19:00&#43;03:00"><meta property="article:modified_time" content="2018-12-11T00:19:00&#43;03:00"><meta property="article:section" content="blog"><meta property="article:tag" content="machine learning"><meta property="article:tag" content="recommendation system"><meta property="article:tag" content="nlp"><link rel="stylesheet" href="https://www.phamduytung.com/css/main.min.0558a043598454ca5f6300bbe4bab466b3141cb8632ec005d8872a3a188ed894.css" integrity="sha256-BVigQ1mEVMpfYwC75Lq0ZrMUHLhjLsAF2IcqOhiO2JQ=" crossorigin="anonymous"><link rel="stylesheet" href="https://www.phamduytung.com/css/katex.min.4d6aa053ca8a5675016fa2c9c48ee5359bfaafb8295184458af9d64abce84c47.css" integrity="sha256-TWqgU8qKVnUBb6LJxI7lNZv6r7gpUYRFivnWSrzoTEc=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://www.phamduytung.com/css/viewer.min.3d228794bcedbbfa0412beb8fbc1ec6973202945e42af7004f742a4d7bd620ab.css" integrity="sha256-PSKHlLztu/oEEr64&#43;8HsaXMgKUXkKvcAT3QqTXvWIKs=" crossorigin="anonymous"><link rel="canonical" href="https://www.phamduytung.com/blog/2019-01-03-donor-project-matching-with-recommender-systems/">
-<meta name="theme-color" content="#f7f5ff"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Phạm Duy Tùng"},"dateModified":"2018-12-11T00:19:00+03:00","datePublished":"2018-12-11T00:19:00+03:00","description":"Ở bài viết này, chúng ta tìm hiểu một số mẹo khi huấn luyện mô hình sử dụng deep learning.","headline":"Hệ thống gợi ý khoá học cho website DonorChoose.org","image":["https://www.phamduytung.com/site-images/posts/2019-01-03-donor-project-matching-with-recommender-systems/cover-pearl-glass_hu_a6785310be947153.webp"],"inLanguage":"vi","keywords":"machine learning, recommendation system, nlp","mainEntityOfPage":{"@id":"https://www.phamduytung.com/blog/2019-01-03-donor-project-matching-with-recommender-systems/","@type":"WebPage"},"publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://www.phamduytung.com/site-images/brand-mark-flaming-book-red_hu_45318b168da512af.webp"},"name":"Phạm Duy Tùng Machine Learning Blog"},"url":"https://www.phamduytung.com/blog/2019-01-03-donor-project-matching-with-recommender-systems/"}</script></head>
+<meta name="theme-color" content="#f7f5ff"><script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@id":"https://www.phamduytung.com/blog/2019-01-03-donor-project-matching-with-recommender-systems/#article","@type":"BlogPosting","author":[{"@type":"Person","name":"Phạm Duy Tùng","sameAs":["https://github.com/AlexBlack2202","https://www.linkedin.com/in/tung-pham-duy/"],"url":"https://www.phamduytung.com/about/"}],"dateModified":"2018-12-11T00:19:00+03:00","datePublished":"2018-12-11T00:19:00+03:00","description":"Xây dựng hệ thống gợi ý dự án cho nhà tài trợ trên DonorsChoose.org: phân tích dữ liệu quyên góp, rồi kết hợp Content-Based Filtering, Collaborative Filtering (SVD) và mô hình Hybrid.","headline":"Hệ thống gợi ý khoá học cho website DonorChoose.org","image":["https://www.phamduytung.com/site-images/posts/2019-01-03-donor-project-matching-with-recommender-systems/cover-pearl-glass_hu_a6785310be947153.webp"],"inLanguage":"vi","keywords":"machine learning, recommendation system, nlp","mainEntityOfPage":{"@id":"https://www.phamduytung.com/blog/2019-01-03-donor-project-matching-with-recommender-systems/","@type":"WebPage"},"publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://www.phamduytung.com/site-images/brand-mark-flaming-book-red_hu_45318b168da512af.webp"},"name":"Phạm Duy Tùng Machine Learning Blog","url":"https://www.phamduytung.com/"},"url":"https://www.phamduytung.com/blog/2019-01-03-donor-project-matching-with-recommender-systems/","wordCount":4032},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","item":"https://www.phamduytung.com/","name":"Trang chủ","position":1},{"@type":"ListItem","item":"https://www.phamduytung.com/blog/","name":"Blogs","position":2},{"@type":"ListItem","item":"https://www.phamduytung.com/blog/2019-01-03-donor-project-matching-with-recommender-systems/","name":"Hệ thống gợi ý khoá học cho website DonorChoose.org","position":3}]}]}</script></head>
   <body><script>const items=["mode","palette"];items.forEach(function(e){const t=localStorage.getItem("hbs-"+e);t&&document.body.parentElement.setAttribute("data-"+e,t)})</script><header><nav class="navbar top-app-bar top-app-bar-expand-lg fixed-top">
   <div class="container pearl-navbar__inner">
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
@@ -113,6 +113,10 @@
   </div>
 </form>
       <ul class="navbar-nav ms-auto"><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/chu-de/">
+            <i class="fas fa-fw fa-list-alt"></i>Chủ đề
+          </a>
+        </li><li class="nav-item">
           <a class="nav-link" href="https://www.phamduytung.com/series/">
             <i class="fas fa-fw fa-columns"></i>Courses
           </a>
@@ -155,6 +159,11 @@
               <a class="dropdown-item"
                 href="https://www.phamduytung.com/faq/">
                 Câu hỏi thường gặp
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/about/">
+                Giới thiệu tác giả
               </a>
             </li></ul>
         </li><li class="nav-item">
@@ -199,7 +208,7 @@
 </div>
 <article class="row card component mb-4 post">
   <div class="card-header"><div class="bgcover">
-      <img src="/site-images/posts/2019-01-03-donor-project-matching-with-recommender-systems/cover-pearl-glass_hu_a6785310be947153.webp" alt="" data-image-budget="100000" class="pearl-cover-image" srcset="/site-images/posts/2019-01-03-donor-project-matching-with-recommender-systems/cover-pearl-glass_hu_fba6d35472f816f1.webp 480w, /site-images/posts/2019-01-03-donor-project-matching-with-recommender-systems/cover-pearl-glass_hu_bfd1b06de98df52a.webp 768w, /site-images/posts/2019-01-03-donor-project-matching-with-recommender-systems/cover-pearl-glass_hu_a6785310be947153.webp 1200w" sizes="(min-width: 1200px) 960px, (min-width: 768px) 70vw, 100vw" width="1200" height="675"
+      <img src="/site-images/posts/2019-01-03-donor-project-matching-with-recommender-systems/cover-pearl-glass_hu_a6785310be947153.webp" alt="Hệ thống gợi ý khoá học cho website DonorChoose.org" data-image-budget="100000" class="pearl-cover-image" srcset="/site-images/posts/2019-01-03-donor-project-matching-with-recommender-systems/cover-pearl-glass_hu_fba6d35472f816f1.webp 480w, /site-images/posts/2019-01-03-donor-project-matching-with-recommender-systems/cover-pearl-glass_hu_bfd1b06de98df52a.webp 768w, /site-images/posts/2019-01-03-donor-project-matching-with-recommender-systems/cover-pearl-glass_hu_a6785310be947153.webp 1200w" sizes="(min-width: 1200px) 960px, (min-width: 768px) 70vw, 100vw" width="1200" height="675"
   loading="eager" decoding="async" fetchpriority="high">
 
       <div class="bgtrans">
@@ -208,7 +217,11 @@
       </div>
     </div>
   </div>
-  <div class="card-body"><div class="post-meta">
+  <div class="card-body"><div class="post-byline">
+  <i class="fas fa-fw fa-user"></i>
+  <span>Tác giả:</span>
+  <a href="https://www.phamduytung.com/about/" rel="author">Phạm Duy Tùng</a>
+</div><div class="post-meta">
   <span class="post-date" title="tạo ngày 2018-12-11 04:19:00 &#43;0700 &#43;07.">
     11/12/2018
   </span><span class="post-reading-time">
@@ -243,11 +256,11 @@
   </ul>
 </nav>
   </div>
-<h1 id="đặt-vấn-đề">Đặt vấn đề<a class="anchor ms-1" href="#đặt-vấn-đề"><i class="fas fa-link"></i></a></h1>
+<h2 id="đặt-vấn-đề">Đặt vấn đề<a class="anchor ms-1" href="#đặt-vấn-đề"><i class="fas fa-link"></i></a></h2>
 <p>DonorsChoose.org được thành lập vào năm 2000 bởi một giáo viên lịch sử tại Mỹ tên là Bronx và đã huy động được 685 triệu đô la cho các lớp học. 3/4 các giáo viên ở các trường công lập ở Hoa Kỳ đã sử dụng Donor để gửi các yêu cầu bài tập cho học sinh. Từ đó, Donor trở thành nền tảng giáo dục hàng đầu hỗ trợ cho các vấn đề giáo dục công cộng.</p>
 <p>Đến nay, hơn 3 triệu người dùng và đối tác đã đóng góp hơn 1,1 triệu dự án cho Donor. Nhưng các giáo viên vẫn phải tốn hàng tỷ đô tiền túi để chuẩn bị các dụng cụ học tập trên lớp (để truyền tải kiến thức cho học sinh).</p>
 <p>Giải pháp được đưa ra ở đây là xây dựng một chiến dịch gợi ý cho các nhà tại trợ.</p>
-<h2 id="phân-tích-dữ-liệu">Phân tích dữ liệu<a class="anchor ms-1" href="#phân-tích-dữ-liệu"><i class="fas fa-link"></i></a></h2>
+<h3 id="phân-tích-dữ-liệu">Phân tích dữ liệu<a class="anchor ms-1" href="#phân-tích-dữ-liệu"><i class="fas fa-link"></i></a></h3>
 <p>Chúng ta có các file sau:</p>
 <p>File Donations.csv.  Với mỗi dự án (Project ID), sẽ có 1 hoặc nhiều nhà quyên góp (Donor ID) mỗi cặp (dự án - nhà quyên góp sẽ định dang bằng 1 mã chung (Donation ID) và có các cột thông tin liên quan đến việc quyên góp đó). File có xấp xỉ 4.67 triệu dòng (chính xác là 4687844 dòng) và 7 cột. (Project ID - Định danh dự án, Donation ID - Định danh khoảng đóng góp (tưởng tượng như khoá tự tăng của bảng này đó các bạn), Donor ID - Mã định danh người đóng góp, Donation Included Option - hỗ trợ website donoschoose 15% giá trị quyên góp, Donation Amount - Số tiền quyên góp, Donor Cart Sequence - Thứ tự của dự án trọng bảng danh sách quyên góp,Donation Received Date - Ngày giờ quyên góp).</p>
 <p>File Donors.csv. File định danh người quyên góp. Chứa tổng cộng hơn 2 triệu dòng( chính xác là 2122640 dòng)
@@ -257,7 +270,7 @@ File có kích thước 2122640 x 5 với các thông tin cột là Donor ID (kh
 <p>File Resources.csv. Với mỗi dự án, chúng ta cần các loại tài nguyên khác nhau. Các cột là Project ID (mã dự án), Resource Item Name (tên tài nguyên cần cho dự án đó vd project 000009891526c0ade7180f8423792063 cần &lsquo;chair move and store cart&rsquo;), Resource Quantity (số lượng tài nguyên cần, vd cần 1 cái ghế, 2 cái bảng v.v),
 Resource Unit Price (đơn giá cho 1 đơn vị tài nguyên, vd cái ghế giá 7 ngàn, cái bảng giá 10 ngàn, nếu 1 unit là ghế + bảng thì là 17 ngàn), Resource Vendor Name(nhà cung cấp, vd: Amazon Business, Woodwind and Brasswind).</p>
 <p>File Projects.csv</p>
-<h2 id="xây-dựng-chiến-lược-tiếp-cận-bài-toán">Xây dựng chiến lược tiếp cận bài toán<a class="anchor ms-1" href="#xây-dựng-chiến-lược-tiếp-cận-bài-toán"><i class="fas fa-link"></i></a></h2>
+<h3 id="xây-dựng-chiến-lược-tiếp-cận-bài-toán">Xây dựng chiến lược tiếp cận bài toán<a class="anchor ms-1" href="#xây-dựng-chiến-lược-tiếp-cận-bài-toán"><i class="fas fa-link"></i></a></h3>
 <p>Hãy xem đây như là bài toán gợi ý. Và Donors chính là hệ thống cung cấp các sản phẩm. Ví dụ đơn giản là bạn có website nghe nhạc mp3.zing.vn, alice vào nghe một hoặc một vài bài nhạc. Chúng ta sẽ xây dựng một hệ gợi ý những bài nhạc tiếp theo alice nên nghe dựa vào những bài nhạc đã nghe trước đó của alice. Tương tự vậy, hệ thống Donor như là website mp3.zing, bài nhạc tương tự như các project đang có, người dùng tương tự như các nhà tự thiện. Một khi một nhà từ thiện đã quyên góp cho 1 hoặc 1 nhón các dự án, chúng ta sẽ lên kế hoạch và gợi ý cho khác hàng dự án tiếp theo khách hàng nên tìm hiểu kỹ để xét xem có nên donate hay không.</p>
 <p>Dựa vào các chiến lược trên, chúng ta có 3 cách có thể tiếp cận vấn đề:</p>
 <ul>
@@ -265,7 +278,7 @@ Resource Unit Price (đơn giá cho 1 đơn vị tài nguyên, vd cái ghế gi�
 <li>Collaborative Filtering</li>
 <li>Hybrid methods</li>
 </ul>
-<h2 id="1-tiền-xử-lý-dữ-liệu">1. Tiền xử lý dữ liệu<a class="anchor ms-1" href="#1-tiền-xử-lý-dữ-liệu"><i class="fas fa-link"></i></a></h2>
+<h3 id="1-tiền-xử-lý-dữ-liệu">1. Tiền xử lý dữ liệu<a class="anchor ms-1" href="#1-tiền-xử-lý-dữ-liệu"><i class="fas fa-link"></i></a></h3>
 <p>Trước khi bắt đầu xây dựng chương trình gợi ý, chúng ta cần phải load dữ liệu lên bộ nhớ chính và làm sạch dữ liệu.</p>
 <p>Trước tiên, chúng ta sẽ import các thư viện cần thiết. Nếu thiếu các thư viện nào, các bạn cứ pip install tên thư viện trong cmd/terminal là được</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl">
@@ -338,10 +351,10 @@ Resource Unit Price (đơn giá cho 1 đơn vị tài nguyên, vd cái ghế gi�
 <li>Sẽ có trường hợp 1 mạnh thường quân sẽ donate cho nhiều dự án, và cũng có trường hợp 1 mạnh thường quân donate nhiều lần cho 1 dự án. Trường hợp này chiếm phần ít.</li>
 </ul>
 <p>Để đánh giá mô hình, chúng ta sẽ chia tập dữ liệu thành 2 phần là train và test. Ở đây, chúng ta sẽ set tỷ lệ train/test là 20%.</p>
-<h2 id="2-xây-dựng-mô-hình-content-based-filtering">2. Xây dựng mô hình Content-Based Filtering<a class="anchor ms-1" href="#2-xây-dựng-mô-hình-content-based-filtering"><i class="fas fa-link"></i></a></h2>
+<h3 id="2-xây-dựng-mô-hình-content-based-filtering">2. Xây dựng mô hình Content-Based Filtering<a class="anchor ms-1" href="#2-xây-dựng-mô-hình-content-based-filtering"><i class="fas fa-link"></i></a></h3>
 <p>Cách tiếp cận đầu tiên, chúng ta sẽ tìm những project gần giống với những project mà donor đã donated. Đơn giản nhất là với mỗi project, chúng ta sẽ định nghĩa các vector đặc trưng của chúng và đo độ giống nhau giữa hai vector đó. Vector đặc trưng chúng ta có thể xây dựng trên các thuộc tính như project type, project catefory, grade level, resource category, cost, school zip code, &hellip; hoặc các bạn có thể từ các vector cơ bản do tập dữ liệu cung cấp bổ sung thêm các vector cấp cao hơn, ví dụ như là rút trích các feature từ tên project hoặc mô tả của project, loại bỏ stopwords &hellip;</p>
 <p>Ở đây, chúng ta sẽ sử dụng kỹ thuật TF-IDF để rút trích thông tin đặc trưng của dự án dựa trên project tittle và description. Về TF-IDF, các bạn có thể đọc ở một bài viết nào đó của google, mình không tiện nhắc đến nó chi tiết ở bài viết này.</p>
-<h3 id="a-xây-dựng-tập-đặc-trưng">a. Xây dựng tập đặc trưng<a class="anchor ms-1" href="#a-xây-dựng-tập-đặc-trưng"><i class="fas fa-link"></i></a></h3>
+<h4 id="a-xây-dựng-tập-đặc-trưng">a. Xây dựng tập đặc trưng<a class="anchor ms-1" href="#a-xây-dựng-tập-đặc-trưng"><i class="fas fa-link"></i></a></h4>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl">
 </span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="c1"># Preprocessing of text data</span>
 </span></span><span class="line"><span class="ln"> 3</span><span class="cl"><span class="n">textfeats</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&#34;Project Title&#34;</span><span class="p">,</span><span class="s2">&#34;Project Essay&#34;</span><span class="p">]</span>
@@ -439,7 +452,7 @@ Resource Unit Price (đơn giá cho 1 đơn vị tài nguyên, vd cái ghế gi�
 </span></span><span class="line"><span class="ln">23</span><span class="cl"><span class="mi">8</span>       <span class="n">weaved</span>   <span class="mf">0.111704</span>
 </span></span><span class="line"><span class="ln">24</span><span class="cl"><span class="mi">9</span>         <span class="n">bees</span>   <span class="mf">0.101842</span>
 </span></span></code></pre></div><p>Nhìn kết quả trên, ta thấy rằng donor 1 có vẻ thích những thứ liên quan đến âm nhạc (music, auditorim), trong khi đó donor 2 thích những thứ liên quan đến trồng trọt (pollinators - thụ phấn, plants - cây cối)</p>
-<h3 id="b-xây-dựng-mô-hình">b. Xây dựng mô hình<a class="anchor ms-1" href="#b-xây-dựng-mô-hình"><i class="fas fa-link"></i></a></h3>
+<h4 id="b-xây-dựng-mô-hình">b. Xây dựng mô hình<a class="anchor ms-1" href="#b-xây-dựng-mô-hình"><i class="fas fa-link"></i></a></h4>
 <p>Việc xây dựng mô hình đến đây là khá đơn giản. Chúng ta chỉ việc tính khoảng cách cosin giữa vector cần dự đoán và toàn bộ vector có trong tập train rồi show top K prject có liên quan cao nhất</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl">
 </span></span><span class="line"><span class="ln"> 2</span><span class="cl">
@@ -517,9 +530,9 @@ Resource Unit Price (đơn giá cho 1 đơn vị tài nguyên, vd cái ghế gi�
 </span></span><span class="line"><span class="ln">28</span><span class="cl"><span class="p">[</span><span class="mi">10</span> <span class="n">rows</span> <span class="n">x</span> <span class="mi">4</span> <span class="n">columns</span><span class="p">]</span>
 </span></span></code></pre></div><p>Mình dùng cmd nên bị giới hạn kết quả, các bạn có thể write log vào file hoặc dùng jupiter để show kết quả rõ hơn.</p>
 <p>Ở đây, chúng ta nhận thấy rằng các recommend cho donor 1 thường là những project liên quan tới âm nhạc (nhìn tập feature ta cũng có thể đoán được). Và recommend cho donor 2 là những thứ liên quan đến chủ đề làm vườn và reading.</p>
-<h2 id="3-collaborative-filtering-model">3. Collaborative Filtering Model<a class="anchor ms-1" href="#3-collaborative-filtering-model"><i class="fas fa-link"></i></a></h2>
+<h3 id="3-collaborative-filtering-model">3. Collaborative Filtering Model<a class="anchor ms-1" href="#3-collaborative-filtering-model"><i class="fas fa-link"></i></a></h3>
 <p>Lý thuyết về Collaborative Filtering Model các bạn có thể xem ở các bài viết khác của mình hoặc tham khảo thêm trên mạng. Ở đây, mình sẽ sử dụng Singular Value Decomposition (SVD) để xây dựng ma trận đặc trưng.</p>
-<h3 id="a-xây-dựng-ma-trận-donor---project">a. Xây dựng ma trận donor - project<a class="anchor ms-1" href="#a-xây-dựng-ma-trận-donor---project"><i class="fas fa-link"></i></a></h3>
+<h4 id="a-xây-dựng-ma-trận-donor---project">a. Xây dựng ma trận donor - project<a class="anchor ms-1" href="#a-xây-dựng-ma-trận-donor---project"><i class="fas fa-link"></i></a></h4>
 <p>Đầu tiên, chúng ta sẽ xây dựng ma trận mối quan hệ giữa donor và project. Nếu donor i có donated cho 1 project j thì dòng i cột j của ma trận sẽ được đánh dấu là 1, ngược lại là 0.</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="c1">## create matrix</span>
 </span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="c1">#Creating a sparse pivot table with donors in rows and projects in columns</span>
@@ -540,7 +553,7 @@ Resource Unit Price (đơn giá cho 1 đơn vị tài nguyên, vd cái ghế gi�
 </span></span><span class="line"><span class="ln">4</span><span class="cl">       <span class="p">[</span> <span class="mf">0.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">],</span>
 </span></span><span class="line"><span class="ln">5</span><span class="cl">       <span class="p">[</span> <span class="mf">0.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">],</span>
 </span></span><span class="line"><span class="ln">6</span><span class="cl">       <span class="p">[</span> <span class="mf">0.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">]])</span>
-</span></span></code></pre></div><h3 id="b-singular-value-decomposition">b. Singular Value Decomposition<a class="anchor ms-1" href="#b-singular-value-decomposition"><i class="fas fa-link"></i></a></h3>
+</span></span></code></pre></div><h4 id="b-singular-value-decomposition">b. Singular Value Decomposition<a class="anchor ms-1" href="#b-singular-value-decomposition"><i class="fas fa-link"></i></a></h4>
 <p>Sau khi có ma trận trên, ta có một nhận xét rằng nó rất thưa, số lượng 0 thì nhiều mà 1 thì ít. Sau khi áp dụng SVD, ma trận kết quả sẽ ít thưa hơn (có thể đạt được đến mức không còn thưa nữa).</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="c1"># Performs matrix factorization of the original donor-project matrix</span>
 </span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="c1"># Here we set k = 20, which is the number of factors we are going to get</span>
@@ -568,7 +581,7 @@ Resource Unit Price (đơn giá cho 1 đơn vị tài nguyên, vd cái ghế gi�
 </span></span><span class="line"><span class="ln"> 8</span><span class="cl"><span class="mi">0000300773</span><span class="n">fe015f870914b42528541b</span>                      <span class="mf">4.314216e-34</span>                <span class="o">...-</span><span class="mf">4.666110e-34</span>
 </span></span><span class="line"><span class="ln"> 9</span><span class="cl">
 </span></span><span class="line"><span class="ln">10</span><span class="cl"><span class="p">[</span><span class="mi">5</span> <span class="n">rows</span> <span class="n">x</span> <span class="mi">8015</span> <span class="n">columns</span><span class="p">]</span>
-</span></span></code></pre></div><h3 id="c-xây-dựng-collaborative-filtering-model">c. Xây dựng Collaborative Filtering Model<a class="anchor ms-1" href="#c-xây-dựng-collaborative-filtering-model"><i class="fas fa-link"></i></a></h3>
+</span></span></code></pre></div><h4 id="c-xây-dựng-collaborative-filtering-model">c. Xây dựng Collaborative Filtering Model<a class="anchor ms-1" href="#c-xây-dựng-collaborative-filtering-model"><i class="fas fa-link"></i></a></h4>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl">
 </span></span><span class="line"><span class="ln"> 2</span><span class="cl">
 </span></span><span class="line"><span class="ln"> 3</span><span class="cl"><span class="k">class</span> <span class="nc">CFRecommender</span><span class="p">:</span>
@@ -630,7 +643,7 @@ Resource Unit Price (đơn giá cho 1 đơn vị tài nguyên, vd cái ghế gi�
 </span></span><span class="line"><span class="ln">24</span><span class="cl"><span class="mi">8</span>  <span class="mf">6.698040e-19</span>                        <span class="o">...</span>                          <span class="s2">&#34;I cannot say good-bye to those whom I have gr...</span>
 </span></span><span class="line"><span class="ln">25</span><span class="cl"><span class="mi">9</span>  <span class="mf">5.733941e-19</span>                        <span class="o">...</span>                          <span class="n">I</span> <span class="n">have</span> <span class="n">students</span> <span class="ow">in</span> <span class="k">class</span> <span class="nc">who</span> <span class="n">are</span> <span class="n">squinting</span> <span class="ow">and</span><span class="o">...</span>
 </span></span></code></pre></div><p>Kết quả trả về có vẻ không được đẹp như ở phương pháp trên. Ở đây, thuật toán dựa vào hành vi donated của những người khác có điểm tương đồng với user donor 1 và 2. Bởi vậy gợi ý những project sẽ khác những gợi ý ở phương pháp 1.</p>
-<h2 id="4-hybrid-method">4. Hybrid Method<a class="anchor ms-1" href="#4-hybrid-method"><i class="fas fa-link"></i></a></h2>
+<h3 id="4-hybrid-method">4. Hybrid Method<a class="anchor ms-1" href="#4-hybrid-method"><i class="fas fa-link"></i></a></h3>
 <p>Phương pháp lai này kết hợp cả 2 hướng tiếp cận của hai phương pháp ở trên. Ở đây, chúng ta sẽ xây dựng một mô hình nhỏ, nhân điểm của content based và collaborative filtering lại với nhau, sau đó xếp hạng để được điểm hybrid. Đây là 1 cách đơn giản, các bạn có thể tìm đọc nhiều cách tiếp cận khác và ứng dụng vào bài toán.</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="k">class</span> <span class="nc">HybridRecommender</span><span class="p">:</span>
 </span></span><span class="line"><span class="ln"> 2</span><span class="cl">
@@ -707,7 +720,7 @@ Resource Unit Price (đơn giá cho 1 đơn vị tài nguyên, vd cái ghế gi�
 </span></span><span class="line"><span class="ln">25</span><span class="cl">
 </span></span><span class="line"><span class="ln">26</span><span class="cl"><span class="p">[</span><span class="mi">10</span> <span class="n">rows</span> <span class="n">x</span> <span class="mi">4</span> <span class="n">columns</span><span class="p">]</span>
 </span></span></code></pre></div><p>Kết quả trả ra tốt hơn nhiều so với cách 2, donor1 có music, donor2 có cây trồng và sách.</p>
-<h2 id="5-đánh-giá-mô-hình">5. Đánh giá mô hình<a class="anchor ms-1" href="#5-đánh-giá-mô-hình"><i class="fas fa-link"></i></a></h2>
+<h3 id="5-đánh-giá-mô-hình">5. Đánh giá mô hình<a class="anchor ms-1" href="#5-đánh-giá-mô-hình"><i class="fas fa-link"></i></a></h3>
 <p>Có rất nhiều cách khác nhau để đánh giá mô hình recommend system. Một trong các cách mình sử dụng ở đây là sử dụng độ đo top K accuracy. Độ đo này được tính như sau:</p>
 <p>Với mỗi user:
 Với mỗi item user đã pick trong test set
@@ -716,14 +729,46 @@ Lấy mẫu 1000 item khác mà người dùng chưa bao giờ pick</p>
 </div></div>
   <div class="card-footer"><div class="post-navs d-flex justify-content-evenly"><div class="post-nav post-prev">
     <i class="fas fa-fw fa-chevron-left"></i>
-    <a href="https://www.phamduytung.com/blog/2018-12-11-a-bunch-of-tips-and-tricks-for-training-deep-neural-networks/">Một số mẹo để lựa chọn mô hình object detection
+    <a href="https://www.phamduytung.com/blog/2018-12-11-a-bunch-of-tips-and-tricks-for-training-deep-neural-networks/">Một số mẹo khi huấn luyện mạng deep neural network
 </a>
   </div><div class="post-nav post-next">
     <a href="https://www.phamduytung.com/blog/2019-02-05-5-python-tricks-you-need-to-know-today/">5 mẹo hay sử dụng python
 </a>
     <i class="fas fa-fw fa-chevron-right"></i>
   </div></div></div>
-</article><div class="card component row post-comments" id="post-comments">
+</article><section class="related-posts row card component">
+    <div class="card-header">
+      <h2 class="card-title">Bài liên quan</h2>
+    </div>
+    <div class="card-body">
+      <ul class="post-list"><li>
+          <a href="https://www.phamduytung.com/blog/2018-11-13-instacart-market-basket-analysis/">Phân tích giỏ hàng của website instacart
+</a>
+          <span class="float-end post-date">13/11/2018
+</span>
+        </li><li>
+          <a href="https://www.phamduytung.com/blog/2018-10-01-buiding-a-movie-model/">Xây dựng chương trình gợi ý phim dựa vào tập dữ liệu movie len
+</a>
+          <span class="float-end post-date">01/10/2018
+</span>
+        </li><li>
+          <a href="https://www.phamduytung.com/blog/2026-07-10-next-gen-restaurant-recommendation/">Hệ thống gợi ý nhà hàng thế hệ mới: Con người không ăn bằng hồ sơ, họ ăn bằng khoảnh khắc
+</a>
+          <span class="float-end post-date">10/07/2026
+</span>
+        </li><li>
+          <a href="https://www.phamduytung.com/blog/2025-04-26-phishing-email/">Machine learning - Train mô hình nhận dạng email lừa đảo
+</a>
+          <span class="float-end post-date">26/04/2025
+</span>
+        </li><li>
+          <a href="https://www.phamduytung.com/blog/2022-12-01-tiktok-recommendation/">Tiktok Real Time Recommendation
+</a>
+          <span class="float-end post-date">01/12/2022
+</span>
+        </li></ul>
+    </div>
+  </section><div class="card component row post-comments" id="post-comments">
   <div class="card-header">
     <h2 class="card-title">Bình luận</h2>
   </div>
@@ -739,7 +784,8 @@ Lấy mẫu 1000 item khác mà người dùng chưa bao giờ pick</p>
 </div><aside class="col-lg-3 col-md-4 sidebar d-flex">
   <div class="container d-flex flex-column">
     
-    <a href="https://www.buymeacoffee.com/alexblack28"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=🍎&slug=alexblack28&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" /></a><div class="post-toc row mb-4 card component" id="postTOC">
+    <a href="https://www.buymeacoffee.com/alexblack28" rel="noopener"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=🍎&slug=alexblack28&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" alt="Buy me a coffee" loading="lazy" decoding="async" /></a>
+<div class="post-toc row mb-4 card component" id="postTOC">
   <div class="card-header">
     <h2 class="card-title">Mục lục</h2>
   </div>
@@ -841,8 +887,8 @@ Lấy mẫu 1000 item khác mà người dùng chưa bao giờ pick</p>
             Llm<span class="badge badge-sm text-white bg-accent ms-1">17</span></a><a href="https://www.phamduytung.com/tags/computer-vision/" class="badge rounded post-taxonomy" title="Computer Vision">
             Computer Vision<span class="badge badge-sm text-white bg-accent ms-1">16</span></a><a href="https://www.phamduytung.com/tags/python/" class="badge rounded post-taxonomy" title="Python">
             Python<span class="badge badge-sm text-white bg-accent ms-1">14</span></a><a href="https://www.phamduytung.com/tags/mathematics/" class="badge rounded post-taxonomy" title="Mathematics">
-            Mathematics<span class="badge badge-sm text-white bg-accent ms-1">12</span></a><a href="https://www.phamduytung.com/tags/ai-agent/" class="badge rounded post-taxonomy" title="Ai Agent">
-            Ai Agent<span class="badge badge-sm text-white bg-accent ms-1">10</span></a><a href="https://www.phamduytung.com/tags/to%C3%A1n-h%E1%BB%8Dc/" class="badge rounded post-taxonomy" title="Toán Học">
+            Mathematics<span class="badge badge-sm text-white bg-accent ms-1">12</span></a><a href="https://www.phamduytung.com/tags/ai-agent/" class="badge rounded post-taxonomy" title="AI Agent">
+            AI Agent<span class="badge badge-sm text-white bg-accent ms-1">10</span></a><a href="https://www.phamduytung.com/tags/to%C3%A1n-h%E1%BB%8Dc/" class="badge rounded post-taxonomy" title="Toán Học">
             Toán Học<span class="badge badge-sm text-white bg-accent ms-1">8</span></a><a href="https://www.phamduytung.com/tags/tri%E1%BA%BFt-h%E1%BB%8Dc/" class="badge rounded post-taxonomy" title="Triết Học">
             Triết Học<span class="badge badge-sm text-white bg-accent ms-1">8</span></a><a href="https://www.phamduytung.com/tags/ai/" class="badge rounded post-taxonomy" title="Ai">
             Ai<span class="badge badge-sm text-white bg-accent ms-1">7</span></a></div>
@@ -868,15 +914,18 @@ Lấy mẫu 1000 item khác mà người dùng chưa bao giờ pick</p>
         </li><li class="nav-item">
             <a class="nav-link" href="/faq/"><i class="fas fa-fw fa-question-circle"></i>Câu hỏi thường gặp
 </a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/about/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-user"></i>Giới thiệu tác giả
+</a>
         </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
       <li class="nav-item">
         <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Docs
 </a>
       </li><li class="nav-item">
-            <a class="nav-link" href="/team_of_services" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-users"></i>Điều khoản sử dụng
+            <a class="nav-link" href="/teamofservices/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-users"></i>Điều khoản sử dụng
 </a>
         </li><li class="nav-item">
-            <a class="nav-link" href="/privacy" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-lock"></i>Chính sách bảo mật
+            <a class="nav-link" href="/privacy/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-lock"></i>Chính sách bảo mật
 </a>
         </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
       <li class="nav-item">
@@ -885,16 +934,6 @@ Lấy mẫu 1000 item khác mà người dùng chưa bao giờ pick</p>
       </li><li class="nav-item">
             <a class="nav-link" href="/utils/gen_paswords/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-key"></i>Tạo password ngẫu nhiên
 </a>
-        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
-      <li class="nav-item">
-        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Liên kết khác
-</a>
-      </li><li class="nav-item">
-            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">Netlify
-</a>
-        </li><li class="nav-item">
-            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">facebook
-</a>
         </li></ul></li></ul>
 <div class="copyright mb-2">
   Copyright © 2016-2026 Phạm Duy Tùng. All Rights Reserved.
@@ -902,7 +941,7 @@ Lấy mẫu 1000 item khác mà người dùng chưa bao giờ pick</p>
 <div class="powered-by mb-2">
   Website chia sẻ kiến thức của Phạm Duy Tùng và Đặng Thị Hằng. Vui lòng liên hệ email alexblack2202@gmail.com nếu bạn có thông tin cần trao đổi.
 </div></footer>
-<script src="https://www.phamduytung.com/js/main.111d51a8c754010f8399ca010e552d803e2d5170b361f8886ad04ec6c21ca551.js" integrity="sha256-ER1RqMdUAQ&#43;DmcoBDlUtgD4tUXCzYfiIatBOxsIcpVE=" crossorigin="anonymous" defer></script><script src="https://www.phamduytung.com/js/icons.min.cb4c9958dbc49e29ac644e168e82db2d0de9a741a15751cc5bf2b0af21eb2845.js" integrity="sha256-y0yZWNvEnimsZE4WjoLbLQ3pp0GhV1HMW/KwryHrKEU=" crossorigin="anonymous" defer></script>
+<script src="https://www.phamduytung.com/js/main.e788bab0969e53541289578e23a0f66a2ec1102872a9d44b994c80d0601d588a.js" integrity="sha256-54i6sJaeU1QSiVeOI6D2ai7BEChyqdRLmUyA0GAdWIo=" crossorigin="anonymous" defer></script><script src="https://www.phamduytung.com/js/icons.min.cb4c9958dbc49e29ac644e168e82db2d0de9a741a15751cc5bf2b0af21eb2845.js" integrity="sha256-y0yZWNvEnimsZE4WjoLbLQ3pp0GhV1HMW/KwryHrKEU=" crossorigin="anonymous" defer></script>
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {

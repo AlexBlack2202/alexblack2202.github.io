@@ -3,25 +3,25 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Overview of gradient descent optimization algorithm - Phạm Duy Tùng</title>
+    <title>Các thuật toán tối ưu Gradient Descent: SGD, Momentum, RMSprop, Adam và AdamW - Phạm Duy Tùng</title>
     <meta name="a.validate.02" content="1QZXZ8oi7g57H-GxBrBPkTYBydwii-Ic9iJu" /><link rel="apple-touch-icon" href="https://www.phamduytung.com/images/icons/icon-180x180.png" sizes="180x180">
 <link rel="icon" href="https://www.phamduytung.com/images/icons/icon-32x32.png" sizes="32x32" type="image/png">
 <link rel="icon" href="https://www.phamduytung.com/images/icons/icon-16x16.png" sizes="16x16" type="image/png">
 <link rel="icon" href="https://www.phamduytung.com/images/icons/favicon.ico">
 <link rel="manifest" href="https://www.phamduytung.com/manifest.json">
-<meta name="keywords" content="" />
-<meta name="description" content="Ở bài viết này, chúng ta đề cập đến vấn đề sử dụng pretrain model của kares trong bài toán phân loại chó mèo." /><meta name="robots" content="index, follow, max-image-preview:large"><meta property="og:title" content="Overview of gradient descent optimization algorithm">
-<meta property="og:description" content="Ở bài viết này, chúng ta đề cập đến vấn đề sử dụng pretrain model của kares trong bài toán phân loại chó mèo.">
+
+<meta name="description" content="Optimizer quyết định cách mạng neural dùng gradient để cập nhật trọng số. Giải thích SGD, Momentum, Nesterov, Adagrad, RMSprop, Adam, AdamW, có công thức, code." /><meta name="robots" content="index, follow, max-image-preview:large"><meta property="og:title" content="Các thuật toán tối ưu Gradient Descent: SGD, Momentum, RMSprop, Adam và AdamW">
+<meta property="og:description" content="Optimizer quyết định cách mạng neural dùng gradient để cập nhật trọng số. Giải thích SGD, Momentum, Nesterov, Adagrad, RMSprop, Adam, AdamW, có công thức, code.">
 <meta property="og:type" content="article">
 <meta property="og:url" content="https://www.phamduytung.com/blog/2018-11-01-overview-of-gradient-descent-optimization-algorithm/">
 <meta property="og:site_name" content="Phạm Duy Tùng Machine Learning Blog">
 <meta property="og:locale" content="vi_VN">
 <meta property="og:image" content="https://www.phamduytung.com/site-images/posts/2018-11-01-overview-of-gradient-descent-optimization-algorithm/cover-pearl-glass_hu_e755da7170e313f2.webp" data-image-budget="100000"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="675"><meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Overview of gradient descent optimization algorithm">
-<meta name="twitter:description" content="Ở bài viết này, chúng ta đề cập đến vấn đề sử dụng pretrain model của kares trong bài toán phân loại chó mèo.">
-<meta name="twitter:image" content="https://www.phamduytung.com/site-images/posts/2018-11-01-overview-of-gradient-descent-optimization-algorithm/cover-pearl-glass_hu_e755da7170e313f2.webp" data-image-budget="100000"><meta property="article:published_time" content="2018-10-29T00:19:00&#43;03:00"><meta property="article:modified_time" content="2018-10-29T00:19:00&#43;03:00"><meta property="article:section" content="blog"><meta property="article:tag" content="machine learning"><meta property="article:tag" content="optimization"><meta property="article:tag" content="gradient descent"><link rel="stylesheet" href="https://www.phamduytung.com/css/main.min.7094996c41a22844b2cfb2120c771154b3c152ea301b01f10f140c20d6dad25d.css" integrity="sha256-cJSZbEGiKESyz7ISDHcRVLPBUuowGwHxDxQMINba0l0=" crossorigin="anonymous"><link rel="stylesheet" href="https://www.phamduytung.com/css/katex.min.4d6aa053ca8a5675016fa2c9c48ee5359bfaafb8295184458af9d64abce84c47.css" integrity="sha256-TWqgU8qKVnUBb6LJxI7lNZv6r7gpUYRFivnWSrzoTEc=" crossorigin="anonymous">
+<meta name="twitter:title" content="Các thuật toán tối ưu Gradient Descent: SGD, Momentum, RMSprop, Adam và AdamW">
+<meta name="twitter:description" content="Optimizer quyết định cách mạng neural dùng gradient để cập nhật trọng số. Giải thích SGD, Momentum, Nesterov, Adagrad, RMSprop, Adam, AdamW, có công thức, code.">
+<meta name="twitter:image" content="https://www.phamduytung.com/site-images/posts/2018-11-01-overview-of-gradient-descent-optimization-algorithm/cover-pearl-glass_hu_e755da7170e313f2.webp" data-image-budget="100000"><meta property="article:published_time" content="2018-10-29T00:19:00&#43;03:00"><meta property="article:modified_time" content="2026-11-01T09:00:00&#43;07:00"><meta property="article:section" content="blog"><meta property="article:tag" content="machine learning"><meta property="article:tag" content="optimization"><meta property="article:tag" content="gradient descent"><meta property="article:tag" content="pytorch"><link rel="stylesheet" href="https://www.phamduytung.com/css/main.min.0558a043598454ca5f6300bbe4bab466b3141cb8632ec005d8872a3a188ed894.css" integrity="sha256-BVigQ1mEVMpfYwC75Lq0ZrMUHLhjLsAF2IcqOhiO2JQ=" crossorigin="anonymous"><link rel="stylesheet" href="https://www.phamduytung.com/css/katex.min.4d6aa053ca8a5675016fa2c9c48ee5359bfaafb8295184458af9d64abce84c47.css" integrity="sha256-TWqgU8qKVnUBb6LJxI7lNZv6r7gpUYRFivnWSrzoTEc=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://www.phamduytung.com/css/viewer.min.3d228794bcedbbfa0412beb8fbc1ec6973202945e42af7004f742a4d7bd620ab.css" integrity="sha256-PSKHlLztu/oEEr64&#43;8HsaXMgKUXkKvcAT3QqTXvWIKs=" crossorigin="anonymous"><link rel="canonical" href="https://www.phamduytung.com/blog/2018-11-01-overview-of-gradient-descent-optimization-algorithm/">
-<meta name="theme-color" content="#f7f5ff"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Phạm Duy Tùng"},"dateModified":"2018-10-29T00:19:00+03:00","datePublished":"2018-10-29T00:19:00+03:00","description":"Ở bài viết này, chúng ta đề cập đến vấn đề sử dụng pretrain model của kares trong bài toán phân loại chó mèo.","headline":"Overview of gradient descent optimization algorithm","image":["https://www.phamduytung.com/site-images/posts/2018-11-01-overview-of-gradient-descent-optimization-algorithm/cover-pearl-glass_hu_e755da7170e313f2.webp"],"inLanguage":"vi","keywords":"machine learning, optimization, gradient descent","mainEntityOfPage":{"@id":"https://www.phamduytung.com/blog/2018-11-01-overview-of-gradient-descent-optimization-algorithm/","@type":"WebPage"},"publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://www.phamduytung.com/site-images/brand-mark-flaming-book-red_hu_45318b168da512af.webp"},"name":"Phạm Duy Tùng Machine Learning Blog"},"url":"https://www.phamduytung.com/blog/2018-11-01-overview-of-gradient-descent-optimization-algorithm/"}</script></head>
+<meta name="theme-color" content="#f7f5ff"><script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@id":"https://www.phamduytung.com/blog/2018-11-01-overview-of-gradient-descent-optimization-algorithm/#article","@type":"BlogPosting","author":[{"@type":"Person","name":"Phạm Duy Tùng","sameAs":["https://github.com/AlexBlack2202","https://www.linkedin.com/in/tung-pham-duy/"],"url":"https://www.phamduytung.com/about/"}],"dateModified":"2026-11-01T09:00:00+07:00","datePublished":"2018-10-29T00:19:00+03:00","description":"Optimizer quyết định cách mạng neural dùng gradient để cập nhật trọng số. Giải thích SGD, Momentum, Nesterov, Adagrad, RMSprop, Adam, AdamW, có công thức, code.","headline":"Các thuật toán tối ưu Gradient Descent: SGD, Momentum, RMSprop, Adam và AdamW","image":["https://www.phamduytung.com/site-images/posts/2018-11-01-overview-of-gradient-descent-optimization-algorithm/cover-pearl-glass_hu_e755da7170e313f2.webp"],"inLanguage":"vi","keywords":"machine learning, optimization, gradient descent, pytorch","mainEntityOfPage":{"@id":"https://www.phamduytung.com/blog/2018-11-01-overview-of-gradient-descent-optimization-algorithm/","@type":"WebPage"},"publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://www.phamduytung.com/site-images/brand-mark-flaming-book-red_hu_45318b168da512af.webp"},"name":"Phạm Duy Tùng Machine Learning Blog","url":"https://www.phamduytung.com/"},"url":"https://www.phamduytung.com/blog/2018-11-01-overview-of-gradient-descent-optimization-algorithm/","wordCount":3287},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","item":"https://www.phamduytung.com/","name":"Trang chủ","position":1},{"@type":"ListItem","item":"https://www.phamduytung.com/blog/","name":"Blogs","position":2},{"@type":"ListItem","item":"https://www.phamduytung.com/blog/2018-11-01-overview-of-gradient-descent-optimization-algorithm/","name":"Các thuật toán tối ưu Gradient Descent: SGD, Momentum, RMSprop, Adam và AdamW","position":3}]}]}</script></head>
   <body><script>const items=["mode","palette"];items.forEach(function(e){const t=localStorage.getItem("hbs-"+e);t&&document.body.parentElement.setAttribute("data-"+e,t)})</script><header><nav class="navbar top-app-bar top-app-bar-expand-lg fixed-top">
   <div class="container pearl-navbar__inner">
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
@@ -50,7 +50,7 @@
   </div>
   <div class="offcanvas-body">
     <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Twitter Share Button"
-      target="_blank" href="https://twitter.com/intent/tweet?title=Overview%20of%20gradient%20descent%20optimization%20algorithm&url=https%3a%2f%2fwww.phamduytung.com%2fblog%2f2018-11-01-overview-of-gradient-descent-optimization-algorithm%2f">
+      target="_blank" href="https://twitter.com/intent/tweet?title=C%c3%a1c%20thu%e1%ba%adt%20to%c3%a1n%20t%e1%bb%91i%20%c6%b0u%20Gradient%20Descent%3a%20SGD%2c%20Momentum%2c%20RMSprop%2c%20Adam%20v%c3%a0%20AdamW&url=https%3a%2f%2fwww.phamduytung.com%2fblog%2f2018-11-01-overview-of-gradient-descent-optimization-algorithm%2f">
       <i class="fab fa-fw fa-twitter"></i> Twitter
     </a>
     <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Facebook Share Button"
@@ -113,6 +113,10 @@
   </div>
 </form>
       <ul class="navbar-nav ms-auto"><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/chu-de/">
+            <i class="fas fa-fw fa-list-alt"></i>Chủ đề
+          </a>
+        </li><li class="nav-item">
           <a class="nav-link" href="https://www.phamduytung.com/series/">
             <i class="fas fa-fw fa-columns"></i>Courses
           </a>
@@ -156,6 +160,11 @@
                 href="https://www.phamduytung.com/faq/">
                 Câu hỏi thường gặp
               </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/about/">
+                Giới thiệu tác giả
+              </a>
             </li></ul>
         </li><li class="nav-item">
           <a class="nav-link" href="https://www.phamduytung.com/xem-truyen/">
@@ -171,7 +180,7 @@
 <div class="col-lg-9 col-md-8">
   <div class="container"><nav class="row card component" aria-label="breadcrumb">
   <div class="card-body">
-    <ol class="breadcrumb "><li class="breadcrumb-item"><a href="https://www.phamduytung.com/">Trang chủ</a></li><li class="breadcrumb-item"><a href="https://www.phamduytung.com/blog/">Blogs</a></li><li class="breadcrumb-item active">Overview of gradient descent optimization algorithm</li></ol>
+    <ol class="breadcrumb "><li class="breadcrumb-item"><a href="https://www.phamduytung.com/">Trang chủ</a></li><li class="breadcrumb-item"><a href="https://www.phamduytung.com/blog/">Blogs</a></li><li class="breadcrumb-item active">Các thuật toán tối ưu Gradient Descent: SGD, Momentum, RMSprop, Adam và AdamW</li></ol>
   </div>
 </nav>
 <div class="post-panel-wrapper">
@@ -199,36 +208,451 @@
 </div>
 <article class="row card component mb-4 post">
   <div class="card-header"><div class="bgcover">
-      <img src="/site-images/posts/2018-11-01-overview-of-gradient-descent-optimization-algorithm/cover-pearl-glass_hu_e755da7170e313f2.webp" alt="" data-image-budget="100000" class="pearl-cover-image" srcset="/site-images/posts/2018-11-01-overview-of-gradient-descent-optimization-algorithm/cover-pearl-glass_hu_2e065ac59285dc39.webp 480w, /site-images/posts/2018-11-01-overview-of-gradient-descent-optimization-algorithm/cover-pearl-glass_hu_393fa1d802e89485.webp 768w, /site-images/posts/2018-11-01-overview-of-gradient-descent-optimization-algorithm/cover-pearl-glass_hu_e755da7170e313f2.webp 1200w" sizes="(min-width: 1200px) 960px, (min-width: 768px) 70vw, 100vw" width="1200" height="675"
+      <img src="/site-images/posts/2018-11-01-overview-of-gradient-descent-optimization-algorithm/cover-pearl-glass_hu_e755da7170e313f2.webp" alt="Các thuật toán tối ưu Gradient Descent: SGD, Momentum, RMSprop, Adam và AdamW" data-image-budget="100000" class="pearl-cover-image" srcset="/site-images/posts/2018-11-01-overview-of-gradient-descent-optimization-algorithm/cover-pearl-glass_hu_2e065ac59285dc39.webp 480w, /site-images/posts/2018-11-01-overview-of-gradient-descent-optimization-algorithm/cover-pearl-glass_hu_393fa1d802e89485.webp 768w, /site-images/posts/2018-11-01-overview-of-gradient-descent-optimization-algorithm/cover-pearl-glass_hu_e755da7170e313f2.webp 1200w" sizes="(min-width: 1200px) 960px, (min-width: 768px) 70vw, 100vw" width="1200" height="675"
   loading="eager" decoding="async" fetchpriority="high">
 
       <div class="bgtrans">
-        <h1>Overview of gradient descent optimization algorithm
+        <h1>Các thuật toán tối ưu Gradient Descent: SGD, Momentum, RMSprop, Adam và AdamW
 </h1>
       </div>
     </div>
   </div>
-  <div class="card-body"><div class="post-meta">
-  <span class="post-date" title="tạo ngày 2018-10-29 04:19:00 &#43;0700 &#43;07.">
+  <div class="card-body"><div class="post-byline">
+  <i class="fas fa-fw fa-user"></i>
+  <span>Tác giả:</span>
+  <a href="https://www.phamduytung.com/about/" rel="author">Phạm Duy Tùng</a>
+</div><div class="post-meta">
+  <span class="post-date" title="tạo ngày 2018-10-29 04:19:00 &#43;0700 &#43;07, cập nhật ngày 2026-11-01 09:00:00 &#43;0700 &#43;07.">
     29/10/2018
   </span><span class="post-reading-time">
-    1 phút đọc
-  </span><span class="post-taxonomies"><a href="https://www.phamduytung.com/tags/machine-learning/" class="badge post-taxonomy">machine learning</a><a href="https://www.phamduytung.com/tags/optimization/" class="badge post-taxonomy">optimization</a><a href="https://www.phamduytung.com/tags/gradient-descent/" class="badge post-taxonomy">gradient descent</a></span>
+    16 phút đọc
+  </span><span class="post-taxonomies"><a href="https://www.phamduytung.com/tags/machine-learning/" class="badge post-taxonomy">machine learning</a><a href="https://www.phamduytung.com/tags/optimization/" class="badge post-taxonomy">optimization</a><a href="https://www.phamduytung.com/tags/gradient-descent/" class="badge post-taxonomy">gradient descent</a><a href="https://www.phamduytung.com/tags/pytorch/" class="badge post-taxonomy">pytorch</a></span>
 </div>
-<div class="post-content mb-3"><div class="toc">
-    <nav id="TableOfContents">
-  <ul>
-    <li><a href="#lời-mở-đầu">Lời mở đầu</a></li>
-    <li><a href="#dẫn-nhập">Dẫn nhập</a></li>
-  </ul>
-</nav>
-  </div>
-<h1 id="lời-mở-đầu">Lời mở đầu<a class="anchor ms-1" href="#lời-mở-đầu"><i class="fas fa-link"></i></a></h1>
-<p>Sau khi thực hiện bài phân loại chó mèo bằng keras, mình phát hiện rằng keras có hỗ trợ rất nhiều thuật toán tối ưu hoá <a href="https://keras.io/optimizers/" target="_blank" rel="noopener noreferrer">https://keras.io/optimizers/</a>. Nhân dịp rãnh rỗi, mình sẽ tổng hợp lại một vài thuật toán mà keras hỗ trợ.</p>
-<h1 id="dẫn-nhập">Dẫn nhập<a class="anchor ms-1" href="#dẫn-nhập"><i class="fas fa-link"></i></a></h1>
-<p>Tại thời điểm hiện tại, Gradient descent là một trong những thuật toán phổ biến được sử dụng để tối ưu hoá mạng neural networks. Các thư viện DNN sẽ implement kèm theo một vài biến thể của gradient descent giúp người dùng dễ dàng sử dụng công cụ hơn.</p>
-<p>Bài viết này mình sẽ cập nhật dần đến khi hoàn thiện.</p>
-<p>Cảm ơn các bạn đã theo dõi. Hẹn gặp bạn ở các bài viết tiếp theo.</p>
+<div class="post-content mb-3"><p><strong>Optimizer</strong> (thuật toán tối ưu) là quy tắc dùng gradient của hàm loss để cập nhật trọng số mạng neural sau mỗi iteration. Mọi optimizer phổ biến hiện nay đều là biến thể của gradient descent: <strong>SGD</strong> bước theo hướng ngược gradient, <strong>Momentum</strong> và <strong>Nesterov</strong> thêm &ldquo;quán tính&rdquo;, <strong>Adagrad</strong> và <strong>RMSprop</strong> tự điều chỉnh bước đi cho từng tham số, <strong>Adam</strong> kết hợp cả hai ý tưởng, còn <strong>AdamW</strong> sửa cách Adam xử lý weight decay.</p>
+<blockquote>
+<p><strong>Cập nhật 11/2026:</strong> bản năm 2018 của bài này chỉ là một đoạn mở đầu ngắn với lời hẹn &ldquo;sẽ cập nhật dần&rdquo;. Bài được viết lại đầy đủ: công thức từng optimizer, code NumPy tự cài đặt, hai thí nghiệm có số liệu, lịch learning rate và hướng dẫn chọn optimizer.</p>
+<p>Code và số liệu trong bài chạy với Python 3.13, NumPy 2.5, PyTorch 2.15 (CPU) và scikit-learn 1.9.</p>
+</blockquote>
+<h2 id="tóm-tắt-nhanh">Tóm tắt nhanh<a class="anchor ms-1" href="#tóm-tắt-nhanh"><i class="fas fa-link"></i></a></h2>
+<table>
+	<thead>
+			<tr>
+					<th>Optimizer</th>
+					<th>Ý tưởng chính</th>
+					<th>Giá trị mặc định trong PyTorch</th>
+					<th>Dùng khi</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>SGD</td>
+					<td>Bước ngược hướng gradient với learning rate cố định</td>
+					<td><code>lr=0.001</code></td>
+					<td>Baseline; kết hợp momentum cho CNN</td>
+			</tr>
+			<tr>
+					<td>SGD + Momentum</td>
+					<td>Cộng dồn gradient cũ như quán tính, bớt dao động</td>
+					<td><code>momentum=0.9</code> (thường dùng)</td>
+					<td>Huấn luyện CNN từ đầu, kèm lịch learning rate</td>
+			</tr>
+			<tr>
+					<td>Nesterov</td>
+					<td>Momentum &ldquo;nhìn trước&rdquo; một bước</td>
+					<td><code>nesterov=True</code></td>
+					<td>Như Momentum, thường hội tụ nhanh hơn chút</td>
+			</tr>
+			<tr>
+					<td>Adagrad</td>
+					<td>Learning rate riêng cho từng tham số, chia cho tổng bình phương gradient</td>
+					<td><code>lr=0.01</code></td>
+					<td>Đặc trưng thưa (embedding, NLP cổ điển)</td>
+			</tr>
+			<tr>
+					<td>RMSprop</td>
+					<td>Như Adagrad nhưng dùng trung bình trượt, learning rate không tắt dần</td>
+					<td><code>lr=0.01</code>, <code>alpha=0.99</code></td>
+					<td>RNN, reinforcement learning</td>
+			</tr>
+			<tr>
+					<td>Adam</td>
+					<td>Momentum + RMSprop + hiệu chỉnh bias</td>
+					<td><code>lr=0.001</code>, <code>betas=(0.9, 0.999)</code></td>
+					<td>Lựa chọn mặc định an toàn để bắt đầu</td>
+			</tr>
+			<tr>
+					<td>AdamW</td>
+					<td>Adam với weight decay tách rời khỏi gradient</td>
+					<td>như Adam, <code>weight_decay=0.01</code></td>
+					<td>Transformer, fine-tune mô hình lớn</td>
+			</tr>
+	</tbody>
+</table>
+<h2 id="gradient-descent-trong-một-phút">Gradient descent trong một phút<a class="anchor ms-1" href="#gradient-descent-trong-một-phút"><i class="fas fa-link"></i></a></h2>
+<p>Gọi $L(w)$ là hàm loss và $g_t = \nabla_w L(w_t)$ là gradient tại bước $t$. Gradient chỉ hướng loss tăng nhanh nhất, nên ta bước ngược lại:</p>
+$$
+w_{t+1} = w_t - \eta \, g_t
+$$<p>Learning rate $\eta$ là độ dài bước: quá lớn thì loss dao động hoặc phát nổ, quá nhỏ thì học rất chậm. Trong deep learning, $g_t$ được tính trên một mini-batch chứ không phải toàn bộ dữ liệu, nên nó là một ước lượng có nhiễu của gradient thật. Mỗi lần cập nhật như vậy là một iteration (xem <a href="/blog/2018-10-02-understanding-epoch-batchsize-iterations/">Epoch, Batch size và Iteration là gì?</a>).</p>
+<h2 id="vì-sao-sgd-thuần-chưa-đủ">Vì sao SGD thuần chưa đủ?<a class="anchor ms-1" href="#vì-sao-sgd-thuần-chưa-đủ"><i class="fas fa-link"></i></a></h2>
+<ul>
+<li><strong>Thung lũng hẹp.</strong> Khi loss dốc theo một hướng nhưng thoải theo hướng khác, SGD dao động qua lại giữa hai vách dốc trong khi chỉ nhích rất chậm dọc theo đáy thung lũng. Learning rate lớn hơn thì phân kỳ theo hướng dốc, nhỏ hơn thì gần như đứng yên theo hướng thoải.</li>
+<li><strong>Một learning rate cho mọi tham số.</strong> Tham số ít khi nhận gradient (ví dụ embedding của từ hiếm) lẽ ra cần bước lớn hơn tham số cập nhật liên tục.</li>
+<li><strong>Vùng bằng phẳng và điểm yên ngựa.</strong> Gradient gần bằng 0 khiến SGD bị chững lại dù chưa tới cực tiểu.</li>
+</ul>
+<p>Các optimizer bên dưới lần lượt xử lý những vấn đề này.</p>
+<h2 id="momentum">Momentum<a class="anchor ms-1" href="#momentum"><i class="fas fa-link"></i></a></h2>
+<p>Momentum giữ một &ldquo;vận tốc&rdquo; $v_t$ là trung bình có trọng số của các gradient gần đây, giống hòn bi lăn xuống dốc tích lũy đà:</p>
+$$
+v_t = \beta \, v_{t-1} + g_t, \qquad w_{t+1} = w_t - \eta \, v_t
+$$<p>Thường chọn $\beta = 0{,}9$. Theo hướng gradient đổi dấu liên tục (vách thung lũng), các thành phần triệt tiêu nhau nên dao động giảm. Theo hướng gradient giữ nguyên dấu (đáy thung lũng), vận tốc cộng dồn nên đi nhanh hơn. Công thức trên là dạng PyTorch dùng; Sutskever và cộng sự (2013) phân tích kỹ vì sao momentum và cách khởi tạo quyết định việc huấn luyện mạng sâu có thành công hay không.</p>
+<h2 id="nesterov-accelerated-gradient">Nesterov Accelerated Gradient<a class="anchor ms-1" href="#nesterov-accelerated-gradient"><i class="fas fa-link"></i></a></h2>
+<p>Nesterov &ldquo;nhìn trước&rdquo;: thay vì dùng gradient tại vị trí hiện tại rồi mới cộng đà, nó điều chỉnh theo vị trí mà đà sắp đưa tới. Trong PyTorch (<code>nesterov=True</code>), bước cập nhật được viết thành:</p>
+$$
+v_t = \beta \, v_{t-1} + g_t, \qquad w_{t+1} = w_t - \eta \, (g_t + \beta \, v_t)
+$$<p>Nhờ biết trước mình sắp vượt quá, Nesterov phanh sớm hơn và thường dao động ít hơn momentum thường.</p>
+<h2 id="adagrad">Adagrad<a class="anchor ms-1" href="#adagrad"><i class="fas fa-link"></i></a></h2>
+<p>Adagrad (Duchi và cộng sự, 2011) cho mỗi tham số một learning rate riêng, bằng cách chia cho căn của tổng bình phương mọi gradient của tham số đó từ đầu (các phép toán ở đây tính theo từng phần tử):</p>
+$$
+G_t = G_{t-1} + g_t^2, \qquad w_{t+1} = w_t - \frac{\eta}{\sqrt{G_t} + \epsilon} \, g_t
+$$<p>Tham số hay nhận gradient lớn sẽ bước nhỏ lại, tham số ít khi được cập nhật sẽ bước lớn hơn, rất hợp với dữ liệu thưa. Nhược điểm: $G_t$ chỉ tăng, nên learning rate hiệu dụng giảm dần về 0 và mô hình có thể ngừng học quá sớm.</p>
+<h2 id="rmsprop">RMSprop<a class="anchor ms-1" href="#rmsprop"><i class="fas fa-link"></i></a></h2>
+<p>RMSprop, do Geoffrey Hinton giới thiệu trong bài giảng <em>Neural Networks for Machine Learning</em> (2012), sửa nhược điểm đó bằng cách thay tổng bằng trung bình trượt của bình phương gradient:</p>
+$$
+E_t = \rho \, E_{t-1} + (1-\rho) \, g_t^2, \qquad w_{t+1} = w_t - \frac{\eta}{\sqrt{E_t} + \epsilon} \, g_t
+$$<p>Bài giảng gốc dùng $\rho = 0{,}9$; PyTorch đặt mặc định <code>alpha=0.99</code>. Vì gradient cũ bị &ldquo;quên&rdquo; dần, learning rate không tắt hẳn. Adadelta (Zeiler, 2012) ra đời cùng thời với ý tưởng tương tự và còn bỏ được learning rate toàn cục.</p>
+<h2 id="adam">Adam<a class="anchor ms-1" href="#adam"><i class="fas fa-link"></i></a></h2>
+<p>Adam (Kingma và Ba, 2014) kết hợp momentum (trung bình trượt của gradient, $m_t$) với RMSprop (trung bình trượt của bình phương gradient, $v_t$):</p>
+$$
+m_t = \beta_1 \, m_{t-1} + (1-\beta_1) \, g_t
+$$$$
+v_t = \beta_2 \, v_{t-1} + (1-\beta_2) \, g_t^2
+$$$$
+\hat{m}_t = \frac{m_t}{1-\beta_1^t}, \qquad \hat{v}_t = \frac{v_t}{1-\beta_2^t}
+$$$$
+w_{t+1} = w_t - \eta \, \frac{\hat{m}_t}{\sqrt{\hat{v}_t} + \epsilon}
+$$<p>Vì $m_0 = v_0 = 0$, ở những bước đầu cả hai bị kéo về gần 0; phép chia cho $1-\beta^t$ (hiệu chỉnh bias) bù lại điều đó. Bộ giá trị trong bài báo, $\eta = 0{,}001$, $\beta_1 = 0{,}9$, $\beta_2 = 0{,}999$, $\epsilon = 10^{-8}$, cũng là mặc định của PyTorch và chạy ổn trên rất nhiều bài toán mà không cần tinh chỉnh nhiều.</p>
+<h2 id="adamw-sửa-cách-adam-xử-lý-weight-decay">AdamW: sửa cách Adam xử lý weight decay<a class="anchor ms-1" href="#adamw-sửa-cách-adam-xử-lý-weight-decay"><i class="fas fa-link"></i></a></h2>
+<p>Với SGD, thêm phạt L2 $\frac{\lambda}{2}\lVert w \rVert^2$ vào loss tương đương với weight decay (mỗi bước nhân trọng số với một hệ số nhỏ hơn 1). Loshchilov và Hutter (2017) chỉ ra điều này <strong>không còn đúng với Adam</strong>: phần gradient của L2 bị chia cho $\sqrt{\hat{v}_t}$ cùng với gradient của loss, nên tham số có gradient lớn lại bị regularize ít hơn. AdamW tách weight decay ra khỏi gradient:</p>
+$$
+w_{t+1} = w_t - \eta \left( \frac{\hat{m}_t}{\sqrt{\hat{v}_t} + \epsilon} + \lambda \, w_t \right)
+$$<p>Trong PyTorch, <code>torch.optim.Adam(..., weight_decay=...)</code> là L2 kiểu cũ (cộng vào gradient), còn <code>torch.optim.AdamW</code> mới là weight decay tách rời. Nếu muốn regularize một mô hình huấn luyện bằng Adam, hãy dùng AdamW.</p>
+<h2 id="vài-optimizer-khác-đáng-biết">Vài optimizer khác đáng biết<a class="anchor ms-1" href="#vài-optimizer-khác-đáng-biết"><i class="fas fa-link"></i></a></h2>
+<ul>
+<li><strong>NAdam:</strong> Adam kết hợp Nesterov, có sẵn trong PyTorch (<code>torch.optim.NAdam</code>).</li>
+<li><strong>AMSGrad:</strong> biến thể của Adam giữ giá trị lớn nhất của $v_t$ để sửa một lỗi hội tụ mà Reddi và cộng sự chỉ ra; bật bằng <code>amsgrad=True</code>.</li>
+<li><strong>AdaBelief:</strong> điều chỉnh bước theo mức độ gradient lệch khỏi dự đoán của momentum. Mình có bài riêng: <a href="/blog/2021-01-15---adabelief-optimizer/">Tìm hiểu thuật toán tối ưu hóa AdaBelief</a>.</li>
+<li><strong>Lion</strong> (Chen và cộng sự, 2023): được tìm ra bằng tìm kiếm chương trình tự động, chỉ dùng dấu của gradient nên tiết kiệm bộ nhớ hơn Adam.</li>
+</ul>
+<h2 id="thí-nghiệm-1-tự-cài-đặt-optimizer-và-thử-trên-thung-lũng-hẹp">Thí nghiệm 1: tự cài đặt optimizer và thử trên thung lũng hẹp<a class="anchor ms-1" href="#thí-nghiệm-1-tự-cài-đặt-optimizer-và-thử-trên-thung-lũng-hẹp"><i class="fas fa-link"></i></a></h2>
+<p>Để thấy rõ khác biệt, mình cài từng optimizer bằng NumPy và cho chạy trên hàm $f(w) = \tfrac{1}{2} w^\top H w$, có độ cong theo một hướng gấp 100 lần hướng còn lại. Điểm xuất phát là $(-3, 1)$; mỗi optimizer được chọn learning rate tốt nhất trong một lưới giá trị; ta đếm số bước cần để $f$ xuống dưới $10^{-4}$. Thí nghiệm chạy hai lần: thung lũng nằm dọc theo trục tham số, và cùng thung lũng đó xoay 45°.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="n">np</span><span class="o">.</span><span class="n">seterr</span><span class="p">(</span><span class="nb">all</span><span class="o">=</span><span class="s2">&#34;ignore&#34;</span><span class="p">)</span>  <span class="c1"># vài learning rate quá lớn sẽ phân kỳ, bỏ qua cảnh báo tràn số</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl"><span class="k">def</span> <span class="nf">make_problem</span><span class="p">(</span><span class="n">angle_deg</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">    <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">angle_deg</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">    <span class="n">R</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">a</span><span class="p">),</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">a</span><span class="p">)],</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">a</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">a</span><span class="p">)]])</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">    <span class="n">H</span> <span class="o">=</span> <span class="n">R</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">100.0</span><span class="p">])</span> <span class="o">@</span> <span class="n">R</span>            <span class="c1"># angle=0: thung lũng nằm dọc trục w1</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">    <span class="k">return</span> <span class="p">(</span><span class="k">lambda</span> <span class="n">w</span><span class="p">:</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">w</span> <span class="o">@</span> <span class="n">H</span> <span class="o">@</span> <span class="n">w</span><span class="p">),</span> <span class="p">(</span><span class="k">lambda</span> <span class="n">w</span><span class="p">:</span> <span class="n">H</span> <span class="o">@</span> <span class="n">w</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">
+</span></span><span class="line"><span class="ln">10</span><span class="cl"><span class="k">def</span> <span class="nf">sgd</span><span class="p">(</span><span class="n">lr</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl">    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span> <span class="k">return</span> <span class="n">w</span> <span class="o">-</span> <span class="n">lr</span> <span class="o">*</span> <span class="n">g</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl">    <span class="k">return</span> <span class="n">step</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl">
+</span></span><span class="line"><span class="ln">14</span><span class="cl"><span class="k">def</span> <span class="nf">momentum</span><span class="p">(</span><span class="n">lr</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="mf">0.9</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl">    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">16</span><span class="cl">        <span class="n">s</span><span class="p">[</span><span class="s2">&#34;v&#34;</span><span class="p">]</span> <span class="o">=</span> <span class="n">beta</span> <span class="o">*</span> <span class="n">s</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;v&#34;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="n">g</span>
+</span></span><span class="line"><span class="ln">17</span><span class="cl">        <span class="k">return</span> <span class="n">w</span> <span class="o">-</span> <span class="n">lr</span> <span class="o">*</span> <span class="n">s</span><span class="p">[</span><span class="s2">&#34;v&#34;</span><span class="p">]</span>
+</span></span><span class="line"><span class="ln">18</span><span class="cl">    <span class="k">return</span> <span class="n">step</span>
+</span></span><span class="line"><span class="ln">19</span><span class="cl">
+</span></span><span class="line"><span class="ln">20</span><span class="cl"><span class="k">def</span> <span class="nf">nesterov</span><span class="p">(</span><span class="n">lr</span><span class="p">,</span> <span class="n">beta</span><span class="o">=</span><span class="mf">0.9</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">21</span><span class="cl">    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>                             <span class="c1"># dạng PyTorch dùng khi nesterov=True</span>
+</span></span><span class="line"><span class="ln">22</span><span class="cl">        <span class="n">s</span><span class="p">[</span><span class="s2">&#34;v&#34;</span><span class="p">]</span> <span class="o">=</span> <span class="n">beta</span> <span class="o">*</span> <span class="n">s</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;v&#34;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="n">g</span>
+</span></span><span class="line"><span class="ln">23</span><span class="cl">        <span class="k">return</span> <span class="n">w</span> <span class="o">-</span> <span class="n">lr</span> <span class="o">*</span> <span class="p">(</span><span class="n">g</span> <span class="o">+</span> <span class="n">beta</span> <span class="o">*</span> <span class="n">s</span><span class="p">[</span><span class="s2">&#34;v&#34;</span><span class="p">])</span>
+</span></span><span class="line"><span class="ln">24</span><span class="cl">    <span class="k">return</span> <span class="n">step</span>
+</span></span><span class="line"><span class="ln">25</span><span class="cl">
+</span></span><span class="line"><span class="ln">26</span><span class="cl"><span class="k">def</span> <span class="nf">adagrad</span><span class="p">(</span><span class="n">lr</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">27</span><span class="cl">    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">28</span><span class="cl">        <span class="n">s</span><span class="p">[</span><span class="s2">&#34;G&#34;</span><span class="p">]</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;G&#34;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="n">g</span> <span class="o">**</span> <span class="mi">2</span>
+</span></span><span class="line"><span class="ln">29</span><span class="cl">        <span class="k">return</span> <span class="n">w</span> <span class="o">-</span> <span class="n">lr</span> <span class="o">*</span> <span class="n">g</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="s2">&#34;G&#34;</span><span class="p">])</span> <span class="o">+</span> <span class="n">eps</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">30</span><span class="cl">    <span class="k">return</span> <span class="n">step</span>
+</span></span><span class="line"><span class="ln">31</span><span class="cl">
+</span></span><span class="line"><span class="ln">32</span><span class="cl"><span class="k">def</span> <span class="nf">rmsprop</span><span class="p">(</span><span class="n">lr</span><span class="p">,</span> <span class="n">rho</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">33</span><span class="cl">    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">34</span><span class="cl">        <span class="n">s</span><span class="p">[</span><span class="s2">&#34;E&#34;</span><span class="p">]</span> <span class="o">=</span> <span class="n">rho</span> <span class="o">*</span> <span class="n">s</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;E&#34;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">rho</span><span class="p">)</span> <span class="o">*</span> <span class="n">g</span> <span class="o">**</span> <span class="mi">2</span>
+</span></span><span class="line"><span class="ln">35</span><span class="cl">        <span class="k">return</span> <span class="n">w</span> <span class="o">-</span> <span class="n">lr</span> <span class="o">*</span> <span class="n">g</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="s2">&#34;E&#34;</span><span class="p">])</span> <span class="o">+</span> <span class="n">eps</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">36</span><span class="cl">    <span class="k">return</span> <span class="n">step</span>
+</span></span><span class="line"><span class="ln">37</span><span class="cl">
+</span></span><span class="line"><span class="ln">38</span><span class="cl"><span class="k">def</span> <span class="nf">adam</span><span class="p">(</span><span class="n">lr</span><span class="p">,</span> <span class="n">b1</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span> <span class="n">b2</span><span class="o">=</span><span class="mf">0.999</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">39</span><span class="cl">    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">40</span><span class="cl">        <span class="n">t</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="s2">&#34;t&#34;</span><span class="p">]</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;t&#34;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+</span></span><span class="line"><span class="ln">41</span><span class="cl">        <span class="n">s</span><span class="p">[</span><span class="s2">&#34;m&#34;</span><span class="p">]</span> <span class="o">=</span> <span class="n">b1</span> <span class="o">*</span> <span class="n">s</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;m&#34;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">b1</span><span class="p">)</span> <span class="o">*</span> <span class="n">g</span>
+</span></span><span class="line"><span class="ln">42</span><span class="cl">        <span class="n">s</span><span class="p">[</span><span class="s2">&#34;v&#34;</span><span class="p">]</span> <span class="o">=</span> <span class="n">b2</span> <span class="o">*</span> <span class="n">s</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&#34;v&#34;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">b2</span><span class="p">)</span> <span class="o">*</span> <span class="n">g</span> <span class="o">**</span> <span class="mi">2</span>
+</span></span><span class="line"><span class="ln">43</span><span class="cl">        <span class="n">m_hat</span><span class="p">,</span> <span class="n">v_hat</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="s2">&#34;m&#34;</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">b1</span> <span class="o">**</span> <span class="n">t</span><span class="p">),</span> <span class="n">s</span><span class="p">[</span><span class="s2">&#34;v&#34;</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">b2</span> <span class="o">**</span> <span class="n">t</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">44</span><span class="cl">        <span class="k">return</span> <span class="n">w</span> <span class="o">-</span> <span class="n">lr</span> <span class="o">*</span> <span class="n">m_hat</span> <span class="o">/</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">v_hat</span><span class="p">)</span> <span class="o">+</span> <span class="n">eps</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">45</span><span class="cl">    <span class="k">return</span> <span class="n">step</span>
+</span></span><span class="line"><span class="ln">46</span><span class="cl">
+</span></span><span class="line"><span class="ln">47</span><span class="cl"><span class="k">def</span> <span class="nf">steps_to_converge</span><span class="p">(</span><span class="n">make</span><span class="p">,</span> <span class="n">lr</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">grad</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span> <span class="n">max_steps</span><span class="o">=</span><span class="mi">5000</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">48</span><span class="cl">    <span class="n">w</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">step</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">3.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]),</span> <span class="p">{},</span> <span class="n">make</span><span class="p">(</span><span class="n">lr</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">49</span><span class="cl">    <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_steps</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">50</span><span class="cl">        <span class="n">w</span> <span class="o">=</span> <span class="n">step</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">grad</span><span class="p">(</span><span class="n">w</span><span class="p">),</span> <span class="n">s</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">51</span><span class="cl">        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">w</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+</span></span><span class="line"><span class="ln">52</span><span class="cl">            <span class="k">return</span> <span class="kc">None</span>
+</span></span><span class="line"><span class="ln">53</span><span class="cl">        <span class="k">if</span> <span class="n">f</span><span class="p">(</span><span class="n">w</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">tol</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln">54</span><span class="cl">            <span class="k">return</span> <span class="n">t</span>
+</span></span><span class="line"><span class="ln">55</span><span class="cl">    <span class="k">return</span> <span class="kc">None</span>
+</span></span><span class="line"><span class="ln">56</span><span class="cl">
+</span></span><span class="line"><span class="ln">57</span><span class="cl"><span class="n">LRS</span> <span class="o">=</span> <span class="p">[</span><span class="mf">3e-4</span><span class="p">,</span> <span class="mf">1e-3</span><span class="p">,</span> <span class="mf">3e-3</span><span class="p">,</span> <span class="mf">1e-2</span><span class="p">,</span> <span class="mf">2e-2</span><span class="p">,</span> <span class="mf">3e-2</span><span class="p">,</span> <span class="mf">1e-1</span><span class="p">,</span> <span class="mf">3e-1</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]</span>
+</span></span><span class="line"><span class="ln">58</span><span class="cl"><span class="n">OPTIMIZERS</span> <span class="o">=</span> <span class="p">[(</span><span class="s2">&#34;SGD&#34;</span><span class="p">,</span> <span class="n">sgd</span><span class="p">),</span> <span class="p">(</span><span class="s2">&#34;Momentum&#34;</span><span class="p">,</span> <span class="n">momentum</span><span class="p">),</span> <span class="p">(</span><span class="s2">&#34;Nesterov&#34;</span><span class="p">,</span> <span class="n">nesterov</span><span class="p">),</span>
+</span></span><span class="line"><span class="ln">59</span><span class="cl">              <span class="p">(</span><span class="s2">&#34;Adagrad&#34;</span><span class="p">,</span> <span class="n">adagrad</span><span class="p">),</span> <span class="p">(</span><span class="s2">&#34;RMSprop&#34;</span><span class="p">,</span> <span class="n">rmsprop</span><span class="p">),</span> <span class="p">(</span><span class="s2">&#34;Adam&#34;</span><span class="p">,</span> <span class="n">adam</span><span class="p">)]</span>
+</span></span><span class="line"><span class="ln">60</span><span class="cl">
+</span></span><span class="line"><span class="ln">61</span><span class="cl"><span class="k">for</span> <span class="n">angle</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">45</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">62</span><span class="cl">    <span class="n">f</span><span class="p">,</span> <span class="n">grad</span> <span class="o">=</span> <span class="n">make_problem</span><span class="p">(</span><span class="n">angle</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">63</span><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="se">\n</span><span class="s2">Thung lũng xoay </span><span class="si">{</span><span class="n">angle</span><span class="si">}</span><span class="s2">°: số bước để f &lt; 1e-4 (chọn lr tốt nhất cho từng optimizer)&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">64</span><span class="cl">    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">make</span> <span class="ow">in</span> <span class="n">OPTIMIZERS</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln">65</span><span class="cl">        <span class="n">ok</span> <span class="o">=</span> <span class="p">[(</span><span class="n">n</span><span class="p">,</span> <span class="n">lr</span><span class="p">)</span> <span class="k">for</span> <span class="n">lr</span> <span class="ow">in</span> <span class="n">LRS</span> <span class="k">if</span> <span class="p">(</span><span class="n">n</span> <span class="o">:=</span> <span class="n">steps_to_converge</span><span class="p">(</span><span class="n">make</span><span class="p">,</span> <span class="n">lr</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">grad</span><span class="p">))</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">]</span>
+</span></span><span class="line"><span class="ln">66</span><span class="cl">        <span class="n">n</span><span class="p">,</span> <span class="n">lr</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">ok</span><span class="p">)</span> <span class="k">if</span> <span class="n">ok</span> <span class="k">else</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">67</span><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;  </span><span class="si">{</span><span class="n">name</span><span class="si">:</span><span class="s2">&gt;9</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">n</span> <span class="k">if</span> <span class="n">n</span> <span class="k">else</span> <span class="s1">&#39;&gt;5000&#39;</span><span class="si">:</span><span class="s2">&gt;5</span><span class="si">}</span><span class="s2"> bước (lr = </span><span class="si">{</span><span class="n">lr</span><span class="si">}</span><span class="s2">)&#34;</span><span class="p">)</span>
+</span></span></code></pre></div><table>
+	<thead>
+			<tr>
+					<th>Optimizer</th>
+					<th>Thung lũng dọc trục: số bước (lr)</th>
+					<th>Xoay 45°: số bước (lr)</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>SGD</td>
+					<td>534 (0,01)</td>
+					<td>528 (0,01)</td>
+			</tr>
+			<tr>
+					<td>Momentum</td>
+					<td>103 (0,01)</td>
+					<td>103 (0,01)</td>
+			</tr>
+			<tr>
+					<td>Nesterov</td>
+					<td>24 (0,01)</td>
+					<td>24 (0,01)</td>
+			</tr>
+			<tr>
+					<td>Adagrad</td>
+					<td>19 (1,0)</td>
+					<td>534 (1,0)</td>
+			</tr>
+			<tr>
+					<td>RMSprop</td>
+					<td>14 (0,3)</td>
+					<td>3.099 (0,001)</td>
+			</tr>
+			<tr>
+					<td>Adam</td>
+					<td>82 (0,1)</td>
+					<td>120 (1,0)</td>
+			</tr>
+	</tbody>
+</table>
+<p><img class="img-fluid" alt="Đường đi trong 80 bước đầu của SGD, Momentum, RMSprop và Adam trên thung lũng hẹp nằm dọc trục và khi xoay 45 độ" src="https://www.phamduytung.com/blog/2018-11-01-overview-of-gradient-descent-optimization-algorithm/optimizer-paths.webp" loading="lazy"  title="Đường đi trong 80 bước đầu của SGD, Momentum, RMSprop và Adam trên thung lũng hẹp nằm dọc trục và khi xoay 45 độ"
+  
+   />
+
+</p>
+<p>Kết quả có hai bài học:</p>
+<ul>
+<li><strong>Momentum và Nesterov không quan tâm thung lũng nằm theo hướng nào.</strong> Số bước giữ nguyên khi xoay 45°, và nhanh hơn SGD lần lượt khoảng 5 và 22 lần.</li>
+<li><strong>Adagrad và RMSprop chỉ thắng lớn khi độ cong nằm dọc theo trục tham số.</strong> Chúng chia bước cho từng tọa độ một cách độc lập, nên khi thung lũng xoay chéo, lợi thế đó biến mất và RMSprop còn tệ hơn cả SGD. Adam vẫn ổn nhờ có thêm thành phần momentum.</li>
+</ul>
+<p>Đây là một bài toán đồ chơi hai chiều; mạng neural thật có hàng triệu chiều và địa hình phức tạp hơn nhiều. Nhưng nó giúp hiểu vì sao &ldquo;optimizer thích nghi&rdquo; không phải lúc nào cũng nhanh hơn, và vì sao momentum gần như luôn có ích.</p>
+<h2 id="thí-nghiệm-2-so-sánh-trên-một-mạng-neural-thật">Thí nghiệm 2: so sánh trên một mạng neural thật<a class="anchor ms-1" href="#thí-nghiệm-2-so-sánh-trên-một-mạng-neural-thật"><i class="fas fa-link"></i></a></h2>
+<p>Thí nghiệm thứ hai dùng mạng 64 → 128 → 10 trên bộ chữ số viết tay <code>digits</code> của scikit-learn, batch 32, 10 epoch, mỗi optimizer dùng learning rate quen thuộc (không tinh chỉnh), trung bình 3 seed:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="kn">import</span> <span class="nn">torch</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl"><span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">DataLoader</span><span class="p">,</span> <span class="n">TensorDataset</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl"><span class="kn">from</span> <span class="nn">sklearn.datasets</span> <span class="kn">import</span> <span class="n">load_digits</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl"><span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">train_test_split</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl"><span class="n">torch</span><span class="o">.</span><span class="n">set_num_threads</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl"><span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">load_digits</span><span class="p">(</span><span class="n">return_X_y</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl"><span class="n">X</span> <span class="o">=</span> <span class="n">X</span> <span class="o">/</span> <span class="mf">16.0</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl"><span class="n">X_tr</span><span class="p">,</span> <span class="n">X_te</span><span class="p">,</span> <span class="n">y_tr</span><span class="p">,</span> <span class="n">y_te</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">stratify</span><span class="o">=</span><span class="n">y</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl"><span class="n">X_tr</span><span class="p">,</span> <span class="n">X_te</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">X_tr</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">X_te</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl"><span class="n">y_tr</span><span class="p">,</span> <span class="n">y_te</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">y_tr</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">y_te</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl">
+</span></span><span class="line"><span class="ln">14</span><span class="cl"><span class="n">OPTIMIZERS</span> <span class="o">=</span> <span class="p">{</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl">    <span class="s2">&#34;SGD (lr=0.01)&#34;</span><span class="p">:</span>             <span class="k">lambda</span> <span class="n">p</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.01</span><span class="p">),</span>
+</span></span><span class="line"><span class="ln">16</span><span class="cl">    <span class="s2">&#34;SGD + Momentum 0.9&#34;</span><span class="p">:</span>        <span class="k">lambda</span> <span class="n">p</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">momentum</span><span class="o">=</span><span class="mf">0.9</span><span class="p">),</span>
+</span></span><span class="line"><span class="ln">17</span><span class="cl">    <span class="s2">&#34;SGD + Nesterov 0.9&#34;</span><span class="p">:</span>        <span class="k">lambda</span> <span class="n">p</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">SGD</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">momentum</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span> <span class="n">nesterov</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+</span></span><span class="line"><span class="ln">18</span><span class="cl">    <span class="s2">&#34;Adagrad (lr=0.01)&#34;</span><span class="p">:</span>         <span class="k">lambda</span> <span class="n">p</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adagrad</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.01</span><span class="p">),</span>
+</span></span><span class="line"><span class="ln">19</span><span class="cl">    <span class="s2">&#34;RMSprop (lr=0.001)&#34;</span><span class="p">:</span>        <span class="k">lambda</span> <span class="n">p</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">RMSprop</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.001</span><span class="p">),</span>
+</span></span><span class="line"><span class="ln">20</span><span class="cl">    <span class="s2">&#34;Adam (lr=0.001)&#34;</span><span class="p">:</span>           <span class="k">lambda</span> <span class="n">p</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.001</span><span class="p">),</span>
+</span></span><span class="line"><span class="ln">21</span><span class="cl">    <span class="s2">&#34;AdamW (lr=0.001, wd=0.01)&#34;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">p</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">AdamW</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span> <span class="n">weight_decay</span><span class="o">=</span><span class="mf">0.01</span><span class="p">),</span>
+</span></span><span class="line"><span class="ln">22</span><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="ln">23</span><span class="cl">
+</span></span><span class="line"><span class="ln">24</span><span class="cl"><span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="n">make_opt</span><span class="p">,</span> <span class="n">seed</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">25</span><span class="cl">    <span class="n">torch</span><span class="o">.</span><span class="n">manual_seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">26</span><span class="cl">    <span class="n">model</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">),</span> <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+</span></span><span class="line"><span class="ln">27</span><span class="cl">    <span class="n">opt</span> <span class="o">=</span> <span class="n">make_opt</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">())</span>
+</span></span><span class="line"><span class="ln">28</span><span class="cl">    <span class="n">loader</span> <span class="o">=</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">TensorDataset</span><span class="p">(</span><span class="n">X_tr</span><span class="p">,</span> <span class="n">y_tr</span><span class="p">),</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">29</span><span class="cl">    <span class="n">acc_by_epoch</span> <span class="o">=</span> <span class="p">[]</span>
+</span></span><span class="line"><span class="ln">30</span><span class="cl">    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">epochs</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">31</span><span class="cl">        <span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">32</span><span class="cl">        <span class="k">for</span> <span class="n">xb</span><span class="p">,</span> <span class="n">yb</span> <span class="ow">in</span> <span class="n">loader</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln">33</span><span class="cl">            <span class="n">loss</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">cross_entropy</span><span class="p">(</span><span class="n">model</span><span class="p">(</span><span class="n">xb</span><span class="p">),</span> <span class="n">yb</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">34</span><span class="cl">            <span class="n">opt</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">35</span><span class="cl">            <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">36</span><span class="cl">            <span class="n">opt</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">37</span><span class="cl">        <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">38</span><span class="cl">        <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+</span></span><span class="line"><span class="ln">39</span><span class="cl">            <span class="n">acc_by_epoch</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">model</span><span class="p">(</span><span class="n">X_te</span><span class="p">)</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="n">y_te</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+</span></span><span class="line"><span class="ln">40</span><span class="cl">    <span class="k">return</span> <span class="n">acc_by_epoch</span>
+</span></span><span class="line"><span class="ln">41</span><span class="cl">
+</span></span><span class="line"><span class="ln">42</span><span class="cl"><span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">make_opt</span> <span class="ow">in</span> <span class="n">OPTIMIZERS</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+</span></span><span class="line"><span class="ln">43</span><span class="cl">    <span class="n">runs</span> <span class="o">=</span> <span class="p">[</span><span class="n">run</span><span class="p">(</span><span class="n">make_opt</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)]</span>
+</span></span><span class="line"><span class="ln">44</span><span class="cl">    <span class="n">avg</span> <span class="o">=</span> <span class="p">[</span><span class="nb">sum</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="n">e</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">runs</span><span class="p">)</span> <span class="o">/</span> <span class="mi">3</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">)]</span>
+</span></span><span class="line"><span class="ln">45</span><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span><span class="n">name</span><span class="si">:</span><span class="s2">&lt;27</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">avg</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s2">&gt;8.3f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">avg</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="si">:</span><span class="s2">&gt;8.3f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">avg</span><span class="p">[</span><span class="mi">9</span><span class="p">]</span><span class="si">:</span><span class="s2">&gt;9.3f</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span></code></pre></div><table>
+	<thead>
+			<tr>
+					<th>Optimizer</th>
+					<th>Accuracy test sau epoch 1</th>
+					<th>Sau epoch 3</th>
+					<th>Sau epoch 10</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>SGD (lr=0,01)</td>
+					<td>0,212</td>
+					<td>0,494</td>
+					<td>0,826</td>
+			</tr>
+			<tr>
+					<td>SGD + Momentum 0,9</td>
+					<td>0,728</td>
+					<td>0,892</td>
+					<td>0,935</td>
+			</tr>
+			<tr>
+					<td>SGD + Nesterov 0,9</td>
+					<td>0,745</td>
+					<td>0,891</td>
+					<td>0,937</td>
+			</tr>
+			<tr>
+					<td>Adagrad (lr=0,01)</td>
+					<td>0,876</td>
+					<td>0,922</td>
+					<td>0,944</td>
+			</tr>
+			<tr>
+					<td>RMSprop (lr=0,001)</td>
+					<td>0,876</td>
+					<td>0,925</td>
+					<td>0,953</td>
+			</tr>
+			<tr>
+					<td>Adam (lr=0,001)</td>
+					<td>0,826</td>
+					<td>0,897</td>
+					<td>0,943</td>
+			</tr>
+			<tr>
+					<td>AdamW (lr=0,001, wd=0,01)</td>
+					<td>0,826</td>
+					<td>0,897</td>
+					<td>0,943</td>
+			</tr>
+	</tbody>
+</table>
+<ul>
+<li>Với cùng learning rate 0,01, <strong>SGD thuần học chậm hẳn</strong>; chỉ cần thêm momentum là accuracy sau 10 epoch tăng từ 0,826 lên 0,935.</li>
+<li><strong>Các optimizer thích nghi đạt kết quả tốt ngay từ epoch đầu</strong> với learning rate mặc định, đó là lý do Adam hay được chọn để bắt đầu.</li>
+<li><strong>AdamW trùng với Adam ở đây</strong> vì weight decay 0,01 chưa đủ tạo khác biệt sau 10 epoch trên mạng nhỏ; khác biệt rõ hơn ở các mô hình lớn huấn luyện lâu.</li>
+<li><strong>SGD không &ldquo;kém&rdquo;, chỉ nhạy với learning rate.</strong> Ở bài về batch size, cùng mạng này với SGD và learning rate 0,1 đạt 0,965 sau 20 epoch.</li>
+</ul>
+<h2 id="learning-rate-quan-trọng-hơn-việc-chọn-optimizer">Learning rate quan trọng hơn việc chọn optimizer<a class="anchor ms-1" href="#learning-rate-quan-trọng-hơn-việc-chọn-optimizer"><i class="fas fa-link"></i></a></h2>
+<p>Trong thực tế, chọn đúng learning rate và lịch thay đổi nó (scheduler) thường tạo khác biệt lớn hơn việc đổi optimizer. Hai kỹ thuật rất phổ biến là <strong>warmup</strong> (tăng dần learning rate trong vài trăm bước đầu) và <strong>cosine annealing</strong> (giảm dần theo đường cosine). Trong PyTorch:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="kn">import</span> <span class="nn">torch</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl"><span class="kn">from</span> <span class="nn">torch.optim.lr_scheduler</span> <span class="kn">import</span> <span class="n">LinearLR</span><span class="p">,</span> <span class="n">CosineAnnealingLR</span><span class="p">,</span> <span class="n">SequentialLR</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl"><span class="n">model</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl"><span class="n">optimizer</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">AdamW</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">,</span> <span class="n">weight_decay</span><span class="o">=</span><span class="mf">0.01</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl"><span class="n">total_steps</span><span class="p">,</span> <span class="n">warmup_steps</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span> <span class="mi">100</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl"><span class="n">scheduler</span> <span class="o">=</span> <span class="n">SequentialLR</span><span class="p">(</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">    <span class="n">optimizer</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl">    <span class="n">schedulers</span><span class="o">=</span><span class="p">[</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl">        <span class="n">LinearLR</span><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span> <span class="n">start_factor</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">total_iters</span><span class="o">=</span><span class="n">warmup_steps</span><span class="p">),</span>             <span class="c1"># warmup: 1e-5 -&gt; 1e-3</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl">        <span class="n">CosineAnnealingLR</span><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span> <span class="n">T_max</span><span class="o">=</span><span class="n">total_steps</span> <span class="o">-</span> <span class="n">warmup_steps</span><span class="p">,</span> <span class="n">eta_min</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">),</span>  <span class="c1"># giảm dần theo cosine</span>
+</span></span><span class="line"><span class="ln">14</span><span class="cl">    <span class="p">],</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl">    <span class="n">milestones</span><span class="o">=</span><span class="p">[</span><span class="n">warmup_steps</span><span class="p">],</span>
+</span></span><span class="line"><span class="ln">16</span><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="ln">17</span><span class="cl">
+</span></span><span class="line"><span class="ln">18</span><span class="cl"><span class="k">for</span> <span class="n">step</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">total_steps</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">19</span><span class="cl">    <span class="c1"># ... forward, loss.backward() ở đây ...</span>
+</span></span><span class="line"><span class="ln">20</span><span class="cl">    <span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">21</span><span class="cl">    <span class="n">scheduler</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>          <span class="c1"># gọi sau optimizer.step(), mỗi iteration một lần</span>
+</span></span><span class="line"><span class="ln">22</span><span class="cl">    <span class="k">if</span> <span class="n">step</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">49</span><span class="p">,</span> <span class="mi">99</span><span class="p">,</span> <span class="mi">499</span><span class="p">,</span> <span class="mi">999</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">23</span><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;step </span><span class="si">{</span><span class="n">step</span> <span class="o">+</span> <span class="mi">1</span><span class="si">:</span><span class="s2">&gt;4</span><span class="si">}</span><span class="s2">: lr = </span><span class="si">{</span><span class="n">scheduler</span><span class="o">.</span><span class="n">get_last_lr</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s2">.2e</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">step    1: lr = 1.99e-05
+</span></span><span class="line"><span class="ln">2</span><span class="cl">step   50: lr = 5.05e-04
+</span></span><span class="line"><span class="ln">3</span><span class="cl">step  100: lr = 1.00e-03
+</span></span><span class="line"><span class="ln">4</span><span class="cl">step  500: lr = 5.91e-04
+</span></span><span class="line"><span class="ln">5</span><span class="cl">step 1000: lr = 1.00e-05
+</span></span></code></pre></div><p>Warmup đặc biệt hữu ích với batch lớn và với Transformer, giai đoạn mà các thống kê của Adam chưa ổn định và gradient còn rất lớn.</p>
+<h2 id="nên-chọn-optimizer-nào">Nên chọn optimizer nào?<a class="anchor ms-1" href="#nên-chọn-optimizer-nào"><i class="fas fa-link"></i></a></h2>
+<ul>
+<li><strong>Mới bắt đầu hoặc không có thời gian tinh chỉnh:</strong> AdamW với <code>lr=1e-3</code> cho mạng nhỏ, kèm warmup và cosine. Đây cũng là lựa chọn phổ biến cho Transformer.</li>
+<li><strong>Fine-tune mô hình đã huấn luyện sẵn:</strong> vẫn là AdamW nhưng learning rate nhỏ hơn nhiều, để không phá hỏng những gì mô hình đã học.</li>
+<li><strong>Huấn luyện CNN phân loại ảnh từ đầu:</strong> SGD + momentum 0,9 + weight decay + lịch learning rate vẫn là công thức rất mạnh. Wilson và cộng sự (2017) ghi nhận nghiệm do các phương pháp thích nghi tìm ra có thể tổng quát hóa kém hơn SGD trên một số bài toán.</li>
+<li><strong>Đặc trưng thưa, embedding lớn:</strong> Adagrad hoặc Adam.</li>
+<li><strong>Loss phát nổ hoặc ra NaN:</strong> giảm learning rate, thêm warmup, dùng gradient clipping (<code>torch.nn.utils.clip_grad_norm_</code>), trước khi nghĩ đến đổi optimizer.</li>
+</ul>
+<p>Khi so sánh hai optimizer, hãy tinh chỉnh learning rate cho từng cái. So sánh với cùng một learning rate gần như luôn thiên vị một bên, như thí nghiệm 2 ở trên.</p>
+<h2 id="những-lỗi-thường-gặp">Những lỗi thường gặp<a class="anchor ms-1" href="#những-lỗi-thường-gặp"><i class="fas fa-link"></i></a></h2>
+<ul>
+<li><strong>Dùng <code>Adam(weight_decay=...)</code> khi thật ra muốn AdamW.</strong></li>
+<li><strong>Quên <code>optimizer.zero_grad()</code></strong>, khiến gradient của các bước cộng dồn vào nhau ngoài ý muốn.</li>
+<li><strong>Đổi optimizer nhưng giữ nguyên learning rate:</strong> learning rate tốt cho SGD (0,1) thường quá lớn cho Adam, và ngược lại.</li>
+<li><strong>Gọi <code>scheduler.step()</code> sai chỗ hoặc sai tần suất</strong> (mỗi epoch thay vì mỗi iteration, hoặc trước <code>optimizer.step()</code>).</li>
+<li><strong>Áp weight decay lên mọi tham số</strong>, kể cả bias và tham số của LayerNorm/BatchNorm; nhiều codebase tách các tham số này ra thành nhóm riêng với <code>weight_decay=0</code>.</li>
+</ul>
+<h2 id="câu-hỏi-thường-gặp">Câu hỏi thường gặp<a class="anchor ms-1" href="#câu-hỏi-thường-gặp"><i class="fas fa-link"></i></a></h2>
+<p><strong>Optimizer là gì?</strong>
+Là thuật toán quyết định cách dùng gradient của hàm loss để cập nhật trọng số mô hình sau mỗi iteration.</p>
+<p><strong>Adam và SGD khác nhau thế nào?</strong>
+SGD dùng một learning rate chung cho mọi tham số. Adam theo dõi trung bình gradient (như momentum) và trung bình bình phương gradient (như RMSprop) để tự điều chỉnh bước đi cho từng tham số.</p>
+<p><strong>Nên dùng Adam hay AdamW?</strong>
+AdamW, nếu bạn có dùng weight decay. Nó áp weight decay đúng nghĩa thay vì trộn vào gradient như <code>Adam(weight_decay=...)</code>.</p>
+<p><strong>Learning rate bao nhiêu là hợp lý?</strong>
+Điểm khởi đầu phổ biến là 1e-3 cho Adam/AdamW và 0,01–0,1 cho SGD có momentum, rồi điều chỉnh theo đường loss. Fine-tune mô hình lớn thường cần learning rate nhỏ hơn nhiều.</p>
+<p><strong>Momentum là gì?</strong>
+Là cơ chế cộng dồn gradient của các bước trước như quán tính, giúp giảm dao động và tăng tốc theo những hướng mà gradient ổn định.</p>
+<h2 id="đọc-thêm-trên-blog">Đọc thêm trên blog<a class="anchor ms-1" href="#đọc-thêm-trên-blog"><i class="fas fa-link"></i></a></h2>
+<ul>
+<li>Toàn bộ chủ đề: <a href="/chu-de/machine-learning-deep-learning/">Nền tảng Machine Learning &amp; Deep Learning</a></li>
+<li><a href="/blog/2018-10-02-understanding-epoch-batchsize-iterations/">Epoch, Batch size và Iteration là gì?</a></li>
+<li><a href="/blog/2019-05-05-deep-learning-dropout/">Dropout là gì? Cách dropout chống overfitting trong Deep Learning</a></li>
+<li><a href="/blog/2021-01-15---adabelief-optimizer/">Tìm hiểu thuật toán tối ưu hóa AdaBelief</a></li>
+<li><a href="/blog/2022-02-25-normalization/">Các kỹ thuật chuẩn hóa trong Deep Learning</a></li>
+<li><a href="/blog/2018-12-11-a-bunch-of-tips-and-tricks-for-training-deep-neural-networks/">Một số mẹo khi huấn luyện mạng deep neural network</a></li>
+</ul>
+<h2 id="tài-liệu-tham-khảo">Tài liệu tham khảo<a class="anchor ms-1" href="#tài-liệu-tham-khảo"><i class="fas fa-link"></i></a></h2>
+<ol>
+<li>Sebastian Ruder (2016). <em>An overview of gradient descent optimization algorithms</em>. <a href="https://arxiv.org/abs/1609.04747" target="_blank" rel="noopener noreferrer">arXiv:1609.04747</a></li>
+<li>Ilya Sutskever, James Martens, George Dahl, Geoffrey Hinton (2013). <em>On the importance of initialization and momentum in deep learning</em>. ICML. <a href="https://proceedings.mlr.press/v28/sutskever13.html" target="_blank" rel="noopener noreferrer">proceedings.mlr.press</a></li>
+<li>John Duchi, Elad Hazan, Yoram Singer (2011). <em>Adaptive Subgradient Methods for Online Learning and Stochastic Optimization</em>. JMLR 12. <a href="https://jmlr.org/papers/v12/duchi11a.html" target="_blank" rel="noopener noreferrer">jmlr.org</a></li>
+<li>Geoffrey Hinton, Nitish Srivastava, Kevin Swersky (2012). <em>Neural Networks for Machine Learning</em>, Lecture 6 (RMSprop). <a href="https://www.cs.toronto.edu/~tijmen/csc321/slides/lecture_slides_lec6.pdf" target="_blank" rel="noopener noreferrer">cs.toronto.edu</a></li>
+<li>Matthew D. Zeiler (2012). <em>ADADELTA: An Adaptive Learning Rate Method</em>. <a href="https://arxiv.org/abs/1212.5701" target="_blank" rel="noopener noreferrer">arXiv:1212.5701</a></li>
+<li>Diederik P. Kingma, Jimmy Ba (2014). <em>Adam: A Method for Stochastic Optimization</em>. <a href="https://arxiv.org/abs/1412.6980" target="_blank" rel="noopener noreferrer">arXiv:1412.6980</a></li>
+<li>Ilya Loshchilov, Frank Hutter (2017). <em>Decoupled Weight Decay Regularization</em>. <a href="https://arxiv.org/abs/1711.05101" target="_blank" rel="noopener noreferrer">arXiv:1711.05101</a></li>
+<li>Sashank J. Reddi, Satyen Kale, Sanjiv Kumar. <em>On the Convergence of Adam and Beyond</em>. <a href="https://arxiv.org/abs/1904.09237" target="_blank" rel="noopener noreferrer">arXiv:1904.09237</a></li>
+<li>Ashia C. Wilson và cộng sự (2017). <em>The Marginal Value of Adaptive Gradient Methods in Machine Learning</em>. <a href="https://arxiv.org/abs/1705.08292" target="_blank" rel="noopener noreferrer">arXiv:1705.08292</a></li>
+<li>Xiangning Chen và cộng sự (2023). <em>Symbolic Discovery of Optimization Algorithms</em> (Lion). <a href="https://arxiv.org/abs/2302.06675" target="_blank" rel="noopener noreferrer">arXiv:2302.06675</a></li>
+<li>PyTorch. <em>torch.optim</em>. <a href="https://docs.pytorch.org/docs/stable/optim.html" target="_blank" rel="noopener noreferrer">docs.pytorch.org</a></li>
+</ol>
 </div></div>
   <div class="card-footer"><div class="post-navs d-flex justify-content-evenly"><div class="post-nav post-prev">
     <i class="fas fa-fw fa-chevron-left"></i>
@@ -239,7 +663,39 @@
 </a>
     <i class="fas fa-fw fa-chevron-right"></i>
   </div></div></div>
-</article><div class="card component row post-comments" id="post-comments">
+</article><section class="related-posts row card component">
+    <div class="card-header">
+      <h2 class="card-title">Bài liên quan</h2>
+    </div>
+    <div class="card-body">
+      <ul class="post-list"><li>
+          <a href="https://www.phamduytung.com/blog/2018-10-02-understanding-epoch-batchsize-iterations/">Epoch, Batch size và Iteration là gì? Phân biệt dễ hiểu kèm ví dụ và code
+</a>
+          <span class="float-end post-date">02/10/2018
+</span>
+        </li><li>
+          <a href="https://www.phamduytung.com/blog/2025-01-31-pytorch2.6/">Pytorch 2.6
+</a>
+          <span class="float-end post-date">31/01/2025
+</span>
+        </li><li>
+          <a href="https://www.phamduytung.com/blog/2021-01-15---adabelief-optimizer/">Tìm hiểu thuật toán tối ưu hóa Adabelief Optimizer
+</a>
+          <span class="float-end post-date">15/01/2021
+</span>
+        </li><li>
+          <a href="https://www.phamduytung.com/blog/2019-02-08-randomized-optimization-in-python-v1/">Tối ưu hoá ngẫu nhiên - Bài toán người giao hàng
+</a>
+          <span class="float-end post-date">08/02/2019
+</span>
+        </li><li>
+          <a href="https://www.phamduytung.com/blog/2019-02-08-getting-started-with-randomized-optimization-in-python/">Tối ưu hoá ngẫu nhiên
+</a>
+          <span class="float-end post-date">08/02/2019
+</span>
+        </li></ul>
+    </div>
+  </section><div class="card component row post-comments" id="post-comments">
   <div class="card-header">
     <h2 class="card-title">Bình luận</h2>
   </div>
@@ -255,17 +711,32 @@
 </div><aside class="col-lg-3 col-md-4 sidebar d-flex">
   <div class="container d-flex flex-column">
     
-    <a href="https://www.buymeacoffee.com/alexblack28"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=🍎&slug=alexblack28&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" /></a><div class="post-toc row mb-4 card component" id="postTOC">
+    <a href="https://www.buymeacoffee.com/alexblack28" rel="noopener"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=🍎&slug=alexblack28&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" alt="Buy me a coffee" loading="lazy" decoding="async" /></a>
+<div class="post-toc row mb-4 card component" id="postTOC">
   <div class="card-header">
     <h2 class="card-title">Mục lục</h2>
   </div>
   <div class="card-body">
-    <nav id="TableOfContents">
-  <ul>
-    <li><a href="#lời-mở-đầu">Lời mở đầu</a></li>
-    <li><a href="#dẫn-nhập">Dẫn nhập</a></li>
-  </ul>
-</nav>
+    <nav id="TableOfContents"><ul>
+        <li><a href="#tóm-tắt-nhanh">Tóm tắt nhanh</a></li>
+        <li><a href="#gradient-descent-trong-một-phút">Gradient descent trong một phút</a></li>
+        <li><a href="#vì-sao-sgd-thuần-chưa-đủ">Vì sao SGD thuần chưa đủ?</a></li>
+        <li><a href="#momentum">Momentum</a></li>
+        <li><a href="#nesterov-accelerated-gradient">Nesterov Accelerated Gradient</a></li>
+        <li><a href="#adagrad">Adagrad</a></li>
+        <li><a href="#rmsprop">RMSprop</a></li>
+        <li><a href="#adam">Adam</a></li>
+        <li><a href="#adamw-sửa-cách-adam-xử-lý-weight-decay">AdamW: sửa cách Adam xử lý weight decay</a></li>
+        <li><a href="#vài-optimizer-khác-đáng-biết">Vài optimizer khác đáng biết</a></li>
+        <li><a href="#thí-nghiệm-1-tự-cài-đặt-optimizer-và-thử-trên-thung-lũng-hẹp">Thí nghiệm 1: tự cài đặt optimizer và thử trên thung lũng hẹp</a></li>
+        <li><a href="#thí-nghiệm-2-so-sánh-trên-một-mạng-neural-thật">Thí nghiệm 2: so sánh trên một mạng neural thật</a></li>
+        <li><a href="#learning-rate-quan-trọng-hơn-việc-chọn-optimizer">Learning rate quan trọng hơn việc chọn optimizer</a></li>
+        <li><a href="#nên-chọn-optimizer-nào">Nên chọn optimizer nào?</a></li>
+        <li><a href="#những-lỗi-thường-gặp">Những lỗi thường gặp</a></li>
+        <li><a href="#câu-hỏi-thường-gặp">Câu hỏi thường gặp</a></li>
+        <li><a href="#đọc-thêm-trên-blog">Đọc thêm trên blog</a></li>
+        <li><a href="#tài-liệu-tham-khảo">Tài liệu tham khảo</a></li>
+      </ul></nav>
   </div>
 </div><section class="recent-posts row card component">
   <div class="card-header">
@@ -337,8 +808,8 @@
             Llm<span class="badge badge-sm text-white bg-accent ms-1">17</span></a><a href="https://www.phamduytung.com/tags/computer-vision/" class="badge rounded post-taxonomy" title="Computer Vision">
             Computer Vision<span class="badge badge-sm text-white bg-accent ms-1">16</span></a><a href="https://www.phamduytung.com/tags/python/" class="badge rounded post-taxonomy" title="Python">
             Python<span class="badge badge-sm text-white bg-accent ms-1">14</span></a><a href="https://www.phamduytung.com/tags/mathematics/" class="badge rounded post-taxonomy" title="Mathematics">
-            Mathematics<span class="badge badge-sm text-white bg-accent ms-1">12</span></a><a href="https://www.phamduytung.com/tags/ai-agent/" class="badge rounded post-taxonomy" title="Ai Agent">
-            Ai Agent<span class="badge badge-sm text-white bg-accent ms-1">10</span></a><a href="https://www.phamduytung.com/tags/to%C3%A1n-h%E1%BB%8Dc/" class="badge rounded post-taxonomy" title="Toán Học">
+            Mathematics<span class="badge badge-sm text-white bg-accent ms-1">12</span></a><a href="https://www.phamduytung.com/tags/ai-agent/" class="badge rounded post-taxonomy" title="AI Agent">
+            AI Agent<span class="badge badge-sm text-white bg-accent ms-1">10</span></a><a href="https://www.phamduytung.com/tags/to%C3%A1n-h%E1%BB%8Dc/" class="badge rounded post-taxonomy" title="Toán Học">
             Toán Học<span class="badge badge-sm text-white bg-accent ms-1">8</span></a><a href="https://www.phamduytung.com/tags/tri%E1%BA%BFt-h%E1%BB%8Dc/" class="badge rounded post-taxonomy" title="Triết Học">
             Triết Học<span class="badge badge-sm text-white bg-accent ms-1">8</span></a><a href="https://www.phamduytung.com/tags/ai/" class="badge rounded post-taxonomy" title="Ai">
             Ai<span class="badge badge-sm text-white bg-accent ms-1">7</span></a></div>
@@ -364,15 +835,18 @@
         </li><li class="nav-item">
             <a class="nav-link" href="/faq/"><i class="fas fa-fw fa-question-circle"></i>Câu hỏi thường gặp
 </a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/about/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-user"></i>Giới thiệu tác giả
+</a>
         </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
       <li class="nav-item">
         <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Docs
 </a>
       </li><li class="nav-item">
-            <a class="nav-link" href="/team_of_services" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-users"></i>Điều khoản sử dụng
+            <a class="nav-link" href="/teamofservices/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-users"></i>Điều khoản sử dụng
 </a>
         </li><li class="nav-item">
-            <a class="nav-link" href="/privacy" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-lock"></i>Chính sách bảo mật
+            <a class="nav-link" href="/privacy/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-lock"></i>Chính sách bảo mật
 </a>
         </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
       <li class="nav-item">
@@ -381,16 +855,6 @@
       </li><li class="nav-item">
             <a class="nav-link" href="/utils/gen_paswords/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-key"></i>Tạo password ngẫu nhiên
 </a>
-        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
-      <li class="nav-item">
-        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Liên kết khác
-</a>
-      </li><li class="nav-item">
-            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">Netlify
-</a>
-        </li><li class="nav-item">
-            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">facebook
-</a>
         </li></ul></li></ul>
 <div class="copyright mb-2">
   Copyright © 2016-2026 Phạm Duy Tùng. All Rights Reserved.
@@ -398,7 +862,7 @@
 <div class="powered-by mb-2">
   Website chia sẻ kiến thức của Phạm Duy Tùng và Đặng Thị Hằng. Vui lòng liên hệ email alexblack2202@gmail.com nếu bạn có thông tin cần trao đổi.
 </div></footer>
-<script src="https://www.phamduytung.com/js/main.111d51a8c754010f8399ca010e552d803e2d5170b361f8886ad04ec6c21ca551.js" integrity="sha256-ER1RqMdUAQ&#43;DmcoBDlUtgD4tUXCzYfiIatBOxsIcpVE=" crossorigin="anonymous" defer></script><script src="https://www.phamduytung.com/js/icons.min.cb4c9958dbc49e29ac644e168e82db2d0de9a741a15751cc5bf2b0af21eb2845.js" integrity="sha256-y0yZWNvEnimsZE4WjoLbLQ3pp0GhV1HMW/KwryHrKEU=" crossorigin="anonymous" defer></script>
+<script src="https://www.phamduytung.com/js/main.e788bab0969e53541289578e23a0f66a2ec1102872a9d44b994c80d0601d588a.js" integrity="sha256-54i6sJaeU1QSiVeOI6D2ai7BEChyqdRLmUyA0GAdWIo=" crossorigin="anonymous" defer></script><script src="https://www.phamduytung.com/js/icons.min.cb4c9958dbc49e29ac644e168e82db2d0de9a741a15751cc5bf2b0af21eb2845.js" integrity="sha256-y0yZWNvEnimsZE4WjoLbLQ3pp0GhV1HMW/KwryHrKEU=" crossorigin="anonymous" defer></script>
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {

@@ -3,25 +3,25 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Tìm hiểu về dropout trong deep learning, machine learning - Phạm Duy Tùng</title>
+    <title>Dropout là gì? Cách dropout chống overfitting trong Deep Learning (kèm code) - Phạm Duy Tùng</title>
     <meta name="a.validate.02" content="1QZXZ8oi7g57H-GxBrBPkTYBydwii-Ic9iJu" /><link rel="apple-touch-icon" href="https://www.phamduytung.com/images/icons/icon-180x180.png" sizes="180x180">
 <link rel="icon" href="https://www.phamduytung.com/images/icons/icon-32x32.png" sizes="32x32" type="image/png">
 <link rel="icon" href="https://www.phamduytung.com/images/icons/icon-16x16.png" sizes="16x16" type="image/png">
 <link rel="icon" href="https://www.phamduytung.com/images/icons/favicon.ico">
 <link rel="manifest" href="https://www.phamduytung.com/manifest.json">
-<meta name="keywords" content="" />
-<meta name="description" content="Trong bài viết này, chúng ta sẽ đề cập chủ yếu vào khái niệm dropout của mạng neural network và mô hình deep nets. Trong đó sẽ có vài thực nghiệm để thấy được hiệu quả của việc sử dụng dropout." /><meta name="robots" content="index, follow, max-image-preview:large"><meta property="og:title" content="Tìm hiểu về dropout trong deep learning, machine learning">
-<meta property="og:description" content="Trong bài viết này, chúng ta sẽ đề cập chủ yếu vào khái niệm dropout của mạng neural network và mô hình deep nets. Trong đó sẽ có vài thực nghiệm để thấy được hiệu quả của việc sử dụng dropout.">
+
+<meta name="description" content="Dropout tắt ngẫu nhiên một phần neuron khi huấn luyện để mạng không dựa dẫm vào vài neuron, nhờ đó giảm overfitting. Cơ chế, code PyTorch/Keras và thí nghiệm." /><meta name="robots" content="index, follow, max-image-preview:large"><meta property="og:title" content="Dropout là gì? Cách dropout chống overfitting trong Deep Learning (kèm code)">
+<meta property="og:description" content="Dropout tắt ngẫu nhiên một phần neuron khi huấn luyện để mạng không dựa dẫm vào vài neuron, nhờ đó giảm overfitting. Cơ chế, code PyTorch/Keras và thí nghiệm.">
 <meta property="og:type" content="article">
 <meta property="og:url" content="https://www.phamduytung.com/blog/2019-05-05-deep-learning-dropout/">
 <meta property="og:site_name" content="Phạm Duy Tùng Machine Learning Blog">
 <meta property="og:locale" content="vi_VN">
 <meta property="og:image" content="https://www.phamduytung.com/site-images/posts/2019-05-05-deep-learning-dropout/cover-pearl-glass_hu_983072ae2d7e193.webp" data-image-budget="100000"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="675"><meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Tìm hiểu về dropout trong deep learning, machine learning">
-<meta name="twitter:description" content="Trong bài viết này, chúng ta sẽ đề cập chủ yếu vào khái niệm dropout của mạng neural network và mô hình deep nets. Trong đó sẽ có vài thực nghiệm để thấy được hiệu quả của việc sử dụng dropout.">
-<meta name="twitter:image" content="https://www.phamduytung.com/site-images/posts/2019-05-05-deep-learning-dropout/cover-pearl-glass_hu_983072ae2d7e193.webp" data-image-budget="100000"><meta property="article:published_time" content="2019-05-05T00:12:00&#43;03:00"><meta property="article:modified_time" content="2019-05-05T00:12:00&#43;03:00"><meta property="article:section" content="blog"><meta property="article:tag" content="deep learning"><meta property="article:tag" content="regularization"><meta property="article:tag" content="model training"><link rel="stylesheet" href="https://www.phamduytung.com/css/main.min.7094996c41a22844b2cfb2120c771154b3c152ea301b01f10f140c20d6dad25d.css" integrity="sha256-cJSZbEGiKESyz7ISDHcRVLPBUuowGwHxDxQMINba0l0=" crossorigin="anonymous"><link rel="stylesheet" href="https://www.phamduytung.com/css/katex.min.4d6aa053ca8a5675016fa2c9c48ee5359bfaafb8295184458af9d64abce84c47.css" integrity="sha256-TWqgU8qKVnUBb6LJxI7lNZv6r7gpUYRFivnWSrzoTEc=" crossorigin="anonymous">
+<meta name="twitter:title" content="Dropout là gì? Cách dropout chống overfitting trong Deep Learning (kèm code)">
+<meta name="twitter:description" content="Dropout tắt ngẫu nhiên một phần neuron khi huấn luyện để mạng không dựa dẫm vào vài neuron, nhờ đó giảm overfitting. Cơ chế, code PyTorch/Keras và thí nghiệm.">
+<meta name="twitter:image" content="https://www.phamduytung.com/site-images/posts/2019-05-05-deep-learning-dropout/cover-pearl-glass_hu_983072ae2d7e193.webp" data-image-budget="100000"><meta property="article:published_time" content="2019-05-05T00:12:00&#43;03:00"><meta property="article:modified_time" content="2026-11-01T09:00:00&#43;07:00"><meta property="article:section" content="blog"><meta property="article:tag" content="deep learning"><meta property="article:tag" content="regularization"><meta property="article:tag" content="model training"><meta property="article:tag" content="pytorch"><link rel="stylesheet" href="https://www.phamduytung.com/css/main.min.0558a043598454ca5f6300bbe4bab466b3141cb8632ec005d8872a3a188ed894.css" integrity="sha256-BVigQ1mEVMpfYwC75Lq0ZrMUHLhjLsAF2IcqOhiO2JQ=" crossorigin="anonymous"><link rel="stylesheet" href="https://www.phamduytung.com/css/katex.min.4d6aa053ca8a5675016fa2c9c48ee5359bfaafb8295184458af9d64abce84c47.css" integrity="sha256-TWqgU8qKVnUBb6LJxI7lNZv6r7gpUYRFivnWSrzoTEc=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://www.phamduytung.com/css/viewer.min.3d228794bcedbbfa0412beb8fbc1ec6973202945e42af7004f742a4d7bd620ab.css" integrity="sha256-PSKHlLztu/oEEr64&#43;8HsaXMgKUXkKvcAT3QqTXvWIKs=" crossorigin="anonymous"><link rel="canonical" href="https://www.phamduytung.com/blog/2019-05-05-deep-learning-dropout/">
-<meta name="theme-color" content="#f7f5ff"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Phạm Duy Tùng"},"dateModified":"2019-05-05T00:12:00+03:00","datePublished":"2019-05-05T00:12:00+03:00","description":"Trong bài viết này, chúng ta sẽ đề cập chủ yếu vào khái niệm dropout của mạng neural network và mô hình deep nets. Trong đó sẽ có vài thực nghiệm để thấy được hiệu quả của việc sử dụng dropout.","headline":"Tìm hiểu về dropout trong deep learning, machine learning","image":["https://www.phamduytung.com/site-images/posts/2019-05-05-deep-learning-dropout/cover-pearl-glass_hu_983072ae2d7e193.webp"],"inLanguage":"vi","keywords":"deep learning, regularization, model training","mainEntityOfPage":{"@id":"https://www.phamduytung.com/blog/2019-05-05-deep-learning-dropout/","@type":"WebPage"},"publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://www.phamduytung.com/site-images/brand-mark-flaming-book-red_hu_45318b168da512af.webp"},"name":"Phạm Duy Tùng Machine Learning Blog"},"url":"https://www.phamduytung.com/blog/2019-05-05-deep-learning-dropout/"}</script></head>
+<meta name="theme-color" content="#f7f5ff"><script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@id":"https://www.phamduytung.com/blog/2019-05-05-deep-learning-dropout/#article","@type":"BlogPosting","author":[{"@type":"Person","name":"Phạm Duy Tùng","sameAs":["https://github.com/AlexBlack2202","https://www.linkedin.com/in/tung-pham-duy/"],"url":"https://www.phamduytung.com/about/"}],"dateModified":"2026-11-01T09:00:00+07:00","datePublished":"2019-05-05T00:12:00+03:00","description":"Dropout tắt ngẫu nhiên một phần neuron khi huấn luyện để mạng không dựa dẫm vào vài neuron, nhờ đó giảm overfitting. Cơ chế, code PyTorch/Keras và thí nghiệm.","headline":"Dropout là gì? Cách dropout chống overfitting trong Deep Learning (kèm code)","image":["https://www.phamduytung.com/site-images/posts/2019-05-05-deep-learning-dropout/cover-pearl-glass_hu_983072ae2d7e193.webp"],"inLanguage":"vi","keywords":"deep learning, regularization, model training, pytorch","mainEntityOfPage":{"@id":"https://www.phamduytung.com/blog/2019-05-05-deep-learning-dropout/","@type":"WebPage"},"publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://www.phamduytung.com/site-images/brand-mark-flaming-book-red_hu_45318b168da512af.webp"},"name":"Phạm Duy Tùng Machine Learning Blog","url":"https://www.phamduytung.com/"},"url":"https://www.phamduytung.com/blog/2019-05-05-deep-learning-dropout/","wordCount":3058},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","item":"https://www.phamduytung.com/","name":"Trang chủ","position":1},{"@type":"ListItem","item":"https://www.phamduytung.com/blog/","name":"Blogs","position":2},{"@type":"ListItem","item":"https://www.phamduytung.com/blog/2019-05-05-deep-learning-dropout/","name":"Dropout là gì? Cách dropout chống overfitting trong Deep Learning (kèm code)","position":3}]}]}</script></head>
   <body><script>const items=["mode","palette"];items.forEach(function(e){const t=localStorage.getItem("hbs-"+e);t&&document.body.parentElement.setAttribute("data-"+e,t)})</script><header><nav class="navbar top-app-bar top-app-bar-expand-lg fixed-top">
   <div class="container pearl-navbar__inner">
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
@@ -50,7 +50,7 @@
   </div>
   <div class="offcanvas-body">
     <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Twitter Share Button"
-      target="_blank" href="https://twitter.com/intent/tweet?title=T%c3%acm%20hi%e1%bb%83u%20v%e1%bb%81%20dropout%20trong%20deep%20learning%2c%20machine%20learning&url=https%3a%2f%2fwww.phamduytung.com%2fblog%2f2019-05-05-deep-learning-dropout%2f">
+      target="_blank" href="https://twitter.com/intent/tweet?title=Dropout%20l%c3%a0%20g%c3%ac%3f%20C%c3%a1ch%20dropout%20ch%e1%bb%91ng%20overfitting%20trong%20Deep%20Learning%20%28k%c3%a8m%20code%29&url=https%3a%2f%2fwww.phamduytung.com%2fblog%2f2019-05-05-deep-learning-dropout%2f">
       <i class="fab fa-fw fa-twitter"></i> Twitter
     </a>
     <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Facebook Share Button"
@@ -113,6 +113,10 @@
   </div>
 </form>
       <ul class="navbar-nav ms-auto"><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/chu-de/">
+            <i class="fas fa-fw fa-list-alt"></i>Chủ đề
+          </a>
+        </li><li class="nav-item">
           <a class="nav-link" href="https://www.phamduytung.com/series/">
             <i class="fas fa-fw fa-columns"></i>Courses
           </a>
@@ -156,6 +160,11 @@
                 href="https://www.phamduytung.com/faq/">
                 Câu hỏi thường gặp
               </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/about/">
+                Giới thiệu tác giả
+              </a>
             </li></ul>
         </li><li class="nav-item">
           <a class="nav-link" href="https://www.phamduytung.com/xem-truyen/">
@@ -171,7 +180,7 @@
 <div class="col-lg-9 col-md-8">
   <div class="container"><nav class="row card component" aria-label="breadcrumb">
   <div class="card-body">
-    <ol class="breadcrumb "><li class="breadcrumb-item"><a href="https://www.phamduytung.com/">Trang chủ</a></li><li class="breadcrumb-item"><a href="https://www.phamduytung.com/blog/">Blogs</a></li><li class="breadcrumb-item active">Tìm hiểu về dropout trong deep learning, machine learning</li></ol>
+    <ol class="breadcrumb "><li class="breadcrumb-item"><a href="https://www.phamduytung.com/">Trang chủ</a></li><li class="breadcrumb-item"><a href="https://www.phamduytung.com/blog/">Blogs</a></li><li class="breadcrumb-item active">Dropout là gì? Cách dropout chống overfitting trong Deep Learning (kèm code)</li></ol>
   </div>
 </nav>
 <div class="post-panel-wrapper">
@@ -199,289 +208,376 @@
 </div>
 <article class="row card component mb-4 post">
   <div class="card-header"><div class="bgcover">
-      <img src="/site-images/posts/2019-05-05-deep-learning-dropout/cover-pearl-glass_hu_983072ae2d7e193.webp" alt="" data-image-budget="100000" class="pearl-cover-image" srcset="/site-images/posts/2019-05-05-deep-learning-dropout/cover-pearl-glass_hu_db0977179c33a24c.webp 480w, /site-images/posts/2019-05-05-deep-learning-dropout/cover-pearl-glass_hu_18a59472ae958920.webp 768w, /site-images/posts/2019-05-05-deep-learning-dropout/cover-pearl-glass_hu_983072ae2d7e193.webp 1200w" sizes="(min-width: 1200px) 960px, (min-width: 768px) 70vw, 100vw" width="1200" height="675"
+      <img src="/site-images/posts/2019-05-05-deep-learning-dropout/cover-pearl-glass_hu_983072ae2d7e193.webp" alt="Dropout là gì? Cách dropout chống overfitting trong Deep Learning (kèm code)" data-image-budget="100000" class="pearl-cover-image" srcset="/site-images/posts/2019-05-05-deep-learning-dropout/cover-pearl-glass_hu_db0977179c33a24c.webp 480w, /site-images/posts/2019-05-05-deep-learning-dropout/cover-pearl-glass_hu_18a59472ae958920.webp 768w, /site-images/posts/2019-05-05-deep-learning-dropout/cover-pearl-glass_hu_983072ae2d7e193.webp 1200w" sizes="(min-width: 1200px) 960px, (min-width: 768px) 70vw, 100vw" width="1200" height="675"
   loading="eager" decoding="async" fetchpriority="high">
 
       <div class="bgtrans">
-        <h1>Tìm hiểu về dropout trong deep learning, machine learning
+        <h1>Dropout là gì? Cách dropout chống overfitting trong Deep Learning (kèm code)
 </h1>
       </div>
     </div>
   </div>
-  <div class="card-body"><div class="post-meta">
-  <span class="post-date" title="tạo ngày 2019-05-05 04:12:00 &#43;0700 &#43;07.">
+  <div class="card-body"><div class="post-byline">
+  <i class="fas fa-fw fa-user"></i>
+  <span>Tác giả:</span>
+  <a href="https://www.phamduytung.com/about/" rel="author">Phạm Duy Tùng</a>
+</div><div class="post-meta">
+  <span class="post-date" title="tạo ngày 2019-05-05 04:12:00 &#43;0700 &#43;07, cập nhật ngày 2026-11-01 09:00:00 &#43;0700 &#43;07.">
     05/05/2019
   </span><span class="post-reading-time">
-    9 phút đọc
-  </span><span class="post-taxonomies"><a href="https://www.phamduytung.com/tags/deep-learning/" class="badge post-taxonomy">Deep Learning</a><a href="https://www.phamduytung.com/tags/regularization/" class="badge post-taxonomy">regularization</a><a href="https://www.phamduytung.com/tags/model-training/" class="badge post-taxonomy">model training</a></span>
+    15 phút đọc
+  </span><span class="post-taxonomies"><a href="https://www.phamduytung.com/tags/deep-learning/" class="badge post-taxonomy">Deep Learning</a><a href="https://www.phamduytung.com/tags/regularization/" class="badge post-taxonomy">regularization</a><a href="https://www.phamduytung.com/tags/model-training/" class="badge post-taxonomy">model training</a><a href="https://www.phamduytung.com/tags/pytorch/" class="badge post-taxonomy">pytorch</a></span>
 </div>
-<div class="post-content mb-3"><div class="toc">
-    <nav id="TableOfContents">
-  <ul>
-    <li><a href="#1-dropout-là-gì-nó-có-ý-nghĩa-gì-trong-mạng-neural-network">1. Dropout là gì, nó có ý nghĩa gì trong mạng neural network</a></li>
-    <li><a href="#2-tạo-sao-chúng-ta-cần-dropout">2. Tạo sao chúng ta cần dropout</a></li>
-    <li><a href="#3-dropout">3. Dropout</a></li>
-    <li><a href="#4-một-số-đặc-điểm-rút-ra-được-khi-huấn-luyện-nhiều-mô-hình-khác-nhau-sử-dụng-dropout">4. Một số đặc điểm rút ra được khi huấn luyện nhiều mô hình khác nhau sử dụng dropout</a></li>
-    <li><a href="#5-thực-nghiệm-trong-keras">5. Thực nghiệm trong keras</a></li>
-  </ul>
-</nav>
-  </div>
-<h1 id="1-dropout-là-gì-nó-có-ý-nghĩa-gì-trong-mạng-neural-network">1. Dropout là gì, nó có ý nghĩa gì trong mạng neural network<a class="anchor ms-1" href="#1-dropout-là-gì-nó-có-ý-nghĩa-gì-trong-mạng-neural-network"><i class="fas fa-link"></i></a></h1>
-<p>Theo Wikipedia, thuật ngữ &ldquo;dropout&rdquo; đề cập đến việc bỏ qua các đơn vị (unit) (cả hai hidden unit và visible unit) trong mạng neural network.</p>
-<p>Hiểu đơn giản là, trong mạng neural network, kỹ thuật dropout là việc chúng ta sẽ bỏ qua một vài unit trong suốt quá trình train trong mô hình, những unit bị bỏ qua được lựa chọn ngẫu nhiên. Ở đây, chúng ta hiểu &ldquo;bỏ qua - ignoring&rdquo; là unit đó sẽ không tham gia và đóng góp vào quá trình huấn luyện (lan truyền tiến và lan truyền ngược).</p>
-<p>Về mặt kỹ thuật, tại mỗi giai đoạn huấn luyện, mỗi node có xác suất bị bỏ qua là 1-p và xác suất được chọn là p</p>
-<h1 id="2-tạo-sao-chúng-ta-cần-dropout">2. Tạo sao chúng ta cần dropout<a class="anchor ms-1" href="#2-tạo-sao-chúng-ta-cần-dropout"><i class="fas fa-link"></i></a></h1>
-<p>Giả sử rằng bạn hiểu hoàn toàn những gì đã nói ở phần 1, câu hỏi đặt ra là tại sao chúng ta cần đến dropout, tại sao chúng ta cần phải loại bỏ một vài các unit nào đó trong mạng neural network?</p>
-<p>Câu trả lời cho câu hỏi này là <strong>để chống over-fitting</strong></p>
-<p>Khi chúng ta sử dụng full connected layer, các neural sẽ phụ thuộc &ldquo;mạnh&rdquo; lẫn nhau trong suốt quá trình huấn luyện, điều này làm giảm sức mạng cho mỗi neural và dẫn đến bị over-fitting tập train.</p>
-<h1 id="3-dropout">3. Dropout<a class="anchor ms-1" href="#3-dropout"><i class="fas fa-link"></i></a></h1>
-<p>Đọc đến đây, bạn đã có một khái niệm cơ bản về dropout và động lực - động cơ để chúng ta sử dụng nó. Nếu bạn chỉ muốn có cái nhìn tổng quan về dropout trong neural network, hai sections trên đã cung cấp đầy đủ thông tin cho bạn, bạn có thể dừng tại đây. Phần tiếp theo, chúng ta sẽ nói kỹ hơn về mặt kỹ thuật của dropout.</p>
-<p>Trước đây, trong machine learning, người ta thường sử dụng regularization để ngăng chặn over-fititng. Regularization làm giảm over-fitting bằng cách thêm yếu tố &ldquo;phạt&rdquo; vào hàm độ lỗi (loss function).  Bằng việc thêm vào điểm phạt này, mô hình được huấn luyện sẽ giúp các features weights giảm đi sự phụ thuộc lẫn nhau. Đối với những ai đã sử dụng Logistic Regression rồi thì sẽ không xa lạ với thuật ngữ phạt L1(Laplacian) và L2 (Gaussian).</p>
-<p>Dropout là một kỹ thuật khác, một cách tiếp cận khác để regularization  trong mạng neural netwoks.</p>
-<p>Kỹ thuật dropout được thực hiện như sau:</p>
-<p><strong>Trong pha train</strong>: với mỗi hidden layer, với mỗi trainning sample, với mỗi lần lặp, chọn ngẫu nhiên p phần trăm số node và bỏ qua nó (bỏ qua luôn hàm kích hoạt cho các node bị bỏ qua).</p>
-<p><strong>Trong pha test</strong>: Sử dụng toàn bộ activations, nhưng giảm chúng với tỷ lệ p (do chúng ta bị miss p% hàm activation trong quá trình train).</p>
-<p><img class="img-fluid" alt="Hình ảnh" src="https://www.phamduytung.com/blog/2019-05-05-deep-learning-dropout/drop_out.png" loading="lazy"  title="Hình ảnh"
-  
-   />
-
-
-<strong>Mô tả về kiến trúc mạng có và không có dropout</strong></p>
-<h1 id="4-một-số-đặc-điểm-rút-ra-được-khi-huấn-luyện-nhiều-mô-hình-khác-nhau-sử-dụng-dropout">4. Một số đặc điểm rút ra được khi huấn luyện nhiều mô hình khác nhau sử dụng dropout<a class="anchor ms-1" href="#4-một-số-đặc-điểm-rút-ra-được-khi-huấn-luyện-nhiều-mô-hình-khác-nhau-sử-dụng-dropout"><i class="fas fa-link"></i></a></h1>
+<div class="post-content mb-3"><p><strong>Dropout</strong> là kỹ thuật regularization cho mạng neural: trong lúc huấn luyện, mỗi neuron (thường ở các tầng ẩn) bị tắt ngẫu nhiên với xác suất $p$, tức đầu ra của nó bị đặt bằng 0 trong bước huấn luyện đó. Vì không neuron nào được &ldquo;đảm bảo&rdquo; có mặt, mạng phải học các đặc trưng bền vững hơn thay vì dựa dẫm vào vài neuron cụ thể, nhờ đó giảm overfitting. Khi suy luận (inference), dropout được tắt và mạng dùng đầy đủ mọi neuron.</p>
+<blockquote>
+<p><strong>Cập nhật 11/2026:</strong> bài viết năm 2019 được viết lại: làm rõ cơ chế <em>inverted dropout</em>, sửa cách giải thích pha test, thêm code PyTorch và Keras đã chạy thử, một thí nghiệm mới có số liệu, và các biến thể như Spatial Dropout, DropBlock, MC Dropout. Thực nghiệm CIFAR-10 năm 2019 vẫn được giữ lại ở cuối bài.</p>
+<p>Code và số liệu trong bài chạy với Python 3.13, NumPy 2.5, PyTorch 2.15 (CPU), Keras 3.15 (backend PyTorch) và scikit-learn 1.9.</p>
+</blockquote>
+<h2 id="tóm-tắt-nhanh">Tóm tắt nhanh<a class="anchor ms-1" href="#tóm-tắt-nhanh"><i class="fas fa-link"></i></a></h2>
 <ul>
-<li>
-<p>Dropout ép mạng neural phải tìm ra nhiều robust features hơn, với đặc điểm là chúng phải hữu ích hơn, tốt hơn, ngon hơn khi kết hợp với nhiều neuron khác.</p>
-</li>
-<li>
-<p>Dropout đòi hỏi phải gấp đôi quá trình huấn luyện để đạt được sự hội tụ. Tuy nhiên, thời gian huấn luyện cho mỗi epoch sẽ ít hơn.</p>
-</li>
-<li>
-<p>Với H unit trong mô hình, mỗi unit đều có xác xuất bị bỏ qua hoặc được chọn, chúng ta sẽ có 2^H mô hình có thể có. Trong pha test, toàn bộ network được sử dụng và mỗi hàm activation được giảm đi với hệ số p.</p>
-</li>
-<li>
-<p>Một số nghiên cứu chỉ ra rằng, khi sử dụng Dropout và Batch Normalization (BN) cùng nhau thì kết quả rất tệ, trong cả lý thuyết và thực nghiệm, ví dụ nghiên cứu ở papper &ldquo;Understanding the Disharmony between Dropout and Batch Normalization by Variance Shift&rdquo;, nguồn <a href="https://arxiv.org/abs/1801.05134" target="_blank" rel="noopener noreferrer">https://arxiv.org/abs/1801.05134</a>, nhóm tác giả giải thích về mặt lý thuyết rằng: &ldquo;đối với một neural, Dropout sẽ thay đổi phương sai của nó khi chúng ta chuyển trạng thái từ trian sang test. Còn BN thì không, BN vẫn tích luỹ đầy đủ thông tin trong quá trình huấn luyện. Do Dropout làm thay đổi phương sai nên sẽ xảy ra hiện tượng không đồng nhất về phương sai, dẫn đến hành vi suy luận không chắc chắn dẫn đến suy luận bị sai nhiều. Đặc biệt là khi kết hợp dropout và BN thì khiến cho suy luận càng sai lầm trầm trọng. &ldquo;. Cho nên, trong một số trường hợp/bài toán chúng ta có thể dùng Dropout, trong một số trường hợp/ bài toán, người ta sử dụng BN và không sử dụng dropout.</p>
-</li>
-<li>
-<p>Người ta thường dùng hệ số dropout là 0.5. Lý giải cho việc này, bạn có thể đọc bài báo <a href="http://papers.nips.cc/paper/4878-understanding-dropout.pdf" target="_blank" rel="noopener noreferrer">http://papers.nips.cc/paper/4878-understanding-dropout.pdf</a>. Nói nôm là việc sử dụng giảm 50% của dropout giúp kết quả đạt được là tốt nhất so với các phương pháp chuẩn hoá khác.</p>
-</li>
+<li><strong>Khi huấn luyện:</strong> mỗi phần tử bị đặt về 0 với xác suất $p$; các phần tử còn lại được nhân với $1/(1-p)$.</li>
+<li><strong>Khi suy luận:</strong> dropout không làm gì cả, đầu vào đi thẳng qua.</li>
+<li><strong>$p$ trong PyTorch và <code>rate</code> trong Keras là xác suất bỏ</strong>, không phải xác suất giữ.</li>
+<li><strong>Giá trị hay dùng:</strong> 0,5 cho tầng fully connected lớn, 0,1–0,2 gần đầu vào, khoảng 0,1 trong Transformer. Luôn chỉnh lại trên tập validation.</li>
+<li><strong>Lỗi kinh điển:</strong> quên gọi <code>model.eval()</code> trước khi đánh giá trong PyTorch, khiến kết quả dự đoán ngẫu nhiên mỗi lần chạy.</li>
 </ul>
-<h1 id="5-thực-nghiệm-trong-keras">5. Thực nghiệm trong keras<a class="anchor ms-1" href="#5-thực-nghiệm-trong-keras"><i class="fas fa-link"></i></a></h1>
-<p>Những vấn đề nói ở trên chỉ là lý thuyết. Bây giờ chúng ta sẽ bắt tay vào làm thực tế. Để xem thử dropout hoạt động như thế nào, chúng ta sẽ xây dựng mô hình deep net sử dụng keras và sử dụng tập dữ liệu cifar-10. Mô hình chúng ta xây dựng có 3 hidden layer với kích thước lần lượt là 64, 128, 256 và 1 full connected layer có kích thước 512 và output layer có kích thước 10 (do mình có 10 lớp).</p>
-<p>Chúng ta sử dụng hàm kích hoạt là ReLU trên các hidden layer và sử dụng hàm sigmoid trên output layer. Sử dụng hàm lỗi categorical cross-entropy.</p>
-<p>Trong trường hợp mô hình có sử dụng dropout, chúng ta sẽ set dropout ở tất cả các layer và thay đổi tỷ lệ dropout nằm trong khoảng từ 0.0 đến 0.9 với bước nhảy là 0.1.</p>
-<p>Mô hình setup với số epochs là 20. Bắt đầu xem nào.</p>
-<p>Đầu tiên, chúng ta sẽ load một vài thư viện cần thiết</p>
+<p><img class="img-fluid" alt="Sơ đồ dropout: khi huấn luyện một số neuron ở tầng ẩn bị tắt ngẫu nhiên; khi suy luận mạng dùng đủ mọi neuron" src="https://www.phamduytung.com/blog/2019-05-05-deep-learning-dropout/dropout-train-vs-inference.svg" loading="lazy"  title="Sơ đồ dropout: khi huấn luyện một số neuron ở tầng ẩn bị tắt ngẫu nhiên; khi suy luận mạng dùng đủ mọi neuron"
+  
+   />
+
+</p>
+<h2 id="overfitting-và-hiện-tượng-co-adaptation">Overfitting và hiện tượng “co-adaptation”<a class="anchor ms-1" href="#overfitting-và-hiện-tượng-co-adaptation"><i class="fas fa-link"></i></a></h2>
+<p>Một mạng nhiều tham số có thể thuộc lòng tập huấn luyện: loss trên train giảm gần về 0 nhưng loss trên dữ liệu mới lại tăng. Đó là <strong>overfitting</strong>.</p>
+<p>Hinton và cộng sự (2012) mô tả một nguyên nhân cụ thể trong mạng neural là <strong>co-adaptation</strong>: các neuron học cách &ldquo;sửa lỗi cho nhau&rdquo; theo những kiểu chỉ đúng trên dữ liệu huấn luyện. Một neuron có thể chỉ hữu ích khi đi kèm vài neuron khác. Dropout phá vỡ sự phụ thuộc này: vì bạn đồng hành có thể biến mất bất cứ lúc nào, mỗi neuron buộc phải học một đặc trưng tự nó có ích.</p>
+<p>Trước dropout, cách chống overfitting quen thuộc là thêm phạt L1 hoặc L2 vào hàm loss (như trong Logistic Regression). Dropout là một cách regularization khác, tác động trực tiếp lên cấu trúc mạng trong lúc huấn luyện, và có thể dùng cùng với L2 hay weight decay.</p>
+<h2 id="dropout-hoạt-động-thế-nào">Dropout hoạt động thế nào?<a class="anchor ms-1" href="#dropout-hoạt-động-thế-nào"><i class="fas fa-link"></i></a></h2>
+<p>Với đầu ra $h_j$ của neuron thứ $j$ ở một tầng, mỗi bước huấn luyện lấy một mặt nạ ngẫu nhiên $m_j$:</p>
+$$
+m_j \sim \text{Bernoulli}(1-p), \qquad \tilde{h}_j = \frac{m_j \, h_j}{1-p}
+$$<p>Nghĩa là neuron được giữ với xác suất $1-p$ và bị tắt với xác suất $p$. Mặt nạ được lấy lại ở <strong>mỗi bước</strong> và <strong>cho từng mẫu</strong> trong batch, nên mỗi lần cập nhật thực chất huấn luyện một mạng con &ldquo;mỏng&rdquo; khác nhau. Ở bước backward, gradient cũng chỉ chảy qua các neuron được giữ.</p>
+<p>Khi suy luận, $\tilde{h}_j = h_j$: không có mặt nạ, không có ngẫu nhiên.</p>
+<h3 id="vì-sao-phải-nhân-với-11p">Vì sao phải nhân với 1/(1−p)?<a class="anchor ms-1" href="#vì-sao-phải-nhân-với-11p"><i class="fas fa-link"></i></a></h3>
+<p>Nếu chỉ tắt neuron mà không bù lại, tổng tín hiệu đi vào tầng sau khi huấn luyện sẽ nhỏ hơn lúc suy luận (vì lúc suy luận có đủ neuron). Nhân phần còn lại với $1/(1-p)$ giữ nguyên kỳ vọng:</p>
+$$
+\mathbb{E}\big[\tilde{h}_j\big] = (1-p) \cdot \frac{h_j}{1-p} + p \cdot 0 = h_j
+$$<p>Cách làm này gọi là <strong>inverted dropout</strong> và là cách PyTorch, Keras đang dùng. Bài báo gốc của Srivastava và cộng sự (2014) làm ngược lại: không nhân gì khi huấn luyện, nhưng khi test thì nhân trọng số đi ra từ mỗi neuron với xác suất giữ. Hai cách cho cùng kỳ vọng; inverted dropout tiện hơn vì mã suy luận không phải thay đổi gì. (Bản năm 2019 của bài này mô tả theo cách của bài báo gốc, &ldquo;giảm activation ở pha test&rdquo;; với các framework hiện nay, việc đó đã được làm sẵn ngay trong lúc huấn luyện.)</p>
+<h3 id="p-là-xác-suất-bỏ-hay-xác-suất-giữ">p là xác suất bỏ hay xác suất giữ?<a class="anchor ms-1" href="#p-là-xác-suất-bỏ-hay-xác-suất-giữ"><i class="fas fa-link"></i></a></h3>
+<p>Đây là chỗ dễ nhầm nhất khi đọc tài liệu:</p>
+<table>
+	<thead>
+			<tr>
+					<th>Nguồn</th>
+					<th>Ký hiệu</th>
+					<th>Ý nghĩa</th>
+					<th>Dropout &ldquo;một nửa&rdquo;</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>Bài báo Srivastava và cộng sự (2014)</td>
+					<td>$p$</td>
+					<td>xác suất <strong>giữ</strong></td>
+					<td>$p = 0{,}5$</td>
+			</tr>
+			<tr>
+					<td>TensorFlow 1.x</td>
+					<td><code>keep_prob</code></td>
+					<td>xác suất <strong>giữ</strong></td>
+					<td><code>keep_prob=0.5</code></td>
+			</tr>
+			<tr>
+					<td>PyTorch <code>nn.Dropout</code></td>
+					<td><code>p</code></td>
+					<td>xác suất <strong>bỏ</strong></td>
+					<td><code>p=0.5</code></td>
+			</tr>
+			<tr>
+					<td>Keras <code>layers.Dropout</code></td>
+					<td><code>rate</code></td>
+					<td>xác suất <strong>bỏ</strong></td>
+					<td><code>rate=0.5</code></td>
+			</tr>
+	</tbody>
+</table>
+<p>Khi chuyển code cũ dùng <code>keep_prob=0.8</code> sang PyTorch, giá trị đúng là <code>p=0.2</code>, không phải <code>p=0.8</code>.</p>
+<h2 id="vì-sao-dropout-giúp-chống-overfitting">Vì sao dropout giúp chống overfitting?<a class="anchor ms-1" href="#vì-sao-dropout-giúp-chống-overfitting"><i class="fas fa-link"></i></a></h2>
+<p>Có ba cách nhìn bổ sung cho nhau:</p>
+<ol>
+<li><strong>Ensemble rất nhiều mạng con.</strong> Một mạng có $n$ neuron có thể bị tắt sinh ra tới $2^n$ mạng con khác nhau, tất cả dùng chung trọng số. Huấn luyện với dropout gần giống huấn luyện cả &ldquo;tập thể&rdquo; này, và khi suy luận, mạng đầy đủ (đã scale) xấp xỉ việc lấy trung bình dự đoán của chúng (Srivastava và cộng sự, 2014; Baldi và Sadowski, 2013 phân tích tính chất lấy trung bình này).</li>
+<li><strong>Chống co-adaptation.</strong> Như ở trên, neuron không thể trông cậy vào một vài &ldquo;đồng đội&rdquo; cố định.</li>
+<li><strong>Thêm nhiễu vào quá trình học.</strong> Nhiễu nhân tính làm mô hình khó khớp chính xác từng điểm dữ liệu, tương tự cách data augmentation hay batch nhỏ có tác dụng regularization.</li>
+</ol>
+<p>Cái giá phải trả là huấn luyện chậm hội tụ hơn: loss trên train giảm chậm hơn và thường cần nhiều epoch hơn.</p>
+<h2 id="tự-cài-đặt-dropout-bằng-numpy">Tự cài đặt dropout bằng NumPy<a class="anchor ms-1" href="#tự-cài-đặt-dropout-bằng-numpy"><i class="fas fa-link"></i></a></h2>
+<p>Viết tay một lần là cách nhanh nhất để hiểu chuyện gì xảy ra bên trong:</p>
 <div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-</span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="kn">import</span> <span class="nn">os</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl"><span class="k">def</span> <span class="nf">dropout_forward</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">0</span><span class="p">)):</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">    <span class="s2">&#34;&#34;&#34;Inverted dropout: p là xác suất BỎ một phần tử (giống PyTorch/Keras).&#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">    <span class="k">if</span> <span class="ow">not</span> <span class="n">training</span> <span class="ow">or</span> <span class="n">p</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">        <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="kc">None</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">    <span class="n">mask</span> <span class="o">=</span> <span class="p">(</span><span class="n">rng</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">p</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">p</span><span class="p">)</span>   <span class="c1"># giữ lại với xác suất 1-p rồi nhân 1/(1-p)</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">    <span class="k">return</span> <span class="n">x</span> <span class="o">*</span> <span class="n">mask</span><span class="p">,</span> <span class="n">mask</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">
+</span></span><span class="line"><span class="ln">10</span><span class="cl"><span class="k">def</span> <span class="nf">dropout_backward</span><span class="p">(</span><span class="n">grad_out</span><span class="p">,</span> <span class="n">mask</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl">    <span class="k">return</span> <span class="n">grad_out</span> <span class="o">*</span> <span class="n">mask</span>   <span class="c1"># gradient chỉ chảy qua các neuron được giữ</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl">
+</span></span><span class="line"><span class="ln">13</span><span class="cl"><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+</span></span><span class="line"><span class="ln">14</span><span class="cl"><span class="n">out</span><span class="p">,</span> <span class="n">mask</span> <span class="o">=</span> <span class="n">dropout_forward</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="s2">&#34;train:&#34;</span><span class="p">,</span> <span class="n">out</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span>
+</span></span><span class="line"><span class="ln">16</span><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="s2">&#34;eval :&#34;</span><span class="p">,</span> <span class="n">dropout_forward</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="kc">False</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+</span></span><span class="line"><span class="ln">17</span><span class="cl">
+</span></span><span class="line"><span class="ln">18</span><span class="cl"><span class="n">big</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">10_000</span><span class="p">,</span> <span class="mi">100</span><span class="p">))</span>
+</span></span><span class="line"><span class="ln">19</span><span class="cl"><span class="n">out</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">dropout_forward</span><span class="p">(</span><span class="n">big</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">20</span><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="s2">&#34;tỉ lệ phần tử bị bỏ:&#34;</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="nb">float</span><span class="p">((</span><span class="n">out</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()),</span> <span class="mi">3</span><span class="p">))</span>
+</span></span><span class="line"><span class="ln">21</span><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="s2">&#34;trung bình đầu ra:&#34;</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">mean</span><span class="p">()),</span> <span class="mi">3</span><span class="p">),</span> <span class="s2">&#34;(kỳ vọng vẫn = 1.0)&#34;</span><span class="p">)</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">train: [[2. 0. 0. 0. 2. 2. 2. 2. 2. 2.]]
+</span></span><span class="line"><span class="ln">2</span><span class="cl">eval : [[1. 1. 1. 1. 1. 1. 1. 1. 1. 1.]]
+</span></span><span class="line"><span class="ln">3</span><span class="cl">tỉ lệ phần tử bị bỏ: 0.3
+</span></span><span class="line"><span class="ln">4</span><span class="cl">trung bình đầu ra: 1.0 (kỳ vọng vẫn = 1.0)
+</span></span></code></pre></div><p>Với $p = 0{,}5$, phần tử được giữ có giá trị 2 (nhân với $1/(1-0{,}5)$). Trên một mảng lớn, khoảng 30% phần tử bị bỏ nhưng trung bình đầu ra vẫn bằng 1, đúng như công thức kỳ vọng ở trên.</p>
+<h2 id="dropout-trong-pytorch">Dropout trong PyTorch<a class="anchor ms-1" href="#dropout-trong-pytorch"><i class="fas fa-link"></i></a></h2>
+<p><code>nn.Dropout(p)</code> tự đổi hành vi theo chế độ của module: bật khi <code>model.train()</code>, thành phép đồng nhất khi <code>model.eval()</code>.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="kn">import</span> <span class="nn">torch</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span>
 </span></span><span class="line"><span class="ln"> 3</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl"><span class="n">torch</span><span class="o">.</span><span class="n">manual_seed</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl"><span class="n">layer</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Dropout</span><span class="p">(</span><span class="n">p</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl"><span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl"><span class="n">layer</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="s2">&#34;model.train():&#34;</span><span class="p">,</span> <span class="n">layer</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl"><span class="n">layer</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="s2">&#34;model.eval(): &#34;</span><span class="p">,</span> <span class="n">layer</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">model.train(): tensor([[0., 0., 2., 0., 0., 0., 2., 2.]])
+</span></span><span class="line"><span class="ln">2</span><span class="cl">model.eval():  tensor([[1., 1., 1., 1., 1., 1., 1., 1.]])
+</span></span></code></pre></div><p>Trong một mô hình thật, dropout thường đặt sau hàm kích hoạt của các tầng ẩn:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="kn">import</span> <span class="nn">torch</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl"><span class="n">model</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">    <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">784</span><span class="p">,</span> <span class="mi">256</span><span class="p">),</span> <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span> <span class="n">nn</span><span class="o">.</span><span class="n">Dropout</span><span class="p">(</span><span class="mf">0.3</span><span class="p">),</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">    <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="mi">128</span><span class="p">),</span> <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span> <span class="n">nn</span><span class="o">.</span><span class="n">Dropout</span><span class="p">(</span><span class="mf">0.3</span><span class="p">),</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">    <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span>           <span class="c1"># không đặt dropout ở tầng đầu ra</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl"><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">
+</span></span><span class="line"><span class="ln">10</span><span class="cl"><span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>                     <span class="c1"># trước vòng lặp huấn luyện: dropout bật</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl"><span class="n">logits</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">32</span><span class="p">,</span> <span class="mi">784</span><span class="p">))</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl">
+</span></span><span class="line"><span class="ln">13</span><span class="cl"><span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>                      <span class="c1"># trước khi đánh giá hoặc dự đoán: dropout tắt</span>
+</span></span><span class="line"><span class="ln">14</span><span class="cl"><span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl">    <span class="n">preds</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">784</span><span class="p">))</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">16</span><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="n">logits</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">preds</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+</span></span></code></pre></div><p>Nếu viết <code>forward</code> bằng hàm <code>torch.nn.functional.dropout</code>, nhớ truyền <code>training=self.training</code>; mặc định của hàm là <code>training=True</code>, nên quên tham số này sẽ khiến dropout vẫn chạy cả khi suy luận.</p>
+<h2 id="dropout-trong-keras">Dropout trong Keras<a class="anchor ms-1" href="#dropout-trong-keras"><i class="fas fa-link"></i></a></h2>
+<p>Trong Keras, tham số là <code>rate</code> (xác suất bỏ). <code>model.fit</code> tự bật dropout, còn <code>model.predict</code> và <code>model.evaluate</code> tự tắt. Khi gọi layer trực tiếp, bạn điều khiển bằng <code>training</code>:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="kn">import</span> <span class="nn">os</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&#34;KERAS_BACKEND&#34;</span><span class="p">,</span> <span class="s2">&#34;torch&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl"><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 </span></span><span class="line"><span class="ln"> 4</span><span class="cl"><span class="kn">import</span> <span class="nn">keras</span>
-</span></span><span class="line"><span class="ln"> 5</span><span class="cl">
-</span></span><span class="line"><span class="ln"> 6</span><span class="cl"><span class="kn">from</span> <span class="nn">keras.datasets</span> <span class="kn">import</span> <span class="n">cifar10</span>
-</span></span><span class="line"><span class="ln"> 7</span><span class="cl"><span class="kn">from</span> <span class="nn">keras.models</span>  <span class="kn">import</span> <span class="n">Sequential</span>
-</span></span><span class="line"><span class="ln"> 8</span><span class="cl"><span class="kn">from</span> <span class="nn">keras.layers</span> <span class="kn">import</span> <span class="n">Dense</span><span class="p">,</span> <span class="n">Dropout</span><span class="p">,</span> <span class="n">Activation</span><span class="p">,</span> <span class="n">Flatten</span>
-</span></span><span class="line"><span class="ln"> 9</span><span class="cl"><span class="kn">from</span> <span class="nn">keras.layers</span> <span class="kn">import</span> <span class="n">Convolution2D</span><span class="p">,</span> <span class="n">MaxPooling2D</span>
-</span></span><span class="line"><span class="ln">10</span><span class="cl"><span class="kn">from</span> <span class="nn">keras.optimizers</span> <span class="kn">import</span> <span class="n">SGD</span>
-</span></span><span class="line"><span class="ln">11</span><span class="cl"><span class="kn">from</span> <span class="nn">keras.utils</span> <span class="kn">import</span> <span class="n">np_utils</span>
-</span></span><span class="line"><span class="ln">12</span><span class="cl"><span class="kn">from</span> <span class="nn">keras.preprocessing.image</span> <span class="kn">import</span> <span class="n">ImageDataGenerator</span>
-</span></span><span class="line"><span class="ln">13</span><span class="cl"><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
-</span></span><span class="line"><span class="ln">14</span><span class="cl">
-</span></span><span class="line"><span class="ln">15</span><span class="cl"><span class="kn">from</span> <span class="nn">pylab</span> <span class="kn">import</span> <span class="n">rcParams</span>
-</span></span><span class="line"><span class="ln">16</span><span class="cl"><span class="n">rcParams</span><span class="p">[</span><span class="s1">&#39;figure.figsize&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">20</span>
-</span></span><span class="line"><span class="ln">17</span><span class="cl">
-</span></span><span class="line"><span class="ln">18</span><span class="cl"><span class="kn">from</span> <span class="nn">keras.datasets</span> <span class="kn">import</span> <span class="n">cifar10</span>
-</span></span><span class="line"><span class="ln">19</span><span class="cl">
-</span></span><span class="line"><span class="ln">20</span><span class="cl"><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">),</span> <span class="p">(</span><span class="n">X_test</span><span class="p">,</span> <span class="n">y_test</span><span class="p">)</span> <span class="o">=</span> <span class="n">cifar10</span><span class="o">.</span><span class="n">load_data</span><span class="p">()</span>
-</span></span><span class="line"><span class="ln">21</span><span class="cl">
-</span></span><span class="line"><span class="ln">22</span><span class="cl">
-</span></span><span class="line"><span class="ln">23</span><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="s2">&#34;Training data:&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="ln">24</span><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="s2">&#34;Number of examples: &#34;</span><span class="p">,</span> <span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-</span></span><span class="line"><span class="ln">25</span><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="s2">&#34;Number of channels:&#34;</span><span class="p">,</span><span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
-</span></span><span class="line"><span class="ln">26</span><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="s2">&#34;Image size:&#34;</span><span class="p">,</span><span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
-</span></span><span class="line"><span class="ln">27</span><span class="cl">
-</span></span><span class="line"><span class="ln">28</span><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="s2">&#34;Test data:&#34;</span><span class="p">)</span>
-</span></span><span class="line"><span class="ln">29</span><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="s2">&#34;Number of examples:&#34;</span><span class="p">,</span> <span class="n">X_test</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-</span></span><span class="line"><span class="ln">30</span><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="s2">&#34;Number of channels:&#34;</span><span class="p">,</span> <span class="n">X_test</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
-</span></span><span class="line"><span class="ln">31</span><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="s2">&#34;Image size:&#34;</span><span class="p">,</span><span class="n">X_test</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">X_test</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">X_test</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
-</span></span></code></pre></div><p>Kết quả</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl">Training data:
-</span></span><span class="line"><span class="ln">2</span><span class="cl">Number of examples:  50000
-</span></span><span class="line"><span class="ln">3</span><span class="cl">Number of channels: 3
-</span></span><span class="line"><span class="ln">4</span><span class="cl">Image size: 32 32 3
-</span></span><span class="line"><span class="ln">5</span><span class="cl">Test data:
-</span></span><span class="line"><span class="ln">6</span><span class="cl">Number of examples: 10000
-</span></span><span class="line"><span class="ln">7</span><span class="cl">Number of channels: 3
-</span></span><span class="line"><span class="ln">8</span><span class="cl">Image size: 32 32 3
-</span></span></code></pre></div><p>Chúng ta có 50000 hình train, và 10000 hình test. Mỗi hình là một ảnh RGB có kích thước 33x32x3 pixel.</p>
-<p><img class="img-fluid" alt="Hình ảnh" src="https://www.phamduytung.com/blog/2019-05-05-deep-learning-dropout/cifar-10-overview.jpg" loading="lazy"  title="Hình ảnh"
-  
-   />
-
-
-<strong>dataset cifar 10</strong></p>
-<p>Tiếp theo, chúng ta sẽ chuẩn hoá dữ liệu. Đây là 1 bước quan trọng trước khi huấn luyện mô hình</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="nb">print</span><span class="p">(</span> <span class="s2">&#34;mean before normalization:&#34;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">X_train</span><span class="p">))</span>
-</span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="nb">print</span><span class="p">(</span> <span class="s2">&#34;std before normalization:&#34;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">X_train</span><span class="p">))</span>
-</span></span><span class="line"><span class="ln"> 3</span><span class="cl">
-</span></span><span class="line"><span class="ln"> 4</span><span class="cl"><span class="n">mean</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span>
-</span></span><span class="line"><span class="ln"> 5</span><span class="cl"><span class="n">std</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span>
-</span></span><span class="line"><span class="ln"> 6</span><span class="cl"><span class="n">newX_train</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-</span></span><span class="line"><span class="ln"> 7</span><span class="cl"><span class="n">newX_test</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">X_test</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-</span></span><span class="line"><span class="ln"> 8</span><span class="cl"><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
-</span></span><span class="line"><span class="ln"> 9</span><span class="cl">    <span class="n">mean</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">X_train</span><span class="p">[:,</span><span class="n">i</span><span class="p">,:,:])</span>
-</span></span><span class="line"><span class="ln">10</span><span class="cl">    <span class="n">std</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">X_train</span><span class="p">[:,</span><span class="n">i</span><span class="p">,:,:])</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl"><span class="kn">from</span> <span class="nn">keras</span> <span class="kn">import</span> <span class="n">layers</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl"><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&#34;float32&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl"><span class="n">drop</span> <span class="o">=</span> <span class="n">layers</span><span class="o">.</span><span class="n">Dropout</span><span class="p">(</span><span class="n">rate</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="s2">&#34;training=True :&#34;</span><span class="p">,</span> <span class="n">keras</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">convert_to_numpy</span><span class="p">(</span><span class="n">drop</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="kc">True</span><span class="p">)))</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="s2">&#34;training=False:&#34;</span><span class="p">,</span> <span class="n">keras</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">convert_to_numpy</span><span class="p">(</span><span class="n">drop</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">training</span><span class="o">=</span><span class="kc">False</span><span class="p">)))</span>
 </span></span><span class="line"><span class="ln">11</span><span class="cl">
-</span></span><span class="line"><span class="ln">12</span><span class="cl"><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
-</span></span><span class="line"><span class="ln">13</span><span class="cl">    <span class="n">newX_train</span><span class="p">[:,</span><span class="n">i</span><span class="p">,:,:]</span> <span class="o">=</span> <span class="n">X_train</span><span class="p">[:,</span><span class="n">i</span><span class="p">,:,:]</span> <span class="o">-</span> <span class="n">mean</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-</span></span><span class="line"><span class="ln">14</span><span class="cl">    <span class="n">newX_train</span><span class="p">[:,</span><span class="n">i</span><span class="p">,:,:]</span> <span class="o">=</span> <span class="n">newX_train</span><span class="p">[:,</span><span class="n">i</span><span class="p">,:,:]</span> <span class="o">/</span> <span class="n">std</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-</span></span><span class="line"><span class="ln">15</span><span class="cl">    <span class="n">newX_test</span><span class="p">[:,</span><span class="n">i</span><span class="p">,:,:]</span> <span class="o">=</span> <span class="n">X_test</span><span class="p">[:,</span><span class="n">i</span><span class="p">,:,:]</span> <span class="o">-</span> <span class="n">mean</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-</span></span><span class="line"><span class="ln">16</span><span class="cl">    <span class="n">newX_test</span><span class="p">[:,</span><span class="n">i</span><span class="p">,:,:]</span> <span class="o">=</span> <span class="n">newX_test</span><span class="p">[:,</span><span class="n">i</span><span class="p">,:,:]</span> <span class="o">/</span> <span class="n">std</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl"><span class="n">model</span> <span class="o">=</span> <span class="n">keras</span><span class="o">.</span><span class="n">Sequential</span><span class="p">([</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl">    <span class="n">keras</span><span class="o">.</span><span class="n">Input</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">784</span><span class="p">,)),</span>
+</span></span><span class="line"><span class="ln">14</span><span class="cl">    <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s2">&#34;relu&#34;</span><span class="p">),</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl">    <span class="n">layers</span><span class="o">.</span><span class="n">Dropout</span><span class="p">(</span><span class="mf">0.3</span><span class="p">),</span>
+</span></span><span class="line"><span class="ln">16</span><span class="cl">    <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s2">&#34;relu&#34;</span><span class="p">),</span>
+</span></span><span class="line"><span class="ln">17</span><span class="cl">    <span class="n">layers</span><span class="o">.</span><span class="n">Dropout</span><span class="p">(</span><span class="mf">0.3</span><span class="p">),</span>
+</span></span><span class="line"><span class="ln">18</span><span class="cl">    <span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="s2">&#34;softmax&#34;</span><span class="p">),</span>
+</span></span><span class="line"><span class="ln">19</span><span class="cl"><span class="p">])</span>
+</span></span><span class="line"><span class="ln">20</span><span class="cl"><span class="n">model</span><span class="o">.</span><span class="n">summary</span><span class="p">()</span>
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-text" data-lang="text"><span class="line"><span class="ln">1</span><span class="cl">training=True : [[0. 0. 2. 0. 2. 0. 2. 0.]]
+</span></span><span class="line"><span class="ln">2</span><span class="cl">training=False: [[1. 1. 1. 1. 1. 1. 1. 1.]]
+</span></span></code></pre></div><p>Lớp <code>Dropout</code> không có tham số học được, nên trong <code>model.summary()</code> cột <em>Param #</em> của nó luôn bằng 0.</p>
+<h2 id="thí-nghiệm-dropout-trên-dữ-liệu-ít-và-nhiễu">Thí nghiệm: dropout trên dữ liệu ít và nhiễu<a class="anchor ms-1" href="#thí-nghiệm-dropout-trên-dữ-liệu-ít-và-nhiễu"><i class="fas fa-link"></i></a></h2>
+<p>Dropout phát huy rõ nhất khi mô hình lớn hơn nhiều so với lượng dữ liệu. Mình dựng tình huống đó: chỉ 200 điểm của bài toán hai nửa mặt trăng (<code>make_moons</code>) với nhiễu 0,35, một mạng hai tầng ẩn 512 neuron, huấn luyện 2.000 epoch bằng Adam, rồi đo accuracy trên 5.000 điểm mới. Mỗi mức dropout chạy 3 seed:</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="kn">import</span> <span class="nn">torch</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl"><span class="kn">from</span> <span class="nn">sklearn.datasets</span> <span class="kn">import</span> <span class="n">make_moons</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl"><span class="n">torch</span><span class="o">.</span><span class="n">set_num_threads</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl"><span class="n">X_tr</span><span class="p">,</span> <span class="n">y_tr</span> <span class="o">=</span> <span class="n">make_moons</span><span class="p">(</span><span class="n">n_samples</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">noise</span><span class="o">=</span><span class="mf">0.35</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl"><span class="n">X_va</span><span class="p">,</span> <span class="n">y_va</span> <span class="o">=</span> <span class="n">make_moons</span><span class="p">(</span><span class="n">n_samples</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">noise</span><span class="o">=</span><span class="mf">0.35</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl"><span class="n">X_tr</span><span class="p">,</span> <span class="n">X_va</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">X_tr</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">X_va</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl"><span class="n">y_tr</span><span class="p">,</span> <span class="n">y_va</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">y_tr</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">y_va</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">
+</span></span><span class="line"><span class="ln">11</span><span class="cl"><span class="k">def</span> <span class="nf">make_model</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl">    <span class="k">return</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl">        <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">512</span><span class="p">),</span> <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span> <span class="n">nn</span><span class="o">.</span><span class="n">Dropout</span><span class="p">(</span><span class="n">p</span><span class="p">),</span>
+</span></span><span class="line"><span class="ln">14</span><span class="cl">        <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="mi">512</span><span class="p">),</span> <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span> <span class="n">nn</span><span class="o">.</span><span class="n">Dropout</span><span class="p">(</span><span class="n">p</span><span class="p">),</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl">        <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+</span></span><span class="line"><span class="ln">16</span><span class="cl">    <span class="p">)</span>
 </span></span><span class="line"><span class="ln">17</span><span class="cl">
-</span></span><span class="line"><span class="ln">18</span><span class="cl">
-</span></span><span class="line"><span class="ln">19</span><span class="cl"><span class="n">X_train</span> <span class="o">=</span> <span class="n">newX_train</span>
-</span></span><span class="line"><span class="ln">20</span><span class="cl"><span class="n">X_test</span> <span class="o">=</span> <span class="n">newX_test</span>
-</span></span><span class="line"><span class="ln">21</span><span class="cl">
-</span></span><span class="line"><span class="ln">22</span><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="s2">&#34;mean after normalization:&#34;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">X_train</span><span class="p">))</span>
-</span></span><span class="line"><span class="ln">23</span><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="s2">&#34;std after normalization:&#34;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">X_train</span><span class="p">))</span>
-</span></span></code></pre></div><div class="highlight"><pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="ln">1</span><span class="cl">mean before normalization: 120.70756512369792
-</span></span><span class="line"><span class="ln">2</span><span class="cl">std before normalization: 64.1500758911213
-</span></span><span class="line"><span class="ln">3</span><span class="cl">mean after normalization: 0.9062499999999979
-</span></span><span class="line"><span class="ln">4</span><span class="cl">std after normalization: 0.4227421643271468
-</span></span></code></pre></div><p>Full code đoạn huấn luyện</p>
-<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln">  1</span><span class="cl">
-</span></span><span class="line"><span class="ln">  2</span><span class="cl">
-</span></span><span class="line"><span class="ln">  3</span><span class="cl"><span class="c1"># In[3]:Specify Training Parameters</span>
-</span></span><span class="line"><span class="ln">  4</span><span class="cl">
-</span></span><span class="line"><span class="ln">  5</span><span class="cl"><span class="n">batchSize</span> <span class="o">=</span> <span class="mi">512</span>                   <span class="c1">#-- Training Batch Size</span>
-</span></span><span class="line"><span class="ln">  6</span><span class="cl"><span class="n">num_classes</span> <span class="o">=</span> <span class="mi">10</span>                  <span class="c1">#-- Number of classes in CIFAR-10 dataset</span>
-</span></span><span class="line"><span class="ln">  7</span><span class="cl"><span class="n">num_epochs</span> <span class="o">=</span> <span class="mi">100</span>                   <span class="c1">#-- Number of epochs for training</span>
-</span></span><span class="line"><span class="ln">  8</span><span class="cl"><span class="n">learningRate</span><span class="o">=</span> <span class="mf">0.001</span>               <span class="c1">#-- Learning rate for the network</span>
-</span></span><span class="line"><span class="ln">  9</span><span class="cl"><span class="n">lr_weight_decay</span> <span class="o">=</span> <span class="mf">0.95</span>            <span class="c1">#-- Learning weight decay. Reduce the learn rate by 0.95 after epoch</span>
-</span></span><span class="line"><span class="ln"> 10</span><span class="cl">
-</span></span><span class="line"><span class="ln"> 11</span><span class="cl">
-</span></span><span class="line"><span class="ln"> 12</span><span class="cl"><span class="n">img_rows</span><span class="p">,</span> <span class="n">img_cols</span> <span class="o">=</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">32</span>       <span class="c1">#-- input image dimensions</span>
-</span></span><span class="line"><span class="ln"> 13</span><span class="cl">
-</span></span><span class="line"><span class="ln"> 14</span><span class="cl"><span class="n">Y_train</span> <span class="o">=</span> <span class="n">np_utils</span><span class="o">.</span><span class="n">to_categorical</span><span class="p">(</span><span class="n">y_train</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">)</span>
-</span></span><span class="line"><span class="ln"> 15</span><span class="cl"><span class="n">Y_test</span> <span class="o">=</span> <span class="n">np_utils</span><span class="o">.</span><span class="n">to_categorical</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">)</span>
-</span></span><span class="line"><span class="ln"> 16</span><span class="cl">
-</span></span><span class="line"><span class="ln"> 17</span><span class="cl">
-</span></span><span class="line"><span class="ln"> 18</span><span class="cl">
-</span></span><span class="line"><span class="ln"> 19</span><span class="cl"><span class="n">batchSize</span> <span class="o">=</span> <span class="mi">512</span>                   <span class="c1">#-- Training Batch Size</span>
-</span></span><span class="line"><span class="ln"> 20</span><span class="cl"><span class="n">num_classes</span> <span class="o">=</span> <span class="mi">10</span>                  <span class="c1">#-- Number of classes in CIFAR-10 dataset</span>
-</span></span><span class="line"><span class="ln"> 21</span><span class="cl"><span class="n">num_epochs</span> <span class="o">=</span> <span class="mi">100</span>                   <span class="c1">#-- Number of epochs for training</span>
-</span></span><span class="line"><span class="ln"> 22</span><span class="cl"><span class="n">learningRate</span><span class="o">=</span> <span class="mf">0.001</span>               <span class="c1">#-- Learning rate for the network</span>
-</span></span><span class="line"><span class="ln"> 23</span><span class="cl"><span class="n">lr_weight_decay</span> <span class="o">=</span> <span class="mf">0.95</span>            <span class="c1">#-- Learning weight decay. Reduce the learn rate by 0.95 after epoch</span>
-</span></span><span class="line"><span class="ln"> 24</span><span class="cl">
-</span></span><span class="line"><span class="ln"> 25</span><span class="cl">
-</span></span><span class="line"><span class="ln"> 26</span><span class="cl"><span class="n">img_rows</span><span class="p">,</span> <span class="n">img_cols</span> <span class="o">=</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">32</span>       <span class="c1">#-- input image dimensions</span>
-</span></span><span class="line"><span class="ln"> 27</span><span class="cl">
-</span></span><span class="line"><span class="ln"> 28</span><span class="cl"><span class="n">Y_train</span> <span class="o">=</span> <span class="n">np_utils</span><span class="o">.</span><span class="n">to_categorical</span><span class="p">(</span><span class="n">y_train</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">)</span>
-</span></span><span class="line"><span class="ln"> 29</span><span class="cl"><span class="n">Y_test</span> <span class="o">=</span> <span class="n">np_utils</span><span class="o">.</span><span class="n">to_categorical</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">)</span>
-</span></span><span class="line"><span class="ln"> 30</span><span class="cl">
-</span></span><span class="line"><span class="ln"> 31</span><span class="cl">
-</span></span><span class="line"><span class="ln"> 32</span><span class="cl"><span class="c1"># In[4]:VGGnet-10</span>
-</span></span><span class="line"><span class="ln"> 33</span><span class="cl">
-</span></span><span class="line"><span class="ln"> 34</span><span class="cl">
-</span></span><span class="line"><span class="ln"> 35</span><span class="cl"><span class="kn">from</span> <span class="nn">keras.layers</span> <span class="kn">import</span> <span class="n">Conv2D</span>
-</span></span><span class="line"><span class="ln"> 36</span><span class="cl"><span class="kn">import</span> <span class="nn">copy</span>
-</span></span><span class="line"><span class="ln"> 37</span><span class="cl"><span class="n">result</span> <span class="o">=</span> <span class="p">{}</span>
-</span></span><span class="line"><span class="ln"> 38</span><span class="cl"><span class="n">y</span> <span class="o">=</span> <span class="p">{}</span>
-</span></span><span class="line"><span class="ln"> 39</span><span class="cl"><span class="n">loss</span> <span class="o">=</span> <span class="p">[]</span>
-</span></span><span class="line"><span class="ln"> 40</span><span class="cl"><span class="n">acc</span> <span class="o">=</span> <span class="p">[]</span>
-</span></span><span class="line"><span class="ln"> 41</span><span class="cl"><span class="n">dropouts</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">]</span>
-</span></span><span class="line"><span class="ln"> 42</span><span class="cl"><span class="k">for</span> <span class="n">dropout</span> <span class="ow">in</span> <span class="n">dropouts</span><span class="p">:</span>
-</span></span><span class="line"><span class="ln"> 43</span><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;Dropout: &#34;</span><span class="p">,</span> <span class="p">(</span><span class="n">dropout</span><span class="p">))</span>
-</span></span><span class="line"><span class="ln"> 44</span><span class="cl">    <span class="n">model</span> <span class="o">=</span> <span class="n">Sequential</span><span class="p">()</span>
-</span></span><span class="line"><span class="ln"> 45</span><span class="cl">
-</span></span><span class="line"><span class="ln"> 46</span><span class="cl">    <span class="c1">#-- layer 1</span>
-</span></span><span class="line"><span class="ln"> 47</span><span class="cl">    <span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Conv2D</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span>
-</span></span><span class="line"><span class="ln"> 48</span><span class="cl">                            <span class="n">border_mode</span><span class="o">=</span><span class="s1">&#39;valid&#39;</span><span class="p">,</span>
-</span></span><span class="line"><span class="ln"> 49</span><span class="cl">                            <span class="n">input_shape</span><span class="o">=</span><span class="p">(</span> <span class="n">img_rows</span><span class="p">,</span> <span class="n">img_cols</span><span class="p">,</span><span class="mi">3</span><span class="p">)))</span>
-</span></span><span class="line"><span class="ln"> 50</span><span class="cl">    <span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Dropout</span><span class="p">(</span><span class="n">dropout</span><span class="p">))</span>
-</span></span><span class="line"><span class="ln"> 51</span><span class="cl">    <span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Conv2D</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)))</span>
-</span></span><span class="line"><span class="ln"> 52</span><span class="cl">    <span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Dropout</span><span class="p">(</span><span class="n">dropout</span><span class="p">))</span>
-</span></span><span class="line"><span class="ln"> 53</span><span class="cl">    <span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Activation</span><span class="p">(</span><span class="s1">&#39;relu&#39;</span><span class="p">))</span>
-</span></span><span class="line"><span class="ln"> 54</span><span class="cl">    <span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">MaxPooling2D</span><span class="p">(</span><span class="n">pool_size</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)))</span>
-</span></span><span class="line"><span class="ln"> 55</span><span class="cl">
-</span></span><span class="line"><span class="ln"> 56</span><span class="cl">    <span class="c1">##--layer 2</span>
-</span></span><span class="line"><span class="ln"> 57</span><span class="cl">    <span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Conv2D</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)))</span>
-</span></span><span class="line"><span class="ln"> 58</span><span class="cl">    <span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Dropout</span><span class="p">(</span><span class="n">dropout</span><span class="p">))</span>
-</span></span><span class="line"><span class="ln"> 59</span><span class="cl">    <span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Activation</span><span class="p">(</span><span class="s1">&#39;relu&#39;</span><span class="p">))</span>
-</span></span><span class="line"><span class="ln"> 60</span><span class="cl">    <span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">MaxPooling2D</span><span class="p">(</span><span class="n">pool_size</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)))</span>
-</span></span><span class="line"><span class="ln"> 61</span><span class="cl">
-</span></span><span class="line"><span class="ln"> 62</span><span class="cl">    <span class="c1">##--layer 3</span>
-</span></span><span class="line"><span class="ln"> 63</span><span class="cl">    <span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Conv2D</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)))</span>
-</span></span><span class="line"><span class="ln"> 64</span><span class="cl">    <span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Dropout</span><span class="p">(</span><span class="n">dropout</span><span class="p">))</span>
-</span></span><span class="line"><span class="ln"> 65</span><span class="cl">    <span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Activation</span><span class="p">(</span><span class="s1">&#39;relu&#39;</span><span class="p">))</span>
-</span></span><span class="line"><span class="ln"> 66</span><span class="cl">    <span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">MaxPooling2D</span><span class="p">(</span><span class="n">pool_size</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)))</span>
-</span></span><span class="line"><span class="ln"> 67</span><span class="cl">
-</span></span><span class="line"><span class="ln"> 68</span><span class="cl">    <span class="c1">##-- layer 4</span>
-</span></span><span class="line"><span class="ln"> 69</span><span class="cl">    <span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Flatten</span><span class="p">())</span>
-</span></span><span class="line"><span class="ln"> 70</span><span class="cl">    <span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Dense</span><span class="p">(</span><span class="mi">512</span><span class="p">))</span>
-</span></span><span class="line"><span class="ln"> 71</span><span class="cl">    <span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Activation</span><span class="p">(</span><span class="s1">&#39;relu&#39;</span><span class="p">))</span>
-</span></span><span class="line"><span class="ln"> 72</span><span class="cl">
-</span></span><span class="line"><span class="ln"> 73</span><span class="cl">    <span class="c1">#-- layer 5</span>
-</span></span><span class="line"><span class="ln"> 74</span><span class="cl">    <span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Dense</span><span class="p">(</span><span class="n">num_classes</span><span class="p">))</span>
-</span></span><span class="line"><span class="ln"> 75</span><span class="cl">
-</span></span><span class="line"><span class="ln"> 76</span><span class="cl">    <span class="c1">#-- loss</span>
-</span></span><span class="line"><span class="ln"> 77</span><span class="cl">    <span class="n">model</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Activation</span><span class="p">(</span><span class="s1">&#39;softmax&#39;</span><span class="p">))</span>
-</span></span><span class="line"><span class="ln"> 78</span><span class="cl">
-</span></span><span class="line"><span class="ln"> 79</span><span class="cl">    <span class="n">sgd</span> <span class="o">=</span> <span class="n">SGD</span><span class="p">(</span><span class="n">lr</span><span class="o">=</span><span class="n">learningRate</span><span class="p">,</span> <span class="n">decay</span> <span class="o">=</span> <span class="n">lr_weight_decay</span><span class="p">)</span>
-</span></span><span class="line"><span class="ln"> 80</span><span class="cl">    <span class="n">model</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">loss</span><span class="o">=</span><span class="s1">&#39;categorical_crossentropy&#39;</span><span class="p">,</span>
-</span></span><span class="line"><span class="ln"> 81</span><span class="cl">                  <span class="n">optimizer</span><span class="o">=</span><span class="s1">&#39;sgd&#39;</span><span class="p">,</span>
-</span></span><span class="line"><span class="ln"> 82</span><span class="cl">                  <span class="n">metrics</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;accuracy&#39;</span><span class="p">])</span>
-</span></span><span class="line"><span class="ln"> 83</span><span class="cl">
-</span></span><span class="line"><span class="ln"> 84</span><span class="cl">    <span class="n">model_cce</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">Y_train</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">batchSize</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">validation_data</span><span class="o">=</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span> <span class="n">Y_test</span><span class="p">))</span>
-</span></span><span class="line"><span class="ln"> 85</span><span class="cl">    <span class="n">score</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span> <span class="n">Y_test</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-</span></span><span class="line"><span class="ln"> 86</span><span class="cl">    <span class="n">y</span><span class="p">[</span><span class="n">dropout</span><span class="p">]</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
-</span></span><span class="line"><span class="ln"> 87</span><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Test score:&#39;</span><span class="p">,</span> <span class="n">score</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-</span></span><span class="line"><span class="ln"> 88</span><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Test accuracy:&#39;</span><span class="p">,</span> <span class="n">score</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-</span></span><span class="line"><span class="ln"> 89</span><span class="cl">    <span class="n">result</span><span class="p">[</span><span class="n">dropout</span><span class="p">]</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">model_cce</span><span class="o">.</span><span class="n">history</span><span class="p">)</span>
-</span></span><span class="line"><span class="ln"> 90</span><span class="cl">    <span class="n">loss</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">score</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-</span></span><span class="line"><span class="ln"> 91</span><span class="cl">    <span class="n">acc</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">score</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-</span></span><span class="line"><span class="ln"> 92</span><span class="cl">
-</span></span><span class="line"><span class="ln"> 93</span><span class="cl">
-</span></span><span class="line"><span class="ln"> 94</span><span class="cl">
-</span></span><span class="line"><span class="ln"> 95</span><span class="cl"><span class="c1"># In[5]: plot dropout</span>
-</span></span><span class="line"><span class="ln"> 96</span><span class="cl"><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-</span></span><span class="line"><span class="ln"> 97</span><span class="cl"><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
-</span></span><span class="line"><span class="ln"> 98</span><span class="cl">
-</span></span><span class="line"><span class="ln"> 99</span><span class="cl"><span class="n">width</span> <span class="o">=</span> <span class="mf">0.1</span>
-</span></span><span class="line"><span class="ln">100</span><span class="cl">
-</span></span><span class="line"><span class="ln">101</span><span class="cl"><span class="n">plt</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">dropouts</span><span class="p">,</span> <span class="n">acc</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">align</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">)</span>
-</span></span><span class="line"><span class="ln">102</span><span class="cl">
-</span></span><span class="line"><span class="ln">103</span><span class="cl"><span class="n">plt</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s1">&#39;both&#39;</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s1">&#39;major&#39;</span><span class="p">,</span> <span class="n">labelsize</span><span class="o">=</span><span class="mi">35</span><span class="p">)</span>
-</span></span><span class="line"><span class="ln">104</span><span class="cl"><span class="n">plt</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s1">&#39;both&#39;</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s1">&#39;minor&#39;</span><span class="p">,</span> <span class="n">labelsize</span><span class="o">=</span><span class="mi">35</span><span class="p">)</span>
-</span></span><span class="line"><span class="ln">105</span><span class="cl">
-</span></span><span class="line"><span class="ln">106</span><span class="cl"><span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Accuracy&#39;</span><span class="p">,</span><span class="n">size</span> <span class="o">=</span> <span class="mi">30</span><span class="p">)</span>
-</span></span><span class="line"><span class="ln">107</span><span class="cl"><span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Dropout&#39;</span><span class="p">,</span> <span class="n">size</span> <span class="o">=</span> <span class="mi">30</span><span class="p">)</span>
-</span></span><span class="line"><span class="ln">108</span><span class="cl"><span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-</span></span><span class="line"><span class="ln">109</span><span class="cl">
-</span></span><span class="line"><span class="ln">110</span><span class="cl">
-</span></span><span class="line"><span class="ln">111</span><span class="cl"><span class="c1"># In[6]: plot non drop out</span>
-</span></span><span class="line"><span class="ln">112</span><span class="cl">
-</span></span><span class="line"><span class="ln">113</span><span class="cl"><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-</span></span><span class="line"><span class="ln">114</span><span class="cl"><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
-</span></span><span class="line"><span class="ln">115</span><span class="cl">
-</span></span><span class="line"><span class="ln">116</span><span class="cl"><span class="n">width</span> <span class="o">=</span> <span class="mf">0.1</span>
-</span></span><span class="line"><span class="ln">117</span><span class="cl">
-</span></span><span class="line"><span class="ln">118</span><span class="cl"><span class="n">plt</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">dropouts</span><span class="p">,</span> <span class="n">loss</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">align</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span><span class="n">color</span> <span class="o">=</span> <span class="s1">&#39;green&#39;</span><span class="p">)</span>
-</span></span><span class="line"><span class="ln">119</span><span class="cl">
-</span></span><span class="line"><span class="ln">120</span><span class="cl"><span class="n">plt</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s1">&#39;both&#39;</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s1">&#39;major&#39;</span><span class="p">,</span> <span class="n">labelsize</span><span class="o">=</span><span class="mi">35</span><span class="p">)</span>
-</span></span><span class="line"><span class="ln">121</span><span class="cl"><span class="n">plt</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s1">&#39;both&#39;</span><span class="p">,</span> <span class="n">which</span><span class="o">=</span><span class="s1">&#39;minor&#39;</span><span class="p">,</span> <span class="n">labelsize</span><span class="o">=</span><span class="mi">35</span><span class="p">)</span>
-</span></span><span class="line"><span class="ln">122</span><span class="cl">
-</span></span><span class="line"><span class="ln">123</span><span class="cl"><span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Loss&#39;</span><span class="p">,</span><span class="n">size</span> <span class="o">=</span> <span class="mi">30</span><span class="p">)</span>
-</span></span><span class="line"><span class="ln">124</span><span class="cl"><span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Dropout&#39;</span><span class="p">,</span> <span class="n">size</span> <span class="o">=</span> <span class="mi">30</span><span class="p">)</span>
-</span></span><span class="line"><span class="ln">125</span><span class="cl"><span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-</span></span></code></pre></div><p><img class="img-fluid" alt="Hình ảnh" src="https://www.phamduytung.com/blog/2019-05-05-deep-learning-dropout/drop_out_result.png" loading="lazy"  title="Hình ảnh"
+</span></span><span class="line"><span class="ln">18</span><span class="cl"><span class="k">def</span> <span class="nf">accuracy</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">19</span><span class="cl">    <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>                                   <span class="c1"># tắt dropout khi đánh giá</span>
+</span></span><span class="line"><span class="ln">20</span><span class="cl">    <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+</span></span><span class="line"><span class="ln">21</span><span class="cl">        <span class="k">return</span> <span class="p">((</span><span class="n">model</span><span class="p">(</span><span class="n">X</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span> <span class="o">==</span> <span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">float</span><span class="p">()</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">22</span><span class="cl">
+</span></span><span class="line"><span class="ln">23</span><span class="cl"><span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">seed</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">2000</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">24</span><span class="cl">    <span class="n">torch</span><span class="o">.</span><span class="n">manual_seed</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">25</span><span class="cl">    <span class="n">model</span> <span class="o">=</span> <span class="n">make_model</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">26</span><span class="cl">    <span class="n">opt</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">(),</span> <span class="n">lr</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">27</span><span class="cl">    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">epochs</span><span class="p">):</span>                        <span class="c1"># full-batch: 1 epoch = 1 iteration</span>
+</span></span><span class="line"><span class="ln">28</span><span class="cl">        <span class="n">model</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>                              <span class="c1"># bật dropout khi huấn luyện</span>
+</span></span><span class="line"><span class="ln">29</span><span class="cl">        <span class="n">loss</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">binary_cross_entropy_with_logits</span><span class="p">(</span><span class="n">model</span><span class="p">(</span><span class="n">X_tr</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">y_tr</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">30</span><span class="cl">        <span class="n">opt</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">31</span><span class="cl">        <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">32</span><span class="cl">        <span class="n">opt</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">33</span><span class="cl">    <span class="k">return</span> <span class="n">accuracy</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">X_tr</span><span class="p">,</span> <span class="n">y_tr</span><span class="p">),</span> <span class="n">accuracy</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">X_va</span><span class="p">,</span> <span class="n">y_va</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">34</span><span class="cl">
+</span></span><span class="line"><span class="ln">35</span><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span><span class="s1">&#39;dropout p&#39;</span><span class="si">:</span><span class="s2">&gt;9</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">&#39;acc train&#39;</span><span class="si">:</span><span class="s2">&gt;9</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">&#39;acc test&#39;</span><span class="si">:</span><span class="s2">&gt;9</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">36</span><span class="cl"><span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">]:</span>
+</span></span><span class="line"><span class="ln">37</span><span class="cl">    <span class="n">rs</span> <span class="o">=</span> <span class="p">[</span><span class="n">run</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">)]</span>
+</span></span><span class="line"><span class="ln">38</span><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span><span class="n">p</span><span class="si">:</span><span class="s2">&gt;9.1f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="nb">sum</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rs</span><span class="p">)</span><span class="o">/</span><span class="mi">3</span><span class="si">:</span><span class="s2">&gt;9.3f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="nb">sum</span><span class="p">(</span><span class="n">r</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">rs</span><span class="p">)</span><span class="o">/</span><span class="mi">3</span><span class="si">:</span><span class="s2">&gt;9.3f</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span></code></pre></div><table>
+	<thead>
+			<tr>
+					<th>Dropout $p$</th>
+					<th>Accuracy train</th>
+					<th>Accuracy test</th>
+					<th>Khoảng cách</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>0,0</td>
+					<td>1,000</td>
+					<td>0,842</td>
+					<td>0,158</td>
+			</tr>
+			<tr>
+					<td>0,2</td>
+					<td>0,978</td>
+					<td>0,845</td>
+					<td>0,133</td>
+			</tr>
+			<tr>
+					<td>0,5</td>
+					<td>0,942</td>
+					<td>0,863</td>
+					<td>0,079</td>
+			</tr>
+			<tr>
+					<td>0,8</td>
+					<td>0,895</td>
+					<td>0,878</td>
+					<td>0,017</td>
+			</tr>
+	</tbody>
+</table>
+<p>Không có dropout, mạng thuộc lòng 100% điểm huấn luyện (kể cả các điểm nhiễu) nhưng chỉ đúng 84,2% trên dữ liệu mới. Tăng dropout làm accuracy train giảm và accuracy test tăng, khoảng cách giữa hai con số thu hẹp từ 15,8 xuống 1,7 điểm phần trăm. Mức 0,8 tốt nhất ở đây vì mạng rất lớn so với 200 điểm dữ liệu; với mạng nhỏ hơn hoặc nhiều dữ liệu hơn, mức tối ưu sẽ thấp hơn. Toàn bộ thí nghiệm chạy khoảng 5 phút trên CPU 2 nhân.</p>
+<p>Một quan sát khác khi mình thử trên bộ chữ số <code>digits</code> của scikit-learn (300 ảnh huấn luyện, mạng 512–512): accuracy validation gần như không đổi (0,941–0,942 ở mọi mức dropout), nhưng validation loss giảm từ 0,320 xuống 0,233 với $p = 0{,}8$. Nghĩa là dropout không phải lúc nào cũng tăng accuracy, nhưng thường làm mô hình bớt &ldquo;tự tin quá mức&rdquo; vào các dự đoán sai.</p>
+<h2 id="nên-chọn-tỉ-lệ-dropout-bao-nhiêu">Nên chọn tỉ lệ dropout bao nhiêu?<a class="anchor ms-1" href="#nên-chọn-tỉ-lệ-dropout-bao-nhiêu"><i class="fas fa-link"></i></a></h2>
+<ul>
+<li><strong>Tầng fully connected lớn:</strong> 0,5 là điểm xuất phát kinh điển. Srivastava và cộng sự (2014) nhận xét xác suất giữ 0,5 &ldquo;gần tối ưu cho nhiều loại mạng và bài toán&rdquo;.</li>
+<li><strong>Gần đầu vào:</strong> nhỏ hơn nhiều, khoảng 0,1–0,2 (bài báo gốc: xác suất giữ ở tầng đầu vào nên gần 1 hơn là 0,5).</li>
+<li><strong>Tầng tích chập:</strong> dropout từng phần tử ít hiệu quả vì các pixel lân cận tương quan mạnh. Dùng tỉ lệ thấp, hoặc bỏ nguyên cả feature map với <code>nn.Dropout2d</code> / <code>SpatialDropout2D</code>.</li>
+<li><strong>Transformer:</strong> bài báo <em>Attention Is All You Need</em> dùng dropout 0,1 cho mô hình cơ sở; đây là mức khởi đầu phổ biến cho các mô hình kiểu Transformer.</li>
+<li><strong>Mô hình lớn hơn hoặc dữ liệu ít hơn</strong> thì tăng dropout; <strong>dữ liệu rất nhiều</strong> thì giảm, thậm chí bỏ.</li>
+</ul>
+<p>Dù chọn gì, hãy coi dropout là một siêu tham số và so sánh 2–3 giá trị trên tập validation.</p>
+<h2 id="đặt-dropout-ở-đâu-trong-mạng">Đặt dropout ở đâu trong mạng?<a class="anchor ms-1" href="#đặt-dropout-ở-đâu-trong-mạng"><i class="fas fa-link"></i></a></h2>
+<ul>
+<li><strong>Sau hàm kích hoạt của tầng ẩn</strong>, như các ví dụ ở trên. Không đặt ở tầng đầu ra.</li>
+<li><strong>Cẩn thận khi dùng chung với Batch Normalization.</strong> Li và cộng sự (2018) chỉ ra dropout làm thay đổi phương sai của tín hiệu giữa lúc huấn luyện và lúc suy luận, trong khi BatchNorm lại &ldquo;ghi nhớ&rdquo; phương sai lúc huấn luyện, gây ra hiện tượng <em>variance shift</em> làm kết quả kém đi. Cách xử lý phổ biến: đặt dropout sau tất cả các tầng BatchNorm (ví dụ chỉ trước tầng phân loại cuối), hoặc chỉ dùng một trong hai.</li>
+<li><strong>Mạng CNN hiện đại</strong> thường dựa nhiều vào BatchNorm, data augmentation và weight decay, chỉ giữ dropout ở phần đầu phân loại. Từ năm 2012, AlexNet đã dùng dropout ở các tầng fully connected để giảm overfitting (xem bài <a href="/blog/2019-05-27-alexnet/">Tìm hiểu mạng AlexNet</a>).</li>
+</ul>
+<h2 id="các-biến-thể-của-dropout">Các biến thể của dropout<a class="anchor ms-1" href="#các-biến-thể-của-dropout"><i class="fas fa-link"></i></a></h2>
+<table>
+	<thead>
+			<tr>
+					<th>Biến thể</th>
+					<th>Bỏ cái gì</th>
+					<th>Dùng khi</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>DropConnect (Wan và cộng sự, 2013)</td>
+					<td>từng <strong>trọng số</strong> thay vì từng neuron</td>
+					<td>nghiên cứu, tầng fully connected</td>
+			</tr>
+			<tr>
+					<td>Spatial Dropout / <code>Dropout2d</code> (Tompson và cộng sự, 2014)</td>
+					<td>nguyên <strong>feature map</strong></td>
+					<td>tầng tích chập</td>
+			</tr>
+			<tr>
+					<td>DropBlock (Ghiasi và cộng sự, 2018)</td>
+					<td>một <strong>vùng liên tục</strong> trên feature map</td>
+					<td>CNN cho ảnh</td>
+			</tr>
+			<tr>
+					<td>Stochastic Depth / DropPath (Huang và cộng sự, 2016)</td>
+					<td>nguyên <strong>khối residual</strong></td>
+					<td>ResNet, Vision Transformer</td>
+			</tr>
+			<tr>
+					<td>MC Dropout (Gal và Ghahramani, 2016)</td>
+					<td>giữ dropout <strong>cả khi suy luận</strong>, chạy nhiều lần</td>
+					<td>ước lượng độ bất định của dự đoán</td>
+			</tr>
+	</tbody>
+</table>
+<p>MC Dropout là trường hợp duy nhất trong bảng cố ý bật dropout lúc suy luận: chạy cùng một đầu vào nhiều lần, độ phân tán của các kết quả cho biết mô hình chắc chắn đến đâu.</p>
+<h2 id="những-lỗi-thường-gặp">Những lỗi thường gặp<a class="anchor ms-1" href="#những-lỗi-thường-gặp"><i class="fas fa-link"></i></a></h2>
+<ul>
+<li><strong>Quên <code>model.eval()</code></strong> khi đánh giá trong PyTorch: accuracy dao động mỗi lần chạy và thấp hơn thực tế.</li>
+<li><strong>Gọi <code>F.dropout</code> mà không truyền <code>training=self.training</code></strong>, nên dropout chạy cả khi suy luận.</li>
+<li><strong>Nhầm <code>keep_prob</code> với <code>p</code></strong> khi chuyển code TensorFlow cũ sang PyTorch.</li>
+<li><strong>Dropout quá cao cho mạng nhỏ</strong>, khiến mô hình bị underfitting (accuracy train cũng thấp).</li>
+<li><strong>Đặt dropout ngay trước BatchNorm</strong> gây variance shift như đã nói ở trên.</li>
+<li><strong>Kết luận dropout &ldquo;không có tác dụng&rdquo; sau quá ít epoch.</strong> Mạng có dropout hội tụ chậm hơn, cần cho nó đủ thời gian.</li>
+</ul>
+<h2 id="thực-nghiệm-năm-2019-trên-cifar-10">Thực nghiệm năm 2019 trên CIFAR-10<a class="anchor ms-1" href="#thực-nghiệm-năm-2019-trên-cifar-10"><i class="fas fa-link"></i></a></h2>
+<p>Ở bản đầu tiên của bài này (2019), mình thử một mạng tích chập nhỏ trên CIFAR-10 (50.000 ảnh huấn luyện, 10.000 ảnh test, 10 lớp) bằng Keras: ba tầng tích chập 64–128–256 kênh, một tầng fully connected 512, đặt dropout sau mọi tầng tích chập và cho tỉ lệ chạy từ 0,0 đến 0,9, mỗi cấu hình huấn luyện 20 epoch với SGD.</p>
+<p><img class="img-fluid" alt="Accuracy và loss trên tập test của CIFAR-10 theo tỉ lệ dropout, thực nghiệm năm 2019" src="https://www.phamduytung.com/blog/2019-05-05-deep-learning-dropout/drop_out_result.png" loading="lazy"  title="Accuracy và loss trên tập test của CIFAR-10 theo tỉ lệ dropout, thực nghiệm năm 2019"
   
    />
 
-
-<strong>Kết quả</strong></p>
-<p>Nhìn hình kết quả ở trên, chúng ta có một số kết luận nhỏ như sau:</p>
-<p>Giá trị dropout tốt nhất là 0.2, khoảng dropout cho giá trị chấp nhận được là nằm trong đoạn từ 0 đến 0.5. Nếu dropout lớn hơn 0.5 thì kết quả hàm huấn luyện trả về khá tệ.</p>
-<p>Giá trị độ chính xác còn khá thấp =&gt; 20 epochs là chưa đủ, cần huấn luyện nhiều hơn nữa.</p>
-<p>Cảm ơn các bạn đã theo dõi. Hẹn gặp bạn ở những bài viết tiếp theo.</p>
+</p>
+<p>Kết quả khi đó: tỉ lệ 0,2 cho accuracy test tốt nhất, khoảng 0–0,5 chấp nhận được, còn trên 0,5 thì kết quả kém hẳn. Nhìn lại với kinh nghiệm hiện tại, thí nghiệm có vài điểm yếu nên chỉ nên xem là tham khảo: bước chuẩn hóa dữ liệu lấy nhầm trục kênh (dữ liệu dạng <code>(N, H, W, C)</code> nhưng code chuẩn hóa theo trục thứ hai), dropout từng phần tử được đặt ngay sau tầng tích chập (nơi <code>SpatialDropout2D</code> phù hợp hơn), và 20 epoch là chưa đủ để mạng có dropout hội tụ. Dù vậy, kết luận &ldquo;dropout vừa phải giúp ích, dropout quá cao làm hại&rdquo; vẫn khớp với thí nghiệm mới ở trên.</p>
+<h2 id="câu-hỏi-thường-gặp">Câu hỏi thường gặp<a class="anchor ms-1" href="#câu-hỏi-thường-gặp"><i class="fas fa-link"></i></a></h2>
+<p><strong>Dropout là gì?</strong>
+Là kỹ thuật tắt ngẫu nhiên một phần neuron trong lúc huấn luyện để mạng không phụ thuộc vào vài neuron cụ thể, nhờ đó giảm overfitting.</p>
+<p><strong>Dropout có dùng khi test hoặc khi chạy thật không?</strong>
+Không. Khi suy luận, dropout là phép đồng nhất. Ngoại lệ là MC Dropout, cố ý bật dropout để ước lượng độ bất định.</p>
+<p><strong>Dropout rate bao nhiêu là tốt?</strong>
+Bắt đầu với 0,5 cho tầng fully connected lớn, 0,1–0,2 gần đầu vào và khoảng 0,1 cho Transformer, rồi chỉnh trên tập validation.</p>
+<p><strong>Dropout và Batch Normalization có dùng chung được không?</strong>
+Được, nhưng nên đặt dropout sau các tầng BatchNorm (ví dụ ngay trước tầng phân loại) để tránh variance shift.</p>
+<p><strong>Vì sao accuracy train thấp hơn validation khi dùng dropout?</strong>
+Vì accuracy train hiển thị trong lúc huấn luyện được đo khi dropout đang bật (mạng đang bị tắt bớt neuron), còn validation được đo trên mạng đầy đủ. Đây là hiện tượng bình thường.</p>
+<h2 id="đọc-thêm-trên-blog">Đọc thêm trên blog<a class="anchor ms-1" href="#đọc-thêm-trên-blog"><i class="fas fa-link"></i></a></h2>
+<ul>
+<li>Toàn bộ chủ đề: <a href="/chu-de/machine-learning-deep-learning/">Nền tảng Machine Learning &amp; Deep Learning</a></li>
+<li><a href="/blog/2018-10-02-understanding-epoch-batchsize-iterations/">Epoch, Batch size và Iteration là gì?</a></li>
+<li><a href="/blog/2018-11-01-overview-of-gradient-descent-optimization-algorithm/">Các thuật toán tối ưu Gradient Descent: SGD, Momentum, RMSprop, Adam, AdamW</a></li>
+<li><a href="/blog/2022-02-25-normalization/">Các kỹ thuật chuẩn hóa trong Deep Learning</a></li>
+<li><a href="/blog/2020-04-16-two-important-machine-learning-concepts-to-improve-every-model/">Hai khái niệm quan trọng giúp tăng độ chính xác của các mô hình machine learning</a></li>
+<li><a href="/blog/2018-12-11-a-bunch-of-tips-and-tricks-for-training-deep-neural-networks/">Một số mẹo khi huấn luyện mạng deep neural network</a></li>
+</ul>
+<h2 id="tài-liệu-tham-khảo">Tài liệu tham khảo<a class="anchor ms-1" href="#tài-liệu-tham-khảo"><i class="fas fa-link"></i></a></h2>
+<ol>
+<li>Nitish Srivastava, Geoffrey Hinton, Alex Krizhevsky, Ilya Sutskever, Ruslan Salakhutdinov (2014). <em>Dropout: A Simple Way to Prevent Neural Networks from Overfitting</em>. JMLR 15. <a href="https://jmlr.org/papers/v15/srivastava14a.html" target="_blank" rel="noopener noreferrer">jmlr.org</a></li>
+<li>Geoffrey E. Hinton và cộng sự (2012). <em>Improving neural networks by preventing co-adaptation of feature detectors</em>. <a href="https://arxiv.org/abs/1207.0580" target="_blank" rel="noopener noreferrer">arXiv:1207.0580</a></li>
+<li>Pierre Baldi, Peter J. Sadowski (2013). <em>Understanding Dropout</em>. NIPS 26. <a href="https://proceedings.neurips.cc/paper/2013/hash/71f6278d140af599e06ad9bf1ba03cb0-Abstract.html" target="_blank" rel="noopener noreferrer">proceedings.neurips.cc</a></li>
+<li>Xiang Li, Shuo Chen, Xiaolin Hu, Jian Yang (2018). <em>Understanding the Disharmony between Dropout and Batch Normalization by Variance Shift</em>. <a href="https://arxiv.org/abs/1801.05134" target="_blank" rel="noopener noreferrer">arXiv:1801.05134</a></li>
+<li>Alex Krizhevsky, Ilya Sutskever, Geoffrey E. Hinton (2012). <em>ImageNet Classification with Deep Convolutional Neural Networks</em>. NIPS 25. <a href="https://papers.nips.cc/paper/2012/hash/c399862d3b9d6b76c8436e924a68c45b-Abstract.html" target="_blank" rel="noopener noreferrer">papers.nips.cc</a></li>
+<li>Ashish Vaswani và cộng sự (2017). <em>Attention Is All You Need</em>. <a href="https://arxiv.org/abs/1706.03762" target="_blank" rel="noopener noreferrer">arXiv:1706.03762</a></li>
+<li>Li Wan và cộng sự (2013). <em>Regularization of Neural Networks using DropConnect</em>. ICML. <a href="https://proceedings.mlr.press/v28/wan13.html" target="_blank" rel="noopener noreferrer">proceedings.mlr.press</a></li>
+<li>Jonathan Tompson và cộng sự (2014). <em>Efficient Object Localization Using Convolutional Networks</em>. <a href="https://arxiv.org/abs/1411.4280" target="_blank" rel="noopener noreferrer">arXiv:1411.4280</a></li>
+<li>Golnaz Ghiasi, Tsung-Yi Lin, Quoc V. Le (2018). <em>DropBlock: A regularization method for convolutional networks</em>. <a href="https://arxiv.org/abs/1810.12890" target="_blank" rel="noopener noreferrer">arXiv:1810.12890</a></li>
+<li>Gao Huang và cộng sự (2016). <em>Deep Networks with Stochastic Depth</em>. <a href="https://arxiv.org/abs/1603.09382" target="_blank" rel="noopener noreferrer">arXiv:1603.09382</a></li>
+<li>Yarin Gal, Zoubin Ghahramani (2016). <em>Dropout as a Bayesian Approximation: Representing Model Uncertainty in Deep Learning</em>. <a href="https://arxiv.org/abs/1506.02142" target="_blank" rel="noopener noreferrer">arXiv:1506.02142</a></li>
+<li>PyTorch. <em>torch.nn.Dropout</em>. <a href="https://docs.pytorch.org/docs/stable/generated/torch.nn.Dropout.html" target="_blank" rel="noopener noreferrer">docs.pytorch.org</a></li>
+<li>Keras. <em>Dropout layer</em> và <em>SpatialDropout2D layer</em>. <a href="https://keras.io/api/layers/regularization_layers/dropout/" target="_blank" rel="noopener noreferrer">keras.io</a>, <a href="https://keras.io/api/layers/regularization_layers/spatial_dropout2d/" target="_blank" rel="noopener noreferrer">keras.io</a></li>
+</ol>
 </div></div>
   <div class="card-footer"><div class="post-navs d-flex justify-content-evenly"><div class="post-nav post-prev">
     <i class="fas fa-fw fa-chevron-left"></i>
@@ -492,7 +588,39 @@
 </a>
     <i class="fas fa-fw fa-chevron-right"></i>
   </div></div></div>
-</article><div class="card component row post-comments" id="post-comments">
+</article><section class="related-posts row card component">
+    <div class="card-header">
+      <h2 class="card-title">Bài liên quan</h2>
+    </div>
+    <div class="card-body">
+      <ul class="post-list"><li>
+          <a href="https://www.phamduytung.com/blog/2018-10-02-understanding-epoch-batchsize-iterations/">Epoch, Batch size và Iteration là gì? Phân biệt dễ hiểu kèm ví dụ và code
+</a>
+          <span class="float-end post-date">02/10/2018
+</span>
+        </li><li>
+          <a href="https://www.phamduytung.com/blog/2019-04-02-37-reason-neural-network-not-working/">Các lý do mạng neural network không hoạt động không chính xác
+</a>
+          <span class="float-end post-date">02/04/2019
+</span>
+        </li><li>
+          <a href="https://www.phamduytung.com/blog/2025-01-31-pytorch2.6/">Pytorch 2.6
+</a>
+          <span class="float-end post-date">31/01/2025
+</span>
+        </li><li>
+          <a href="https://www.phamduytung.com/blog/2022-02-25-normalization/">Các kỹ thuật chuẩn hóa trong Deep Learning
+</a>
+          <span class="float-end post-date">25/02/2022
+</span>
+        </li><li>
+          <a href="https://www.phamduytung.com/blog/2018-12-11-a-bunch-of-tips-and-tricks-for-training-deep-neural-networks/">Một số mẹo khi huấn luyện mạng deep neural network
+</a>
+          <span class="float-end post-date">11/12/2018
+</span>
+        </li></ul>
+    </div>
+  </section><div class="card component row post-comments" id="post-comments">
   <div class="card-header">
     <h2 class="card-title">Bình luận</h2>
   </div>
@@ -508,20 +636,35 @@
 </div><aside class="col-lg-3 col-md-4 sidebar d-flex">
   <div class="container d-flex flex-column">
     
-    <a href="https://www.buymeacoffee.com/alexblack28"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=🍎&slug=alexblack28&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" /></a><div class="post-toc row mb-4 card component" id="postTOC">
+    <a href="https://www.buymeacoffee.com/alexblack28" rel="noopener"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=🍎&slug=alexblack28&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" alt="Buy me a coffee" loading="lazy" decoding="async" /></a>
+<div class="post-toc row mb-4 card component" id="postTOC">
   <div class="card-header">
     <h2 class="card-title">Mục lục</h2>
   </div>
   <div class="card-body">
-    <nav id="TableOfContents">
-  <ul>
-    <li><a href="#1-dropout-là-gì-nó-có-ý-nghĩa-gì-trong-mạng-neural-network">1. Dropout là gì, nó có ý nghĩa gì trong mạng neural network</a></li>
-    <li><a href="#2-tạo-sao-chúng-ta-cần-dropout">2. Tạo sao chúng ta cần dropout</a></li>
-    <li><a href="#3-dropout">3. Dropout</a></li>
-    <li><a href="#4-một-số-đặc-điểm-rút-ra-được-khi-huấn-luyện-nhiều-mô-hình-khác-nhau-sử-dụng-dropout">4. Một số đặc điểm rút ra được khi huấn luyện nhiều mô hình khác nhau sử dụng dropout</a></li>
-    <li><a href="#5-thực-nghiệm-trong-keras">5. Thực nghiệm trong keras</a></li>
-  </ul>
-</nav>
+    <nav id="TableOfContents"><ul>
+        <li><a href="#tóm-tắt-nhanh">Tóm tắt nhanh</a></li>
+        <li><a href="#overfitting-và-hiện-tượng-co-adaptation">Overfitting và hiện tượng &ldquo;co-adaptation&rdquo;</a></li>
+        <li><a href="#dropout-hoạt-động-thế-nào">Dropout hoạt động thế nào?</a>
+          <ul>
+            <li><a href="#vì-sao-phải-nhân-với-11p">Vì sao phải nhân với 1/(1−p)?</a></li>
+            <li><a href="#p-là-xác-suất-bỏ-hay-xác-suất-giữ">p là xác suất bỏ hay xác suất giữ?</a></li>
+          </ul>
+        </li>
+        <li><a href="#vì-sao-dropout-giúp-chống-overfitting">Vì sao dropout giúp chống overfitting?</a></li>
+        <li><a href="#tự-cài-đặt-dropout-bằng-numpy">Tự cài đặt dropout bằng NumPy</a></li>
+        <li><a href="#dropout-trong-pytorch">Dropout trong PyTorch</a></li>
+        <li><a href="#dropout-trong-keras">Dropout trong Keras</a></li>
+        <li><a href="#thí-nghiệm-dropout-trên-dữ-liệu-ít-và-nhiễu">Thí nghiệm: dropout trên dữ liệu ít và nhiễu</a></li>
+        <li><a href="#nên-chọn-tỉ-lệ-dropout-bao-nhiêu">Nên chọn tỉ lệ dropout bao nhiêu?</a></li>
+        <li><a href="#đặt-dropout-ở-đâu-trong-mạng">Đặt dropout ở đâu trong mạng?</a></li>
+        <li><a href="#các-biến-thể-của-dropout">Các biến thể của dropout</a></li>
+        <li><a href="#những-lỗi-thường-gặp">Những lỗi thường gặp</a></li>
+        <li><a href="#thực-nghiệm-năm-2019-trên-cifar-10">Thực nghiệm năm 2019 trên CIFAR-10</a></li>
+        <li><a href="#câu-hỏi-thường-gặp">Câu hỏi thường gặp</a></li>
+        <li><a href="#đọc-thêm-trên-blog">Đọc thêm trên blog</a></li>
+        <li><a href="#tài-liệu-tham-khảo">Tài liệu tham khảo</a></li>
+      </ul></nav>
   </div>
 </div><section class="recent-posts row card component">
   <div class="card-header">
@@ -593,8 +736,8 @@
             Llm<span class="badge badge-sm text-white bg-accent ms-1">17</span></a><a href="https://www.phamduytung.com/tags/computer-vision/" class="badge rounded post-taxonomy" title="Computer Vision">
             Computer Vision<span class="badge badge-sm text-white bg-accent ms-1">16</span></a><a href="https://www.phamduytung.com/tags/python/" class="badge rounded post-taxonomy" title="Python">
             Python<span class="badge badge-sm text-white bg-accent ms-1">14</span></a><a href="https://www.phamduytung.com/tags/mathematics/" class="badge rounded post-taxonomy" title="Mathematics">
-            Mathematics<span class="badge badge-sm text-white bg-accent ms-1">12</span></a><a href="https://www.phamduytung.com/tags/ai-agent/" class="badge rounded post-taxonomy" title="Ai Agent">
-            Ai Agent<span class="badge badge-sm text-white bg-accent ms-1">10</span></a><a href="https://www.phamduytung.com/tags/to%C3%A1n-h%E1%BB%8Dc/" class="badge rounded post-taxonomy" title="Toán Học">
+            Mathematics<span class="badge badge-sm text-white bg-accent ms-1">12</span></a><a href="https://www.phamduytung.com/tags/ai-agent/" class="badge rounded post-taxonomy" title="AI Agent">
+            AI Agent<span class="badge badge-sm text-white bg-accent ms-1">10</span></a><a href="https://www.phamduytung.com/tags/to%C3%A1n-h%E1%BB%8Dc/" class="badge rounded post-taxonomy" title="Toán Học">
             Toán Học<span class="badge badge-sm text-white bg-accent ms-1">8</span></a><a href="https://www.phamduytung.com/tags/tri%E1%BA%BFt-h%E1%BB%8Dc/" class="badge rounded post-taxonomy" title="Triết Học">
             Triết Học<span class="badge badge-sm text-white bg-accent ms-1">8</span></a><a href="https://www.phamduytung.com/tags/ai/" class="badge rounded post-taxonomy" title="Ai">
             Ai<span class="badge badge-sm text-white bg-accent ms-1">7</span></a></div>
@@ -620,15 +763,18 @@
         </li><li class="nav-item">
             <a class="nav-link" href="/faq/"><i class="fas fa-fw fa-question-circle"></i>Câu hỏi thường gặp
 </a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/about/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-user"></i>Giới thiệu tác giả
+</a>
         </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
       <li class="nav-item">
         <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Docs
 </a>
       </li><li class="nav-item">
-            <a class="nav-link" href="/team_of_services" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-users"></i>Điều khoản sử dụng
+            <a class="nav-link" href="/teamofservices/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-users"></i>Điều khoản sử dụng
 </a>
         </li><li class="nav-item">
-            <a class="nav-link" href="/privacy" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-lock"></i>Chính sách bảo mật
+            <a class="nav-link" href="/privacy/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-lock"></i>Chính sách bảo mật
 </a>
         </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
       <li class="nav-item">
@@ -637,16 +783,6 @@
       </li><li class="nav-item">
             <a class="nav-link" href="/utils/gen_paswords/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-key"></i>Tạo password ngẫu nhiên
 </a>
-        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
-      <li class="nav-item">
-        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Liên kết khác
-</a>
-      </li><li class="nav-item">
-            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">Netlify
-</a>
-        </li><li class="nav-item">
-            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">facebook
-</a>
         </li></ul></li></ul>
 <div class="copyright mb-2">
   Copyright © 2016-2026 Phạm Duy Tùng. All Rights Reserved.
@@ -654,7 +790,7 @@
 <div class="powered-by mb-2">
   Website chia sẻ kiến thức của Phạm Duy Tùng và Đặng Thị Hằng. Vui lòng liên hệ email alexblack2202@gmail.com nếu bạn có thông tin cần trao đổi.
 </div></footer>
-<script src="https://www.phamduytung.com/js/main.111d51a8c754010f8399ca010e552d803e2d5170b361f8886ad04ec6c21ca551.js" integrity="sha256-ER1RqMdUAQ&#43;DmcoBDlUtgD4tUXCzYfiIatBOxsIcpVE=" crossorigin="anonymous" defer></script><script src="https://www.phamduytung.com/js/icons.min.cb4c9958dbc49e29ac644e168e82db2d0de9a741a15751cc5bf2b0af21eb2845.js" integrity="sha256-y0yZWNvEnimsZE4WjoLbLQ3pp0GhV1HMW/KwryHrKEU=" crossorigin="anonymous" defer></script>
+<script src="https://www.phamduytung.com/js/main.e788bab0969e53541289578e23a0f66a2ec1102872a9d44b994c80d0601d588a.js" integrity="sha256-54i6sJaeU1QSiVeOI6D2ai7BEChyqdRLmUyA0GAdWIo=" crossorigin="anonymous" defer></script><script src="https://www.phamduytung.com/js/icons.min.cb4c9958dbc49e29ac644e168e82db2d0de9a741a15751cc5bf2b0af21eb2845.js" integrity="sha256-y0yZWNvEnimsZE4WjoLbLQ3pp0GhV1HMW/KwryHrKEU=" crossorigin="anonymous" defer></script>
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
