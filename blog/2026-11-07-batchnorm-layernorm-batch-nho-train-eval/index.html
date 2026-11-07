@@ -1,0 +1,621 @@
+<!doctype html><html lang="vi" data-palette="brown"
+   data-mode="light">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>BatchNorm và LayerNorm khi batch nhỏ: thí nghiệm và lỗi train/eval - Phạm Duy Tùng</title>
+    <meta name="a.validate.02" content="1QZXZ8oi7g57H-GxBrBPkTYBydwii-Ic9iJu" /><link rel="apple-touch-icon" href="https://www.phamduytung.com/images/icons/icon-180x180.png" sizes="180x180">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/icon-32x32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/icon-16x16.png" sizes="16x16" type="image/png">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/favicon.ico">
+<link rel="manifest" href="https://www.phamduytung.com/manifest.json">
+
+<meta name="description" content="BatchNorm dùng thống kê theo kênh, LayerNorm theo đặc trưng của mẫu. Ví dụ PyTorch kiểm tra batch nhỏ, running statistics và chế độ train/eval." /><meta name="robots" content="index, follow, max-image-preview:large"><meta property="og:title" content="BatchNorm và LayerNorm khi batch nhỏ: thí nghiệm và lỗi train/eval">
+<meta property="og:description" content="BatchNorm dùng thống kê theo kênh, LayerNorm theo đặc trưng của mẫu. Ví dụ PyTorch kiểm tra batch nhỏ, running statistics và chế độ train/eval.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://www.phamduytung.com/blog/2026-11-07-batchnorm-layernorm-batch-nho-train-eval/">
+<meta property="og:site_name" content="Phạm Duy Tùng Machine Learning Blog">
+<meta property="og:locale" content="vi_VN">
+<meta property="og:image" content="https://www.phamduytung.com/site-images/posts/2026-11-07-batchnorm-layernorm-batch-nho-train-eval/cover-v1-1200_hu_388d53b0614f9d5c.webp" data-image-budget="100000"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="675"><meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="BatchNorm và LayerNorm khi batch nhỏ: thí nghiệm và lỗi train/eval">
+<meta name="twitter:description" content="BatchNorm dùng thống kê theo kênh, LayerNorm theo đặc trưng của mẫu. Ví dụ PyTorch kiểm tra batch nhỏ, running statistics và chế độ train/eval.">
+<meta name="twitter:image" content="https://www.phamduytung.com/site-images/posts/2026-11-07-batchnorm-layernorm-batch-nho-train-eval/cover-v1-1200_hu_388d53b0614f9d5c.webp" data-image-budget="100000"><meta property="article:published_time" content="2026-11-07T08:00:00&#43;07:00"><meta property="article:modified_time" content="2026-11-07T08:00:00&#43;07:00"><meta property="article:section" content="blog"><meta property="article:tag" content="deep learning"><meta property="article:tag" content="pytorch"><meta property="article:tag" content="machine learning"><link rel="stylesheet" href="https://www.phamduytung.com/css/main.min.0558a043598454ca5f6300bbe4bab466b3141cb8632ec005d8872a3a188ed894.css" integrity="sha256-BVigQ1mEVMpfYwC75Lq0ZrMUHLhjLsAF2IcqOhiO2JQ=" crossorigin="anonymous"><link rel="stylesheet" href="https://www.phamduytung.com/css/katex.min.4d6aa053ca8a5675016fa2c9c48ee5359bfaafb8295184458af9d64abce84c47.css" integrity="sha256-TWqgU8qKVnUBb6LJxI7lNZv6r7gpUYRFivnWSrzoTEc=" crossorigin="anonymous">
+<link rel="stylesheet" href="https://www.phamduytung.com/css/viewer.min.3d228794bcedbbfa0412beb8fbc1ec6973202945e42af7004f742a4d7bd620ab.css" integrity="sha256-PSKHlLztu/oEEr64&#43;8HsaXMgKUXkKvcAT3QqTXvWIKs=" crossorigin="anonymous"><link rel="canonical" href="https://www.phamduytung.com/blog/2026-11-07-batchnorm-layernorm-batch-nho-train-eval/">
+<meta name="theme-color" content="#f7f5ff"><script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@id":"https://www.phamduytung.com/blog/2026-11-07-batchnorm-layernorm-batch-nho-train-eval/#article","@type":"BlogPosting","author":[{"@type":"Person","name":"Phạm Duy Tùng","sameAs":["https://github.com/AlexBlack2202","https://www.linkedin.com/in/tung-pham-duy/"],"url":"https://www.phamduytung.com/about/"}],"dateModified":"2026-11-07T08:00:00+07:00","datePublished":"2026-11-07T08:00:00+07:00","description":"BatchNorm dùng thống kê theo kênh, LayerNorm theo đặc trưng của mẫu. Ví dụ PyTorch kiểm tra batch nhỏ, running statistics và chế độ train/eval.","headline":"BatchNorm và LayerNorm khi batch nhỏ: thí nghiệm và lỗi train/eval","image":["https://www.phamduytung.com/site-images/posts/2026-11-07-batchnorm-layernorm-batch-nho-train-eval/cover-v1-1200_hu_388d53b0614f9d5c.webp"],"inLanguage":"vi","keywords":"deep learning, pytorch, machine learning","mainEntityOfPage":{"@id":"https://www.phamduytung.com/blog/2026-11-07-batchnorm-layernorm-batch-nho-train-eval/","@type":"WebPage"},"publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://www.phamduytung.com/site-images/brand-mark-flaming-book-red_hu_45318b168da512af.webp"},"name":"Phạm Duy Tùng Machine Learning Blog","url":"https://www.phamduytung.com/"},"url":"https://www.phamduytung.com/blog/2026-11-07-batchnorm-layernorm-batch-nho-train-eval/","wordCount":1641},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","item":"https://www.phamduytung.com/","name":"Trang chủ","position":1},{"@type":"ListItem","item":"https://www.phamduytung.com/blog/","name":"Blogs","position":2},{"@type":"ListItem","item":"https://www.phamduytung.com/blog/2026-11-07-batchnorm-layernorm-batch-nho-train-eval/","name":"BatchNorm và LayerNorm khi batch nhỏ: thí nghiệm và lỗi train/eval","position":3}]}]}</script></head>
+  <body><script>const items=["mode","palette"];items.forEach(function(e){const t=localStorage.getItem("hbs-"+e);t&&document.body.parentElement.setAttribute("data-"+e,t)})</script><header><nav class="navbar top-app-bar top-app-bar-expand-lg fixed-top">
+  <div class="container pearl-navbar__inner">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Mở menu">
+      <i class="fas fa-bars"></i>
+    </button>
+
+    <a class="navbar-brand pearl-brand flex-grow-1 flex-lg-grow-0" href="https://www.phamduytung.com/">
+      <span class="pearl-brand__mark" aria-hidden="true">
+        <img src="/site-images/brand-mark-flaming-book-red_hu_57a35d93ebdc8b9c.webp" alt="" data-image-budget="100000" srcset="/site-images/brand-mark-flaming-book-red_hu_bbc58893f5ad658b.webp 42w, /site-images/brand-mark-flaming-book-red_hu_57a35d93ebdc8b9c.webp 84w" sizes="42px" width="42" height="42"
+  loading="eager" decoding="async">
+
+      </span>
+      <span class="pearl-brand__copy">
+        <strong>Phạm Duy Tùng</strong>
+        <small>AI · DATA · SYSTEMS</small>
+      </span>
+    </a>
+
+    <div class="offcanvas offcanvas-bottom surface" tabindex="-1" id="offcanvasSocialShare" aria-labelledby="offcanvasSocialShare">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Share</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body">
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Twitter Share Button"
+      target="_blank" href="https://twitter.com/intent/tweet?title=BatchNorm%20v%c3%a0%20LayerNorm%20khi%20batch%20nh%e1%bb%8f%3a%20th%c3%ad%20nghi%e1%bb%87m%20v%c3%a0%20l%e1%bb%97i%20train%2feval&url=https%3a%2f%2fwww.phamduytung.com%2fblog%2f2026-11-07-batchnorm-layernorm-batch-nho-train-eval%2f">
+      <i class="fab fa-fw fa-twitter"></i> Twitter
+    </a>
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Facebook Share Button"
+      target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.phamduytung.com%2fblog%2f2026-11-07-batchnorm-layernorm-batch-nho-train-eval%2f">
+      <i class="fab fa-fw fa-facebook-f"></i> Facebook
+    </a>
+  </div>
+</div>
+    <button class="navbar-settings" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSettings"
+  aria-controls="offcanvasSettings" aria-label="Toggle settings">
+  <i class="fas fa-ellipsis-v"></i>
+</button>
+
+<div class="offcanvas offcanvas-end surface h-100" tabindex="-1" id="offcanvasSettings" aria-labelledby="offcanvasSettings">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Cài đặt</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body d-flex flex-column">
+
+
+
+<section class="setting">
+  <form class="font-size-switcher-form row">
+    <div class="col-auto">
+      <label for="fontSize" class="form-label"><i class="fas fa-fw fa-font"></i> Cỡ chữ</label>
+    </div>
+    <div class="col-auto ms-auto">
+      <input type="range" class="form-range" min="-2" max="2" id="fontSize">
+    </div>
+  </form>
+</section>
+
+
+
+<section class="setting actions d-flex justify-content-around mt-auto overflow-auto">
+  <a role="button" class="action action-go-back" href="javascript: window.history.back();">
+    <span class="action-icon"><i class="fas fa-2x fa-arrow-left"></i></span> Quay lại
+  </a>
+  <a role="button" class="action action-reload-page">
+    <span class="action-icon"><i class="fas fa-2x fa-redo-alt"></i></span> Tải lại
+  </a>
+  <a role="button" class="action action-copy-url">
+    <span class="action-icon"><i class="fas fa-2x fa-link"></i></span> Sao chép URL
+  </a><a class="action action-social-share" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSocialShare"
+    aria-controls="offcanvasSocialShare" aria-label="Toggle social share">
+    <span class="action-icon"><i class="fas fa-2x fa-share-alt"></i></span> Chia sẻ
+  </a></section>
+
+</div>
+</div>
+
+    <div class="collapse navbar-collapse" tabindex="-1" id="navbarSupportedContent" aria-labelledby="navbarSupportedContent">
+      <form class="search-bar my-1" action="https://www.phamduytung.com/search">
+  <div class="input-group input-group-sm">
+    <span class="btn btn-search disabled position-absolute left-0"><i class="fas fa-fw fa-search"></i></span>
+    <input class="form-control rounded-pill" name="q" type="search" aria-label="Search">
+  </div>
+</form>
+      <ul class="navbar-nav ms-auto"><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/chu-de/">
+            <i class="fas fa-fw fa-list-alt"></i>Chủ đề
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/series/">
+            <i class="fas fa-fw fa-columns"></i>Courses
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/tools/">
+            <i class="fas fa-fw fa-folder"></i>Tools
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/categories/">
+            <i class="fas fa-fw fa-folder"></i>Categories
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/archives/">
+            <i class="fas fa-fw fa-file-archive"></i>Archives
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/tags/">
+            <i class="fas fa-fw fa-tags"></i>Tags
+          </a>
+        </li><li class="nav-item dropdown">
+          <a class="nav-link" id="navbarDropdownSupport" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-fw fa-comments"></i>Community
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdownSupport"><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Facebook Group
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://github.com/AlexBlack2202/alexblack2202.github.io" target="_blank" rel="noopener noreferrer">
+                GitHub
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/contact/">
+                Contact
+              </a>
+            </li><li><hr class="dropdown-divider"></li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/faq/">
+                Câu hỏi thường gặp
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/about/">
+                Giới thiệu tác giả
+              </a>
+            </li></ul>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/xem-truyen/">
+            <i class="fas fa-fw fa-book-open"></i>Xem truyện
+          </a>
+        </li></ul>
+    </div>
+  </div>
+</nav>
+</header>
+<main role="main" class="container" style="line-height:1.7em">
+      <div class="row content">
+<div class="col-lg-9 col-md-8">
+  <div class="container"><nav class="row card component" aria-label="breadcrumb">
+  <div class="card-body">
+    <ol class="breadcrumb "><li class="breadcrumb-item"><a href="https://www.phamduytung.com/">Trang chủ</a></li><li class="breadcrumb-item"><a href="https://www.phamduytung.com/blog/">Blogs</a></li><li class="breadcrumb-item active">BatchNorm và LayerNorm khi batch nhỏ: thí nghiệm và lỗi train/eval</li></ol>
+  </div>
+</nav>
+<div class="post-panel-wrapper">
+  <div class="d-flex flex-column component rounded post-panel">
+
+    <a class="action action-panel-toggler" role="button" title="Panel toggler">
+      <i class="fas fa-fw fa-chevron-circle-down"></i>
+    </a>
+    <a id="sidebarToggler" class="action d-none d-lg-block" role="button" title="Sidebar toggler">
+  <i class="fas fa-fw fa-expand-alt" data-fa-transform="rotate-45"></i>
+</a>
+
+
+
+
+
+    <a class="action" href="#post-comments" role="button" aria-label="Comments" title="Comments">
+  <i class="fas fa-fw fa-comments"></i>
+</a>
+    <a class="action" href="#postTOC" aria-controls="Table of contents" role="button" title="Table of contents">
+  <i class="fas fa-fw fa-list-alt"></i>
+</a>
+
+  </div>
+</div>
+<article class="row card component mb-4 post">
+  <div class="card-header"><div class="bgcover">
+      <img src="/site-images/posts/2026-11-07-batchnorm-layernorm-batch-nho-train-eval/cover-v1-1200_hu_388d53b0614f9d5c.webp" alt="BatchNorm và LayerNorm khi batch nhỏ: thí nghiệm và lỗi train/eval" data-image-budget="100000" class="pearl-cover-image" srcset="/site-images/posts/2026-11-07-batchnorm-layernorm-batch-nho-train-eval/cover-v1-1200_hu_cc3417c19a0b124a.webp 480w, /site-images/posts/2026-11-07-batchnorm-layernorm-batch-nho-train-eval/cover-v1-1200_hu_a3328649cc422bef.webp 768w, /site-images/posts/2026-11-07-batchnorm-layernorm-batch-nho-train-eval/cover-v1-1200_hu_388d53b0614f9d5c.webp 1200w" sizes="(min-width: 1200px) 960px, (min-width: 768px) 70vw, 100vw" width="1200" height="675"
+  loading="eager" decoding="async" fetchpriority="high">
+
+      <div class="bgtrans">
+        <h1>BatchNorm và LayerNorm khi batch nhỏ: thí nghiệm và lỗi train/eval
+</h1>
+      </div>
+    </div>
+  </div>
+  <div class="card-body"><div class="post-byline">
+  <i class="fas fa-fw fa-user"></i>
+  <span>Tác giả:</span>
+  <a href="https://www.phamduytung.com/about/" rel="author">Phạm Duy Tùng</a>
+</div><div class="post-meta">
+  <span class="post-date" title="tạo ngày 2026-11-07 08:00:00 &#43;0700 &#43;07.">
+    07/11/2026
+  </span><span class="post-reading-time">
+    8 phút đọc
+  </span><span class="post-taxonomies"><a href="https://www.phamduytung.com/tags/deep-learning/" class="badge post-taxonomy">deep learning</a><a href="https://www.phamduytung.com/tags/pytorch/" class="badge post-taxonomy">pytorch</a><a href="https://www.phamduytung.com/tags/machine-learning/" class="badge post-taxonomy">Machine Learning</a></span>
+</div>
+<div class="post-content mb-3"><p>Trong PyTorch, <strong>BatchNorm1d ở chế độ train dùng thống kê của các mẫu trong batch theo từng kênh</strong>. Thay những mẫu đi kèm có thể làm đầu ra của một mẫu cố định thay đổi. <strong>LayerNorm trên đặc trưng của từng mẫu</strong> lấy thống kê từ chính mẫu đó. Với BatchNorm mặc định, chuyển sang eval làm lớp dùng các thống kê đã tích lũy, nên đầu ra của lớp không còn phụ thuộc vào những mẫu đi kèm.</p>
+<p>Thí nghiệm dưới đây giữ nguyên đầu vào cần quan sát và chỉ thay hai mẫu còn lại. Nó cũng kiểm tra vì sao BatchNorm1d có thể báo lỗi với một mẫu dù đã dùng <code>torch.no_grad()</code>, và vì sao cùng batch size 1 lại chạy được khi đầu vào có thêm trục thời gian.</p>
+<h2 id="nhìn-vào-trục-lấy-trung-bình-và-phương-sai">Nhìn vào trục lấy trung bình và phương sai<a class="anchor ms-1" href="#nhìn-vào-trục-lấy-trung-bình-và-phương-sai"><i class="fas fa-link"></i></a></h2>
+<p>Với tensor <code>[N, C]</code>, <code>N</code> là số mẫu và <code>C</code> là số đặc trưng. Ta có thể nhìn tensor như một bảng, mỗi dòng là một mẫu và mỗi cột là một kênh.</p>
+<table>
+	<thead>
+			<tr>
+					<th>Lớp</th>
+					<th>Thống kê dùng trong train với <code>[N, C]</code></th>
+					<th>Thống kê dùng trong eval</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td><code>BatchNorm1d(C)</code>, mặc định</td>
+					<td>Tính dọc từng cột, mỗi kênh dùng <code>N</code> giá trị</td>
+					<td>Dùng <code>running_mean</code> và <code>running_var</code> của từng kênh</td>
+			</tr>
+			<tr>
+					<td><code>LayerNorm(C)</code></td>
+					<td>Tính ngang từng dòng, mỗi mẫu dùng <code>C</code> giá trị</td>
+					<td>Vẫn tính theo từng dòng của đầu vào hiện tại</td>
+			</tr>
+	</tbody>
+</table>
+<p>Cả hai lớp lấy giá trị trừ đi trung bình rồi chia cho căn của phương sai cộng <code>eps</code>. Điểm khác nhau là <strong>tập phần tử dùng để tính thống kê</strong>. Ví dụ tắt hệ số nhân và độ dịch có thể học để thấy riêng tác động của bước chuẩn hóa. Đọc thêm <a href="/blog/2022-02-25-normalization/">tổng quan các kỹ thuật chuẩn hóa trong deep learning</a>. <a href="https://docs.pytorch.org/docs/2.8/generated/torch.nn.BatchNorm1d.html" target="_blank" rel="noopener noreferrer">Tài liệu BatchNorm1d</a> · <a href="https://docs.pytorch.org/docs/2.8/generated/torch.nn.LayerNorm.html" target="_blank" rel="noopener noreferrer">Tài liệu LayerNorm</a></p>
+<p>Với <code>[N, C, L]</code>, BatchNorm1d lấy thống kê trên hai trục <code>N</code> và <code>L</code> cho mỗi kênh. LayerNorm lấy thống kê trên các chiều <strong>cuối</strong> khớp với <code>normalized_shape</code>. Ví dụ <code>LayerNorm(C)</code> trên <code>[N, L, C]</code> chuẩn hóa qua <code>C</code> đặc trưng cho từng vị trí của từng mẫu. Nếu đang lưu tensor <code>[N, C, L]</code> mà muốn phép tính đó, hãy đổi chỗ hai trục cuối trước khi áp dụng lớp. <a href="https://docs.pytorch.org/docs/2.8/generated/torch.nn.BatchNorm1d.html" target="_blank" rel="noopener noreferrer">Tài liệu BatchNorm1d</a> · <a href="https://docs.pytorch.org/docs/2.8/generated/torch.nn.LayerNorm.html" target="_blank" rel="noopener noreferrer">Tài liệu LayerNorm</a></p>
+<h2 id="giữ-mẫu-1-2-4-và-thay-các-mẫu-đi-kèm">Giữ mẫu [1, 2, 4] và thay các mẫu đi kèm<a class="anchor ms-1" href="#giữ-mẫu-1-2-4-và-thay-các-mẫu-đi-kèm"><i class="fas fa-link"></i></a></h2>
+<p>Hai batch đều có shape <code>[3, 3]</code>. Batch A ghép mẫu mục tiêu <code>[1, 2, 4]</code> với <code>[0, 0, 0]</code> và <code>[2, 4, 8]</code>. Batch B giữ nguyên mẫu mục tiêu, đổi hai mẫu còn lại thành <code>[3, 6, 12]</code> và <code>[5, 10, 20]</code>. Chương trình in đầu ra của dòng đầu tiên, làm tròn đến sáu chữ số thập phân.</p>
+<table>
+	<thead>
+			<tr>
+					<th>Cấu hình</th>
+					<th>Batch A</th>
+					<th>Batch B</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>BatchNorm1d train</td>
+					<td><code>[0, 0, 0]</code></td>
+					<td><code>[-1.224743, -1.224744, -1.224745]</code></td>
+			</tr>
+			<tr>
+					<td>LayerNorm train</td>
+					<td><code>[-1.069042, -0.267260, 1.336302]</code></td>
+					<td><code>[-1.069042, -0.267260, 1.336302]</code></td>
+			</tr>
+			<tr>
+					<td>BatchNorm1d eval có running statistics</td>
+					<td><code>[0.535003, 0.733026, 0.829624]</code></td>
+					<td><code>[0.535003, 0.733026, 0.829624]</code></td>
+			</tr>
+	</tbody>
+</table>
+<p>Mẫu đầu trùng với trung bình từng cột của A, nên BatchNorm train trả về ba số 0. Trong B, mẫu đầu nhỏ hơn cả ba trung bình cột. LayerNorm luôn nhìn vào cùng ba giá trị trên dòng đầu nên đầu ra giữ nguyên. Kết quả này mô tả riêng lớp chuẩn hóa trên đầu vào cố định. Khi kiểm tra cả mạng, các lớp khác vẫn có thể làm đầu vào của lớp đó thay đổi.</p>
+<h2 id="batchnorm-lưu-gì-sau-mỗi-lượt-train">BatchNorm lưu gì sau mỗi lượt train?<a class="anchor ms-1" href="#batchnorm-lưu-gì-sau-mỗi-lượt-train"><i class="fas fa-link"></i></a></h2>
+<p>Thí nghiệm tạo một lớp BatchNorm với <code>momentum=0.1</code> rồi đưa A và B qua lớp theo thứ tự đó. Sau hai lượt, <code>running_mean = [0.39, 0.78, 1.56]</code>, <code>running_var = [1.3, 2.77, 8.65]</code> và <code>num_batches_tracked = 2</code>. Với <code>momentum=0.1</code>, thống kê mới lưu bằng 90% giá trị cũ cộng 10% giá trị tính từ batch hiện tại. Chẳng hạn cột đầu có trung bình 1 ở A và 3 ở B, nên giá trị lưu đi từ 0 qua 0,1 rồi đến 0,39. <a href="https://docs.pytorch.org/docs/2.8/generated/torch.nn.BatchNorm1d.html" target="_blank" rel="noopener noreferrer">Tài liệu BatchNorm1d</a></p>
+<p>PyTorch dùng phương sai chia cho số phần tử để chuẩn hóa đầu ra lúc train, nhưng dùng phương sai có hiệu chỉnh Bessel khi cập nhật <code>running_var</code>. Chẳng hạn cột đầu của A có các giá trị <code>[1, 0, 2]</code>. Phương sai dùng cho đầu ra là 2/3, còn phương sai đưa vào phép cập nhật bộ đệm là 1. Vì vậy, tự tính phương sai từ một batch rồi so thẳng với <code>running_var</code> có thể khiến bạn tưởng lớp tính sai. <a href="https://docs.pytorch.org/docs/2.8/generated/torch.nn.BatchNorm1d.html" target="_blank" rel="noopener noreferrer">Tài liệu BatchNorm1d</a></p>
+<p>Cả hai lượt train trong mã chạy bên trong <code>torch.no_grad()</code>, nhưng vẫn cập nhật các bộ đệm. <code>no_grad()</code> tắt việc ghi phép toán để tính gradient. Chuyển trạng thái của lớp là việc của <code>eval()</code>. Sau khi gọi <code>bn.eval()</code>, mã xác minh các bộ đệm giữ nguyên và đầu ra mẫu mục tiêu giống nhau trong A, B và khi đưa riêng mẫu đó qua lớp. <a href="https://docs.pytorch.org/docs/2.8/generated/torch.nn.Module.html#torch.nn.Module.eval" target="_blank" rel="noopener noreferrer">Tài liệu Module.eval</a></p>
+<p>Cấu hình <code>track_running_stats=False</code> là ngoại lệ cần kiểm tra khi gỡ lỗi. Lớp không tích lũy các bộ đệm mean và variance, nên eval vẫn dùng thống kê của batch hiện tại. Mã chạy thêm trường hợp này và thu lại hai đầu ra khác nhau như ở BatchNorm train trong bảng. Với mạng dùng cả Dropout và BatchNorm, xem <a href="/blog/2026-11-04-monte-carlo-dropout-do-bat-dinh-pytorch/">cách bật Monte Carlo Dropout mà vẫn giữ BatchNorm ở eval</a>. <a href="https://docs.pytorch.org/docs/2.8/generated/torch.nn.BatchNorm1d.html" target="_blank" rel="noopener noreferrer">Tài liệu BatchNorm1d</a></p>
+<h2 id="batch-size-1-có-luôn-gây-lỗi-cho-batchnorm">Batch size 1 có luôn gây lỗi cho BatchNorm?<a class="anchor ms-1" href="#batch-size-1-có-luôn-gây-lỗi-cho-batchnorm"><i class="fas fa-link"></i></a></h2>
+<p>Trên PyTorch 2.8.0, <code>BatchNorm1d(3)</code> ở train nhận đầu vào <code>[1, 3]</code> sẽ báo lỗi vì mỗi kênh chỉ có một giá trị. <code>LayerNorm(3)</code> nhận cùng tensor và vẫn dùng ba đặc trưng trên dòng để tính thống kê. Trong cùng lần chạy, <code>BatchNorm1d(3)</code> ở train chấp nhận đầu vào <code>[1, 3, 2]</code> vì hai vị trí trên trục <code>L</code> cung cấp hai giá trị cho mỗi kênh. <a href="https://docs.pytorch.org/docs/2.8/generated/torch.nn.BatchNorm1d.html" target="_blank" rel="noopener noreferrer">Tài liệu BatchNorm1d</a></p>
+<p>Nếu lỗi chỉ xuất hiện ở batch cuối, hãy xem shape <strong>tại lớp báo lỗi</strong> và số mẫu còn lại. Trong suy luận, kiểm tra <code>training</code> và <code>track_running_stats</code> của lớp trước khi kết luận do kích thước batch. Trong huấn luyện có tích lũy gradient, nhiều lượt forward nhỏ có thể góp vào một lần cập nhật trọng số, nhưng mỗi lượt BatchNorm vẫn tính thống kê trên đầu vào của chính lượt đó. <a href="/blog/2018-10-02-understanding-epoch-batchsize-iterations/">Cách phân biệt epoch, batch size và số lượt cập nhật</a></p>
+<h2 id="batch-nhỏ-làm-thống-kê-dao-động-bao-nhiêu">Batch nhỏ làm thống kê dao động bao nhiêu?<a class="anchor ms-1" href="#batch-nhỏ-làm-thống-kê-dao-động-bao-nhiêu"><i class="fas fa-link"></i></a></h2>
+<p>Lấy 4.096 batch độc lập từ phân phối chuẩn có trung bình 0, phương sai 1 cho mỗi cỡ batch. Tính trung bình từng batch rồi đo độ lệch chuẩn của 4.096 giá trị trung bình. Trong mô hình lấy mẫu độc lập này, độ lệch chuẩn lý thuyết của trung bình mẫu là $1 / \sqrt{N}$.</p>
+<table>
+	<thead>
+			<tr>
+					<th style="text-align: right">Số giá trị mỗi batch</th>
+					<th style="text-align: right">Độ lệch chuẩn đo được</th>
+					<th style="text-align: right">Lý thuyết</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td style="text-align: right">2</td>
+					<td style="text-align: right">0,709864</td>
+					<td style="text-align: right">0,707107</td>
+			</tr>
+			<tr>
+					<td style="text-align: right">32</td>
+					<td style="text-align: right">0,176406</td>
+					<td style="text-align: right">0,176777</td>
+			</tr>
+	</tbody>
+</table>
+<p>Khi tăng từ 2 lên 32 giá trị, độ lệch chuẩn đo được giảm khoảng bốn lần. Phép đo cho biết <strong>trung bình batch</strong> nhạy thế nào với số mẫu độc lập trong tình huống này. Nó chưa đo độ chính xác, tốc độ hội tụ hay chất lượng mô hình. Các vị trí trên trục không gian hoặc thời gian của dữ liệu thực có thể tương quan, nên số phần tử BatchNorm gộp lại cũng chưa nói hết độ ổn định của thống kê.</p>
+<h2 id="mã-tái-lập">Mã tái lập<a class="anchor ms-1" href="#mã-tái-lập"><i class="fas fa-link"></i></a></h2>
+<p>Lưu đoạn dưới thành <code>experiment.py</code> và chạy <code>python3 experiment.py</code>. Lần chạy ghi trong bài dùng Python 3.10.11 và PyTorch 2.8.0 trên CPU, kiểu <code>float64</code> và seed 2026 cho phép lấy mẫu. Phần đầu dùng tensor cố định. Các kiểm tra đối chiếu đầu ra, bộ đệm và trường hợp một mẫu để phát hiện sai khác khi chạy lại.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="kn">import</span> <span class="nn">math</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="kn">import</span> <span class="nn">platform</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl"><span class="kn">import</span> <span class="nn">torch</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl"><span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl"><span class="k">def</span> <span class="nf">numbers</span><span class="p">(</span><span class="n">tensor</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">    <span class="k">return</span> <span class="p">[</span><span class="nb">round</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span> <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">tensor</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span><span class="o">.</span><span class="n">tolist</span><span class="p">()]</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">
+</span></span><span class="line"><span class="ln">11</span><span class="cl">
+</span></span><span class="line"><span class="ln">12</span><span class="cl"><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl">    <span class="n">torch</span><span class="o">.</span><span class="n">set_num_threads</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">14</span><span class="cl">    <span class="n">dtype</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">float64</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl">    <span class="n">batch_a</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">8</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">16</span><span class="cl">    <span class="n">batch_b</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">12</span><span class="p">],</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">17</span><span class="cl">    <span class="n">bn</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm1d</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">affine</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">momentum</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">18</span><span class="cl">    <span class="n">ln</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">LayerNorm</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">elementwise_affine</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">19</span><span class="cl">
+</span></span><span class="line"><span class="ln">20</span><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;Python </span><span class="si">{</span><span class="n">platform</span><span class="o">.</span><span class="n">python_version</span><span class="p">()</span><span class="si">}</span><span class="s2">, PyTorch </span><span class="si">{</span><span class="n">torch</span><span class="o">.</span><span class="n">__version__</span><span class="si">}</span><span class="s2">, CPU float64&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">21</span><span class="cl">    <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+</span></span><span class="line"><span class="ln">22</span><span class="cl">        <span class="n">train_a</span> <span class="o">=</span> <span class="n">bn</span><span class="p">(</span><span class="n">batch_a</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+</span></span><span class="line"><span class="ln">23</span><span class="cl">        <span class="n">train_b</span> <span class="o">=</span> <span class="n">bn</span><span class="p">(</span><span class="n">batch_b</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+</span></span><span class="line"><span class="ln">24</span><span class="cl">        <span class="n">layer_a</span> <span class="o">=</span> <span class="n">ln</span><span class="p">(</span><span class="n">batch_a</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+</span></span><span class="line"><span class="ln">25</span><span class="cl">        <span class="n">layer_b</span> <span class="o">=</span> <span class="n">ln</span><span class="p">(</span><span class="n">batch_b</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+</span></span><span class="line"><span class="ln">26</span><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;BN train A, B:&#34;</span><span class="p">,</span> <span class="n">numbers</span><span class="p">(</span><span class="n">train_a</span><span class="p">),</span> <span class="n">numbers</span><span class="p">(</span><span class="n">train_b</span><span class="p">))</span>
+</span></span><span class="line"><span class="ln">27</span><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;LN train A, B:&#34;</span><span class="p">,</span> <span class="n">numbers</span><span class="p">(</span><span class="n">layer_a</span><span class="p">),</span> <span class="n">numbers</span><span class="p">(</span><span class="n">layer_b</span><span class="p">))</span>
+</span></span><span class="line"><span class="ln">28</span><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;Running mean:&#34;</span><span class="p">,</span> <span class="n">numbers</span><span class="p">(</span><span class="n">bn</span><span class="o">.</span><span class="n">running_mean</span><span class="p">))</span>
+</span></span><span class="line"><span class="ln">29</span><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;Running var:&#34;</span><span class="p">,</span> <span class="n">numbers</span><span class="p">(</span><span class="n">bn</span><span class="o">.</span><span class="n">running_var</span><span class="p">))</span>
+</span></span><span class="line"><span class="ln">30</span><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;Batches tracked after no_grad train:&#34;</span><span class="p">,</span> <span class="n">bn</span><span class="o">.</span><span class="n">num_batches_tracked</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+</span></span><span class="line"><span class="ln">31</span><span class="cl">        <span class="k">assert</span> <span class="ow">not</span> <span class="n">torch</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">train_a</span><span class="p">,</span> <span class="n">train_b</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">32</span><span class="cl">        <span class="n">torch</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_close</span><span class="p">(</span><span class="n">layer_a</span><span class="p">,</span> <span class="n">layer_b</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-12</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">33</span><span class="cl">        <span class="n">torch</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_close</span><span class="p">(</span><span class="n">bn</span><span class="o">.</span><span class="n">running_mean</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">0.39</span><span class="p">,</span> <span class="mf">0.78</span><span class="p">,</span> <span class="mf">1.56</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">))</span>
+</span></span><span class="line"><span class="ln">34</span><span class="cl">        <span class="n">torch</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_close</span><span class="p">(</span><span class="n">bn</span><span class="o">.</span><span class="n">running_var</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mf">1.3</span><span class="p">,</span> <span class="mf">2.77</span><span class="p">,</span> <span class="mf">8.65</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">))</span>
+</span></span><span class="line"><span class="ln">35</span><span class="cl">        <span class="k">assert</span> <span class="n">bn</span><span class="o">.</span><span class="n">num_batches_tracked</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="o">==</span> <span class="mi">2</span>
+</span></span><span class="line"><span class="ln">36</span><span class="cl">
+</span></span><span class="line"><span class="ln">37</span><span class="cl">        <span class="n">before</span> <span class="o">=</span> <span class="p">(</span><span class="n">bn</span><span class="o">.</span><span class="n">running_mean</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span> <span class="n">bn</span><span class="o">.</span><span class="n">running_var</span><span class="o">.</span><span class="n">clone</span><span class="p">(),</span> <span class="n">bn</span><span class="o">.</span><span class="n">num_batches_tracked</span><span class="o">.</span><span class="n">clone</span><span class="p">())</span>
+</span></span><span class="line"><span class="ln">38</span><span class="cl">        <span class="n">bn</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">39</span><span class="cl">        <span class="n">ln</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">40</span><span class="cl">        <span class="n">eval_a</span> <span class="o">=</span> <span class="n">bn</span><span class="p">(</span><span class="n">batch_a</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+</span></span><span class="line"><span class="ln">41</span><span class="cl">        <span class="n">eval_b</span> <span class="o">=</span> <span class="n">bn</span><span class="p">(</span><span class="n">batch_b</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+</span></span><span class="line"><span class="ln">42</span><span class="cl">        <span class="n">eval_single</span> <span class="o">=</span> <span class="n">bn</span><span class="p">(</span><span class="n">batch_a</span><span class="p">[:</span><span class="mi">1</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+</span></span><span class="line"><span class="ln">43</span><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;BN eval A, B, singleton:&#34;</span><span class="p">,</span> <span class="n">numbers</span><span class="p">(</span><span class="n">eval_a</span><span class="p">),</span> <span class="n">numbers</span><span class="p">(</span><span class="n">eval_b</span><span class="p">),</span> <span class="n">numbers</span><span class="p">(</span><span class="n">eval_single</span><span class="p">))</span>
+</span></span><span class="line"><span class="ln">44</span><span class="cl">        <span class="n">after</span> <span class="o">=</span> <span class="p">(</span><span class="n">bn</span><span class="o">.</span><span class="n">running_mean</span><span class="p">,</span> <span class="n">bn</span><span class="o">.</span><span class="n">running_var</span><span class="p">,</span> <span class="n">bn</span><span class="o">.</span><span class="n">num_batches_tracked</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">45</span><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;BN buffers unchanged in eval:&#34;</span><span class="p">,</span> <span class="nb">all</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">equal</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">before</span><span class="p">,</span> <span class="n">after</span><span class="p">)))</span>
+</span></span><span class="line"><span class="ln">46</span><span class="cl">        <span class="k">assert</span> <span class="nb">all</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">equal</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">before</span><span class="p">,</span> <span class="n">after</span><span class="p">))</span>
+</span></span><span class="line"><span class="ln">47</span><span class="cl">        <span class="k">for</span> <span class="n">output</span> <span class="ow">in</span> <span class="p">(</span><span class="n">eval_b</span><span class="p">,</span> <span class="n">eval_single</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">48</span><span class="cl">            <span class="n">torch</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_close</span><span class="p">(</span><span class="n">eval_a</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-12</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">49</span><span class="cl">        <span class="n">torch</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_close</span><span class="p">(</span><span class="n">ln</span><span class="p">(</span><span class="n">batch_a</span><span class="p">[:</span><span class="mi">1</span><span class="p">])[</span><span class="mi">0</span><span class="p">],</span> <span class="n">layer_a</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-12</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">50</span><span class="cl">
+</span></span><span class="line"><span class="ln">51</span><span class="cl">        <span class="n">bn_no_stats</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm1d</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">affine</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">track_running_stats</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">52</span><span class="cl">        <span class="n">no_stats_a</span><span class="p">,</span> <span class="n">no_stats_b</span> <span class="o">=</span> <span class="n">bn_no_stats</span><span class="p">(</span><span class="n">batch_a</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="n">bn_no_stats</span><span class="p">(</span><span class="n">batch_b</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+</span></span><span class="line"><span class="ln">53</span><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;BN eval without running stats A, B:&#34;</span><span class="p">,</span> <span class="n">numbers</span><span class="p">(</span><span class="n">no_stats_a</span><span class="p">),</span> <span class="n">numbers</span><span class="p">(</span><span class="n">no_stats_b</span><span class="p">))</span>
+</span></span><span class="line"><span class="ln">54</span><span class="cl">        <span class="n">torch</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_close</span><span class="p">(</span><span class="n">no_stats_a</span><span class="p">,</span> <span class="n">train_a</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-12</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">55</span><span class="cl">        <span class="n">torch</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_close</span><span class="p">(</span><span class="n">no_stats_b</span><span class="p">,</span> <span class="n">train_b</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-12</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">56</span><span class="cl">
+</span></span><span class="line"><span class="ln">57</span><span class="cl">        <span class="n">bn</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">58</span><span class="cl">        <span class="n">ln</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">59</span><span class="cl">        <span class="k">try</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln">60</span><span class="cl">            <span class="n">bn</span><span class="p">(</span><span class="n">batch_a</span><span class="p">[:</span><span class="mi">1</span><span class="p">])</span>
+</span></span><span class="line"><span class="ln">61</span><span class="cl">        <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln">62</span><span class="cl">            <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;BN train singleton:&#34;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">error</span><span class="p">))</span>
+</span></span><span class="line"><span class="ln">63</span><span class="cl">        <span class="k">else</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln">64</span><span class="cl">            <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span><span class="s2">&#34;Expected BatchNorm1d to reject shape [1,3] in train mode&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">65</span><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;LN train singleton:&#34;</span><span class="p">,</span> <span class="n">numbers</span><span class="p">(</span><span class="n">ln</span><span class="p">(</span><span class="n">batch_a</span><span class="p">[:</span><span class="mi">1</span><span class="p">])))</span>
+</span></span><span class="line"><span class="ln">66</span><span class="cl">        <span class="n">sequence</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">67</span><span class="cl">        <span class="n">sequence_bn</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm1d</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">affine</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">68</span><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;BN train shape [1,3,2] succeeds:&#34;</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">sequence_bn</span><span class="p">(</span><span class="n">sequence</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+</span></span><span class="line"><span class="ln">69</span><span class="cl">
+</span></span><span class="line"><span class="ln">70</span><span class="cl">    <span class="n">generator</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">Generator</span><span class="p">()</span><span class="o">.</span><span class="n">manual_seed</span><span class="p">(</span><span class="mi">2026</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">71</span><span class="cl">    <span class="k">for</span> <span class="n">batch_size</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">32</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">72</span><span class="cl">        <span class="n">samples</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">((</span><span class="mi">4096</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">),</span> <span class="n">generator</span><span class="o">=</span><span class="n">generator</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">73</span><span class="cl">        <span class="n">measured</span> <span class="o">=</span> <span class="n">samples</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">unbiased</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">74</span><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;N=</span><span class="si">{</span><span class="n">batch_size</span><span class="si">}</span><span class="s2">: sd(batch mean)=</span><span class="si">{</span><span class="n">measured</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">, theory=</span><span class="si">{</span><span class="mi">1</span> <span class="o">/</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">batch_size</span><span class="p">)</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">75</span><span class="cl">
+</span></span><span class="line"><span class="ln">76</span><span class="cl">
+</span></span><span class="line"><span class="ln">77</span><span class="cl"><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&#34;__main__&#34;</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln">78</span><span class="cl">    <span class="n">main</span><span class="p">()</span>
+</span></span></code></pre></div></div></div>
+  <div class="card-footer"><div class="post-navs d-flex justify-content-evenly"><div class="post-nav post-prev">
+    <i class="fas fa-fw fa-chevron-left"></i>
+    <a href="https://www.phamduytung.com/blog/2026-11-06-quaternion-scipy-xoay-camera-thu-tu-phep-quay/">Quaternion trong SciPy: xoay camera 3D và kiểm tra thứ tự phép quay
+</a>
+  </div></div></div>
+</article><section class="related-posts row card component">
+    <div class="card-header">
+      <h2 class="card-title">Bài liên quan</h2>
+    </div>
+    <div class="card-body">
+      <ul class="post-list"><li>
+          <a href="https://www.phamduytung.com/blog/2025-01-31-pytorch2.6/">Pytorch 2.6
+</a>
+          <span class="float-end post-date">31/01/2025
+</span>
+        </li><li>
+          <a href="https://www.phamduytung.com/blog/2018-10-02-understanding-epoch-batchsize-iterations/">Epoch, Batch size và Iteration là gì? Phân biệt dễ hiểu kèm ví dụ và code
+</a>
+          <span class="float-end post-date">02/10/2018
+</span>
+        </li><li>
+          <a href="https://www.phamduytung.com/blog/2026-11-04-monte-carlo-dropout-do-bat-dinh-pytorch/">Monte Carlo Dropout: đo độ bất định của dự đoán bằng PyTorch
+</a>
+          <span class="float-end post-date">04/11/2026
+</span>
+        </li><li>
+          <a href="https://www.phamduytung.com/blog/2021-01-15---adabelief-optimizer/">Tìm hiểu thuật toán tối ưu hóa Adabelief Optimizer
+</a>
+          <span class="float-end post-date">15/01/2021
+</span>
+        </li><li>
+          <a href="https://www.phamduytung.com/blog/2019-05-05-deep-learning-dropout/">Dropout là gì? Cách dropout chống overfitting trong Deep Learning (kèm code)
+</a>
+          <span class="float-end post-date">05/05/2019
+</span>
+        </li></ul>
+    </div>
+  </section><div class="card component row post-comments" id="post-comments">
+  <div class="card-header">
+    <h2 class="card-title">Bình luận</h2>
+  </div>
+  <div class="card-body"><script src="https://utteranc.es/client.js"
+  repo="AlexBlack2202/utterances"
+  issue-term="pathname"
+  label="comment"
+  theme="github-dark"
+  crossorigin="anonymous"
+  async>
+</script></div>
+</div></div>
+</div><aside class="col-lg-3 col-md-4 sidebar d-flex">
+  <div class="container d-flex flex-column">
+
+    <a href="https://www.buymeacoffee.com/alexblack28" rel="noopener"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=🍎&slug=alexblack28&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" alt="Buy me a coffee" loading="lazy" decoding="async" /></a>
+<div class="post-toc row mb-4 card component" id="postTOC">
+  <div class="card-header">
+    <h2 class="card-title">Mục lục</h2>
+  </div>
+  <div class="card-body">
+    <nav id="TableOfContents"><ul>
+        <li><a href="#nhìn-vào-trục-lấy-trung-bình-và-phương-sai">Nhìn vào trục lấy trung bình và phương sai</a></li>
+        <li><a href="#giữ-mẫu-1-2-4-và-thay-các-mẫu-đi-kèm">Giữ mẫu [1, 2, 4] và thay các mẫu đi kèm</a></li>
+        <li><a href="#batchnorm-lưu-gì-sau-mỗi-lượt-train">BatchNorm lưu gì sau mỗi lượt train?</a></li>
+        <li><a href="#batch-size-1-có-luôn-gây-lỗi-cho-batchnorm">Batch size 1 có luôn gây lỗi cho BatchNorm?</a></li>
+        <li><a href="#batch-nhỏ-làm-thống-kê-dao-động-bao-nhiêu">Batch nhỏ làm thống kê dao động bao nhiêu?</a></li>
+        <li><a href="#mã-tái-lập">Mã tái lập</a></li>
+      </ul></nav>
+  </div>
+</div><section class="recent-posts row card component">
+  <div class="card-header">
+    <h2 class="card-title">Bài gần đây</h2>
+  </div>
+  <div class="card-body">
+    <ul class="post-list"><li>
+        <a href="https://www.phamduytung.com/blog/2026-11-07-batchnorm-layernorm-batch-nho-train-eval/">BatchNorm và LayerNorm khi batch nhỏ: thí nghiệm và lỗi train/eval
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-11-06-quaternion-scipy-xoay-camera-thu-tu-phep-quay/">Quaternion trong SciPy: xoay camera 3D và kiểm tra thứ tự phép quay
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-11-05-stratified-group-split-tranh-ro-ri-du-lieu/">Stratified split hay Group split? Tránh rò rỉ dữ liệu khi chia tập học máy
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-11-04-monte-carlo-dropout-do-bat-dinh-pytorch/">Monte Carlo Dropout: đo độ bất định của dự đoán bằng PyTorch
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-09-02-ly-thuyet-becker-kinh-te-hoc-toi-pham/">Lý thuyết Becker: Khi tội phạm cũng là một bài toán kinh tế
+</a>
+      </li></ul>
+  </div>
+</section><section class="series-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/series">series</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/series/kh%C3%B3a-h%E1%BB%8Dc-python-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học Python Căn Bản">
+            Khóa Học Python Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="https://www.phamduytung.com/series/kh%C3%B3a-h%E1%BB%8Dc-c&#43;&#43;-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học C&#43;&#43; Căn Bản">
+            Khóa Học C&#43;&#43; Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="https://www.phamduytung.com/series/machine-learning-dataset/" class="badge rounded post-taxonomy" title="Machine Learning Dataset">
+            Machine Learning Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a><a href="https://www.phamduytung.com/series/ch%E1%BB%A9ng-kho%C3%A1n-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Chứng Khoán Căn Bản">
+            Chứng Khoán Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">1</span></a></div>
+      </div>
+    </section><section class="tools-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/tools">tools</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/tools/tool-random/" class="badge rounded post-taxonomy" title="Tool Random">
+            Tool Random<span class="badge badge-sm text-white bg-accent ms-1">3</span></a></div>
+      </div>
+    </section><section class="categories-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/categories">categories</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/categories/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="https://www.phamduytung.com/categories/c&#43;&#43;/" class="badge rounded post-taxonomy" title="C&#43;&#43;">
+            C&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="https://www.phamduytung.com/categories/dataset/" class="badge rounded post-taxonomy" title="Dataset">
+            Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a></div>
+      </div>
+    </section><section class="tags-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/tags">tags</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/tags/machine-learning/" class="badge rounded post-taxonomy" title="Machine Learning">
+            Machine Learning<span class="badge badge-sm text-white bg-accent ms-1">31</span></a><a href="https://www.phamduytung.com/tags/deep-learning/" class="badge rounded post-taxonomy" title="Deep Learning">
+            Deep Learning<span class="badge badge-sm text-white bg-accent ms-1">27</span></a><a href="https://www.phamduytung.com/tags/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">19</span></a><a href="https://www.phamduytung.com/tags/llm/" class="badge rounded post-taxonomy" title="Llm">
+            Llm<span class="badge badge-sm text-white bg-accent ms-1">18</span></a><a href="https://www.phamduytung.com/tags/computer-vision/" class="badge rounded post-taxonomy" title="Computer Vision">
+            Computer Vision<span class="badge badge-sm text-white bg-accent ms-1">16</span></a><a href="https://www.phamduytung.com/tags/mathematics/" class="badge rounded post-taxonomy" title="Mathematics">
+            Mathematics<span class="badge badge-sm text-white bg-accent ms-1">12</span></a><a href="https://www.phamduytung.com/tags/ai-agent/" class="badge rounded post-taxonomy" title="Ai-Agent">
+            Ai-Agent<span class="badge badge-sm text-white bg-accent ms-1">10</span></a><a href="https://www.phamduytung.com/tags/to%C3%A1n-h%E1%BB%8Dc/" class="badge rounded post-taxonomy" title="Toán Học">
+            Toán Học<span class="badge badge-sm text-white bg-accent ms-1">8</span></a><a href="https://www.phamduytung.com/tags/tri%E1%BA%BFt-h%E1%BB%8Dc/" class="badge rounded post-taxonomy" title="Triết Học">
+            Triết Học<span class="badge badge-sm text-white bg-accent ms-1">8</span></a><a href="https://www.phamduytung.com/tags/ai/" class="badge rounded post-taxonomy" title="Ai">
+            Ai<span class="badge badge-sm text-white bg-accent ms-1">7</span></a></div>
+      </div>
+    </section>
+
+  </div>
+</aside>
+</div>
+    </main><footer class="footer mt-auto py-3 text-center container"><ul class="nav justify-content-between footer-memu mb-3"><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Community
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-facebook"></i>Facebook Group
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://github.com/AlexBlack2202/alexblack2202.github.io" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-github"></i>GitHub
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/contact/"><i class="fas fa-fw fa-info-circle"></i>Contact Us
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/faq/"><i class="fas fa-fw fa-question-circle"></i>Câu hỏi thường gặp
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/about/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-user"></i>Giới thiệu tác giả
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Docs
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="/teamofservices/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-users"></i>Điều khoản sử dụng
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/privacy/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-lock"></i>Chính sách bảo mật
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Features
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="/utils/gen_paswords/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-key"></i>Tạo password ngẫu nhiên
+</a>
+        </li></ul></li></ul>
+<div class="copyright mb-2">
+  Copyright © 2016-2026 Phạm Duy Tùng. All Rights Reserved.
+</div>
+<div class="powered-by mb-2">
+  Website chia sẻ kiến thức của Phạm Duy Tùng và Đặng Thị Hằng. Vui lòng liên hệ email alexblack2202@gmail.com nếu bạn có thông tin cần trao đổi.
+</div></footer>
+<script src="https://www.phamduytung.com/js/main.e788bab0969e53541289578e23a0f66a2ec1102872a9d44b994c80d0601d588a.js" integrity="sha256-54i6sJaeU1QSiVeOI6D2ai7BEChyqdRLmUyA0GAdWIo=" crossorigin="anonymous" defer></script><script src="https://www.phamduytung.com/js/icons.min.cb4c9958dbc49e29ac644e168e82db2d0de9a741a15751cc5bf2b0af21eb2845.js" integrity="sha256-y0yZWNvEnimsZE4WjoLbLQ3pp0GhV1HMW/KwryHrKEU=" crossorigin="anonymous" defer></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('https:\/\/www.phamduytung.com\/service-worker.js').then(function(reg) {
+      console.log('Successfully registered service worker', reg);
+    }).catch(function(err) {
+      console.warn('Error whilst registering service worker', err);
+    });
+  });
+}
+</script><script src="https://www.phamduytung.com/js/viewer.min.28bcf5233e406dae6715f46c8b9e8ca7c6cbf347e8678f5a2bebe5369c3270bb.js" integrity="sha256-KLz1Iz5Aba5nFfRsi56Mp8bL80foZ49aK&#43;vlNpwycLs=" crossorigin="anonymous" defer></script><script defer src="https://www.phamduytung.com/js/katex.min.8582b9feadf92a2a977ed303b97d7713cf2754ccf2b4eb60d8be7453a21042c2.js" integrity="sha256-hYK5/q35KiqXftMDuX13E88nVMzytOtg2L50U6IQQsI=" crossorigin="anonymous"></script>
+
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-2WWQ5G9DKL"></script>
+      <script>
+        var doNotTrack = false;
+        if ( true ) {
+          var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
+          var doNotTrack = (dnt == "1" || dnt == "yes");
+        }
+        if (!doNotTrack) {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-2WWQ5G9DKL');
+        }
+      </script>
+<script  data-ad-client="ca-pub-4644989745435991"  async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4644989745435991"
+     crossorigin="anonymous"></script></body>
+</html>
