@@ -1,0 +1,690 @@
+<!doctype html><html lang="vi" data-palette="brown"
+   data-mode="light">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>NMS theo lớp hay gộp lớp? Thí nghiệm lỗi lọc bounding box - Phạm Duy Tùng</title>
+    <meta name="a.validate.02" content="1QZXZ8oi7g57H-GxBrBPkTYBydwii-Ic9iJu" /><link rel="apple-touch-icon" href="https://www.phamduytung.com/images/icons/icon-180x180.png" sizes="180x180">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/icon-32x32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/icon-16x16.png" sizes="16x16" type="image/png">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/favicon.ico">
+<link rel="manifest" href="https://www.phamduytung.com/manifest.json">
+
+<meta name="description" content="Thử NMS theo lớp và gộp lớp bằng Torchvision để thấy khi nào hộp chồng lấn là dự đoán trùng và khi nào lọc gộp làm mất một vật thể đúng." /><meta name="robots" content="index, follow, max-image-preview:large"><meta property="og:title" content="NMS theo lớp hay gộp lớp? Thí nghiệm lỗi lọc bounding box">
+<meta property="og:description" content="Thử NMS theo lớp và gộp lớp bằng Torchvision để thấy khi nào hộp chồng lấn là dự đoán trùng và khi nào lọc gộp làm mất một vật thể đúng.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://www.phamduytung.com/blog/2026-11-10-nms-theo-lop-hay-gop-lop/">
+<meta property="og:site_name" content="Phạm Duy Tùng Machine Learning Blog">
+<meta property="og:locale" content="vi_VN">
+<meta property="og:image" content="https://www.phamduytung.com/site-images/posts/2026-11-10-nms-theo-lop-hay-gop-lop/cover-v1-1200_hu_a42c399d6eb89351.webp" data-image-budget="100000"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="675"><meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="NMS theo lớp hay gộp lớp? Thí nghiệm lỗi lọc bounding box">
+<meta name="twitter:description" content="Thử NMS theo lớp và gộp lớp bằng Torchvision để thấy khi nào hộp chồng lấn là dự đoán trùng và khi nào lọc gộp làm mất một vật thể đúng.">
+<meta name="twitter:image" content="https://www.phamduytung.com/site-images/posts/2026-11-10-nms-theo-lop-hay-gop-lop/cover-v1-1200_hu_a42c399d6eb89351.webp" data-image-budget="100000"><meta property="article:published_time" content="2026-11-10T08:00:00&#43;07:00"><meta property="article:modified_time" content="2026-11-10T08:00:00&#43;07:00"><meta property="article:section" content="blog"><meta property="article:tag" content="computer vision"><meta property="article:tag" content="object detection"><meta property="article:tag" content="nms"><link rel="stylesheet" href="https://www.phamduytung.com/css/main.min.0558a043598454ca5f6300bbe4bab466b3141cb8632ec005d8872a3a188ed894.css" integrity="sha256-BVigQ1mEVMpfYwC75Lq0ZrMUHLhjLsAF2IcqOhiO2JQ=" crossorigin="anonymous"><link rel="stylesheet" href="https://www.phamduytung.com/css/katex.min.4d6aa053ca8a5675016fa2c9c48ee5359bfaafb8295184458af9d64abce84c47.css" integrity="sha256-TWqgU8qKVnUBb6LJxI7lNZv6r7gpUYRFivnWSrzoTEc=" crossorigin="anonymous">
+<link rel="stylesheet" href="https://www.phamduytung.com/css/viewer.min.3d228794bcedbbfa0412beb8fbc1ec6973202945e42af7004f742a4d7bd620ab.css" integrity="sha256-PSKHlLztu/oEEr64&#43;8HsaXMgKUXkKvcAT3QqTXvWIKs=" crossorigin="anonymous"><link rel="canonical" href="https://www.phamduytung.com/blog/2026-11-10-nms-theo-lop-hay-gop-lop/">
+<meta name="theme-color" content="#f7f5ff"><script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@id":"https://www.phamduytung.com/blog/2026-11-10-nms-theo-lop-hay-gop-lop/#article","@type":"BlogPosting","author":[{"@type":"Person","name":"Phạm Duy Tùng","sameAs":["https://github.com/AlexBlack2202","https://www.linkedin.com/in/tung-pham-duy/"],"url":"https://www.phamduytung.com/about/"}],"dateModified":"2026-11-10T08:00:00+07:00","datePublished":"2026-11-10T08:00:00+07:00","description":"Thử NMS theo lớp và gộp lớp bằng Torchvision để thấy khi nào hộp chồng lấn là dự đoán trùng và khi nào lọc gộp làm mất một vật thể đúng.","headline":"NMS theo lớp hay gộp lớp? Thí nghiệm lỗi lọc bounding box","image":["https://www.phamduytung.com/site-images/posts/2026-11-10-nms-theo-lop-hay-gop-lop/cover-v1-1200_hu_a42c399d6eb89351.webp"],"inLanguage":"vi","keywords":"computer vision, object detection, nms","mainEntityOfPage":{"@id":"https://www.phamduytung.com/blog/2026-11-10-nms-theo-lop-hay-gop-lop/","@type":"WebPage"},"publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://www.phamduytung.com/site-images/brand-mark-flaming-book-red_hu_45318b168da512af.webp"},"name":"Phạm Duy Tùng Machine Learning Blog","url":"https://www.phamduytung.com/"},"url":"https://www.phamduytung.com/blog/2026-11-10-nms-theo-lop-hay-gop-lop/","wordCount":1581},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","item":"https://www.phamduytung.com/","name":"Trang chủ","position":1},{"@type":"ListItem","item":"https://www.phamduytung.com/blog/","name":"Blogs","position":2},{"@type":"ListItem","item":"https://www.phamduytung.com/blog/2026-11-10-nms-theo-lop-hay-gop-lop/","name":"NMS theo lớp hay gộp lớp? Thí nghiệm lỗi lọc bounding box","position":3}]}]}</script></head>
+  <body><script>const items=["mode","palette"];items.forEach(function(e){const t=localStorage.getItem("hbs-"+e);t&&document.body.parentElement.setAttribute("data-"+e,t)})</script><header><nav class="navbar top-app-bar top-app-bar-expand-lg fixed-top">
+  <div class="container pearl-navbar__inner">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Mở menu">
+      <i class="fas fa-bars"></i>
+    </button>
+
+    <a class="navbar-brand pearl-brand flex-grow-1 flex-lg-grow-0" href="https://www.phamduytung.com/">
+      <span class="pearl-brand__mark" aria-hidden="true">
+        <img src="/site-images/brand-mark-flaming-book-red_hu_57a35d93ebdc8b9c.webp" alt="" data-image-budget="100000" srcset="/site-images/brand-mark-flaming-book-red_hu_bbc58893f5ad658b.webp 42w, /site-images/brand-mark-flaming-book-red_hu_57a35d93ebdc8b9c.webp 84w" sizes="42px" width="42" height="42"
+  loading="eager" decoding="async">
+
+      </span>
+      <span class="pearl-brand__copy">
+        <strong>Phạm Duy Tùng</strong>
+        <small>AI · DATA · SYSTEMS</small>
+      </span>
+    </a>
+
+    <div class="offcanvas offcanvas-bottom surface" tabindex="-1" id="offcanvasSocialShare" aria-labelledby="offcanvasSocialShare">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Share</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body">
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Twitter Share Button"
+      target="_blank" href="https://twitter.com/intent/tweet?title=NMS%20theo%20l%e1%bb%9bp%20hay%20g%e1%bb%99p%20l%e1%bb%9bp%3f%20Th%c3%ad%20nghi%e1%bb%87m%20l%e1%bb%97i%20l%e1%bb%8dc%20bounding%20box&url=https%3a%2f%2fwww.phamduytung.com%2fblog%2f2026-11-10-nms-theo-lop-hay-gop-lop%2f">
+      <i class="fab fa-fw fa-twitter"></i> Twitter
+    </a>
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Facebook Share Button"
+      target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.phamduytung.com%2fblog%2f2026-11-10-nms-theo-lop-hay-gop-lop%2f">
+      <i class="fab fa-fw fa-facebook-f"></i> Facebook
+    </a>
+  </div>
+</div>
+    <button class="navbar-settings" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSettings"
+  aria-controls="offcanvasSettings" aria-label="Toggle settings">
+  <i class="fas fa-ellipsis-v"></i>
+</button>
+
+<div class="offcanvas offcanvas-end surface h-100" tabindex="-1" id="offcanvasSettings" aria-labelledby="offcanvasSettings">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Cài đặt</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body d-flex flex-column">
+
+
+
+<section class="setting">
+  <form class="font-size-switcher-form row">
+    <div class="col-auto">
+      <label for="fontSize" class="form-label"><i class="fas fa-fw fa-font"></i> Cỡ chữ</label>
+    </div>
+    <div class="col-auto ms-auto">
+      <input type="range" class="form-range" min="-2" max="2" id="fontSize">
+    </div>
+  </form>
+</section>
+
+
+
+<section class="setting actions d-flex justify-content-around mt-auto overflow-auto">
+  <a role="button" class="action action-go-back" href="javascript: window.history.back();">
+    <span class="action-icon"><i class="fas fa-2x fa-arrow-left"></i></span> Quay lại
+  </a>
+  <a role="button" class="action action-reload-page">
+    <span class="action-icon"><i class="fas fa-2x fa-redo-alt"></i></span> Tải lại
+  </a>
+  <a role="button" class="action action-copy-url">
+    <span class="action-icon"><i class="fas fa-2x fa-link"></i></span> Sao chép URL
+  </a><a class="action action-social-share" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSocialShare"
+    aria-controls="offcanvasSocialShare" aria-label="Toggle social share">
+    <span class="action-icon"><i class="fas fa-2x fa-share-alt"></i></span> Chia sẻ
+  </a></section>
+
+</div>
+</div>
+
+    <div class="collapse navbar-collapse" tabindex="-1" id="navbarSupportedContent" aria-labelledby="navbarSupportedContent">
+      <form class="search-bar my-1" action="https://www.phamduytung.com/search">
+  <div class="input-group input-group-sm">
+    <span class="btn btn-search disabled position-absolute left-0"><i class="fas fa-fw fa-search"></i></span>
+    <input class="form-control rounded-pill" name="q" type="search" aria-label="Search">
+  </div>
+</form>
+      <ul class="navbar-nav ms-auto"><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/chu-de/">
+            <i class="fas fa-fw fa-list-alt"></i>Chủ đề
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/series/">
+            <i class="fas fa-fw fa-columns"></i>Courses
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/tools/">
+            <i class="fas fa-fw fa-folder"></i>Tools
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/categories/">
+            <i class="fas fa-fw fa-folder"></i>Categories
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/archives/">
+            <i class="fas fa-fw fa-file-archive"></i>Archives
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/tags/">
+            <i class="fas fa-fw fa-tags"></i>Tags
+          </a>
+        </li><li class="nav-item dropdown">
+          <a class="nav-link" id="navbarDropdownSupport" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-fw fa-comments"></i>Community
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdownSupport"><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Facebook Group
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://github.com/AlexBlack2202/alexblack2202.github.io" target="_blank" rel="noopener noreferrer">
+                GitHub
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/contact/">
+                Contact
+              </a>
+            </li><li><hr class="dropdown-divider"></li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/faq/">
+                Câu hỏi thường gặp
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/about/">
+                Giới thiệu tác giả
+              </a>
+            </li></ul>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/xem-truyen/">
+            <i class="fas fa-fw fa-book-open"></i>Xem truyện
+          </a>
+        </li></ul>
+    </div>
+  </div>
+</nav>
+</header>
+<main role="main" class="container" style="line-height:1.7em">
+      <div class="row content">
+<div class="col-lg-9 col-md-8">
+  <div class="container"><nav class="row card component" aria-label="breadcrumb">
+  <div class="card-body">
+    <ol class="breadcrumb "><li class="breadcrumb-item"><a href="https://www.phamduytung.com/">Trang chủ</a></li><li class="breadcrumb-item"><a href="https://www.phamduytung.com/blog/">Blogs</a></li><li class="breadcrumb-item active">NMS theo lớp hay gộp lớp? Thí nghiệm lỗi lọc bounding box</li></ol>
+  </div>
+</nav>
+<div class="post-panel-wrapper">
+  <div class="d-flex flex-column component rounded post-panel">
+
+    <a class="action action-panel-toggler" role="button" title="Panel toggler">
+      <i class="fas fa-fw fa-chevron-circle-down"></i>
+    </a>
+    <a id="sidebarToggler" class="action d-none d-lg-block" role="button" title="Sidebar toggler">
+  <i class="fas fa-fw fa-expand-alt" data-fa-transform="rotate-45"></i>
+</a>
+
+
+
+
+
+    <a class="action" href="#post-comments" role="button" aria-label="Comments" title="Comments">
+  <i class="fas fa-fw fa-comments"></i>
+</a>
+    <a class="action" href="#postTOC" aria-controls="Table of contents" role="button" title="Table of contents">
+  <i class="fas fa-fw fa-list-alt"></i>
+</a>
+
+  </div>
+</div>
+<article class="row card component mb-4 post">
+  <div class="card-header"><div class="bgcover">
+      <img src="/site-images/posts/2026-11-10-nms-theo-lop-hay-gop-lop/cover-v1-1200_hu_a42c399d6eb89351.webp" alt="NMS theo lớp hay gộp lớp? Thí nghiệm lỗi lọc bounding box" data-image-budget="100000" class="pearl-cover-image" srcset="/site-images/posts/2026-11-10-nms-theo-lop-hay-gop-lop/cover-v1-1200_hu_aa8cd57dc2ff1b5e.webp 480w, /site-images/posts/2026-11-10-nms-theo-lop-hay-gop-lop/cover-v1-1200_hu_911f8cebb638be83.webp 768w, /site-images/posts/2026-11-10-nms-theo-lop-hay-gop-lop/cover-v1-1200_hu_a42c399d6eb89351.webp 1200w" sizes="(min-width: 1200px) 960px, (min-width: 768px) 70vw, 100vw" width="1200" height="675"
+  loading="eager" decoding="async" fetchpriority="high">
+
+      <div class="bgtrans">
+        <h1>NMS theo lớp hay gộp lớp? Thí nghiệm lỗi lọc bounding box
+</h1>
+      </div>
+    </div>
+  </div>
+  <div class="card-body"><div class="post-byline">
+  <i class="fas fa-fw fa-user"></i>
+  <span>Tác giả:</span>
+  <a href="https://www.phamduytung.com/about/" rel="author">Phạm Duy Tùng</a>
+</div><div class="post-meta">
+  <span class="post-date" title="tạo ngày 2026-11-10 08:00:00 &#43;0700 &#43;07.">
+    10/11/2026
+  </span><span class="post-reading-time">
+    8 phút đọc
+  </span><span class="post-taxonomies"><a href="https://www.phamduytung.com/tags/computer-vision/" class="badge post-taxonomy">computer vision</a><a href="https://www.phamduytung.com/tags/object-detection/" class="badge post-taxonomy">object detection</a><a href="https://www.phamduytung.com/tags/nms/" class="badge post-taxonomy">nms</a></span>
+</div>
+<div class="post-content mb-3"><p>NMS theo lớp chỉ cho các hộp cùng nhãn cạnh tranh với nhau. NMS gộp lớp cho mọi hộp trong cùng một ảnh cạnh tranh, kể cả khi chúng mang nhãn khác nhau. Ở ngưỡng IoU 0,50, cả hai cách đều bỏ được hộp người trùng trong ví dụ dưới đây, nhưng chỉ cách theo lớp giữ được chiếc xe đạp nằm chồng lên người. Ở ảnh khác, nơi hộp xe đạp thực ra là một dự đoán sai, cách gộp lớp lại loại đúng hộp đó.</p>
+<h2 id="hai-cách-lọc-khác-nhau-ở-đâu">Hai cách lọc khác nhau ở đâu?<a class="anchor ms-1" href="#hai-cách-lọc-khác-nhau-ở-đâu"><i class="fas fa-link"></i></a></h2>
+<p>Non-maximum suppression (NMS) duyệt các hộp ứng viên theo điểm confidence từ cao xuống thấp. Sau khi giữ một hộp, thuật toán loại các ứng viên có điểm thấp hơn đủ chồng lấn với nó. Mức chồng lấn được đo bằng IoU, tức diện tích phần giao chia cho diện tích phần hợp của hai hộp. <a href="/blog/2019-12-25-nms/">Bài giới thiệu Non-maximum Suppression</a> mô tả thuật toán tham lam và biến thể Soft-NMS. Ở đây, cả hai chế độ đều dùng quy tắc loại hộp của hard NMS.</p>
+<ul>
+<li><strong>Theo lớp (<em>class-wise</em>).</strong> Truyền ID lớp vào <code>batched_nms(boxes, scores, labels, threshold)</code>. Các hộp khác lớp có thể cùng tồn tại kể cả khi IoU rất cao. Trong lệnh này, <code>labels</code> dùng để phân nhóm hộp trong một ảnh. <a href="https://docs.pytorch.org/vision/0.23/generated/torchvision.ops.batched_nms.html" target="_blank" rel="noopener noreferrer">Tài liệu <code>torchvision.ops.batched_nms</code></a></li>
+<li><strong>Gộp lớp (<em>class-agnostic</em>).</strong> Gọi <code>nms(boxes, scores, threshold)</code> trên toàn bộ hộp ứng viên của một ảnh. Hộp có điểm cao hơn có thể loại hộp khác lớp. Nhãn của hộp giữ lại vẫn được giữ nguyên. Torchvision dùng điều kiện loại <strong>IoU lớn hơn</strong> ngưỡng, nên hai hộp có IoU bằng ngưỡng vẫn có thể được giữ. <a href="https://docs.pytorch.org/vision/0.23/generated/torchvision.ops.nms.html" target="_blank" rel="noopener noreferrer">Tài liệu <code>torchvision.ops.nms</code></a></li>
+</ul>
+<h2 id="hai-ảnh-giả-lập-có-nhãn-chuẩn">Hai ảnh giả lập có nhãn chuẩn<a class="anchor ms-1" href="#hai-ảnh-giả-lập-có-nhãn-chuẩn"><i class="fas fa-link"></i></a></h2>
+<p>Ảnh A có hai đối tượng thật là một người và một xe đạp. Hộp chuẩn của chúng trùng tọa độ với P1 và B1. Ảnh B chỉ có một người, với hộp chuẩn trùng tọa độ P3. Mỗi ảnh có thêm một dự đoán người trùng. Ảnh B có thêm B2, hộp xe đạp sai nhãn nằm gần như cùng vị trí với người. Tọa độ dùng thứ tự <code>(x1, y1, x2, y2)</code>. Lớp <code>0</code> là người và <code>1</code> là xe đạp.</p>
+<table>
+	<thead>
+			<tr>
+					<th>Ảnh</th>
+					<th>Hộp</th>
+					<th>Lớp</th>
+					<th style="text-align: right">Confidence</th>
+					<th>Tọa độ</th>
+					<th>Vai trò</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>A</td>
+					<td>P1</td>
+					<td>Người</td>
+					<td style="text-align: right">0,95</td>
+					<td><code>(10, 10, 110, 110)</code></td>
+					<td>Dự đoán đúng</td>
+			</tr>
+			<tr>
+					<td>A</td>
+					<td>P2</td>
+					<td>Người</td>
+					<td style="text-align: right">0,82</td>
+					<td><code>(12, 12, 112, 112)</code></td>
+					<td>Trùng P1</td>
+			</tr>
+			<tr>
+					<td>A</td>
+					<td>B1</td>
+					<td>Xe đạp</td>
+					<td style="text-align: right">0,90</td>
+					<td><code>(30, 15, 130, 115)</code></td>
+					<td>Dự đoán đúng</td>
+			</tr>
+			<tr>
+					<td>B</td>
+					<td>P3</td>
+					<td>Người</td>
+					<td style="text-align: right">0,96</td>
+					<td><code>(10, 10, 110, 110)</code></td>
+					<td>Dự đoán đúng</td>
+			</tr>
+			<tr>
+					<td>B</td>
+					<td>P4</td>
+					<td>Người</td>
+					<td style="text-align: right">0,83</td>
+					<td><code>(13, 12, 113, 112)</code></td>
+					<td>Trùng P3</td>
+			</tr>
+			<tr>
+					<td>B</td>
+					<td>B2</td>
+					<td>Xe đạp</td>
+					<td style="text-align: right">0,70</td>
+					<td><code>(12, 11, 112, 111)</code></td>
+					<td>Sai lớp</td>
+			</tr>
+			<tr>
+					<td>B</td>
+					<td>B3</td>
+					<td>Xe đạp</td>
+					<td style="text-align: right">0,20</td>
+					<td><code>(160, 10, 200, 50)</code></td>
+					<td>Bị loại trước NMS</td>
+			</tr>
+	</tbody>
+</table>
+<p>Thí nghiệm tách bước lọc confidence, bước loại hộp trùng và bước đánh giá.</p>
+<ol>
+<li><strong>Lọc confidence.</strong> Chỉ đưa hộp có điểm từ 0,50 vào NMS. B3 rớt ở bước này ở cả hai chế độ.</li>
+<li><strong>Lọc theo IoU giữa các dự đoán.</strong> Thử lần lượt ngưỡng NMS 0,50, 0,70 và 0,95, giữ nguyên danh sách ứng viên và điểm số. Tính IoU bằng <code>box_iou</code>. <a href="https://docs.pytorch.org/vision/0.23/generated/torchvision.ops.box_iou.html" target="_blank" rel="noopener noreferrer">Tài liệu <code>torchvision.ops.box_iou</code></a></li>
+<li><strong>Đánh giá đầu ra.</strong> Duyệt hộp còn lại theo confidence giảm dần. Mỗi hộp được ghép với tối đa một hộp chuẩn chưa ghép, cùng lớp và có IoU cao nhất, miễn IoU từ 0,50 trở lên. Số ghép thành công là TP, số dự đoán còn lại là FP và số hộp chuẩn chưa ghép là FN. Ngưỡng ghép giữ cố định trong cả ba lượt thử.</li>
+</ol>
+<h2 id="kết-quả-chạy-trên-cpu">Kết quả chạy trên CPU<a class="anchor ms-1" href="#kết-quả-chạy-trên-cpu"><i class="fas fa-link"></i></a></h2>
+<table>
+	<thead>
+			<tr>
+					<th>Ảnh</th>
+					<th style="text-align: right">Ngưỡng NMS</th>
+					<th>Theo lớp giữ</th>
+					<th>TP / FP / FN</th>
+					<th>Gộp lớp giữ</th>
+					<th>TP / FP / FN</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>A</td>
+					<td style="text-align: right">0,50</td>
+					<td>P1, B1</td>
+					<td>2 / 0 / 0</td>
+					<td>P1</td>
+					<td>1 / 0 / 1</td>
+			</tr>
+			<tr>
+					<td>A</td>
+					<td style="text-align: right">0,70</td>
+					<td>P1, B1</td>
+					<td>2 / 0 / 0</td>
+					<td>P1, B1</td>
+					<td>2 / 0 / 0</td>
+			</tr>
+			<tr>
+					<td>A</td>
+					<td style="text-align: right">0,95</td>
+					<td>P1, B1, P2</td>
+					<td>2 / 1 / 0</td>
+					<td>P1, B1, P2</td>
+					<td>2 / 1 / 0</td>
+			</tr>
+			<tr>
+					<td>B</td>
+					<td style="text-align: right">0,50</td>
+					<td>P3, B2</td>
+					<td>1 / 1 / 0</td>
+					<td>P3</td>
+					<td>1 / 0 / 0</td>
+			</tr>
+			<tr>
+					<td>B</td>
+					<td style="text-align: right">0,70</td>
+					<td>P3, B2</td>
+					<td>1 / 1 / 0</td>
+					<td>P3</td>
+					<td>1 / 0 / 0</td>
+			</tr>
+			<tr>
+					<td>B</td>
+					<td style="text-align: right">0,95</td>
+					<td>P3, P4, B2</td>
+					<td>1 / 2 / 0</td>
+					<td>P3, P4</td>
+					<td>1 / 1 / 0</td>
+			</tr>
+	</tbody>
+</table>
+<h3 id="ảnh-a-mất-hộp-đúng-khi-gộp-lớp">Ảnh A mất hộp đúng khi gộp lớp<a class="anchor ms-1" href="#ảnh-a-mất-hộp-đúng-khi-gộp-lớp"><i class="fas fa-link"></i></a></h3>
+<p>Ở ngưỡng 0,50, P1 đứng đầu với confidence 0,95. Nó loại P2 trong cả hai chế độ vì hai hộp cùng lớp và IoU là <strong>0,9238</strong>. P1 và B1 có IoU <strong>0,6129</strong>. NMS gộp lớp cho cặp này cạnh tranh nên B1 bị loại và số FN tăng từ 0 lên 1. NMS theo lớp giữ B1 vì B1 thuộc lớp xe đạp.</p>
+<img src="/images/posts/2026-11-10-nms-theo-lop-hay-gop-lop/nms-comparison-v1.svg" alt="Ảnh A ở ngưỡng 0,50. NMS theo lớp giữ hộp người P1 và hộp xe đạp B1. NMS gộp lớp giữ P1 và loại B1." width="684" height="296" class="img-fluid" loading="lazy" data-image-budget="100000">
+<p><em>Cả hai chế độ đều loại P2. Sơ đồ chỉ vẽ P1 và B1 để thấy phần chồng lấn giữa hai lớp.</em></p>
+<p>Ở ngưỡng 0,70, IoU giữa P1 và B1 đủ thấp để gộp lớp giữ cả hai, trong khi P2 vẫn bị loại. Tăng tiếp lên 0,95 giữ luôn P2 và tạo thêm một FP.</p>
+<h3 id="ảnh-b-giữ-nhãn-sai-khi-lọc-theo-lớp">Ảnh B giữ nhãn sai khi lọc theo lớp<a class="anchor ms-1" href="#ảnh-b-giữ-nhãn-sai-khi-lọc-theo-lớp"><i class="fas fa-link"></i></a></h3>
+<p>P3 là hộp có điểm cao nhất. Ở ngưỡng 0,50 và 0,70, cả hai chế độ đều bỏ P4 vì IoU với P3 là <strong>0,9059</strong>. B2 chồng lên P3 với IoU <strong>0,9421</strong>. NMS theo lớp giữ B2 do khác nhãn, tạo một FP. NMS gộp lớp bỏ B2 do nó có điểm thấp hơn P3.</p>
+<p>Ở ngưỡng 0,95, gộp lớp vẫn bỏ B2 dù IoU giữa B2 và P3 thấp hơn ngưỡng. P4 sống sót sau lượt xử lý P3, rồi loại B2 ở lượt kế tiếp vì IoU giữa P4 và B2 là <strong>0,9610</strong>. Muốn tìm lý do một hộp biến mất, cần xem các hộp được giữ theo thứ tự điểm, kể cả hộp đứng sau hộp đầu bảng.</p>
+<h2 id="chạy-lại-bằng-torchvision">Chạy lại bằng Torchvision<a class="anchor ms-1" href="#chạy-lại-bằng-torchvision"><i class="fas fa-link"></i></a></h2>
+<p>Mã chạy với Python 3.10.11, PyTorch 2.8.0 và Torchvision 0.23.0 trên CPU arm64. Lưu đoạn dưới thành <code>experiment.py</code> rồi chạy <code>python3 experiment.py</code> trong môi trường đã cài hai phiên bản thư viện trên. Tất cả tọa độ và điểm đều cố định, với điểm phân biệt trong từng ảnh.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="kn">import</span> <span class="nn">platform</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl"><span class="kn">import</span> <span class="nn">torch</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl"><span class="kn">import</span> <span class="nn">torchvision</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl"><span class="kn">from</span> <span class="nn">torchvision.ops</span> <span class="kn">import</span> <span class="n">batched_nms</span><span class="p">,</span> <span class="n">box_iou</span><span class="p">,</span> <span class="n">nms</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl"><span class="n">CONFIDENCE</span> <span class="o">=</span> <span class="mf">0.50</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl"><span class="n">MATCH_IOU</span> <span class="o">=</span> <span class="mf">0.50</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl"><span class="c1"># (mã, lớp, điểm, xyxy); lớp 0 là người, lớp 1 là xe đạp.</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl"><span class="n">SCENES</span> <span class="o">=</span> <span class="p">{</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl">    <span class="s2">&#34;A&#34;</span><span class="p">:</span> <span class="p">(</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl">        <span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">110</span><span class="p">,</span> <span class="mi">110</span><span class="p">]),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="p">[</span><span class="mi">30</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">130</span><span class="p">,</span> <span class="mi">115</span><span class="p">])],</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl">        <span class="p">[</span>
+</span></span><span class="line"><span class="ln">14</span><span class="cl">            <span class="p">(</span><span class="s2">&#34;P1&#34;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.95</span><span class="p">,</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">110</span><span class="p">,</span> <span class="mi">110</span><span class="p">]),</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl">            <span class="p">(</span><span class="s2">&#34;P2&#34;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.82</span><span class="p">,</span> <span class="p">[</span><span class="mi">12</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">112</span><span class="p">,</span> <span class="mi">112</span><span class="p">]),</span>
+</span></span><span class="line"><span class="ln">16</span><span class="cl">            <span class="p">(</span><span class="s2">&#34;B1&#34;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.90</span><span class="p">,</span> <span class="p">[</span><span class="mi">30</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">130</span><span class="p">,</span> <span class="mi">115</span><span class="p">]),</span>
+</span></span><span class="line"><span class="ln">17</span><span class="cl">        <span class="p">],</span>
+</span></span><span class="line"><span class="ln">18</span><span class="cl">    <span class="p">),</span>
+</span></span><span class="line"><span class="ln">19</span><span class="cl">    <span class="s2">&#34;B&#34;</span><span class="p">:</span> <span class="p">(</span>
+</span></span><span class="line"><span class="ln">20</span><span class="cl">        <span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">110</span><span class="p">,</span> <span class="mi">110</span><span class="p">])],</span>
+</span></span><span class="line"><span class="ln">21</span><span class="cl">        <span class="p">[</span>
+</span></span><span class="line"><span class="ln">22</span><span class="cl">            <span class="p">(</span><span class="s2">&#34;P3&#34;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.96</span><span class="p">,</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">110</span><span class="p">,</span> <span class="mi">110</span><span class="p">]),</span>
+</span></span><span class="line"><span class="ln">23</span><span class="cl">            <span class="p">(</span><span class="s2">&#34;P4&#34;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.83</span><span class="p">,</span> <span class="p">[</span><span class="mi">13</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">113</span><span class="p">,</span> <span class="mi">112</span><span class="p">]),</span>
+</span></span><span class="line"><span class="ln">24</span><span class="cl">            <span class="p">(</span><span class="s2">&#34;B2&#34;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.70</span><span class="p">,</span> <span class="p">[</span><span class="mi">12</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">112</span><span class="p">,</span> <span class="mi">111</span><span class="p">]),</span>
+</span></span><span class="line"><span class="ln">25</span><span class="cl">            <span class="p">(</span><span class="s2">&#34;B3&#34;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.20</span><span class="p">,</span> <span class="p">[</span><span class="mi">160</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">200</span><span class="p">,</span> <span class="mi">50</span><span class="p">]),</span>
+</span></span><span class="line"><span class="ln">26</span><span class="cl">        <span class="p">],</span>
+</span></span><span class="line"><span class="ln">27</span><span class="cl">    <span class="p">),</span>
+</span></span><span class="line"><span class="ln">28</span><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="ln">29</span><span class="cl">
+</span></span><span class="line"><span class="ln">30</span><span class="cl">
+</span></span><span class="line"><span class="ln">31</span><span class="cl"><span class="k">def</span> <span class="nf">candidates</span><span class="p">(</span><span class="n">predictions</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">32</span><span class="cl">    <span class="n">rows</span> <span class="o">=</span> <span class="p">[</span><span class="n">row</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">predictions</span> <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">CONFIDENCE</span><span class="p">]</span>
+</span></span><span class="line"><span class="ln">33</span><span class="cl">    <span class="n">ids</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">scores</span><span class="p">,</span> <span class="n">boxes</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">rows</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">34</span><span class="cl">    <span class="k">return</span> <span class="n">ids</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">labels</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">scores</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">boxes</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">35</span><span class="cl">
+</span></span><span class="line"><span class="ln">36</span><span class="cl">
+</span></span><span class="line"><span class="ln">37</span><span class="cl"><span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="n">ground_truth</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">boxes</span><span class="p">,</span> <span class="n">keep</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">38</span><span class="cl">    <span class="n">gt_labels</span><span class="p">,</span> <span class="n">gt_boxes</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">ground_truth</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">39</span><span class="cl">    <span class="n">overlaps</span> <span class="o">=</span> <span class="n">box_iou</span><span class="p">(</span><span class="n">boxes</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">gt_boxes</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">))</span>
+</span></span><span class="line"><span class="ln">40</span><span class="cl">    <span class="n">unmatched</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">gt_boxes</span><span class="p">)))</span>
+</span></span><span class="line"><span class="ln">41</span><span class="cl">    <span class="n">tp</span> <span class="o">=</span> <span class="mi">0</span>
+</span></span><span class="line"><span class="ln">42</span><span class="cl">    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">keep</span><span class="o">.</span><span class="n">tolist</span><span class="p">():</span>
+</span></span><span class="line"><span class="ln">43</span><span class="cl">        <span class="n">eligible</span> <span class="o">=</span> <span class="p">[</span><span class="n">j</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">unmatched</span><span class="p">)</span> <span class="k">if</span> <span class="n">labels</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="o">==</span> <span class="n">gt_labels</span><span class="p">[</span><span class="n">j</span><span class="p">]]</span>
+</span></span><span class="line"><span class="ln">44</span><span class="cl">        <span class="n">best</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">eligible</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">j</span><span class="p">:</span> <span class="n">overlaps</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">(),</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">45</span><span class="cl">        <span class="k">if</span> <span class="n">best</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">overlaps</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">best</span><span class="p">]</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="o">&gt;=</span> <span class="n">MATCH_IOU</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln">46</span><span class="cl">            <span class="n">unmatched</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">best</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">47</span><span class="cl">            <span class="n">tp</span> <span class="o">+=</span> <span class="mi">1</span>
+</span></span><span class="line"><span class="ln">48</span><span class="cl">    <span class="k">return</span> <span class="n">tp</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">keep</span><span class="p">)</span> <span class="o">-</span> <span class="n">tp</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">unmatched</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">49</span><span class="cl">
+</span></span><span class="line"><span class="ln">50</span><span class="cl">
+</span></span><span class="line"><span class="ln">51</span><span class="cl"><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+</span></span><span class="line"><span class="ln">52</span><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;Python </span><span class="si">{</span><span class="n">platform</span><span class="o">.</span><span class="n">python_version</span><span class="p">()</span><span class="si">}</span><span class="s2"> / torch </span><span class="si">{</span><span class="n">torch</span><span class="o">.</span><span class="n">__version__</span><span class="si">}</span><span class="s2"> / &#34;</span>
+</span></span><span class="line"><span class="ln">53</span><span class="cl">          <span class="sa">f</span><span class="s2">&#34;torchvision </span><span class="si">{</span><span class="n">torchvision</span><span class="o">.</span><span class="n">__version__</span><span class="si">}</span><span class="s2"> / </span><span class="si">{</span><span class="n">platform</span><span class="o">.</span><span class="n">machine</span><span class="p">()</span><span class="si">}</span><span class="s2"> CPU&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">54</span><span class="cl">    <span class="k">for</span> <span class="n">scene</span><span class="p">,</span> <span class="p">(</span><span class="n">ground_truth</span><span class="p">,</span> <span class="n">predictions</span><span class="p">)</span> <span class="ow">in</span> <span class="n">SCENES</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+</span></span><span class="line"><span class="ln">55</span><span class="cl">        <span class="n">ids</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">scores</span><span class="p">,</span> <span class="n">boxes</span> <span class="o">=</span> <span class="n">candidates</span><span class="p">(</span><span class="n">predictions</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">56</span><span class="cl">        <span class="n">overlaps</span> <span class="o">=</span> <span class="n">box_iou</span><span class="p">(</span><span class="n">boxes</span><span class="p">,</span> <span class="n">boxes</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">57</span><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span><span class="n">scene</span><span class="si">}</span><span class="s2">: IoU(</span><span class="si">{</span><span class="n">ids</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">ids</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">)=</span><span class="si">{</span><span class="n">overlaps</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">, &#34;</span>
+</span></span><span class="line"><span class="ln">58</span><span class="cl">              <span class="sa">f</span><span class="s2">&#34;IoU(</span><span class="si">{</span><span class="n">ids</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">ids</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="si">}</span><span class="s2">)=</span><span class="si">{</span><span class="n">overlaps</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">, &#34;</span>
+</span></span><span class="line"><span class="ln">59</span><span class="cl">              <span class="sa">f</span><span class="s2">&#34;IoU(</span><span class="si">{</span><span class="n">ids</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">ids</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="si">}</span><span class="s2">)=</span><span class="si">{</span><span class="n">overlaps</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">60</span><span class="cl">        <span class="k">for</span> <span class="n">threshold</span> <span class="ow">in</span> <span class="p">(</span><span class="mf">0.50</span><span class="p">,</span> <span class="mf">0.70</span><span class="p">,</span> <span class="mf">0.95</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">61</span><span class="cl">            <span class="k">for</span> <span class="n">mode</span><span class="p">,</span> <span class="n">keep</span> <span class="ow">in</span> <span class="p">(</span>
+</span></span><span class="line"><span class="ln">62</span><span class="cl">                <span class="p">(</span><span class="s2">&#34;theo lớp&#34;</span><span class="p">,</span> <span class="n">batched_nms</span><span class="p">(</span><span class="n">boxes</span><span class="p">,</span> <span class="n">scores</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">threshold</span><span class="p">)),</span>
+</span></span><span class="line"><span class="ln">63</span><span class="cl">                <span class="p">(</span><span class="s2">&#34;gộp lớp&#34;</span><span class="p">,</span> <span class="n">nms</span><span class="p">(</span><span class="n">boxes</span><span class="p">,</span> <span class="n">scores</span><span class="p">,</span> <span class="n">threshold</span><span class="p">)),</span>
+</span></span><span class="line"><span class="ln">64</span><span class="cl">            <span class="p">):</span>
+</span></span><span class="line"><span class="ln">65</span><span class="cl">                <span class="n">kept_ids</span> <span class="o">=</span> <span class="s2">&#34;,&#34;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ids</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">keep</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+</span></span><span class="line"><span class="ln">66</span><span class="cl">                <span class="n">counts</span> <span class="o">=</span> <span class="n">evaluate</span><span class="p">(</span><span class="n">ground_truth</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">boxes</span><span class="p">,</span> <span class="n">keep</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">67</span><span class="cl">                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span><span class="n">scene</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">threshold</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">mode</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">kept_ids</span><span class="si">}</span><span class="s2"> | TP,FP,FN=</span><span class="si">{</span><span class="n">counts</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">68</span><span class="cl">
+</span></span><span class="line"><span class="ln">69</span><span class="cl">
+</span></span><span class="line"><span class="ln">70</span><span class="cl"><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&#34;__main__&#34;</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln">71</span><span class="cl">    <span class="n">main</span><span class="p">()</span>
+</span></span></code></pre></div><h2 id="kiểm-tra-chế-độ-nms-trên-dữ-liệu-của-mô-hình">Kiểm tra chế độ NMS trên dữ liệu của mô hình<a class="anchor ms-1" href="#kiểm-tra-chế-độ-nms-trên-dữ-liệu-của-mô-hình"><i class="fas fa-link"></i></a></h2>
+<p>Nếu dữ liệu có nhiều vật thể khác lớp đứng sát hoặc che khuất nhau, hãy kiểm tra xem chế độ gộp lớp làm giảm recall của lớp nào. Nếu mô hình hay gán hai nhãn cạnh tranh cho cùng một vật thể, hãy kiểm tra xem chế độ gộp lớp giảm được bao nhiêu FP và nhãn nào thường thắng. Ở ảnh B, điểm của người cao hơn nhãn xe đạp sai. Nếu thứ tự điểm đảo ngược, luật gộp lớp có thể giữ nhãn sai và loại hộp người.</p>
+<p>Khi so sánh trên tập validation, lưu các hộp trước NMS và chạy hai chế độ trên cùng một tập ứng viên. Giữ cố định ngưỡng confidence, giới hạn số hộp nếu pipeline có dùng, và quy tắc đánh giá. Sau đó mới quét ngưỡng IoU NMS và xem lại từng cặp gây FN hoặc FP. Hai ảnh giả lập ở đây chỉ đo các tình huống đã thiết kế. Để chọn cấu hình cho một detector cụ thể, cần đo trên dữ liệu có nhãn của detector đó, với các chỉ số và nhóm ảnh phù hợp với ứng dụng. <a href="/blog/2018-12-06-what-do-we-learn-from-single-shot-object-detection/">Tổng quan về SSD và các mô hình single-shot object detection</a></p>
+</div></div>
+  <div class="card-footer"><div class="post-navs d-flex justify-content-evenly"><div class="post-nav post-prev">
+    <i class="fas fa-fw fa-chevron-left"></i>
+    <a href="https://www.phamduytung.com/blog/2026-11-09-dqn-double-dqn-mo-phong-overestimation-numpy/">DQN và Double DQN qua thí nghiệm sai lệch khi lấy cực đại
+</a>
+  </div></div></div>
+</article><section class="related-posts row card component">
+    <div class="card-header">
+      <h2 class="card-title">Bài liên quan</h2>
+    </div>
+    <div class="card-body">
+      <ul class="post-list"><li>
+          <a href="https://www.phamduytung.com/blog/2019-12-25-nms/">Tìm hiểu Non-maximum Suppression (NMS)
+</a>
+          <span class="float-end post-date">25/12/2019
+</span>
+        </li><li>
+          <a href="https://www.phamduytung.com/blog/2018-12-10-design-choices-lessons-learned-and-trends-for-object-detections/">Lựa chọn mô hình object detectors
+</a>
+          <span class="float-end post-date">10/12/2018
+</span>
+        </li><li>
+          <a href="https://www.phamduytung.com/blog/2018-12-06-what-do-we-learn-from-single-shot-object-detection/">Tìm hiểu single shot object detectors
+</a>
+          <span class="float-end post-date">06/12/2018
+</span>
+        </li><li>
+          <a href="https://www.phamduytung.com/blog/2018-12-05-what-do-we-learn-from-object-detection-p1/">Tìm hiểu region based object detectors
+</a>
+          <span class="float-end post-date">05/12/2018
+</span>
+        </li><li>
+          <a href="https://www.phamduytung.com/blog/2018-10-08-mask-rnn/">Mask R-CNN trong bài toán nhận dạng và phân vùng đối tượng
+</a>
+          <span class="float-end post-date">08/10/2018
+</span>
+        </li></ul>
+    </div>
+  </section><div class="card component row post-comments" id="post-comments">
+  <div class="card-header">
+    <h2 class="card-title">Bình luận</h2>
+  </div>
+  <div class="card-body"><script src="https://utteranc.es/client.js"
+  repo="AlexBlack2202/utterances"
+  issue-term="pathname"
+  label="comment"
+  theme="github-dark"
+  crossorigin="anonymous"
+  async>
+</script></div>
+</div></div>
+</div><aside class="col-lg-3 col-md-4 sidebar d-flex">
+  <div class="container d-flex flex-column">
+
+    <a href="https://www.buymeacoffee.com/alexblack28" rel="noopener"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=🍎&slug=alexblack28&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" alt="Buy me a coffee" loading="lazy" decoding="async" /></a>
+<div class="post-toc row mb-4 card component" id="postTOC">
+  <div class="card-header">
+    <h2 class="card-title">Mục lục</h2>
+  </div>
+  <div class="card-body">
+    <nav id="TableOfContents"><ul>
+        <li><a href="#hai-cách-lọc-khác-nhau-ở-đâu">Hai cách lọc khác nhau ở đâu?</a></li>
+        <li><a href="#hai-ảnh-giả-lập-có-nhãn-chuẩn">Hai ảnh giả lập có nhãn chuẩn</a></li>
+        <li><a href="#kết-quả-chạy-trên-cpu">Kết quả chạy trên CPU</a>
+          <ul>
+            <li><a href="#ảnh-a-mất-hộp-đúng-khi-gộp-lớp">Ảnh A mất hộp đúng khi gộp lớp</a></li>
+            <li><a href="#ảnh-b-giữ-nhãn-sai-khi-lọc-theo-lớp">Ảnh B giữ nhãn sai khi lọc theo lớp</a></li>
+          </ul>
+        </li>
+        <li><a href="#chạy-lại-bằng-torchvision">Chạy lại bằng Torchvision</a></li>
+        <li><a href="#kiểm-tra-chế-độ-nms-trên-dữ-liệu-của-mô-hình">Kiểm tra chế độ NMS trên dữ liệu của mô hình</a></li>
+      </ul></nav>
+  </div>
+</div><section class="recent-posts row card component">
+  <div class="card-header">
+    <h2 class="card-title">Bài gần đây</h2>
+  </div>
+  <div class="card-body">
+    <ul class="post-list"><li>
+        <a href="https://www.phamduytung.com/blog/2026-11-10-nms-theo-lop-hay-gop-lop/">NMS theo lớp hay gộp lớp? Thí nghiệm lỗi lọc bounding box
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-11-09-dqn-double-dqn-mo-phong-overestimation-numpy/">DQN và Double DQN qua thí nghiệm sai lệch khi lấy cực đại
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-11-08-minimax-giu-diem-trong-tro-choi-tong-khong/">Bài 9 · Minimax và cách giữ điểm khi đối thủ bắt bài
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-11-08-loai-chien-luoc-bi-troi/">Bài 8 · Loại chiến lược bị trội qua trò chọn bàn ở hội chợ
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-11-08-tro-choi-con-ga-hai-xe-robot/">Bài 7 · Trò chơi con gà qua hai xe robot ở hành lang
+</a>
+      </li></ul>
+  </div>
+</section><section class="series-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/series">series</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/series/ly-thuyet-tro-choi/" class="badge rounded post-taxonomy" title="Lý thuyết trò chơi">
+            Lý thuyết trò chơi<span class="badge badge-sm text-white bg-accent ms-1">35</span></a><a href="https://www.phamduytung.com/series/kh%C3%B3a-h%E1%BB%8Dc-python-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học Python Căn Bản">
+            Khóa Học Python Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="https://www.phamduytung.com/series/kh%C3%B3a-h%E1%BB%8Dc-c&#43;&#43;-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học C&#43;&#43; Căn Bản">
+            Khóa Học C&#43;&#43; Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="https://www.phamduytung.com/series/machine-learning-dataset/" class="badge rounded post-taxonomy" title="Machine Learning Dataset">
+            Machine Learning Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a><a href="https://www.phamduytung.com/series/ch%E1%BB%A9ng-kho%C3%A1n-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Chứng Khoán Căn Bản">
+            Chứng Khoán Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">1</span></a></div>
+      </div>
+    </section><section class="tools-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/tools">tools</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/tools/tool-random/" class="badge rounded post-taxonomy" title="Tool Random">
+            Tool Random<span class="badge badge-sm text-white bg-accent ms-1">3</span></a></div>
+      </div>
+    </section><section class="categories-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/categories">categories</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/categories/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="https://www.phamduytung.com/categories/c&#43;&#43;/" class="badge rounded post-taxonomy" title="C&#43;&#43;">
+            C&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="https://www.phamduytung.com/categories/dataset/" class="badge rounded post-taxonomy" title="Dataset">
+            Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a></div>
+      </div>
+    </section><section class="tags-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/tags">tags</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/tags/game-theory/" class="badge rounded post-taxonomy" title="Game Theory">
+            Game Theory<span class="badge badge-sm text-white bg-accent ms-1">39</span></a><a href="https://www.phamduytung.com/tags/machine-learning/" class="badge rounded post-taxonomy" title="Machine Learning">
+            Machine Learning<span class="badge badge-sm text-white bg-accent ms-1">31</span></a><a href="https://www.phamduytung.com/tags/deep-learning/" class="badge rounded post-taxonomy" title="Deep Learning">
+            Deep Learning<span class="badge badge-sm text-white bg-accent ms-1">28</span></a><a href="https://www.phamduytung.com/tags/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">21</span></a><a href="https://www.phamduytung.com/tags/llm/" class="badge rounded post-taxonomy" title="LLM">
+            LLM<span class="badge badge-sm text-white bg-accent ms-1">18</span></a><a href="https://www.phamduytung.com/tags/computer-vision/" class="badge rounded post-taxonomy" title="Computer Vision">
+            Computer Vision<span class="badge badge-sm text-white bg-accent ms-1">17</span></a><a href="https://www.phamduytung.com/tags/mathematics/" class="badge rounded post-taxonomy" title="Mathematics">
+            Mathematics<span class="badge badge-sm text-white bg-accent ms-1">12</span></a><a href="https://www.phamduytung.com/tags/ai-agent/" class="badge rounded post-taxonomy" title="AI Agent">
+            AI Agent<span class="badge badge-sm text-white bg-accent ms-1">10</span></a><a href="https://www.phamduytung.com/tags/to%C3%A1n-h%E1%BB%8Dc/" class="badge rounded post-taxonomy" title="Toán Học">
+            Toán Học<span class="badge badge-sm text-white bg-accent ms-1">8</span></a><a href="https://www.phamduytung.com/tags/tri%E1%BA%BFt-h%E1%BB%8Dc/" class="badge rounded post-taxonomy" title="Triết Học">
+            Triết Học<span class="badge badge-sm text-white bg-accent ms-1">8</span></a></div>
+      </div>
+    </section>
+
+  </div>
+</aside>
+</div>
+    </main><footer class="footer mt-auto py-3 text-center container"><ul class="nav justify-content-between footer-memu mb-3"><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Community
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-facebook"></i>Facebook Group
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://github.com/AlexBlack2202/alexblack2202.github.io" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-github"></i>GitHub
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/contact/"><i class="fas fa-fw fa-info-circle"></i>Contact Us
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/faq/"><i class="fas fa-fw fa-question-circle"></i>Câu hỏi thường gặp
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/about/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-user"></i>Giới thiệu tác giả
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Docs
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="/teamofservices/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-users"></i>Điều khoản sử dụng
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/privacy/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-lock"></i>Chính sách bảo mật
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Features
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="/utils/gen_paswords/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-key"></i>Tạo password ngẫu nhiên
+</a>
+        </li></ul></li></ul>
+<div class="copyright mb-2">
+  Copyright © 2016-2026 Phạm Duy Tùng. All Rights Reserved.
+</div>
+<div class="powered-by mb-2">
+  Website chia sẻ kiến thức của Phạm Duy Tùng và Đặng Thị Hằng. Vui lòng liên hệ email alexblack2202@gmail.com nếu bạn có thông tin cần trao đổi.
+</div></footer>
+<script src="https://www.phamduytung.com/js/main.e788bab0969e53541289578e23a0f66a2ec1102872a9d44b994c80d0601d588a.js" integrity="sha256-54i6sJaeU1QSiVeOI6D2ai7BEChyqdRLmUyA0GAdWIo=" crossorigin="anonymous" defer></script><script src="https://www.phamduytung.com/js/icons.min.cb4c9958dbc49e29ac644e168e82db2d0de9a741a15751cc5bf2b0af21eb2845.js" integrity="sha256-y0yZWNvEnimsZE4WjoLbLQ3pp0GhV1HMW/KwryHrKEU=" crossorigin="anonymous" defer></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('https:\/\/www.phamduytung.com\/service-worker.js').then(function(reg) {
+      console.log('Successfully registered service worker', reg);
+    }).catch(function(err) {
+      console.warn('Error whilst registering service worker', err);
+    });
+  });
+}
+</script><script src="https://www.phamduytung.com/js/viewer.min.28bcf5233e406dae6715f46c8b9e8ca7c6cbf347e8678f5a2bebe5369c3270bb.js" integrity="sha256-KLz1Iz5Aba5nFfRsi56Mp8bL80foZ49aK&#43;vlNpwycLs=" crossorigin="anonymous" defer></script><script defer src="https://www.phamduytung.com/js/katex.min.8582b9feadf92a2a977ed303b97d7713cf2754ccf2b4eb60d8be7453a21042c2.js" integrity="sha256-hYK5/q35KiqXftMDuX13E88nVMzytOtg2L50U6IQQsI=" crossorigin="anonymous"></script>
+
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-2WWQ5G9DKL"></script>
+      <script>
+        var doNotTrack = false;
+        if ( true ) {
+          var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
+          var doNotTrack = (dnt == "1" || dnt == "yes");
+        }
+        if (!doNotTrack) {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-2WWQ5G9DKL');
+        }
+      </script>
+<script  data-ad-client="ca-pub-4644989745435991"  async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4644989745435991"
+     crossorigin="anonymous"></script></body>
+</html>
