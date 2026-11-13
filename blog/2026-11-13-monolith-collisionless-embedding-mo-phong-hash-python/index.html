@@ -1,0 +1,705 @@
+<!doctype html><html lang="vi" data-palette="brown"
+   data-mode="light">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Collisionless embedding của Monolith qua mô phỏng va chạm ID bằng Python - Phạm Duy Tùng</title>
+    <meta name="a.validate.02" content="1QZXZ8oi7g57H-GxBrBPkTYBydwii-Ic9iJu" /><link rel="apple-touch-icon" href="https://www.phamduytung.com/images/icons/icon-180x180.png" sizes="180x180">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/icon-32x32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/icon-16x16.png" sizes="16x16" type="image/png">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/favicon.ico">
+<link rel="manifest" href="https://www.phamduytung.com/manifest.json">
+
+<meta name="description" content="Mô phỏng embedding băm và bảng theo ID bằng Python, đếm ID dùng chung vector rồi thử ngưỡng tần suất và thời gian hết hạn lấy cảm hứng từ Monolith." /><meta name="robots" content="index, follow, max-image-preview:large"><meta property="og:title" content="Collisionless embedding của Monolith qua mô phỏng va chạm ID bằng Python">
+<meta property="og:description" content="Mô phỏng embedding băm và bảng theo ID bằng Python, đếm ID dùng chung vector rồi thử ngưỡng tần suất và thời gian hết hạn lấy cảm hứng từ Monolith.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://www.phamduytung.com/blog/2026-11-13-monolith-collisionless-embedding-mo-phong-hash-python/">
+<meta property="og:site_name" content="Phạm Duy Tùng Machine Learning Blog">
+<meta property="og:locale" content="vi_VN">
+<meta property="og:image" content="https://www.phamduytung.com/site-images/posts/2026-11-13-monolith-collisionless-embedding-mo-phong-hash-python/cover-v2-1200_hu_d36245c292798db.webp" data-image-budget="100000"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="675"><meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Collisionless embedding của Monolith qua mô phỏng va chạm ID bằng Python">
+<meta name="twitter:description" content="Mô phỏng embedding băm và bảng theo ID bằng Python, đếm ID dùng chung vector rồi thử ngưỡng tần suất và thời gian hết hạn lấy cảm hứng từ Monolith.">
+<meta name="twitter:image" content="https://www.phamduytung.com/site-images/posts/2026-11-13-monolith-collisionless-embedding-mo-phong-hash-python/cover-v2-1200_hu_d36245c292798db.webp" data-image-budget="100000"><meta property="article:published_time" content="2026-11-13T08:00:00&#43;07:00"><meta property="article:modified_time" content="2026-11-13T08:00:00&#43;07:00"><meta property="article:section" content="blog"><meta property="article:tag" content="recommendation system"><meta property="article:tag" content="machine learning"><meta property="article:tag" content="python"><link rel="stylesheet" href="https://www.phamduytung.com/css/main.min.0558a043598454ca5f6300bbe4bab466b3141cb8632ec005d8872a3a188ed894.css" integrity="sha256-BVigQ1mEVMpfYwC75Lq0ZrMUHLhjLsAF2IcqOhiO2JQ=" crossorigin="anonymous"><link rel="stylesheet" href="https://www.phamduytung.com/css/katex.min.4d6aa053ca8a5675016fa2c9c48ee5359bfaafb8295184458af9d64abce84c47.css" integrity="sha256-TWqgU8qKVnUBb6LJxI7lNZv6r7gpUYRFivnWSrzoTEc=" crossorigin="anonymous">
+<link rel="stylesheet" href="https://www.phamduytung.com/css/viewer.min.3d228794bcedbbfa0412beb8fbc1ec6973202945e42af7004f742a4d7bd620ab.css" integrity="sha256-PSKHlLztu/oEEr64&#43;8HsaXMgKUXkKvcAT3QqTXvWIKs=" crossorigin="anonymous"><link rel="canonical" href="https://www.phamduytung.com/blog/2026-11-13-monolith-collisionless-embedding-mo-phong-hash-python/">
+<meta name="theme-color" content="#f7f5ff"><script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@id":"https://www.phamduytung.com/blog/2026-11-13-monolith-collisionless-embedding-mo-phong-hash-python/#article","@type":"BlogPosting","author":[{"@type":"Person","name":"Phạm Duy Tùng","sameAs":["https://github.com/AlexBlack2202","https://www.linkedin.com/in/tung-pham-duy/"],"url":"https://www.phamduytung.com/about/"}],"dateModified":"2026-11-13T08:00:00+07:00","datePublished":"2026-11-13T08:00:00+07:00","description":"Mô phỏng embedding băm và bảng theo ID bằng Python, đếm ID dùng chung vector rồi thử ngưỡng tần suất và thời gian hết hạn lấy cảm hứng từ Monolith.","headline":"Collisionless embedding của Monolith qua mô phỏng va chạm ID bằng Python","image":["https://www.phamduytung.com/site-images/posts/2026-11-13-monolith-collisionless-embedding-mo-phong-hash-python/cover-v2-1200_hu_d36245c292798db.webp"],"inLanguage":"vi","keywords":"recommendation system, machine learning, python","mainEntityOfPage":{"@id":"https://www.phamduytung.com/blog/2026-11-13-monolith-collisionless-embedding-mo-phong-hash-python/","@type":"WebPage"},"publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://www.phamduytung.com/site-images/brand-mark-flaming-book-red_hu_45318b168da512af.webp"},"name":"Phạm Duy Tùng Machine Learning Blog","url":"https://www.phamduytung.com/"},"url":"https://www.phamduytung.com/blog/2026-11-13-monolith-collisionless-embedding-mo-phong-hash-python/","wordCount":1892},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","item":"https://www.phamduytung.com/","name":"Trang chủ","position":1},{"@type":"ListItem","item":"https://www.phamduytung.com/blog/","name":"Blogs","position":2},{"@type":"ListItem","item":"https://www.phamduytung.com/blog/2026-11-13-monolith-collisionless-embedding-mo-phong-hash-python/","name":"Collisionless embedding của Monolith qua mô phỏng va chạm ID bằng Python","position":3}]}]}</script></head>
+  <body><script>const items=["mode","palette"];items.forEach(function(e){const t=localStorage.getItem("hbs-"+e);t&&document.body.parentElement.setAttribute("data-"+e,t)})</script><header><nav class="navbar top-app-bar top-app-bar-expand-lg fixed-top">
+  <div class="container pearl-navbar__inner">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Mở menu">
+      <i class="fas fa-bars"></i>
+    </button>
+
+    <a class="navbar-brand pearl-brand flex-grow-1 flex-lg-grow-0" href="https://www.phamduytung.com/">
+      <span class="pearl-brand__mark" aria-hidden="true">
+        <img src="/site-images/brand-mark-flaming-book-red_hu_57a35d93ebdc8b9c.webp" alt="" data-image-budget="100000" srcset="/site-images/brand-mark-flaming-book-red_hu_bbc58893f5ad658b.webp 42w, /site-images/brand-mark-flaming-book-red_hu_57a35d93ebdc8b9c.webp 84w" sizes="42px" width="42" height="42"
+  loading="eager" decoding="async">
+
+      </span>
+      <span class="pearl-brand__copy">
+        <strong>Phạm Duy Tùng</strong>
+        <small>AI · DATA · SYSTEMS</small>
+      </span>
+    </a>
+
+    <div class="offcanvas offcanvas-bottom surface" tabindex="-1" id="offcanvasSocialShare" aria-labelledby="offcanvasSocialShare">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Share</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body">
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Twitter Share Button"
+      target="_blank" href="https://twitter.com/intent/tweet?title=Collisionless%20embedding%20c%e1%bb%a7a%20Monolith%20qua%20m%c3%b4%20ph%e1%bb%8fng%20va%20ch%e1%ba%a1m%20ID%20b%e1%ba%b1ng%20Python&url=https%3a%2f%2fwww.phamduytung.com%2fblog%2f2026-11-13-monolith-collisionless-embedding-mo-phong-hash-python%2f">
+      <i class="fab fa-fw fa-twitter"></i> Twitter
+    </a>
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Facebook Share Button"
+      target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.phamduytung.com%2fblog%2f2026-11-13-monolith-collisionless-embedding-mo-phong-hash-python%2f">
+      <i class="fab fa-fw fa-facebook-f"></i> Facebook
+    </a>
+  </div>
+</div>
+    <button class="navbar-settings" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSettings"
+  aria-controls="offcanvasSettings" aria-label="Toggle settings">
+  <i class="fas fa-ellipsis-v"></i>
+</button>
+
+<div class="offcanvas offcanvas-end surface h-100" tabindex="-1" id="offcanvasSettings" aria-labelledby="offcanvasSettings">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Cài đặt</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body d-flex flex-column">
+
+
+
+<section class="setting">
+  <form class="font-size-switcher-form row">
+    <div class="col-auto">
+      <label for="fontSize" class="form-label"><i class="fas fa-fw fa-font"></i> Cỡ chữ</label>
+    </div>
+    <div class="col-auto ms-auto">
+      <input type="range" class="form-range" min="-2" max="2" id="fontSize">
+    </div>
+  </form>
+</section>
+
+
+
+<section class="setting actions d-flex justify-content-around mt-auto overflow-auto">
+  <a role="button" class="action action-go-back" href="javascript: window.history.back();">
+    <span class="action-icon"><i class="fas fa-2x fa-arrow-left"></i></span> Quay lại
+  </a>
+  <a role="button" class="action action-reload-page">
+    <span class="action-icon"><i class="fas fa-2x fa-redo-alt"></i></span> Tải lại
+  </a>
+  <a role="button" class="action action-copy-url">
+    <span class="action-icon"><i class="fas fa-2x fa-link"></i></span> Sao chép URL
+  </a><a class="action action-social-share" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSocialShare"
+    aria-controls="offcanvasSocialShare" aria-label="Toggle social share">
+    <span class="action-icon"><i class="fas fa-2x fa-share-alt"></i></span> Chia sẻ
+  </a></section>
+
+</div>
+</div>
+
+    <div class="collapse navbar-collapse" tabindex="-1" id="navbarSupportedContent" aria-labelledby="navbarSupportedContent">
+      <form class="search-bar my-1" action="https://www.phamduytung.com/search">
+  <div class="input-group input-group-sm">
+    <span class="btn btn-search disabled position-absolute left-0"><i class="fas fa-fw fa-search"></i></span>
+    <input class="form-control rounded-pill" name="q" type="search" aria-label="Search">
+  </div>
+</form>
+      <ul class="navbar-nav ms-auto"><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/chu-de/">
+            <i class="fas fa-fw fa-list-alt"></i>Chủ đề
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/series/">
+            <i class="fas fa-fw fa-columns"></i>Courses
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/tools/">
+            <i class="fas fa-fw fa-folder"></i>Tools
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/categories/">
+            <i class="fas fa-fw fa-folder"></i>Categories
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/archives/">
+            <i class="fas fa-fw fa-file-archive"></i>Archives
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/tags/">
+            <i class="fas fa-fw fa-tags"></i>Tags
+          </a>
+        </li><li class="nav-item dropdown">
+          <a class="nav-link" id="navbarDropdownSupport" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-fw fa-comments"></i>Community
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdownSupport"><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Facebook Group
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://github.com/AlexBlack2202/alexblack2202.github.io" target="_blank" rel="noopener noreferrer">
+                GitHub
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/contact/">
+                Contact
+              </a>
+            </li><li><hr class="dropdown-divider"></li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/faq/">
+                Câu hỏi thường gặp
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/about/">
+                Giới thiệu tác giả
+              </a>
+            </li></ul>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/xem-truyen/">
+            <i class="fas fa-fw fa-book-open"></i>Xem truyện
+          </a>
+        </li></ul>
+    </div>
+  </div>
+</nav>
+</header>
+<main role="main" class="container" style="line-height:1.7em">
+      <div class="row content">
+<div class="col-lg-9 col-md-8">
+  <div class="container"><nav class="row card component" aria-label="breadcrumb">
+  <div class="card-body">
+    <ol class="breadcrumb "><li class="breadcrumb-item"><a href="https://www.phamduytung.com/">Trang chủ</a></li><li class="breadcrumb-item"><a href="https://www.phamduytung.com/blog/">Blogs</a></li><li class="breadcrumb-item active">Collisionless embedding của Monolith qua mô phỏng va chạm ID bằng Python</li></ol>
+  </div>
+</nav>
+<div class="post-panel-wrapper">
+  <div class="d-flex flex-column component rounded post-panel">
+
+    <a class="action action-panel-toggler" role="button" title="Panel toggler">
+      <i class="fas fa-fw fa-chevron-circle-down"></i>
+    </a>
+    <a id="sidebarToggler" class="action d-none d-lg-block" role="button" title="Sidebar toggler">
+  <i class="fas fa-fw fa-expand-alt" data-fa-transform="rotate-45"></i>
+</a>
+
+
+
+
+
+    <a class="action" href="#post-comments" role="button" aria-label="Comments" title="Comments">
+  <i class="fas fa-fw fa-comments"></i>
+</a>
+    <a class="action" href="#postTOC" aria-controls="Table of contents" role="button" title="Table of contents">
+  <i class="fas fa-fw fa-list-alt"></i>
+</a>
+
+  </div>
+</div>
+<article class="row card component mb-4 post">
+  <div class="card-header"><div class="bgcover">
+      <img src="/site-images/posts/2026-11-13-monolith-collisionless-embedding-mo-phong-hash-python/cover-v2-1200_hu_d36245c292798db.webp" alt="Collisionless embedding của Monolith qua mô phỏng va chạm ID bằng Python" data-image-budget="100000" class="pearl-cover-image" srcset="/site-images/posts/2026-11-13-monolith-collisionless-embedding-mo-phong-hash-python/cover-v2-1200_hu_b31481490e4ab7e2.webp 480w, /site-images/posts/2026-11-13-monolith-collisionless-embedding-mo-phong-hash-python/cover-v2-1200_hu_e87f285c0c998e6.webp 768w, /site-images/posts/2026-11-13-monolith-collisionless-embedding-mo-phong-hash-python/cover-v2-1200_hu_d36245c292798db.webp 1200w" sizes="(min-width: 1200px) 960px, (min-width: 768px) 70vw, 100vw" width="1200" height="675"
+  loading="eager" decoding="async" fetchpriority="high">
+
+      <div class="bgtrans">
+        <h1>Collisionless embedding của Monolith qua mô phỏng va chạm ID bằng Python
+</h1>
+      </div>
+    </div>
+  </div>
+  <div class="card-body"><div class="post-byline">
+  <i class="fas fa-fw fa-user"></i>
+  <span>Tác giả:</span>
+  <a href="https://www.phamduytung.com/about/" rel="author">Phạm Duy Tùng</a>
+</div><div class="post-meta">
+  <span class="post-date" title="tạo ngày 2026-11-13 08:00:00 &#43;0700 &#43;07.">
+    13/11/2026
+  </span><span class="post-reading-time">
+    9 phút đọc
+  </span><span class="post-taxonomies"><a href="https://www.phamduytung.com/tags/recommendation-system/" class="badge post-taxonomy">recommendation system</a><a href="https://www.phamduytung.com/tags/machine-learning/" class="badge post-taxonomy">machine-learning</a><a href="https://www.phamduytung.com/tags/python/" class="badge post-taxonomy">python</a></span>
+</div>
+<div class="post-content mb-3"><p>Khi băm 1.000 ID khác nhau vào bảng embedding 256 ô, mô phỏng dưới đây có <strong>980 ID phải dùng chung vector với ít nhất một ID khác</strong>. Với bảng ánh xạ giữ đầy đủ khóa ID, mỗi ID có vector riêng. Đánh đổi nằm ở số vector cần lưu và cách quản lý ID xuất hiện ít hoặc đã ngừng hoạt động. Ta có thể quan sát trực tiếp cả việc cập nhật chung vector lẫn việc tạo lại embedding sau khi hết hạn bằng một chương trình Python nhỏ.</p>
+<h2 id="collisionless-embedding-giữ-riêng-thông-tin-của-id">Collisionless embedding giữ riêng thông tin của ID<a class="anchor ms-1" href="#collisionless-embedding-giữ-riêng-thông-tin-của-id"><i class="fas fa-link"></i></a></h2>
+<p>Bài báo Monolith dùng bảng key–value dựa trên Cuckoo Hashmap để lưu embedding riêng theo ID. Bài báo còn mô tả lọc ID theo tần suất, lọc xác suất và hết hạn sau thời gian ID ngừng hoạt động. Ngưỡng tần suất được điều chỉnh theo mô hình, còn thời hạn hết hoạt động được điều chỉnh theo embedding table. <a href="https://arxiv.org/pdf/2209.07663v2" target="_blank" rel="noopener noreferrer">Bài báo Monolith, bản v2, mục 2.1</a></p>
+<p>Trong mô phỏng này, bảng cố định chọn vector bằng <code>bucket = digest(ID) % B</code>. Mọi ID rơi vào cùng ô đều truy cập đúng một vector. Cách thứ hai dùng <code>dict</code> với nguyên chuỗi ID làm khóa và cấp một vector riêng cho mỗi ID. Dictionary của Python cũng dùng hashing để tìm khóa, đồng thời so sánh khóa để giữ các mục khác nhau. Tính chất cần quan sát là các ID khác nhau vẫn truy cập các giá trị riêng. <a href="https://docs.python.org/3.9/reference/datamodel.html#object.__hash__" target="_blank" rel="noopener noreferrer">Quy tắc khóa và hashing trong Python</a></p>
+<p>Mã Python dưới đây mô phỏng việc ánh xạ ID và vòng đời trạng thái embedding. Với hệ thống gợi ý đầy đủ, còn cần các bước huấn luyện, phân phối tham số và đồng bộ sang serving. Có thể đọc phần kiến trúc đó trong bài tổng quan Monolith đã có trên blog. <a href="/blog/2022-12-01-tiktok-recommendation/">Kiến trúc gợi ý thời gian thực của Monolith</a></p>
+<h2 id="đếm-va-chạm-bằng-cùng-một-bộ-id">Đếm va chạm bằng cùng một bộ ID<a class="anchor ms-1" href="#đếm-va-chạm-bằng-cùng-một-bộ-id"><i class="fas fa-link"></i></a></h2>
+<p>Lần chạy dùng Python 3.9.6 trên macOS arm64 và thư viện chuẩn. Chạy đối chiếu với Python 3.10.11 cho cùng số đếm và trạng thái vector. <code>random.Random(20261113)</code> chọn 1.000 số khác nhau từ <code>range(1_000_000)</code>, sau đó thêm tiền tố <code>item:</code> để tạo ID. Hàm băm là <code>hashlib.blake2b(..., digest_size=8)</code>, chuyển 8 byte thành số nguyên theo thứ tự byte <code>big</code> rồi lấy phần dư theo kích thước bảng. Với chuỗi đầu vào và cấu hình này, digest được xác định bởi BLAKE2b. <a href="https://docs.python.org/3.9/library/hashlib.html#blake2" target="_blank" rel="noopener noreferrer">Tài liệu BLAKE2 trong Python</a></p>
+<p>Mã kiểm tra cả 1.000 digest 64 bit đều khác nhau trong bộ dữ liệu này. Các lần dùng chung ô được đếm ở bước lấy phần dư theo <code>B</code>. Ta phân biệt ba cách đếm.</p>
+<ul>
+<li><strong>ID vượt số ô đã dùng</strong> bằng số ID trừ số ô có dữ liệu. Nếu một ô chứa ba ID, ô đó đóng góp hai vào số này.</li>
+<li><strong>ID trong ô dùng chung</strong> đếm tất cả ID nằm trong ô có từ hai ID trở lên. Ô chứa ba ID đóng góp ba.</li>
+<li><strong>Cặp ID cùng ô</strong> đếm từng cặp ID khác nhau. Ô chứa ba ID đóng góp ba cặp.</li>
+</ul>
+<p>Gọi $c_b$ là số ID ở ô $b$, tổng số cặp cùng ô là</p>
+$$
+C=\sum_{b=1}^{B}\frac{c_b(c_b-1)}{2}
+$$<p>Nếu coi mỗi ID được ánh xạ độc lập và đều vào $B$ ô, mỗi cặp có xác suất $1/B$ dùng chung ô. Với $n$ ID, số cặp kỳ vọng theo giả thiết đó là</p>
+$$
+\mathbb{E}[C]=\frac{n(n-1)}{2B}
+$$<p>Cột cuối của bảng là giá trị tính từ giả thiết phân bố đều. Cột số cặp đo được đến từ một bộ ID và một hàm băm đã cố định.</p>
+<table>
+	<thead>
+			<tr>
+					<th style="text-align: right">Số ô B</th>
+					<th style="text-align: right">Ô đã dùng</th>
+					<th style="text-align: right">ID vượt số ô đã dùng</th>
+					<th style="text-align: right">ID trong ô dùng chung</th>
+					<th style="text-align: right">Cặp ID cùng ô</th>
+					<th style="text-align: right">Cặp kỳ vọng</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td style="text-align: right">256</td>
+					<td style="text-align: right">251</td>
+					<td style="text-align: right">749</td>
+					<td style="text-align: right">980</td>
+					<td style="text-align: right">1.966</td>
+					<td style="text-align: right">1.951,172</td>
+			</tr>
+			<tr>
+					<td style="text-align: right">1.024</td>
+					<td style="text-align: right">643</td>
+					<td style="text-align: right">357</td>
+					<td style="text-align: right">610</td>
+					<td style="text-align: right">495</td>
+					<td style="text-align: right">487,793</td>
+			</tr>
+			<tr>
+					<td style="text-align: right">4.096</td>
+					<td style="text-align: right">889</td>
+					<td style="text-align: right">111</td>
+					<td style="text-align: right">208</td>
+					<td style="text-align: right">127</td>
+					<td style="text-align: right">121,948</td>
+			</tr>
+	</tbody>
+</table>
+<p>Nếu triển khai bảng cố định bằng mảng dense cấp trước <code>B</code> vector hai chiều, phần giá trị cần <code>2B</code> vị trí. Dictionary trong mô phỏng giữ 1.000 vector hai chiều, tương đương 2.000 vị trí chứa giá trị vô hướng. Với <code>B=256</code>, dictionary giữ nhiều vector hơn. Với <code>B=4096</code>, thiết kế mảng dense cần dự trù 4.096 vector nhưng vẫn có 208 ID nằm trong ô dùng chung. Đây là so sánh dung lượng giá trị theo thiết kế. Dung lượng RAM thực tế còn bao gồm khóa, cấu trúc dictionary và các đối tượng Python.</p>
+<h2 id="hai-id-cập-nhật-cùng-vector-như-thế-nào">Hai ID cập nhật cùng vector như thế nào?<a class="anchor ms-1" href="#hai-id-cập-nhật-cùng-vector-như-thế-nào"><i class="fas fa-link"></i></a></h2>
+<p>Trong bộ dữ liệu này, <code>item:115040</code> và <code>item:41657</code> cùng vào ô 0 khi <code>B=256</code>. Mã cộng 1 vào tọa độ đầu của ID thứ nhất, rồi cộng 2 vào tọa độ thứ hai của ID thứ hai. Kết quả đọc lại là</p>
+<table>
+	<thead>
+			<tr>
+					<th>Cách ánh xạ</th>
+					<th><code>item:115040</code></th>
+					<th><code>item:41657</code></th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>Bảng băm 256 ô</td>
+					<td><code>[1.0, 2.0]</code></td>
+					<td><code>[1.0, 2.0]</code></td>
+			</tr>
+			<tr>
+					<td>Dictionary giữ khóa ID</td>
+					<td><code>[1.0, 0.0]</code></td>
+					<td><code>[0.0, 2.0]</code></td>
+			</tr>
+	</tbody>
+</table>
+<p>Với bảng cố định, cập nhật qua một ID làm thay đổi giá trị đọc được qua ID còn lại vì cả hai cùng truy cập một vector. Với dictionary, hai cập nhật nằm ở hai vector riêng. Các phép cộng được đặt sẵn để theo dõi thay đổi trạng thái. Muốn đo ảnh hưởng tới chất lượng gợi ý, cần huấn luyện và đánh giá mô hình trên dữ liệu có nhãn.</p>
+<h2 id="thử-lọc-tần-suất-và-hết-hạn">Thử lọc tần suất và hết hạn<a class="anchor ms-1" href="#thử-lọc-tần-suất-và-hết-hạn"><i class="fas fa-link"></i></a></h2>
+<p>Phần tiếp theo chọn ngưỡng nhận ID là <strong>3 lần xuất hiện</strong> và thời hạn không hoạt động là <strong>5 đơn vị thời gian giả lập</strong>. Đây là các giá trị do ví dụ đặt ra. Mô phỏng dùng những quy tắc cụ thể sau.</p>
+<ol>
+<li>Trước mỗi sự kiện, xóa embedding có <code>time - last_seen &gt;= 5</code>.</li>
+<li>Tăng bộ đếm xuất hiện của ID. Nếu ID có từ ba lần xuất hiện và chưa có embedding, cấp một vector <code>[0.0, 0.0]</code>.</li>
+<li>Nếu ID đang có embedding, cộng 1 vào tọa độ đầu và cập nhật <code>last_seen</code>.</li>
+<li>Giữ bộ đếm tần suất suốt dòng sự kiện, kể cả sau khi xóa embedding. ID quay lại có thể được nhận ngay và bắt đầu bằng một vector mới.</li>
+</ol>
+<table>
+	<thead>
+			<tr>
+					<th style="text-align: right">Thời điểm</th>
+					<th>Sự kiện</th>
+					<th>Thay đổi quan sát được</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td style="text-align: right">0</td>
+					<td><code>rare</code></td>
+					<td>Lần đầu, chờ đủ ngưỡng</td>
+			</tr>
+			<tr>
+					<td style="text-align: right">1, 2</td>
+					<td><code>hot</code></td>
+					<td>Hai lần đầu, chờ đủ ngưỡng</td>
+			</tr>
+			<tr>
+					<td style="text-align: right">3</td>
+					<td><code>hot</code></td>
+					<td>Được nhận, giá trị thành <code>[1.0, 0.0]</code></td>
+			</tr>
+			<tr>
+					<td style="text-align: right">4, 5</td>
+					<td><code>warm</code></td>
+					<td>Hai lần đầu, chờ đủ ngưỡng</td>
+			</tr>
+			<tr>
+					<td style="text-align: right">6</td>
+					<td><code>warm</code></td>
+					<td>Được nhận, có hai embedding đang hoạt động</td>
+			</tr>
+			<tr>
+					<td style="text-align: right">7</td>
+					<td><code>hot</code></td>
+					<td>Giá trị thành <code>[2.0, 0.0]</code>, cập nhật thời điểm hoạt động</td>
+			</tr>
+			<tr>
+					<td style="text-align: right">11</td>
+					<td>Kiểm tra hết hạn</td>
+					<td>Xóa <code>warm</code> vì đã ngừng hoạt động 5 đơn vị</td>
+			</tr>
+			<tr>
+					<td style="text-align: right">12</td>
+					<td><code>hot</code></td>
+					<td>Xóa embedding cũ của <code>hot</code> trước khi xử lý sự kiện, rồi tạo lại và cập nhật thành <code>[1.0, 0.0]</code></td>
+			</tr>
+	</tbody>
+</table>
+<p>Kết thúc dòng sự kiện có ba lần cấp embedding, hai lần hết hạn và nhiều nhất hai embedding hoạt động cùng lúc. Bộ đếm vẫn giữ ba ID <code>rare</code>, <code>hot</code> và <code>warm</code>. Quy tắc giữ bộ đếm sau khi hết hạn giúp thấy rõ khác biệt giữa tuổi của embedding và lịch sử xuất hiện. Khi quản lý bộ nhớ của hệ thống thực, cần tính cả nơi lưu bộ đếm và chính sách dọn dữ liệu đó.</p>
+<h2 id="mã-chạy-lại">Mã chạy lại<a class="anchor ms-1" href="#mã-chạy-lại"><i class="fas fa-link"></i></a></h2>
+<p>Lưu đoạn mã thành <code>experiment.py</code> rồi chạy <code>python3 experiment.py</code>. Chương trình in phiên bản Python, seed, toàn bộ số đếm và diễn biến vòng đời. Các <code>assert</code> kiểm tra ID khác nhau, vector riêng và trạng thái cuối của ví dụ.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln">  1</span><span class="cl"><span class="kn">import</span> <span class="nn">hashlib</span>
+</span></span><span class="line"><span class="ln">  2</span><span class="cl"><span class="kn">import</span> <span class="nn">platform</span>
+</span></span><span class="line"><span class="ln">  3</span><span class="cl"><span class="kn">import</span> <span class="nn">random</span>
+</span></span><span class="line"><span class="ln">  4</span><span class="cl"><span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">Counter</span><span class="p">,</span> <span class="n">defaultdict</span>
+</span></span><span class="line"><span class="ln">  5</span><span class="cl">
+</span></span><span class="line"><span class="ln">  6</span><span class="cl"><span class="n">SEED</span> <span class="o">=</span> <span class="mi">20261113</span>
+</span></span><span class="line"><span class="ln">  7</span><span class="cl"><span class="n">ID_COUNT</span> <span class="o">=</span> <span class="mi">1000</span>
+</span></span><span class="line"><span class="ln">  8</span><span class="cl"><span class="n">DIMENSION</span> <span class="o">=</span> <span class="mi">2</span>
+</span></span><span class="line"><span class="ln">  9</span><span class="cl"><span class="n">THRESHOLD</span> <span class="o">=</span> <span class="mi">3</span>
+</span></span><span class="line"><span class="ln"> 10</span><span class="cl"><span class="n">TTL</span> <span class="o">=</span> <span class="mi">5</span>
+</span></span><span class="line"><span class="ln"> 11</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 12</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 13</span><span class="cl"><span class="k">def</span> <span class="nf">bucket_index</span><span class="p">(</span><span class="n">feature_id</span><span class="p">,</span> <span class="n">size</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln"> 14</span><span class="cl">    <span class="n">digest</span> <span class="o">=</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">blake2b</span><span class="p">(</span><span class="n">feature_id</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&#34;utf-8&#34;</span><span class="p">),</span> <span class="n">digest_size</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span><span class="o">.</span><span class="n">digest</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln"> 15</span><span class="cl">    <span class="k">return</span> <span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">digest</span><span class="p">,</span> <span class="s2">&#34;big&#34;</span><span class="p">)</span> <span class="o">%</span> <span class="n">size</span>
+</span></span><span class="line"><span class="ln"> 16</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 17</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 18</span><span class="cl"><span class="k">def</span> <span class="nf">group_ids</span><span class="p">(</span><span class="n">feature_ids</span><span class="p">,</span> <span class="n">size</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln"> 19</span><span class="cl">    <span class="n">groups</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 20</span><span class="cl">    <span class="k">for</span> <span class="n">feature_id</span> <span class="ow">in</span> <span class="n">feature_ids</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln"> 21</span><span class="cl">        <span class="n">groups</span><span class="p">[</span><span class="n">bucket_index</span><span class="p">(</span><span class="n">feature_id</span><span class="p">,</span> <span class="n">size</span><span class="p">)]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feature_id</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 22</span><span class="cl">    <span class="k">return</span> <span class="n">groups</span>
+</span></span><span class="line"><span class="ln"> 23</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 24</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 25</span><span class="cl"><span class="k">def</span> <span class="nf">simulate_lifecycle</span><span class="p">():</span>
+</span></span><span class="line"><span class="ln"> 26</span><span class="cl">    <span class="n">events</span> <span class="o">=</span> <span class="p">[</span>
+</span></span><span class="line"><span class="ln"> 27</span><span class="cl">        <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s2">&#34;rare&#34;</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&#34;hot&#34;</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="s2">&#34;hot&#34;</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="s2">&#34;hot&#34;</span><span class="p">),</span>
+</span></span><span class="line"><span class="ln"> 28</span><span class="cl">        <span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="s2">&#34;warm&#34;</span><span class="p">),</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="s2">&#34;warm&#34;</span><span class="p">),</span> <span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="s2">&#34;warm&#34;</span><span class="p">),</span> <span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="s2">&#34;hot&#34;</span><span class="p">),</span>
+</span></span><span class="line"><span class="ln"> 29</span><span class="cl">        <span class="p">(</span><span class="mi">11</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span> <span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="s2">&#34;hot&#34;</span><span class="p">),</span>
+</span></span><span class="line"><span class="ln"> 30</span><span class="cl">    <span class="p">]</span>
+</span></span><span class="line"><span class="ln"> 31</span><span class="cl">    <span class="n">counts</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln"> 32</span><span class="cl">    <span class="n">embeddings</span> <span class="o">=</span> <span class="p">{}</span>
+</span></span><span class="line"><span class="ln"> 33</span><span class="cl">    <span class="n">last_seen</span> <span class="o">=</span> <span class="p">{}</span>
+</span></span><span class="line"><span class="ln"> 34</span><span class="cl">    <span class="n">admissions</span> <span class="o">=</span> <span class="n">expirations</span> <span class="o">=</span> <span class="n">peak_active</span> <span class="o">=</span> <span class="mi">0</span>
+</span></span><span class="line"><span class="ln"> 35</span><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;Lifecycle: threshold=</span><span class="si">{</span><span class="n">THRESHOLD</span><span class="si">}</span><span class="s2">, idle_ttl=</span><span class="si">{</span><span class="n">TTL</span><span class="si">}</span><span class="s2">; counters retained after expiry&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 36</span><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;time | event | status | expired | active values&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 37</span><span class="cl">    <span class="k">for</span> <span class="n">time</span><span class="p">,</span> <span class="n">feature_id</span> <span class="ow">in</span> <span class="n">events</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln"> 38</span><span class="cl">        <span class="n">expired</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">key</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">seen</span> <span class="ow">in</span> <span class="n">last_seen</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">time</span> <span class="o">-</span> <span class="n">seen</span> <span class="o">&gt;=</span> <span class="n">TTL</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 39</span><span class="cl">        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">expired</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln"> 40</span><span class="cl">            <span class="k">del</span> <span class="n">embeddings</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+</span></span><span class="line"><span class="ln"> 41</span><span class="cl">            <span class="k">del</span> <span class="n">last_seen</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+</span></span><span class="line"><span class="ln"> 42</span><span class="cl">        <span class="n">expirations</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">expired</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 43</span><span class="cl">        <span class="n">status</span> <span class="o">=</span> <span class="s2">&#34;tick&#34;</span>
+</span></span><span class="line"><span class="ln"> 44</span><span class="cl">        <span class="k">if</span> <span class="n">feature_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln"> 45</span><span class="cl">            <span class="n">counts</span><span class="p">[</span><span class="n">feature_id</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+</span></span><span class="line"><span class="ln"> 46</span><span class="cl">            <span class="k">if</span> <span class="n">feature_id</span> <span class="ow">in</span> <span class="n">embeddings</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln"> 47</span><span class="cl">                <span class="n">status</span> <span class="o">=</span> <span class="s2">&#34;update&#34;</span>
+</span></span><span class="line"><span class="ln"> 48</span><span class="cl">            <span class="k">elif</span> <span class="n">counts</span><span class="p">[</span><span class="n">feature_id</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">THRESHOLD</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln"> 49</span><span class="cl">                <span class="n">embeddings</span><span class="p">[</span><span class="n">feature_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">]</span> <span class="o">*</span> <span class="n">DIMENSION</span>
+</span></span><span class="line"><span class="ln"> 50</span><span class="cl">                <span class="n">admissions</span> <span class="o">+=</span> <span class="mi">1</span>
+</span></span><span class="line"><span class="ln"> 51</span><span class="cl">                <span class="n">status</span> <span class="o">=</span> <span class="s2">&#34;admit&#34;</span>
+</span></span><span class="line"><span class="ln"> 52</span><span class="cl">            <span class="k">else</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln"> 53</span><span class="cl">                <span class="n">status</span> <span class="o">=</span> <span class="s2">&#34;filtered&#34;</span>
+</span></span><span class="line"><span class="ln"> 54</span><span class="cl">            <span class="k">if</span> <span class="n">feature_id</span> <span class="ow">in</span> <span class="n">embeddings</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln"> 55</span><span class="cl">                <span class="n">embeddings</span><span class="p">[</span><span class="n">feature_id</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">+=</span> <span class="mf">1.0</span>
+</span></span><span class="line"><span class="ln"> 56</span><span class="cl">                <span class="n">last_seen</span><span class="p">[</span><span class="n">feature_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">time</span>
+</span></span><span class="line"><span class="ln"> 57</span><span class="cl">        <span class="n">peak_active</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">peak_active</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">embeddings</span><span class="p">))</span>
+</span></span><span class="line"><span class="ln"> 58</span><span class="cl">        <span class="n">active</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">embeddings</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">embeddings</span><span class="p">)}</span>
+</span></span><span class="line"><span class="ln"> 59</span><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span><span class="n">time</span><span class="si">}</span><span class="s2"> | </span><span class="si">{</span><span class="n">feature_id</span> <span class="ow">or</span> <span class="s1">&#39;-&#39;</span><span class="si">}</span><span class="s2"> | </span><span class="si">{</span><span class="n">status</span><span class="si">}</span><span class="s2"> | </span><span class="si">{</span><span class="n">expired</span><span class="si">}</span><span class="s2"> | </span><span class="si">{</span><span class="n">active</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 60</span><span class="cl">    <span class="k">assert</span> <span class="n">admissions</span> <span class="o">==</span> <span class="mi">3</span> <span class="ow">and</span> <span class="n">expirations</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">peak_active</span> <span class="o">==</span> <span class="mi">2</span>
+</span></span><span class="line"><span class="ln"> 61</span><span class="cl">    <span class="k">assert</span> <span class="n">embeddings</span> <span class="o">==</span> <span class="p">{</span><span class="s2">&#34;hot&#34;</span><span class="p">:</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]}</span>
+</span></span><span class="line"><span class="ln"> 62</span><span class="cl">    <span class="k">assert</span> <span class="nb">dict</span><span class="p">(</span><span class="n">counts</span><span class="p">)</span> <span class="o">==</span> <span class="p">{</span><span class="s2">&#34;rare&#34;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&#34;hot&#34;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s2">&#34;warm&#34;</span><span class="p">:</span> <span class="mi">3</span><span class="p">}</span>
+</span></span><span class="line"><span class="ln"> 63</span><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;Final: admissions=</span><span class="si">{</span><span class="n">admissions</span><span class="si">}</span><span class="s2">, expirations=</span><span class="si">{</span><span class="n">expirations</span><span class="si">}</span><span class="s2">, &#34;</span>
+</span></span><span class="line"><span class="ln"> 64</span><span class="cl">          <span class="sa">f</span><span class="s2">&#34;peak_active=</span><span class="si">{</span><span class="n">peak_active</span><span class="si">}</span><span class="s2">, counter_ids=</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">counts</span><span class="p">)</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 65</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 66</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 67</span><span class="cl"><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+</span></span><span class="line"><span class="ln"> 68</span><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;Python </span><span class="si">{</span><span class="n">platform</span><span class="o">.</span><span class="n">python_version</span><span class="p">()</span><span class="si">}</span><span class="s2"> | </span><span class="si">{</span><span class="n">platform</span><span class="o">.</span><span class="n">system</span><span class="p">()</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">platform</span><span class="o">.</span><span class="n">machine</span><span class="p">()</span><span class="si">}</span><span class="s2"> | stdlib only&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 69</span><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;seed=</span><span class="si">{</span><span class="n">SEED</span><span class="si">}</span><span class="s2">, IDs=</span><span class="si">{</span><span class="n">ID_COUNT</span><span class="si">}</span><span class="s2">, dimension=</span><span class="si">{</span><span class="n">DIMENSION</span><span class="si">}</span><span class="s2">, BLAKE2b digest_size=8&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 70</span><span class="cl">    <span class="n">rng</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">Random</span><span class="p">(</span><span class="n">SEED</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 71</span><span class="cl">    <span class="n">feature_ids</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&#34;item:</span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">&#34;</span> <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">rng</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1_000_000</span><span class="p">),</span> <span class="n">ID_COUNT</span><span class="p">)]</span>
+</span></span><span class="line"><span class="ln"> 72</span><span class="cl">    <span class="n">digests</span> <span class="o">=</span> <span class="p">{</span><span class="n">hashlib</span><span class="o">.</span><span class="n">blake2b</span><span class="p">(</span><span class="n">key</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&#34;utf-8&#34;</span><span class="p">),</span> <span class="n">digest_size</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span><span class="o">.</span><span class="n">digest</span><span class="p">()</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">feature_ids</span><span class="p">}</span>
+</span></span><span class="line"><span class="ln"> 73</span><span class="cl">    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">digests</span><span class="p">)</span> <span class="o">==</span> <span class="n">ID_COUNT</span>
+</span></span><span class="line"><span class="ln"> 74</span><span class="cl">    <span class="n">keyed</span> <span class="o">=</span> <span class="p">{</span><span class="n">feature_id</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">]</span> <span class="o">*</span> <span class="n">DIMENSION</span> <span class="k">for</span> <span class="n">feature_id</span> <span class="ow">in</span> <span class="n">feature_ids</span><span class="p">}</span>
+</span></span><span class="line"><span class="ln"> 75</span><span class="cl">    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">keyed</span><span class="p">)</span> <span class="o">==</span> <span class="n">ID_COUNT</span>
+</span></span><span class="line"><span class="ln"> 76</span><span class="cl">    <span class="k">assert</span> <span class="nb">len</span><span class="p">({</span><span class="nb">id</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">keyed</span><span class="o">.</span><span class="n">values</span><span class="p">()})</span> <span class="o">==</span> <span class="n">ID_COUNT</span>
+</span></span><span class="line"><span class="ln"> 77</span><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;buckets | occupied | extra_IDs | IDs_in_shared_buckets | colliding_pairs | expected_pairs&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 78</span><span class="cl">    <span class="k">for</span> <span class="n">size</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="mi">1024</span><span class="p">,</span> <span class="mi">4096</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln"> 79</span><span class="cl">        <span class="n">groups</span> <span class="o">=</span> <span class="n">group_ids</span><span class="p">(</span><span class="n">feature_ids</span><span class="p">,</span> <span class="n">size</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 80</span><span class="cl">        <span class="n">extra_ids</span> <span class="o">=</span> <span class="n">ID_COUNT</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">groups</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 81</span><span class="cl">        <span class="n">aliased_ids</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">group</span><span class="p">)</span> <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">groups</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">group</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 82</span><span class="cl">        <span class="n">pairs</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">group</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">group</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span> <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">groups</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+</span></span><span class="line"><span class="ln"> 83</span><span class="cl">        <span class="n">expected</span> <span class="o">=</span> <span class="n">ID_COUNT</span> <span class="o">*</span> <span class="p">(</span><span class="n">ID_COUNT</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">size</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 84</span><span class="cl">        <span class="k">assert</span> <span class="nb">sum</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">len</span><span class="p">,</span> <span class="n">groups</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span> <span class="o">==</span> <span class="n">ID_COUNT</span>
+</span></span><span class="line"><span class="ln"> 85</span><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span><span class="n">size</span><span class="si">}</span><span class="s2"> | </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">groups</span><span class="p">)</span><span class="si">}</span><span class="s2"> | </span><span class="si">{</span><span class="n">extra_ids</span><span class="si">}</span><span class="s2"> | </span><span class="si">{</span><span class="n">aliased_ids</span><span class="si">}</span><span class="s2"> | </span><span class="si">{</span><span class="n">pairs</span><span class="si">}</span><span class="s2"> | </span><span class="si">{</span><span class="n">expected</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 86</span><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;ID-keyed dictionary: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">keyed</span><span class="p">)</span><span class="si">}</span><span class="s2"> vectors, </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">keyed</span><span class="p">)</span> <span class="o">*</span> <span class="n">DIMENSION</span><span class="si">}</span><span class="s2"> scalar slots&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 87</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 88</span><span class="cl">    <span class="n">size</span> <span class="o">=</span> <span class="mi">256</span>
+</span></span><span class="line"><span class="ln"> 89</span><span class="cl">    <span class="n">groups</span> <span class="o">=</span> <span class="n">group_ids</span><span class="p">(</span><span class="n">feature_ids</span><span class="p">,</span> <span class="n">size</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 90</span><span class="cl">    <span class="n">shared_bucket</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">index</span> <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">groups</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">group</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 91</span><span class="cl">    <span class="n">first</span><span class="p">,</span> <span class="n">second</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">groups</span><span class="p">[</span><span class="n">shared_bucket</span><span class="p">])[:</span><span class="mi">2</span><span class="p">]</span>
+</span></span><span class="line"><span class="ln"> 92</span><span class="cl">    <span class="n">dense</span> <span class="o">=</span> <span class="p">[[</span><span class="mf">0.0</span><span class="p">]</span> <span class="o">*</span> <span class="n">DIMENSION</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">size</span><span class="p">)]</span>
+</span></span><span class="line"><span class="ln"> 93</span><span class="cl">    <span class="n">dense</span><span class="p">[</span><span class="n">bucket_index</span><span class="p">(</span><span class="n">first</span><span class="p">,</span> <span class="n">size</span><span class="p">)][</span><span class="mi">0</span><span class="p">]</span> <span class="o">+=</span> <span class="mf">1.0</span>
+</span></span><span class="line"><span class="ln"> 94</span><span class="cl">    <span class="n">dense</span><span class="p">[</span><span class="n">bucket_index</span><span class="p">(</span><span class="n">second</span><span class="p">,</span> <span class="n">size</span><span class="p">)][</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="mf">2.0</span>
+</span></span><span class="line"><span class="ln"> 95</span><span class="cl">    <span class="n">keyed</span><span class="p">[</span><span class="n">first</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">+=</span> <span class="mf">1.0</span>
+</span></span><span class="line"><span class="ln"> 96</span><span class="cl">    <span class="n">keyed</span><span class="p">[</span><span class="n">second</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">+=</span> <span class="mf">2.0</span>
+</span></span><span class="line"><span class="ln"> 97</span><span class="cl">    <span class="k">assert</span> <span class="n">dense</span><span class="p">[</span><span class="n">bucket_index</span><span class="p">(</span><span class="n">first</span><span class="p">,</span> <span class="n">size</span><span class="p">)]</span> <span class="ow">is</span> <span class="n">dense</span><span class="p">[</span><span class="n">bucket_index</span><span class="p">(</span><span class="n">second</span><span class="p">,</span> <span class="n">size</span><span class="p">)]</span>
+</span></span><span class="line"><span class="ln"> 98</span><span class="cl">    <span class="k">assert</span> <span class="n">keyed</span><span class="p">[</span><span class="n">first</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]</span> <span class="ow">and</span> <span class="n">keyed</span><span class="p">[</span><span class="n">second</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">]</span>
+</span></span><span class="line"><span class="ln"> 99</span><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;Shared bucket </span><span class="si">{</span><span class="n">shared_bucket</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">first</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">second</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">100</span><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;Fixed table lookups: </span><span class="si">{</span><span class="n">dense</span><span class="p">[</span><span class="n">shared_bucket</span><span class="p">]</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">dense</span><span class="p">[</span><span class="n">shared_bucket</span><span class="p">]</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">101</span><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;Keyed lookups: </span><span class="si">{</span><span class="n">keyed</span><span class="p">[</span><span class="n">first</span><span class="p">]</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">keyed</span><span class="p">[</span><span class="n">second</span><span class="p">]</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">102</span><span class="cl">    <span class="n">simulate_lifecycle</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">103</span><span class="cl">
+</span></span><span class="line"><span class="ln">104</span><span class="cl">
+</span></span><span class="line"><span class="ln">105</span><span class="cl"><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&#34;__main__&#34;</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln">106</span><span class="cl">    <span class="n">main</span><span class="p">()</span>
+</span></span></code></pre></div><p>Trong ứng dụng có nhiều loại đặc trưng, khóa cần chứa đủ thông tin để phân biệt chúng. Chẳng hạn <code>user:42</code> và <code>item:42</code> biểu diễn hai ID khác nhau. Khi thử bảng băm, giữ cùng một bộ ID, ghi rõ số ô và chọn cách đếm trước khi diễn giải tỷ lệ va chạm. Các hàm băm và ví dụ trong thư viện chuẩn được giới thiệu thêm trong bài Python trên blog. <a href="/blog/2020-01-13-hash-in-python/">Các hàm hash có sẵn trong Python</a></p>
+</div></div>
+  <div class="card-footer"><div class="post-navs d-flex justify-content-evenly"><div class="post-nav post-prev">
+    <i class="fas fa-fw fa-chevron-left"></i>
+    <a href="https://www.phamduytung.com/blog/2026-11-12-mobilenet-v1-depthwise-convolution-macs-latency-cpu/">Depthwise convolution của MobileNet V1 giảm MACs và độ trễ ra sao trên CPU?
+</a>
+  </div></div></div>
+</article><section class="related-posts row card component">
+    <div class="card-header">
+      <h2 class="card-title">Bài liên quan</h2>
+    </div>
+    <div class="card-body">
+      <ul class="post-list"><li>
+          <a href="https://www.phamduytung.com/blog/2026-07-10-next-gen-restaurant-recommendation/">Hệ thống gợi ý nhà hàng thế hệ mới: Con người không ăn bằng hồ sơ, họ ăn bằng khoảnh khắc
+</a>
+          <span class="float-end post-date">10/07/2026
+</span>
+        </li><li>
+          <a href="https://www.phamduytung.com/blog/2022-12-01-tiktok-recommendation/">Tiktok Real Time Recommendation
+</a>
+          <span class="float-end post-date">01/12/2022
+</span>
+        </li><li>
+          <a href="https://www.phamduytung.com/blog/2019-02-08-getting-started-with-randomized-optimization-in-python/">Tối ưu hoá ngẫu nhiên
+</a>
+          <span class="float-end post-date">08/02/2019
+</span>
+        </li><li>
+          <a href="https://www.phamduytung.com/blog/2019-01-03-donor-project-matching-with-recommender-systems/">Hệ thống gợi ý khoá học cho website DonorChoose.org
+</a>
+          <span class="float-end post-date">11/12/2018
+</span>
+        </li><li>
+          <a href="https://www.phamduytung.com/blog/2018-11-13-instacart-market-basket-analysis/">Phân tích giỏ hàng của website instacart
+</a>
+          <span class="float-end post-date">13/11/2018
+</span>
+        </li></ul>
+    </div>
+  </section><div class="card component row post-comments" id="post-comments">
+  <div class="card-header">
+    <h2 class="card-title">Bình luận</h2>
+  </div>
+  <div class="card-body"><script src="https://utteranc.es/client.js"
+  repo="AlexBlack2202/utterances"
+  issue-term="pathname"
+  label="comment"
+  theme="github-dark"
+  crossorigin="anonymous"
+  async>
+</script></div>
+</div></div>
+</div><aside class="col-lg-3 col-md-4 sidebar d-flex">
+  <div class="container d-flex flex-column">
+
+    <a href="https://www.buymeacoffee.com/alexblack28" rel="noopener"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=🍎&slug=alexblack28&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" alt="Buy me a coffee" loading="lazy" decoding="async" /></a>
+<div class="post-toc row mb-4 card component" id="postTOC">
+  <div class="card-header">
+    <h2 class="card-title">Mục lục</h2>
+  </div>
+  <div class="card-body">
+    <nav id="TableOfContents"><ul>
+        <li><a href="#collisionless-embedding-giữ-riêng-thông-tin-của-id">Collisionless embedding giữ riêng thông tin của ID</a></li>
+        <li><a href="#đếm-va-chạm-bằng-cùng-một-bộ-id">Đếm va chạm bằng cùng một bộ ID</a></li>
+        <li><a href="#hai-id-cập-nhật-cùng-vector-như-thế-nào">Hai ID cập nhật cùng vector như thế nào?</a></li>
+        <li><a href="#thử-lọc-tần-suất-và-hết-hạn">Thử lọc tần suất và hết hạn</a></li>
+        <li><a href="#mã-chạy-lại">Mã chạy lại</a></li>
+      </ul></nav>
+  </div>
+</div><section class="recent-posts row card component">
+  <div class="card-header">
+    <h2 class="card-title">Bài gần đây</h2>
+  </div>
+  <div class="card-body">
+    <ul class="post-list"><li>
+        <a href="https://www.phamduytung.com/blog/2026-11-13-monolith-collisionless-embedding-mo-phong-hash-python/">Collisionless embedding của Monolith qua mô phỏng va chạm ID bằng Python
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-11-12-mobilenet-v1-depthwise-convolution-macs-latency-cpu/">Depthwise convolution của MobileNet V1 giảm MACs và độ trễ ra sao trên CPU?
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-11-11-apache-iceberg-pyiceberg-schema-evolution-time-travel/">Đổi schema và đọc snapshot cũ của Apache Iceberg bằng PyIceberg
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-11-10-nms-theo-lop-hay-gop-lop/">NMS theo lớp hay gộp lớp? Thí nghiệm lỗi lọc bounding box
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-11-09-dqn-double-dqn-mo-phong-overestimation-numpy/">DQN và Double DQN qua thí nghiệm sai lệch khi lấy cực đại
+</a>
+      </li></ul>
+  </div>
+</section><section class="series-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/series">series</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/series/ly-thuyet-tro-choi/" class="badge rounded post-taxonomy" title="Lý thuyết trò chơi">
+            Lý thuyết trò chơi<span class="badge badge-sm text-white bg-accent ms-1">35</span></a><a href="https://www.phamduytung.com/series/kh%C3%B3a-h%E1%BB%8Dc-python-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học Python Căn Bản">
+            Khóa Học Python Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="https://www.phamduytung.com/series/kh%C3%B3a-h%E1%BB%8Dc-c&#43;&#43;-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học C&#43;&#43; Căn Bản">
+            Khóa Học C&#43;&#43; Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="https://www.phamduytung.com/series/machine-learning-dataset/" class="badge rounded post-taxonomy" title="Machine Learning Dataset">
+            Machine Learning Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a><a href="https://www.phamduytung.com/series/ch%E1%BB%A9ng-kho%C3%A1n-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Chứng Khoán Căn Bản">
+            Chứng Khoán Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">1</span></a></div>
+      </div>
+    </section><section class="tools-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/tools">tools</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/tools/tool-random/" class="badge rounded post-taxonomy" title="Tool Random">
+            Tool Random<span class="badge badge-sm text-white bg-accent ms-1">3</span></a></div>
+      </div>
+    </section><section class="categories-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/categories">categories</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/categories/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="https://www.phamduytung.com/categories/c&#43;&#43;/" class="badge rounded post-taxonomy" title="C&#43;&#43;">
+            C&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="https://www.phamduytung.com/categories/dataset/" class="badge rounded post-taxonomy" title="Dataset">
+            Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a></div>
+      </div>
+    </section><section class="tags-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/tags">tags</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/tags/game-theory/" class="badge rounded post-taxonomy" title="Game Theory">
+            Game Theory<span class="badge badge-sm text-white bg-accent ms-1">39</span></a><a href="https://www.phamduytung.com/tags/machine-learning/" class="badge rounded post-taxonomy" title="Machine-Learning">
+            Machine-Learning<span class="badge badge-sm text-white bg-accent ms-1">32</span></a><a href="https://www.phamduytung.com/tags/deep-learning/" class="badge rounded post-taxonomy" title="Deep Learning">
+            Deep Learning<span class="badge badge-sm text-white bg-accent ms-1">29</span></a><a href="https://www.phamduytung.com/tags/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">23</span></a><a href="https://www.phamduytung.com/tags/computer-vision/" class="badge rounded post-taxonomy" title="Computer Vision">
+            Computer Vision<span class="badge badge-sm text-white bg-accent ms-1">18</span></a><a href="https://www.phamduytung.com/tags/llm/" class="badge rounded post-taxonomy" title="Llm">
+            Llm<span class="badge badge-sm text-white bg-accent ms-1">18</span></a><a href="https://www.phamduytung.com/tags/mathematics/" class="badge rounded post-taxonomy" title="Mathematics">
+            Mathematics<span class="badge badge-sm text-white bg-accent ms-1">12</span></a><a href="https://www.phamduytung.com/tags/ai-agent/" class="badge rounded post-taxonomy" title="Ai Agent">
+            Ai Agent<span class="badge badge-sm text-white bg-accent ms-1">10</span></a><a href="https://www.phamduytung.com/tags/recommendation-system/" class="badge rounded post-taxonomy" title="Recommendation System">
+            Recommendation System<span class="badge badge-sm text-white bg-accent ms-1">8</span></a><a href="https://www.phamduytung.com/tags/to%C3%A1n-h%E1%BB%8Dc/" class="badge rounded post-taxonomy" title="Toán Học">
+            Toán Học<span class="badge badge-sm text-white bg-accent ms-1">8</span></a></div>
+      </div>
+    </section>
+
+  </div>
+</aside>
+</div>
+    </main><footer class="footer mt-auto py-3 text-center container"><ul class="nav justify-content-between footer-memu mb-3"><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Community
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-facebook"></i>Facebook Group
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://github.com/AlexBlack2202/alexblack2202.github.io" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-github"></i>GitHub
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/contact/"><i class="fas fa-fw fa-info-circle"></i>Contact Us
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/faq/"><i class="fas fa-fw fa-question-circle"></i>Câu hỏi thường gặp
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/about/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-user"></i>Giới thiệu tác giả
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Docs
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="/teamofservices/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-users"></i>Điều khoản sử dụng
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/privacy/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-lock"></i>Chính sách bảo mật
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Features
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="/utils/gen_paswords/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-key"></i>Tạo password ngẫu nhiên
+</a>
+        </li></ul></li></ul>
+<div class="copyright mb-2">
+  Copyright © 2016-2026 Phạm Duy Tùng. All Rights Reserved.
+</div>
+<div class="powered-by mb-2">
+  Website chia sẻ kiến thức của Phạm Duy Tùng và Đặng Thị Hằng. Vui lòng liên hệ email alexblack2202@gmail.com nếu bạn có thông tin cần trao đổi.
+</div></footer>
+<script src="https://www.phamduytung.com/js/main.e788bab0969e53541289578e23a0f66a2ec1102872a9d44b994c80d0601d588a.js" integrity="sha256-54i6sJaeU1QSiVeOI6D2ai7BEChyqdRLmUyA0GAdWIo=" crossorigin="anonymous" defer></script><script src="https://www.phamduytung.com/js/icons.min.cb4c9958dbc49e29ac644e168e82db2d0de9a741a15751cc5bf2b0af21eb2845.js" integrity="sha256-y0yZWNvEnimsZE4WjoLbLQ3pp0GhV1HMW/KwryHrKEU=" crossorigin="anonymous" defer></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('https:\/\/www.phamduytung.com\/service-worker.js').then(function(reg) {
+      console.log('Successfully registered service worker', reg);
+    }).catch(function(err) {
+      console.warn('Error whilst registering service worker', err);
+    });
+  });
+}
+</script><script src="https://www.phamduytung.com/js/viewer.min.28bcf5233e406dae6715f46c8b9e8ca7c6cbf347e8678f5a2bebe5369c3270bb.js" integrity="sha256-KLz1Iz5Aba5nFfRsi56Mp8bL80foZ49aK&#43;vlNpwycLs=" crossorigin="anonymous" defer></script><script defer src="https://www.phamduytung.com/js/katex.min.8582b9feadf92a2a977ed303b97d7713cf2754ccf2b4eb60d8be7453a21042c2.js" integrity="sha256-hYK5/q35KiqXftMDuX13E88nVMzytOtg2L50U6IQQsI=" crossorigin="anonymous"></script>
+
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-2WWQ5G9DKL"></script>
+      <script>
+        var doNotTrack = false;
+        if ( true ) {
+          var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
+          var doNotTrack = (dnt == "1" || dnt == "yes");
+        }
+        if (!doNotTrack) {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-2WWQ5G9DKL');
+        }
+      </script>
+<script  data-ad-client="ca-pub-4644989745435991"  async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4644989745435991"
+     crossorigin="anonymous"></script></body>
+</html>
