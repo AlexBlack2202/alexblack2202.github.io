@@ -1,0 +1,748 @@
+<!doctype html><html lang="vi" data-palette="brown"
+   data-mode="light">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bloom filter trước SQLite: giảm truy vấn hụt và phát hiện bộ lọc cũ - Phạm Duy Tùng</title>
+    <meta name="a.validate.02" content="1QZXZ8oi7g57H-GxBrBPkTYBydwii-Ic9iJu" /><link rel="apple-touch-icon" href="https://www.phamduytung.com/images/icons/icon-180x180.png" sizes="180x180">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/icon-32x32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/icon-16x16.png" sizes="16x16" type="image/png">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/favicon.ico">
+<link rel="manifest" href="https://www.phamduytung.com/manifest.json">
+
+<meta name="description" content="Đặt Bloom filter trước SQLite để giảm truy vấn khóa không tồn tại, đo false positive và kiểm tra lỗi khi database có dữ liệu chưa được thêm vào bộ lọc." /><meta name="robots" content="index, follow, max-image-preview:large"><meta property="og:title" content="Bloom filter trước SQLite: giảm truy vấn hụt và phát hiện bộ lọc cũ">
+<meta property="og:description" content="Đặt Bloom filter trước SQLite để giảm truy vấn khóa không tồn tại, đo false positive và kiểm tra lỗi khi database có dữ liệu chưa được thêm vào bộ lọc.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://www.phamduytung.com/blog/2026-11-19-bloom-filter-sqlite-truy-van-hut-bo-loc-cu/">
+<meta property="og:site_name" content="Phạm Duy Tùng Machine Learning Blog">
+<meta property="og:locale" content="vi_VN">
+<meta property="og:image" content="https://www.phamduytung.com/site-images/posts/2026-11-19-bloom-filter-sqlite-truy-van-hut-bo-loc-cu/cover-v3-1200_hu_467ff6b047ac45c1.webp" data-image-budget="100000"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="675"><meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Bloom filter trước SQLite: giảm truy vấn hụt và phát hiện bộ lọc cũ">
+<meta name="twitter:description" content="Đặt Bloom filter trước SQLite để giảm truy vấn khóa không tồn tại, đo false positive và kiểm tra lỗi khi database có dữ liệu chưa được thêm vào bộ lọc.">
+<meta name="twitter:image" content="https://www.phamduytung.com/site-images/posts/2026-11-19-bloom-filter-sqlite-truy-van-hut-bo-loc-cu/cover-v3-1200_hu_467ff6b047ac45c1.webp" data-image-budget="100000"><meta property="article:published_time" content="2026-11-19T08:00:00&#43;07:00"><meta property="article:modified_time" content="2026-11-19T08:00:00&#43;07:00"><meta property="article:section" content="blog"><meta property="article:tag" content="data engineering"><meta property="article:tag" content="python"><meta property="article:tag" content="system design"><link rel="stylesheet" href="https://www.phamduytung.com/css/main.min.0558a043598454ca5f6300bbe4bab466b3141cb8632ec005d8872a3a188ed894.css" integrity="sha256-BVigQ1mEVMpfYwC75Lq0ZrMUHLhjLsAF2IcqOhiO2JQ=" crossorigin="anonymous"><link rel="stylesheet" href="https://www.phamduytung.com/css/katex.min.4d6aa053ca8a5675016fa2c9c48ee5359bfaafb8295184458af9d64abce84c47.css" integrity="sha256-TWqgU8qKVnUBb6LJxI7lNZv6r7gpUYRFivnWSrzoTEc=" crossorigin="anonymous">
+<link rel="stylesheet" href="https://www.phamduytung.com/css/viewer.min.3d228794bcedbbfa0412beb8fbc1ec6973202945e42af7004f742a4d7bd620ab.css" integrity="sha256-PSKHlLztu/oEEr64&#43;8HsaXMgKUXkKvcAT3QqTXvWIKs=" crossorigin="anonymous"><link rel="canonical" href="https://www.phamduytung.com/blog/2026-11-19-bloom-filter-sqlite-truy-van-hut-bo-loc-cu/">
+<meta name="theme-color" content="#f7f5ff"><script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@id":"https://www.phamduytung.com/blog/2026-11-19-bloom-filter-sqlite-truy-van-hut-bo-loc-cu/#article","@type":"BlogPosting","author":[{"@type":"Person","name":"Phạm Duy Tùng","sameAs":["https://github.com/AlexBlack2202","https://www.linkedin.com/in/tung-pham-duy/"],"url":"https://www.phamduytung.com/about/"}],"dateModified":"2026-11-19T08:00:00+07:00","datePublished":"2026-11-19T08:00:00+07:00","description":"Đặt Bloom filter trước SQLite để giảm truy vấn khóa không tồn tại, đo false positive và kiểm tra lỗi khi database có dữ liệu chưa được thêm vào bộ lọc.","headline":"Bloom filter trước SQLite: giảm truy vấn hụt và phát hiện bộ lọc cũ","image":["https://www.phamduytung.com/site-images/posts/2026-11-19-bloom-filter-sqlite-truy-van-hut-bo-loc-cu/cover-v3-1200_hu_467ff6b047ac45c1.webp"],"inLanguage":"vi","keywords":"data engineering, python, system design","mainEntityOfPage":{"@id":"https://www.phamduytung.com/blog/2026-11-19-bloom-filter-sqlite-truy-van-hut-bo-loc-cu/","@type":"WebPage"},"publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://www.phamduytung.com/site-images/brand-mark-flaming-book-red_hu_45318b168da512af.webp"},"name":"Phạm Duy Tùng Machine Learning Blog","url":"https://www.phamduytung.com/"},"url":"https://www.phamduytung.com/blog/2026-11-19-bloom-filter-sqlite-truy-van-hut-bo-loc-cu/","wordCount":2346},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","item":"https://www.phamduytung.com/","name":"Trang chủ","position":1},{"@type":"ListItem","item":"https://www.phamduytung.com/blog/","name":"Blogs","position":2},{"@type":"ListItem","item":"https://www.phamduytung.com/blog/2026-11-19-bloom-filter-sqlite-truy-van-hut-bo-loc-cu/","name":"Bloom filter trước SQLite: giảm truy vấn hụt và phát hiện bộ lọc cũ","position":3}]}]}</script></head>
+  <body><script>const items=["mode","palette"];items.forEach(function(e){const t=localStorage.getItem("hbs-"+e);t&&document.body.parentElement.setAttribute("data-"+e,t)})</script><header><nav class="navbar top-app-bar top-app-bar-expand-lg fixed-top">
+  <div class="container pearl-navbar__inner">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Mở menu">
+      <i class="fas fa-bars"></i>
+    </button>
+
+    <a class="navbar-brand pearl-brand flex-grow-1 flex-lg-grow-0" href="https://www.phamduytung.com/">
+      <span class="pearl-brand__mark" aria-hidden="true">
+        <img src="/site-images/brand-mark-flaming-book-red_hu_57a35d93ebdc8b9c.webp" alt="" data-image-budget="100000" srcset="/site-images/brand-mark-flaming-book-red_hu_bbc58893f5ad658b.webp 42w, /site-images/brand-mark-flaming-book-red_hu_57a35d93ebdc8b9c.webp 84w" sizes="42px" width="42" height="42"
+  loading="eager" decoding="async">
+
+      </span>
+      <span class="pearl-brand__copy">
+        <strong>Phạm Duy Tùng</strong>
+        <small>AI · DATA · SYSTEMS</small>
+      </span>
+    </a>
+
+    <div class="offcanvas offcanvas-bottom surface" tabindex="-1" id="offcanvasSocialShare" aria-labelledby="offcanvasSocialShare">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Share</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body">
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Twitter Share Button"
+      target="_blank" href="https://twitter.com/intent/tweet?title=Bloom%20filter%20tr%c6%b0%e1%bb%9bc%20SQLite%3a%20gi%e1%ba%a3m%20truy%20v%e1%ba%a5n%20h%e1%bb%a5t%20v%c3%a0%20ph%c3%a1t%20hi%e1%bb%87n%20b%e1%bb%99%20l%e1%bb%8dc%20c%c5%a9&url=https%3a%2f%2fwww.phamduytung.com%2fblog%2f2026-11-19-bloom-filter-sqlite-truy-van-hut-bo-loc-cu%2f">
+      <i class="fab fa-fw fa-twitter"></i> Twitter
+    </a>
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Facebook Share Button"
+      target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.phamduytung.com%2fblog%2f2026-11-19-bloom-filter-sqlite-truy-van-hut-bo-loc-cu%2f">
+      <i class="fab fa-fw fa-facebook-f"></i> Facebook
+    </a>
+  </div>
+</div>
+    <button class="navbar-settings" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSettings"
+  aria-controls="offcanvasSettings" aria-label="Toggle settings">
+  <i class="fas fa-ellipsis-v"></i>
+</button>
+
+<div class="offcanvas offcanvas-end surface h-100" tabindex="-1" id="offcanvasSettings" aria-labelledby="offcanvasSettings">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Cài đặt</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body d-flex flex-column">
+
+
+
+<section class="setting">
+  <form class="font-size-switcher-form row">
+    <div class="col-auto">
+      <label for="fontSize" class="form-label"><i class="fas fa-fw fa-font"></i> Cỡ chữ</label>
+    </div>
+    <div class="col-auto ms-auto">
+      <input type="range" class="form-range" min="-2" max="2" id="fontSize">
+    </div>
+  </form>
+</section>
+
+
+
+<section class="setting actions d-flex justify-content-around mt-auto overflow-auto">
+  <a role="button" class="action action-go-back" href="javascript: window.history.back();">
+    <span class="action-icon"><i class="fas fa-2x fa-arrow-left"></i></span> Quay lại
+  </a>
+  <a role="button" class="action action-reload-page">
+    <span class="action-icon"><i class="fas fa-2x fa-redo-alt"></i></span> Tải lại
+  </a>
+  <a role="button" class="action action-copy-url">
+    <span class="action-icon"><i class="fas fa-2x fa-link"></i></span> Sao chép URL
+  </a><a class="action action-social-share" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSocialShare"
+    aria-controls="offcanvasSocialShare" aria-label="Toggle social share">
+    <span class="action-icon"><i class="fas fa-2x fa-share-alt"></i></span> Chia sẻ
+  </a></section>
+
+</div>
+</div>
+
+    <div class="collapse navbar-collapse" tabindex="-1" id="navbarSupportedContent" aria-labelledby="navbarSupportedContent">
+      <form class="search-bar my-1" action="https://www.phamduytung.com/search">
+  <div class="input-group input-group-sm">
+    <span class="btn btn-search disabled position-absolute left-0"><i class="fas fa-fw fa-search"></i></span>
+    <input class="form-control rounded-pill" name="q" type="search" aria-label="Search">
+  </div>
+</form>
+      <ul class="navbar-nav ms-auto"><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/chu-de/">
+            <i class="fas fa-fw fa-list-alt"></i>Chủ đề
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/series/">
+            <i class="fas fa-fw fa-columns"></i>Courses
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/tools/">
+            <i class="fas fa-fw fa-folder"></i>Tools
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/categories/">
+            <i class="fas fa-fw fa-folder"></i>Categories
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/archives/">
+            <i class="fas fa-fw fa-file-archive"></i>Archives
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/tags/">
+            <i class="fas fa-fw fa-tags"></i>Tags
+          </a>
+        </li><li class="nav-item dropdown">
+          <a class="nav-link" id="navbarDropdownSupport" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-fw fa-comments"></i>Community
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdownSupport"><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Facebook Group
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://github.com/AlexBlack2202/alexblack2202.github.io" target="_blank" rel="noopener noreferrer">
+                GitHub
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/contact/">
+                Contact
+              </a>
+            </li><li><hr class="dropdown-divider"></li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/faq/">
+                Câu hỏi thường gặp
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/about/">
+                Giới thiệu tác giả
+              </a>
+            </li></ul>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/xem-truyen/">
+            <i class="fas fa-fw fa-book-open"></i>Xem truyện
+          </a>
+        </li></ul>
+    </div>
+  </div>
+</nav>
+</header>
+<main role="main" class="container" style="line-height:1.7em">
+      <div class="row content">
+<div class="col-lg-9 col-md-8">
+  <div class="container"><nav class="row card component" aria-label="breadcrumb">
+  <div class="card-body">
+    <ol class="breadcrumb "><li class="breadcrumb-item"><a href="https://www.phamduytung.com/">Trang chủ</a></li><li class="breadcrumb-item"><a href="https://www.phamduytung.com/blog/">Blogs</a></li><li class="breadcrumb-item active">Bloom filter trước SQLite: giảm truy vấn hụt và phát hiện bộ lọc cũ</li></ol>
+  </div>
+</nav>
+<div class="post-panel-wrapper">
+  <div class="d-flex flex-column component rounded post-panel">
+
+    <a class="action action-panel-toggler" role="button" title="Panel toggler">
+      <i class="fas fa-fw fa-chevron-circle-down"></i>
+    </a>
+    <a id="sidebarToggler" class="action d-none d-lg-block" role="button" title="Sidebar toggler">
+  <i class="fas fa-fw fa-expand-alt" data-fa-transform="rotate-45"></i>
+</a>
+
+
+
+
+
+    <a class="action" href="#post-comments" role="button" aria-label="Comments" title="Comments">
+  <i class="fas fa-fw fa-comments"></i>
+</a>
+    <a class="action" href="#postTOC" aria-controls="Table of contents" role="button" title="Table of contents">
+  <i class="fas fa-fw fa-list-alt"></i>
+</a>
+
+  </div>
+</div>
+<article class="row card component mb-4 post">
+  <div class="card-header"><div class="bgcover">
+      <img src="/site-images/posts/2026-11-19-bloom-filter-sqlite-truy-van-hut-bo-loc-cu/cover-v3-1200_hu_467ff6b047ac45c1.webp" alt="Bloom filter trước SQLite: giảm truy vấn hụt và phát hiện bộ lọc cũ" data-image-budget="100000" class="pearl-cover-image" srcset="/site-images/posts/2026-11-19-bloom-filter-sqlite-truy-van-hut-bo-loc-cu/cover-v3-1200_hu_af6df18a94ab7016.webp 480w, /site-images/posts/2026-11-19-bloom-filter-sqlite-truy-van-hut-bo-loc-cu/cover-v3-1200_hu_8a5d337ea38f3102.webp 768w, /site-images/posts/2026-11-19-bloom-filter-sqlite-truy-van-hut-bo-loc-cu/cover-v3-1200_hu_467ff6b047ac45c1.webp 1200w" sizes="(min-width: 1200px) 960px, (min-width: 768px) 70vw, 100vw" width="1200" height="675"
+  loading="eager" decoding="async" fetchpriority="high">
+
+      <div class="bgtrans">
+        <h1>Bloom filter trước SQLite: giảm truy vấn hụt và phát hiện bộ lọc cũ
+</h1>
+      </div>
+    </div>
+  </div>
+  <div class="card-body"><div class="post-byline">
+  <i class="fas fa-fw fa-user"></i>
+  <span>Tác giả:</span>
+  <a href="https://www.phamduytung.com/about/" rel="author">Phạm Duy Tùng</a>
+</div><div class="post-meta">
+  <span class="post-date" title="tạo ngày 2026-11-19 08:00:00 &#43;0700 &#43;07.">
+    19/11/2026
+  </span><span class="post-reading-time">
+    12 phút đọc
+  </span><span class="post-taxonomies"><a href="https://www.phamduytung.com/tags/data-engineering/" class="badge post-taxonomy">data engineering</a><a href="https://www.phamduytung.com/tags/python/" class="badge post-taxonomy">python</a><a href="https://www.phamduytung.com/tags/system-design/" class="badge post-taxonomy">System Design</a></span>
+</div>
+<div class="post-content mb-3"><p>Bloom filter có thể giúp bỏ qua truy vấn khóa không tồn tại <strong>khi bộ lọc đã chứa đầy đủ các khóa của dữ liệu đang đọc</strong>. Kết quả dương tính vẫn phải được xác minh bằng database. Nếu database đã thêm khóa mới mà bộ lọc chưa biết, đường tắt “âm tính thì trả không có” có thể trả lời sai.</p>
+<p>Thí nghiệm dưới đây tạo một file SQLite với 20.000 khóa và chạy 100.000 lượt kiểm tra. Với bộ lọc được tính cho đúng quy mô, số câu <code>SELECT</code> giảm từ <strong>100.000 xuống 10.894</strong>, toàn bộ câu trả lời vẫn khớp cách hỏi trực tiếp database. Sau đó mã cố ý để bộ lọc cũ và tái hiện một câu trả lời sai. Đây là phép đếm truy vấn thực thi, chưa phải phép đo thời gian chạy.</p>
+<h2 id="bộ-lọc-quyết-định-có-cần-hỏi-database">Bộ lọc quyết định có cần hỏi database<a class="anchor ms-1" href="#bộ-lọc-quyết-định-có-cần-hỏi-database"><i class="fas fa-link"></i></a></h2>
+<p>Bài <a href="/blog/2024-11-24-system-design-top-10-interview-bloom-filters/">nguyên lý, cấu trúc và các biến thể của Bloom filter</a> trình bày phần nền tảng. Ở đây, công việc cụ thể là trả lời câu hỏi “khóa này có trong bảng SQLite không?” với nhiều lượt tra cứu không tìm thấy, gọi là <em>truy vấn hụt</em>.</p>
+<p>Bloom filter chỉ trả lời “có thể có” hoặc “không có trong tập khóa đã được đưa vào bộ lọc”. Trong RocksDB, một ứng dụng thực tế của ý tưởng này là kiểm tra bộ lọc gắn với file SST trước khi tìm tiếp trong dữ liệu. Thí nghiệm Python này tự đặt bộ lọc ở tầng ứng dụng trước SQLite; nó không sử dụng RocksDB hay bật một tùy chọn Bloom filter của SQLite. <a href="https://github.com/meta/rocksdb/wiki/RocksDB-Bloom-Filter" target="_blank" rel="noopener noreferrer">Tài liệu Bloom filter của RocksDB</a></p>
+<p>Với database và bộ lọc cùng một tập khóa, đường đọc có ba trường hợp:</p>
+<table>
+	<thead>
+			<tr>
+					<th>Kết quả Bloom</th>
+					<th>Hành động</th>
+					<th>Câu trả lời cuối</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>Âm tính</td>
+					<td>Bỏ qua <code>SELECT</code></td>
+					<td>Không có</td>
+			</tr>
+			<tr>
+					<td>Dương tính; database tìm thấy</td>
+					<td>Chạy <code>SELECT</code></td>
+					<td>Có</td>
+			</tr>
+			<tr>
+					<td>Dương tính; database không tìm thấy</td>
+					<td>Chạy <code>SELECT</code></td>
+					<td>Không có; đây là false positive</td>
+			</tr>
+	</tbody>
+</table>
+<p>False positive làm tốn thêm truy vấn. Nó không làm sai câu trả lời trong đường đọc này vì database vẫn xác nhận các kết quả dương tính. Trái lại, coi dương tính Bloom là bằng chứng chắc chắn khóa đã có sẽ làm mất bước xác minh cần thiết.</p>
+<h2 id="dữ-liệu-và-cách-đếm">Dữ liệu và cách đếm<a class="anchor ms-1" href="#dữ-liệu-và-cách-đếm"><i class="fas fa-link"></i></a></h2>
+<p>Mã tạo 20.000 khóa <code>known:0</code> đến <code>known:19999</code>, lưu trong cột khóa chính kiểu text của một file SQLite tạm. Workload có 10.000 khóa lấy từ tập đã lưu và 90.000 khóa <code>absent:...</code> tách biệt hoàn toàn. Thứ tự truy vấn được xáo trộn bằng seed <code>20261119</code>.</p>
+<p>Cách chuẩn chạy một câu <code>SELECT</code> có tham số cho mỗi khóa. Cách dùng Bloom chỉ chạy câu đó khi bộ lọc báo dương tính. Mã đối chiếu từng kết quả với cách chuẩn và dùng <code>sqlite3.set_trace_callback</code> để đếm các câu <code>SELECT</code> thực sự được SQLite thực thi trong mỗi lượt. Các câu tạo bảng, nạp dữ liệu và kiểm tra bộ lọc cũ được tách khỏi số đếm workload. <a href="https://docs.python.org/3.10/library/sqlite3.html" target="_blank" rel="noopener noreferrer">Tài liệu <code>sqlite3</code> của Python 3.10</a></p>
+<p>Hai bộ lọc đều được thêm cùng 20.000 khóa. Bộ thứ nhất được tính cho 20.000 phần tử, bộ thứ hai chỉ được tính cho 10.000 phần tử rồi bị nạp gấp đôi dự kiến. Cả hai có mục tiêu false positive 1% lúc thiết kế.</p>
+<table>
+	<thead>
+			<tr>
+					<th>Cấu hình</th>
+					<th style="text-align: right">Thiết kế cho 20.000 khóa</th>
+					<th style="text-align: right">Thiết kế cho 10.000 khóa</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>Khóa thực sự đã thêm</td>
+					<td style="text-align: right">20.000</td>
+					<td style="text-align: right">20.000</td>
+			</tr>
+			<tr>
+					<td>Số bit $m$</td>
+					<td style="text-align: right">191.702</td>
+					<td style="text-align: right">95.851</td>
+			</tr>
+			<tr>
+					<td>Số phép băm $k$</td>
+					<td style="text-align: right">7</td>
+					<td style="text-align: right">7</td>
+			</tr>
+			<tr>
+					<td>Số byte của mảng bit</td>
+					<td style="text-align: right">23.963</td>
+					<td style="text-align: right">11.982</td>
+			</tr>
+			<tr>
+					<td>Bit đã bật</td>
+					<td style="text-align: right">51,8054%</td>
+					<td style="text-align: right">76,7848%</td>
+			</tr>
+			<tr>
+					<td>False positive trên 90.000 khóa vắng</td>
+					<td style="text-align: right">894</td>
+					<td style="text-align: right">14.182</td>
+			</tr>
+			<tr>
+					<td>False positive rate đo được</td>
+					<td style="text-align: right">0,9933%</td>
+					<td style="text-align: right">15,7578%</td>
+			</tr>
+			<tr>
+					<td><code>SELECT</code> trong workload</td>
+					<td style="text-align: right">10.894</td>
+					<td style="text-align: right">24.182</td>
+			</tr>
+			<tr>
+					<td>Kết quả khác cách chuẩn</td>
+					<td style="text-align: right">0</td>
+					<td style="text-align: right">0</td>
+			</tr>
+	</tbody>
+</table>
+<p>Số byte là độ dài <code>bytearray</code> chứa bit, không phải toàn bộ RAM của đối tượng hay tiến trình Python. Workload cố định này cho một kết quả tái lập; nó không mô tả tất cả phân bố khóa hoặc tải truy vấn production.</p>
+<h2 id="vì-sao-cùng-mục-tiêu-1-nhưng-đo-ra-gần-16">Vì sao cùng mục tiêu 1% nhưng đo ra gần 16%?<a class="anchor ms-1" href="#vì-sao-cùng-mục-tiêu-1-nhưng-đo-ra-gần-16"><i class="fas fa-link"></i></a></h2>
+<p>Với giả định các phép băm phân bố gần đều và độc lập, có thể ước tính tham số từ số phần tử dự kiến $n_0$ và xác suất mong muốn $p_0$:</p>
+$$
+m = \left\lceil -\frac{n_0\ln p_0}{(\ln 2)^2}\right\rceil,\qquad k = \max\left(1,\operatorname{round}\left(\frac{m}{n_0}\ln 2\right)\right)
+$$<p>Khi đã thêm $n$ khóa, một xấp xỉ cho false positive rate là:</p>
+$$
+p(n) \approx \left(1-e^{-kn/m}\right)^k
+$$<p>Thế $n=20\,000$ vào hai cấu hình cho xấp xỉ <strong>1,0039%</strong> và <strong>15,7451%</strong>, gần các tỷ lệ đo trong bảng. Mục tiêu 1% không tự giữ nguyên khi số khóa tăng vượt thiết kế. Số bit vẫn cố định; càng nhiều bit bật, càng dễ gặp khóa vắng mà mọi vị trí băm của nó đều đã bật.</p>
+<p>Mẫu số của false positive rate ở đây là <strong>90.000 lượt hỏi khóa không tồn tại</strong>, không phải 100.000 lượt hỏi tổng cộng hoặc 10.894 lượt Bloom báo dương tính. Chính cách chọn mẫu số này cũng được dùng trong phần thống kê point lookup của tài liệu RocksDB đã dẫn.</p>
+<h2 id="chạy-lại-toàn-bộ-phép-kiểm-tra">Chạy lại toàn bộ phép kiểm tra<a class="anchor ms-1" href="#chạy-lại-toàn-bộ-phép-kiểm-tra"><i class="fas fa-link"></i></a></h2>
+<p>Lần chạy trong bài dùng Python 3.10.11, SQLite 3.40.1 trên macOS arm64. Mã chỉ dùng thư viện chuẩn và cần Python từ 3.10 vì dùng <code>int.bit_count()</code>. Nó dùng SHA-256 trên tiền tố chỉ số phép băm có độ dài cố định và khóa UTF-8 để kết quả không phụ thuộc <code>hash()</code> ngẫu nhiên theo tiến trình. Đây là cách làm dễ đối chiếu, chưa được tối ưu chi phí hashing cho production. Các công thức xác suất là xấp xỉ theo mô hình băm, không phải bảo đảm từ SHA-256 cho mọi bộ dữ liệu. <a href="https://docs.python.org/3.10/library/hashlib.html" target="_blank" rel="noopener noreferrer">Tài liệu <code>hashlib</code></a></p>
+<p>Lưu thành <code>bloom_sqlite_check.py</code> và chạy <code>python3 bloom_sqlite_check.py</code>. Chương trình in phiên bản Python, SQLite và JSON kết quả, đồng thời kiểm tra các điều kiện đúng bằng <code>assert</code>.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln">  1</span><span class="cl"><span class="kn">from</span> <span class="nn">contextlib</span> <span class="kn">import</span> <span class="n">closing</span>
+</span></span><span class="line"><span class="ln">  2</span><span class="cl"><span class="kn">import</span> <span class="nn">hashlib</span>
+</span></span><span class="line"><span class="ln">  3</span><span class="cl"><span class="kn">import</span> <span class="nn">json</span>
+</span></span><span class="line"><span class="ln">  4</span><span class="cl"><span class="kn">import</span> <span class="nn">math</span>
+</span></span><span class="line"><span class="ln">  5</span><span class="cl"><span class="kn">import</span> <span class="nn">platform</span>
+</span></span><span class="line"><span class="ln">  6</span><span class="cl"><span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+</span></span><span class="line"><span class="ln">  7</span><span class="cl"><span class="kn">import</span> <span class="nn">random</span>
+</span></span><span class="line"><span class="ln">  8</span><span class="cl"><span class="kn">import</span> <span class="nn">sqlite3</span>
+</span></span><span class="line"><span class="ln">  9</span><span class="cl"><span class="kn">from</span> <span class="nn">tempfile</span> <span class="kn">import</span> <span class="n">TemporaryDirectory</span>
+</span></span><span class="line"><span class="ln"> 10</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 11</span><span class="cl"><span class="n">SEED</span> <span class="o">=</span> <span class="mi">20261119</span>
+</span></span><span class="line"><span class="ln"> 12</span><span class="cl"><span class="n">KEY_COUNT</span> <span class="o">=</span> <span class="mi">20_000</span>
+</span></span><span class="line"><span class="ln"> 13</span><span class="cl"><span class="n">QUERY_COUNT</span> <span class="o">=</span> <span class="mi">100_000</span>
+</span></span><span class="line"><span class="ln"> 14</span><span class="cl"><span class="n">ERROR_RATE</span> <span class="o">=</span> <span class="mf">0.01</span>
+</span></span><span class="line"><span class="ln"> 15</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 16</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 17</span><span class="cl"><span class="k">class</span> <span class="nc">BloomFilter</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln"> 18</span><span class="cl">    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">capacity</span><span class="p">,</span> <span class="n">error_rate</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln"> 19</span><span class="cl">        <span class="k">if</span> <span class="n">capacity</span> <span class="o">&lt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="ow">not</span> <span class="mi">0</span> <span class="o">&lt;</span> <span class="n">error_rate</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln"> 20</span><span class="cl">            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&#34;capacity must be positive and error_rate must be between 0 and 1&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 21</span><span class="cl">        <span class="bp">self</span><span class="o">.</span><span class="n">bit_count</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="o">-</span><span class="n">capacity</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">error_rate</span><span class="p">)</span> <span class="o">/</span> <span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 22</span><span class="cl">        <span class="bp">self</span><span class="o">.</span><span class="n">hash_count</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bit_count</span> <span class="o">/</span> <span class="n">capacity</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">2</span><span class="p">)))</span>
+</span></span><span class="line"><span class="ln"> 23</span><span class="cl">        <span class="bp">self</span><span class="o">.</span><span class="n">bits</span> <span class="o">=</span> <span class="nb">bytearray</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">bit_count</span> <span class="o">+</span> <span class="mi">7</span><span class="p">)</span> <span class="o">//</span> <span class="mi">8</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 24</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 25</span><span class="cl">    <span class="k">def</span> <span class="nf">positions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln"> 26</span><span class="cl">        <span class="n">encoded</span> <span class="o">=</span> <span class="n">key</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&#34;utf-8&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 27</span><span class="cl">        <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hash_count</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln"> 28</span><span class="cl">            <span class="n">prefix</span> <span class="o">=</span> <span class="sa">b</span><span class="s2">&#34;bloom-v1</span><span class="se">\0</span><span class="s2">&#34;</span> <span class="o">+</span> <span class="n">SEED</span><span class="o">.</span><span class="n">to_bytes</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="s2">&#34;big&#34;</span><span class="p">)</span> <span class="o">+</span> <span class="n">index</span><span class="o">.</span><span class="n">to_bytes</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="s2">&#34;big&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 29</span><span class="cl">            <span class="n">digest</span> <span class="o">=</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">sha256</span><span class="p">(</span><span class="n">prefix</span> <span class="o">+</span> <span class="n">encoded</span><span class="p">)</span><span class="o">.</span><span class="n">digest</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln"> 30</span><span class="cl">            <span class="k">yield</span> <span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">digest</span><span class="p">,</span> <span class="s2">&#34;big&#34;</span><span class="p">)</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">bit_count</span>
+</span></span><span class="line"><span class="ln"> 31</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 32</span><span class="cl">    <span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln"> 33</span><span class="cl">        <span class="k">for</span> <span class="n">position</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">positions</span><span class="p">(</span><span class="n">key</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln"> 34</span><span class="cl">            <span class="bp">self</span><span class="o">.</span><span class="n">bits</span><span class="p">[</span><span class="n">position</span> <span class="o">//</span> <span class="mi">8</span><span class="p">]</span> <span class="o">|=</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="n">position</span> <span class="o">%</span> <span class="mi">8</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 35</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 36</span><span class="cl">    <span class="k">def</span> <span class="nf">maybe_contains</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln"> 37</span><span class="cl">        <span class="k">return</span> <span class="nb">all</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bits</span><span class="p">[</span><span class="n">position</span> <span class="o">//</span> <span class="mi">8</span><span class="p">]</span> <span class="o">&amp;</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="n">position</span> <span class="o">%</span> <span class="mi">8</span><span class="p">))</span>
+</span></span><span class="line"><span class="ln"> 38</span><span class="cl">                   <span class="k">for</span> <span class="n">position</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">positions</span><span class="p">(</span><span class="n">key</span><span class="p">))</span>
+</span></span><span class="line"><span class="ln"> 39</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 40</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 41</span><span class="cl"><span class="k">def</span> <span class="nf">exact_lookup</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln"> 42</span><span class="cl">    <span class="k">return</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&#34;SELECT 1 FROM items WHERE key = ?&#34;</span><span class="p">,</span> <span class="p">(</span><span class="n">key</span><span class="p">,))</span><span class="o">.</span><span class="n">fetchone</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+</span></span><span class="line"><span class="ln"> 43</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 44</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 45</span><span class="cl"><span class="k">def</span> <span class="nf">build_filter</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="n">capacity</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln"> 46</span><span class="cl">    <span class="n">bloom</span> <span class="o">=</span> <span class="n">BloomFilter</span><span class="p">(</span><span class="n">capacity</span><span class="p">,</span> <span class="n">ERROR_RATE</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 47</span><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="n">key</span><span class="p">,)</span> <span class="ow">in</span> <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&#34;SELECT key FROM items&#34;</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln"> 48</span><span class="cl">        <span class="n">bloom</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 49</span><span class="cl">    <span class="k">return</span> <span class="n">bloom</span>
+</span></span><span class="line"><span class="ln"> 50</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 51</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 52</span><span class="cl"><span class="k">def</span> <span class="nf">measure_filter</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="n">bloom</span><span class="p">,</span> <span class="n">capacity</span><span class="p">,</span> <span class="n">queries</span><span class="p">,</span> <span class="n">baseline</span><span class="p">,</span> <span class="n">trace_counts</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln"> 53</span><span class="cl">    <span class="n">false_positives</span> <span class="o">=</span> <span class="mi">0</span>
+</span></span><span class="line"><span class="ln"> 54</span><span class="cl">    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">truth</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">queries</span><span class="p">,</span> <span class="n">baseline</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln"> 55</span><span class="cl">        <span class="n">maybe</span> <span class="o">=</span> <span class="n">bloom</span><span class="o">.</span><span class="n">maybe_contains</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 56</span><span class="cl">        <span class="k">if</span> <span class="n">maybe</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln"> 57</span><span class="cl">            <span class="n">answer</span> <span class="o">=</span> <span class="n">exact_lookup</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 58</span><span class="cl">            <span class="n">false_positives</span> <span class="o">+=</span> <span class="ow">not</span> <span class="n">truth</span>
+</span></span><span class="line"><span class="ln"> 59</span><span class="cl">        <span class="k">else</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln"> 60</span><span class="cl">            <span class="n">answer</span> <span class="o">=</span> <span class="kc">False</span>
+</span></span><span class="line"><span class="ln"> 61</span><span class="cl">        <span class="k">assert</span> <span class="n">answer</span> <span class="o">==</span> <span class="n">truth</span>
+</span></span><span class="line"><span class="ln"> 62</span><span class="cl">    <span class="n">false_negatives</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="ow">not</span> <span class="n">bloom</span><span class="o">.</span><span class="n">maybe_contains</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;known:</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">KEY_COUNT</span><span class="p">))</span>
+</span></span><span class="line"><span class="ln"> 63</span><span class="cl">    <span class="k">assert</span> <span class="n">false_negatives</span> <span class="o">==</span> <span class="mi">0</span>
+</span></span><span class="line"><span class="ln"> 64</span><span class="cl">    <span class="n">selects</span> <span class="o">=</span> <span class="n">trace_counts</span><span class="p">[</span><span class="s2">&#34;selects&#34;</span><span class="p">]</span>
+</span></span><span class="line"><span class="ln"> 65</span><span class="cl">    <span class="k">assert</span> <span class="n">selects</span> <span class="o">==</span> <span class="n">baseline</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span> <span class="o">+</span> <span class="n">false_positives</span>
+</span></span><span class="line"><span class="ln"> 66</span><span class="cl">    <span class="n">set_bits</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">bit_count</span><span class="p">()</span> <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">bloom</span><span class="o">.</span><span class="n">bits</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 67</span><span class="cl">    <span class="n">negative_queries</span> <span class="o">=</span> <span class="n">baseline</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 68</span><span class="cl">    <span class="k">return</span> <span class="p">{</span>
+</span></span><span class="line"><span class="ln"> 69</span><span class="cl">        <span class="s2">&#34;capacity&#34;</span><span class="p">:</span> <span class="n">capacity</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln"> 70</span><span class="cl">        <span class="s2">&#34;inserted_distinct_keys&#34;</span><span class="p">:</span> <span class="n">KEY_COUNT</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln"> 71</span><span class="cl">        <span class="s2">&#34;m_bits&#34;</span><span class="p">:</span> <span class="n">bloom</span><span class="o">.</span><span class="n">bit_count</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln"> 72</span><span class="cl">        <span class="s2">&#34;k_hashes&#34;</span><span class="p">:</span> <span class="n">bloom</span><span class="o">.</span><span class="n">hash_count</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln"> 73</span><span class="cl">        <span class="s2">&#34;bitarray_bytes&#34;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">bloom</span><span class="o">.</span><span class="n">bits</span><span class="p">),</span>
+</span></span><span class="line"><span class="ln"> 74</span><span class="cl">        <span class="s2">&#34;set_bits&#34;</span><span class="p">:</span> <span class="n">set_bits</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln"> 75</span><span class="cl">        <span class="s2">&#34;bit_occupancy&#34;</span><span class="p">:</span> <span class="n">set_bits</span> <span class="o">/</span> <span class="n">bloom</span><span class="o">.</span><span class="n">bit_count</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln"> 76</span><span class="cl">        <span class="s2">&#34;approximate_false_positive_rate&#34;</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">bloom</span><span class="o">.</span><span class="n">hash_count</span> <span class="o">*</span> <span class="n">KEY_COUNT</span> <span class="o">/</span> <span class="n">bloom</span><span class="o">.</span><span class="n">bit_count</span><span class="p">))</span> <span class="o">**</span> <span class="n">bloom</span><span class="o">.</span><span class="n">hash_count</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln"> 77</span><span class="cl">        <span class="s2">&#34;negative_queries&#34;</span><span class="p">:</span> <span class="n">negative_queries</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln"> 78</span><span class="cl">        <span class="s2">&#34;false_positives&#34;</span><span class="p">:</span> <span class="n">false_positives</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln"> 79</span><span class="cl">        <span class="s2">&#34;observed_false_positive_rate&#34;</span><span class="p">:</span> <span class="n">false_positives</span> <span class="o">/</span> <span class="n">negative_queries</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln"> 80</span><span class="cl">        <span class="s2">&#34;inserted_key_false_negatives&#34;</span><span class="p">:</span> <span class="n">false_negatives</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln"> 81</span><span class="cl">        <span class="s2">&#34;workload_point_selects&#34;</span><span class="p">:</span> <span class="n">selects</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln"> 82</span><span class="cl">        <span class="s2">&#34;workload_point_selects_skipped&#34;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">queries</span><span class="p">)</span> <span class="o">-</span> <span class="n">selects</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln"> 83</span><span class="cl">        <span class="s2">&#34;all_answers_match_baseline&#34;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln"> 84</span><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="ln"> 85</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 86</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 87</span><span class="cl"><span class="k">def</span> <span class="nf">check_stale_filter</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="n">bloom</span><span class="p">,</span> <span class="n">trace_counts</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln"> 88</span><span class="cl">    <span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span>
+</span></span><span class="line"><span class="ln"> 89</span><span class="cl">    <span class="k">while</span> <span class="n">bloom</span><span class="o">.</span><span class="n">maybe_contains</span><span class="p">(</span><span class="sa">f</span><span class="s2">&#34;late:</span><span class="si">{</span><span class="n">counter</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln"> 90</span><span class="cl">        <span class="n">counter</span> <span class="o">+=</span> <span class="mi">1</span>
+</span></span><span class="line"><span class="ln"> 91</span><span class="cl">    <span class="n">key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&#34;late:</span><span class="si">{</span><span class="n">counter</span><span class="si">}</span><span class="s2">&#34;</span>
+</span></span><span class="line"><span class="ln"> 92</span><span class="cl">    <span class="k">assert</span> <span class="ow">not</span> <span class="n">exact_lookup</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 93</span><span class="cl">    <span class="k">with</span> <span class="n">connection</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln"> 94</span><span class="cl">        <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&#34;INSERT INTO items(key) VALUES (?)&#34;</span><span class="p">,</span> <span class="p">(</span><span class="n">key</span><span class="p">,))</span>
+</span></span><span class="line"><span class="ln"> 95</span><span class="cl">    <span class="n">truth</span> <span class="o">=</span> <span class="n">exact_lookup</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 96</span><span class="cl">    <span class="n">trace_counts</span><span class="p">[</span><span class="s2">&#34;selects&#34;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+</span></span><span class="line"><span class="ln"> 97</span><span class="cl">    <span class="n">stale_answer</span> <span class="o">=</span> <span class="n">bloom</span><span class="o">.</span><span class="n">maybe_contains</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="ow">and</span> <span class="n">exact_lookup</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 98</span><span class="cl">    <span class="k">assert</span> <span class="n">truth</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">stale_answer</span>
+</span></span><span class="line"><span class="ln"> 99</span><span class="cl">    <span class="n">stale_selects</span> <span class="o">=</span> <span class="n">trace_counts</span><span class="p">[</span><span class="s2">&#34;selects&#34;</span><span class="p">]</span>
+</span></span><span class="line"><span class="ln">100</span><span class="cl">    <span class="k">assert</span> <span class="n">stale_selects</span> <span class="o">==</span> <span class="mi">0</span>
+</span></span><span class="line"><span class="ln">101</span><span class="cl">    <span class="n">bloom</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">102</span><span class="cl">    <span class="n">trace_counts</span><span class="p">[</span><span class="s2">&#34;selects&#34;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+</span></span><span class="line"><span class="ln">103</span><span class="cl">    <span class="n">updated_answer</span> <span class="o">=</span> <span class="n">bloom</span><span class="o">.</span><span class="n">maybe_contains</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="ow">and</span> <span class="n">exact_lookup</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">104</span><span class="cl">    <span class="n">updated_selects</span> <span class="o">=</span> <span class="n">trace_counts</span><span class="p">[</span><span class="s2">&#34;selects&#34;</span><span class="p">]</span>
+</span></span><span class="line"><span class="ln">105</span><span class="cl">    <span class="n">trace_counts</span><span class="p">[</span><span class="s2">&#34;selects&#34;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+</span></span><span class="line"><span class="ln">106</span><span class="cl">    <span class="n">rebuilt</span> <span class="o">=</span> <span class="n">build_filter</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="n">KEY_COUNT</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">107</span><span class="cl">    <span class="n">rebuild_selects</span> <span class="o">=</span> <span class="n">trace_counts</span><span class="p">[</span><span class="s2">&#34;selects&#34;</span><span class="p">]</span>
+</span></span><span class="line"><span class="ln">108</span><span class="cl">    <span class="n">trace_counts</span><span class="p">[</span><span class="s2">&#34;selects&#34;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+</span></span><span class="line"><span class="ln">109</span><span class="cl">    <span class="n">rebuilt_answer</span> <span class="o">=</span> <span class="n">rebuilt</span><span class="o">.</span><span class="n">maybe_contains</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="ow">and</span> <span class="n">exact_lookup</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">110</span><span class="cl">    <span class="n">rebuilt_selects</span> <span class="o">=</span> <span class="n">trace_counts</span><span class="p">[</span><span class="s2">&#34;selects&#34;</span><span class="p">]</span>
+</span></span><span class="line"><span class="ln">111</span><span class="cl">    <span class="k">assert</span> <span class="n">updated_answer</span> <span class="o">==</span> <span class="n">rebuilt_answer</span> <span class="o">==</span> <span class="n">truth</span>
+</span></span><span class="line"><span class="ln">112</span><span class="cl">    <span class="k">assert</span> <span class="n">updated_selects</span> <span class="o">==</span> <span class="n">rebuild_selects</span> <span class="o">==</span> <span class="n">rebuilt_selects</span> <span class="o">==</span> <span class="mi">1</span>
+</span></span><span class="line"><span class="ln">113</span><span class="cl">    <span class="k">return</span> <span class="p">{</span>
+</span></span><span class="line"><span class="ln">114</span><span class="cl">        <span class="s2">&#34;late_key&#34;</span><span class="p">:</span> <span class="n">key</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">115</span><span class="cl">        <span class="s2">&#34;database_answer_after_insert&#34;</span><span class="p">:</span> <span class="n">truth</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">116</span><span class="cl">        <span class="s2">&#34;stale_filter_guard_answer&#34;</span><span class="p">:</span> <span class="n">stale_answer</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">117</span><span class="cl">        <span class="s2">&#34;stale_guard_point_selects&#34;</span><span class="p">:</span> <span class="n">stale_selects</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">118</span><span class="cl">        <span class="s2">&#34;answer_after_add&#34;</span><span class="p">:</span> <span class="n">updated_answer</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">119</span><span class="cl">        <span class="s2">&#34;updated_guard_point_selects&#34;</span><span class="p">:</span> <span class="n">updated_selects</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">120</span><span class="cl">        <span class="s2">&#34;answer_after_rebuild&#34;</span><span class="p">:</span> <span class="n">rebuilt_answer</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">121</span><span class="cl">        <span class="s2">&#34;rebuild_full_table_scans&#34;</span><span class="p">:</span> <span class="n">rebuild_selects</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">122</span><span class="cl">        <span class="s2">&#34;rebuilt_guard_point_selects&#34;</span><span class="p">:</span> <span class="n">rebuilt_selects</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">123</span><span class="cl">        <span class="s2">&#34;rebuild_distinct_keys&#34;</span><span class="p">:</span> <span class="n">KEY_COUNT</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">124</span><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="ln">125</span><span class="cl">
+</span></span><span class="line"><span class="ln">126</span><span class="cl">
+</span></span><span class="line"><span class="ln">127</span><span class="cl"><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+</span></span><span class="line"><span class="ln">128</span><span class="cl">    <span class="n">rng</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">Random</span><span class="p">(</span><span class="n">SEED</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">129</span><span class="cl">    <span class="n">known_queries</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">sample</span><span class="p">([</span><span class="sa">f</span><span class="s2">&#34;known:</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&#34;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">KEY_COUNT</span><span class="p">)],</span> <span class="mi">10_000</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">130</span><span class="cl">    <span class="n">queries</span> <span class="o">=</span> <span class="n">known_queries</span> <span class="o">+</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&#34;absent:</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&#34;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">90_000</span><span class="p">)]</span>
+</span></span><span class="line"><span class="ln">131</span><span class="cl">    <span class="n">rng</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">queries</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">132</span><span class="cl">    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">queries</span><span class="p">)</span> <span class="o">==</span> <span class="n">QUERY_COUNT</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">queries</span><span class="p">))</span> <span class="o">==</span> <span class="n">QUERY_COUNT</span>
+</span></span><span class="line"><span class="ln">133</span><span class="cl">    <span class="k">with</span> <span class="n">TemporaryDirectory</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="s2">&#34;bloom-sqlite-&#34;</span><span class="p">)</span> <span class="k">as</span> <span class="n">temporary</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln">134</span><span class="cl">        <span class="n">database</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">temporary</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&#34;items.sqlite&#34;</span>
+</span></span><span class="line"><span class="ln">135</span><span class="cl">        <span class="k">with</span> <span class="n">closing</span><span class="p">(</span><span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">database</span><span class="p">))</span> <span class="k">as</span> <span class="n">connection</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln">136</span><span class="cl">            <span class="n">trace_counts</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&#34;selects&#34;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}</span>
+</span></span><span class="line"><span class="ln">137</span><span class="cl">
+</span></span><span class="line"><span class="ln">138</span><span class="cl">            <span class="k">def</span> <span class="nf">trace</span><span class="p">(</span><span class="n">statement</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">139</span><span class="cl">                <span class="k">if</span> <span class="n">statement</span><span class="o">.</span><span class="n">lstrip</span><span class="p">()</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&#34;SELECT&#34;</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">140</span><span class="cl">                    <span class="n">trace_counts</span><span class="p">[</span><span class="s2">&#34;selects&#34;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+</span></span><span class="line"><span class="ln">141</span><span class="cl">
+</span></span><span class="line"><span class="ln">142</span><span class="cl">            <span class="n">connection</span><span class="o">.</span><span class="n">set_trace_callback</span><span class="p">(</span><span class="n">trace</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">143</span><span class="cl">            <span class="k">with</span> <span class="n">connection</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln">144</span><span class="cl">                <span class="n">connection</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&#34;CREATE TABLE items(key TEXT PRIMARY KEY NOT NULL)&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">145</span><span class="cl">                <span class="n">connection</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span><span class="s2">&#34;INSERT INTO items(key) VALUES (?)&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">146</span><span class="cl">                                       <span class="p">((</span><span class="sa">f</span><span class="s2">&#34;known:</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">,)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">KEY_COUNT</span><span class="p">)))</span>
+</span></span><span class="line"><span class="ln">147</span><span class="cl">            <span class="n">trace_counts</span><span class="p">[</span><span class="s2">&#34;selects&#34;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+</span></span><span class="line"><span class="ln">148</span><span class="cl">            <span class="n">baseline</span> <span class="o">=</span> <span class="p">[</span><span class="n">exact_lookup</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">queries</span><span class="p">]</span>
+</span></span><span class="line"><span class="ln">149</span><span class="cl">            <span class="n">baseline_selects</span> <span class="o">=</span> <span class="n">trace_counts</span><span class="p">[</span><span class="s2">&#34;selects&#34;</span><span class="p">]</span>
+</span></span><span class="line"><span class="ln">150</span><span class="cl">            <span class="k">assert</span> <span class="n">baseline_selects</span> <span class="o">==</span> <span class="n">QUERY_COUNT</span>
+</span></span><span class="line"><span class="ln">151</span><span class="cl">            <span class="k">assert</span> <span class="n">baseline</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span> <span class="o">==</span> <span class="mi">10_000</span>
+</span></span><span class="line"><span class="ln">152</span><span class="cl">            <span class="n">rows</span> <span class="o">=</span> <span class="p">[]</span>
+</span></span><span class="line"><span class="ln">153</span><span class="cl">            <span class="n">filters</span> <span class="o">=</span> <span class="p">[]</span>
+</span></span><span class="line"><span class="ln">154</span><span class="cl">            <span class="k">for</span> <span class="n">capacity</span> <span class="ow">in</span> <span class="p">(</span><span class="n">KEY_COUNT</span><span class="p">,</span> <span class="n">KEY_COUNT</span> <span class="o">//</span> <span class="mi">2</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">155</span><span class="cl">                <span class="n">trace_counts</span><span class="p">[</span><span class="s2">&#34;selects&#34;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+</span></span><span class="line"><span class="ln">156</span><span class="cl">                <span class="n">bloom</span> <span class="o">=</span> <span class="n">build_filter</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="n">capacity</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">157</span><span class="cl">                <span class="k">assert</span> <span class="n">trace_counts</span><span class="p">[</span><span class="s2">&#34;selects&#34;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span>
+</span></span><span class="line"><span class="ln">158</span><span class="cl">                <span class="n">filters</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bloom</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">159</span><span class="cl">                <span class="n">trace_counts</span><span class="p">[</span><span class="s2">&#34;selects&#34;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+</span></span><span class="line"><span class="ln">160</span><span class="cl">                <span class="n">rows</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">measure_filter</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="n">bloom</span><span class="p">,</span> <span class="n">capacity</span><span class="p">,</span> <span class="n">queries</span><span class="p">,</span> <span class="n">baseline</span><span class="p">,</span> <span class="n">trace_counts</span><span class="p">))</span>
+</span></span><span class="line"><span class="ln">161</span><span class="cl">            <span class="n">trace_counts</span><span class="p">[</span><span class="s2">&#34;selects&#34;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+</span></span><span class="line"><span class="ln">162</span><span class="cl">            <span class="n">report</span> <span class="o">=</span> <span class="p">{</span>
+</span></span><span class="line"><span class="ln">163</span><span class="cl">                <span class="s2">&#34;python&#34;</span><span class="p">:</span> <span class="n">platform</span><span class="o">.</span><span class="n">python_version</span><span class="p">(),</span>
+</span></span><span class="line"><span class="ln">164</span><span class="cl">                <span class="s2">&#34;sqlite&#34;</span><span class="p">:</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">sqlite_version</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">165</span><span class="cl">                <span class="s2">&#34;machine&#34;</span><span class="p">:</span> <span class="n">platform</span><span class="o">.</span><span class="n">machine</span><span class="p">(),</span>
+</span></span><span class="line"><span class="ln">166</span><span class="cl">                <span class="s2">&#34;seed&#34;</span><span class="p">:</span> <span class="n">SEED</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">167</span><span class="cl">                <span class="s2">&#34;hash&#34;</span><span class="p">:</span> <span class="s2">&#34;SHA-256 with seed and hash-index byte prefixes&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">168</span><span class="cl">                <span class="s2">&#34;target_false_positive_rate&#34;</span><span class="p">:</span> <span class="n">ERROR_RATE</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">169</span><span class="cl">                <span class="s2">&#34;baseline_workload_point_selects&#34;</span><span class="p">:</span> <span class="n">baseline_selects</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">170</span><span class="cl">                <span class="s2">&#34;build_full_table_scans_per_filter&#34;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">171</span><span class="cl">                <span class="s2">&#34;results&#34;</span><span class="p">:</span> <span class="n">rows</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">172</span><span class="cl">                <span class="s2">&#34;stale_filter&#34;</span><span class="p">:</span> <span class="n">check_stale_filter</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="n">filters</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">trace_counts</span><span class="p">),</span>
+</span></span><span class="line"><span class="ln">173</span><span class="cl">            <span class="p">}</span>
+</span></span><span class="line"><span class="ln">174</span><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">report</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+</span></span><span class="line"><span class="ln">175</span><span class="cl">
+</span></span><span class="line"><span class="ln">176</span><span class="cl">
+</span></span><span class="line"><span class="ln">177</span><span class="cl"><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&#34;__main__&#34;</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln">178</span><span class="cl">    <span class="n">main</span><span class="p">()</span>
+</span></span></code></pre></div><h2 id="bộ-lọc-cũ-làm-hỏng-đường-đọc-ra-sao">Bộ lọc cũ làm hỏng đường đọc ra sao?<a class="anchor ms-1" href="#bộ-lọc-cũ-làm-hỏng-đường-đọc-ra-sao"><i class="fas fa-link"></i></a></h2>
+<p>Sau phần đo, mã tìm một khóa <code>late:...</code> đang được bộ lọc báo âm tính, rồi thêm <strong>chỉ vào SQLite</strong>. Lần chạy này chọn được <code>late:0</code>. Kết quả truy vấn trực tiếp là có, nhưng đường đọc dùng bộ lọc trả không có và không hỏi database. Sau khi thêm khóa đó vào bộ lọc hoặc dựng lại bộ lọc từ bảng hiện tại, hai cách đọc lại khớp nhau.</p>
+<p>Đây là lỗi đồng bộ giữa hai tập dữ liệu. Tính chất “không có false negative” của Bloom filter áp dụng cho các khóa đã được thêm đúng vào chính bộ lọc đó, với cùng quy tắc mã hóa, chuẩn hóa khóa và băm, không bị xóa bit hay hỏng dữ liệu. Nó không chứng minh một bộ lọc cũ biết mọi khóa vừa được ghi vào database.</p>
+<p>Ở phần workload tĩnh, mã kiểm tra tất cả 20.000 khóa đã thêm và thu được 0 false negative. Trường hợp khóa mới sau đó không phủ định kiểm tra này: khóa mới chưa nằm trong tập mà bộ lọc đại diện. Trong hệ thống có dữ liệu thay đổi, điều kiện cần bảo vệ là <strong>mọi khóa mà đường đọc có thể thấy trong database đều đã được phản ánh trong bộ lọc đang dùng</strong>. Tỷ lệ false positive thấp trên một workload tĩnh không tự chứng minh điều kiện đồng bộ này.</p>
+<p>Một cách triển khai dễ kiểm soát là ghép bộ lọc với phiên bản dữ liệu bất biến và chỉ công bố cả cặp sau khi dựng xong. Nếu không xác nhận được bộ lọc còn bao phủ dữ liệu đang đọc, hãy bỏ đường tắt và truy vấn database. Việc cập nhật bộ lọc sau một lần ghi chỉ đủ cho ví dụ một tiến trình tuần tự; nhiều writer hoặc nhiều replica cần giao thức công bố, đồng bộ và xử lý lỗi riêng. Đoạn mã trên không thực hiện giao thức đó.</p>
+<p>Không được xóa bit tùy tiện khi xóa một dòng: các khóa khác có thể dùng chung bit. Một bộ lọc giữ thêm dấu vết của khóa đã bị xóa thường gây truy vấn thừa; một bộ lọc thiếu khóa đang tồn tại có thể làm đường đọc trả sai. Hai tình huống có hậu quả khác nhau.</p>
+<h2 id="số-truy-vấn-giảm-có-đủ-để-chọn-bloom-filter">Số truy vấn giảm có đủ để chọn Bloom filter?<a class="anchor ms-1" href="#số-truy-vấn-giảm-có-đủ-để-chọn-bloom-filter"><i class="fas fa-link"></i></a></h2>
+<p>Với 90% lượt hỏi là khóa vắng, cấu hình đúng bỏ qua 89.106 trong 100.000 câu <code>SELECT</code>, tương ứng 89,106%. Cấu hình quá tải vẫn trả đúng nhưng phải hỏi database nhiều hơn do false positive tăng. Nếu workload chủ yếu hỏi khóa đã có, ít truy vấn được bỏ qua, trong khi mỗi lượt vẫn phải trả chi phí kiểm tra bộ lọc.</p>
+<p>Thí nghiệm chưa đo thời gian hash, độ trễ truy vấn, page cache, chi phí dựng và phân phối bộ lọc hay tải đồng thời. Vì vậy không thể đổi mức giảm số <code>SELECT</code> thành cùng mức giảm thời gian chạy, số lần đọc đĩa hoặc chi phí hệ thống. SQLite có chỉ mục trên khóa chính, và dữ liệu nhỏ có thể đã nằm trong cache; bộ lọc Python tự viết vẫn có thể làm tổng thời gian tăng.</p>
+<p>Nếu mục tiêu là xử lý dữ liệu lớn hơn thay vì lọc point lookup, xem <a href="/blog/2026-11-08-duckdb-phan-tich-csv-vuot-ngan-sach-bo-nho/">thí nghiệm DuckDB phân tích CSV với ngân sách bộ nhớ giới hạn</a>. Hai phép thử minh họa cùng một yêu cầu khi chọn tối ưu: đo đúng đại lượng cần cải thiện và giữ một kết quả chuẩn để phát hiện thay đổi hành vi.</p>
+</div></div>
+  <div class="card-footer"><div class="post-navs d-flex justify-content-evenly"><div class="post-nav post-prev">
+    <i class="fas fa-fw fa-chevron-left"></i>
+    <a href="https://www.phamduytung.com/blog/2026-11-18-gradient-accumulation-pytorch-microbatch-cuoi-thieu-mau/">Gradient accumulation trong PyTorch: microbatch cuối thiếu mẫu làm sai gradient ra sao?
+</a>
+  </div></div></div>
+</article><section class="related-posts row card component">
+    <div class="card-header">
+      <h2 class="card-title">Bài liên quan</h2>
+    </div>
+    <div class="card-body">
+      <ul class="post-list"><li>
+          <a href="https://www.phamduytung.com/blog/2026-11-11-apache-iceberg-pyiceberg-schema-evolution-time-travel/">Đổi schema và đọc snapshot cũ của Apache Iceberg bằng PyIceberg
+</a>
+          <span class="float-end post-date">11/11/2026
+</span>
+        </li><li>
+          <a href="https://www.phamduytung.com/blog/2026-11-08-duckdb-phan-tich-csv-vuot-ngan-sach-bo-nho/">Phân tích CSV vượt ngân sách bộ nhớ với DuckDB: đo thời gian và dữ liệu ghi tạm
+</a>
+          <span class="float-end post-date">08/11/2026
+</span>
+        </li><li>
+          <a href="https://www.phamduytung.com/blog/2026-11-18-gradient-accumulation-pytorch-microbatch-cuoi-thieu-mau/">Gradient accumulation trong PyTorch: microbatch cuối thiếu mẫu làm sai gradient ra sao?
+</a>
+          <span class="float-end post-date">18/11/2026
+</span>
+        </li><li>
+          <a href="https://www.phamduytung.com/blog/2026-11-17-giai-phuong-trinh-bac-nam-python-nghiem-gan-boi-sai-so/">Giải phương trình bậc năm bằng Python: phần dư nhỏ, nghiệm vẫn sai
+</a>
+          <span class="float-end post-date">17/11/2026
+</span>
+        </li><li>
+          <a href="https://www.phamduytung.com/blog/2026-11-16-wasserstein-distance-data-drift-bootstrap-nguong-canh-bao/">Đặt ngưỡng cảnh báo data drift bằng Wasserstein Distance và bootstrap
+</a>
+          <span class="float-end post-date">16/11/2026
+</span>
+        </li></ul>
+    </div>
+  </section><div class="card component row post-comments" id="post-comments">
+  <div class="card-header">
+    <h2 class="card-title">Bình luận</h2>
+  </div>
+  <div class="card-body"><script src="https://utteranc.es/client.js"
+  repo="AlexBlack2202/utterances"
+  issue-term="pathname"
+  label="comment"
+  theme="github-dark"
+  crossorigin="anonymous"
+  async>
+</script></div>
+</div></div>
+</div><aside class="col-lg-3 col-md-4 sidebar d-flex">
+  <div class="container d-flex flex-column">
+
+    <a href="https://www.buymeacoffee.com/alexblack28" rel="noopener"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=🍎&slug=alexblack28&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" alt="Buy me a coffee" loading="lazy" decoding="async" /></a>
+<div class="post-toc row mb-4 card component" id="postTOC">
+  <div class="card-header">
+    <h2 class="card-title">Mục lục</h2>
+  </div>
+  <div class="card-body">
+    <nav id="TableOfContents"><ul>
+        <li><a href="#bộ-lọc-quyết-định-có-cần-hỏi-database">Bộ lọc quyết định có cần hỏi database</a></li>
+        <li><a href="#dữ-liệu-và-cách-đếm">Dữ liệu và cách đếm</a></li>
+        <li><a href="#vì-sao-cùng-mục-tiêu-1-nhưng-đo-ra-gần-16">Vì sao cùng mục tiêu 1% nhưng đo ra gần 16%?</a></li>
+        <li><a href="#chạy-lại-toàn-bộ-phép-kiểm-tra">Chạy lại toàn bộ phép kiểm tra</a></li>
+        <li><a href="#bộ-lọc-cũ-làm-hỏng-đường-đọc-ra-sao">Bộ lọc cũ làm hỏng đường đọc ra sao?</a></li>
+        <li><a href="#số-truy-vấn-giảm-có-đủ-để-chọn-bloom-filter">Số truy vấn giảm có đủ để chọn Bloom filter?</a></li>
+      </ul></nav>
+  </div>
+</div><section class="recent-posts row card component">
+  <div class="card-header">
+    <h2 class="card-title">Bài gần đây</h2>
+  </div>
+  <div class="card-body">
+    <ul class="post-list"><li>
+        <a href="https://www.phamduytung.com/blog/2026-11-19-bloom-filter-sqlite-truy-van-hut-bo-loc-cu/">Bloom filter trước SQLite: giảm truy vấn hụt và phát hiện bộ lọc cũ
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-11-18-gradient-accumulation-pytorch-microbatch-cuoi-thieu-mau/">Gradient accumulation trong PyTorch: microbatch cuối thiếu mẫu làm sai gradient ra sao?
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-11-17-giai-phuong-trinh-bac-nam-python-nghiem-gan-boi-sai-so/">Giải phương trình bậc năm bằng Python: phần dư nhỏ, nghiệm vẫn sai
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-11-16-wasserstein-distance-data-drift-bootstrap-nguong-canh-bao/">Đặt ngưỡng cảnh báo data drift bằng Wasserstein Distance và bootstrap
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-11-13-monolith-collisionless-embedding-mo-phong-hash-python/">Collisionless embedding của Monolith qua mô phỏng va chạm ID bằng Python
+</a>
+      </li></ul>
+  </div>
+</section><section class="series-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/series">series</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/series/ly-thuyet-tro-choi/" class="badge rounded post-taxonomy" title="Lý thuyết trò chơi">
+            Lý thuyết trò chơi<span class="badge badge-sm text-white bg-accent ms-1">35</span></a><a href="https://www.phamduytung.com/series/kh%C3%B3a-h%E1%BB%8Dc-python-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học Python Căn Bản">
+            Khóa Học Python Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="https://www.phamduytung.com/series/kh%C3%B3a-h%E1%BB%8Dc-c&#43;&#43;-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học C&#43;&#43; Căn Bản">
+            Khóa Học C&#43;&#43; Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="https://www.phamduytung.com/series/machine-learning-dataset/" class="badge rounded post-taxonomy" title="Machine Learning Dataset">
+            Machine Learning Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a><a href="https://www.phamduytung.com/series/ch%E1%BB%A9ng-kho%C3%A1n-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Chứng Khoán Căn Bản">
+            Chứng Khoán Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">1</span></a></div>
+      </div>
+    </section><section class="tools-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/tools">tools</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/tools/tool-random/" class="badge rounded post-taxonomy" title="Tool Random">
+            Tool Random<span class="badge badge-sm text-white bg-accent ms-1">3</span></a></div>
+      </div>
+    </section><section class="categories-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/categories">categories</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/categories/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="https://www.phamduytung.com/categories/c&#43;&#43;/" class="badge rounded post-taxonomy" title="C&#43;&#43;">
+            C&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="https://www.phamduytung.com/categories/dataset/" class="badge rounded post-taxonomy" title="Dataset">
+            Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a></div>
+      </div>
+    </section><section class="tags-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/tags">tags</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/tags/game-theory/" class="badge rounded post-taxonomy" title="Game Theory">
+            Game Theory<span class="badge badge-sm text-white bg-accent ms-1">39</span></a><a href="https://www.phamduytung.com/tags/machine-learning/" class="badge rounded post-taxonomy" title="Machine Learning">
+            Machine Learning<span class="badge badge-sm text-white bg-accent ms-1">34</span></a><a href="https://www.phamduytung.com/tags/deep-learning/" class="badge rounded post-taxonomy" title="Deep Learning">
+            Deep Learning<span class="badge badge-sm text-white bg-accent ms-1">29</span></a><a href="https://www.phamduytung.com/tags/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">27</span></a><a href="https://www.phamduytung.com/tags/computer-vision/" class="badge rounded post-taxonomy" title="Computer Vision">
+            Computer Vision<span class="badge badge-sm text-white bg-accent ms-1">18</span></a><a href="https://www.phamduytung.com/tags/llm/" class="badge rounded post-taxonomy" title="Llm">
+            Llm<span class="badge badge-sm text-white bg-accent ms-1">18</span></a><a href="https://www.phamduytung.com/tags/mathematics/" class="badge rounded post-taxonomy" title="Mathematics">
+            Mathematics<span class="badge badge-sm text-white bg-accent ms-1">13</span></a><a href="https://www.phamduytung.com/tags/ai-agent/" class="badge rounded post-taxonomy" title="AI Agent">
+            AI Agent<span class="badge badge-sm text-white bg-accent ms-1">10</span></a><a href="https://www.phamduytung.com/tags/pytorch/" class="badge rounded post-taxonomy" title="Pytorch">
+            Pytorch<span class="badge badge-sm text-white bg-accent ms-1">8</span></a><a href="https://www.phamduytung.com/tags/recommendation-system/" class="badge rounded post-taxonomy" title="Recommendation System">
+            Recommendation System<span class="badge badge-sm text-white bg-accent ms-1">8</span></a></div>
+      </div>
+    </section>
+
+  </div>
+</aside>
+</div>
+    </main><footer class="footer mt-auto py-3 text-center container"><ul class="nav justify-content-between footer-memu mb-3"><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Community
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-facebook"></i>Facebook Group
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://github.com/AlexBlack2202/alexblack2202.github.io" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-github"></i>GitHub
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/contact/"><i class="fas fa-fw fa-info-circle"></i>Contact Us
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/faq/"><i class="fas fa-fw fa-question-circle"></i>Câu hỏi thường gặp
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/about/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-user"></i>Giới thiệu tác giả
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Docs
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="/teamofservices/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-users"></i>Điều khoản sử dụng
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/privacy/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-lock"></i>Chính sách bảo mật
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Features
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="/utils/gen_paswords/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-key"></i>Tạo password ngẫu nhiên
+</a>
+        </li></ul></li></ul>
+<div class="copyright mb-2">
+  Copyright © 2016-2026 Phạm Duy Tùng. All Rights Reserved.
+</div>
+<div class="powered-by mb-2">
+  Website chia sẻ kiến thức của Phạm Duy Tùng và Đặng Thị Hằng. Vui lòng liên hệ email alexblack2202@gmail.com nếu bạn có thông tin cần trao đổi.
+</div></footer>
+<script src="https://www.phamduytung.com/js/main.e788bab0969e53541289578e23a0f66a2ec1102872a9d44b994c80d0601d588a.js" integrity="sha256-54i6sJaeU1QSiVeOI6D2ai7BEChyqdRLmUyA0GAdWIo=" crossorigin="anonymous" defer></script><script src="https://www.phamduytung.com/js/icons.min.cb4c9958dbc49e29ac644e168e82db2d0de9a741a15751cc5bf2b0af21eb2845.js" integrity="sha256-y0yZWNvEnimsZE4WjoLbLQ3pp0GhV1HMW/KwryHrKEU=" crossorigin="anonymous" defer></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('https:\/\/www.phamduytung.com\/service-worker.js').then(function(reg) {
+      console.log('Successfully registered service worker', reg);
+    }).catch(function(err) {
+      console.warn('Error whilst registering service worker', err);
+    });
+  });
+}
+</script><script src="https://www.phamduytung.com/js/viewer.min.28bcf5233e406dae6715f46c8b9e8ca7c6cbf347e8678f5a2bebe5369c3270bb.js" integrity="sha256-KLz1Iz5Aba5nFfRsi56Mp8bL80foZ49aK&#43;vlNpwycLs=" crossorigin="anonymous" defer></script><script defer src="https://www.phamduytung.com/js/katex.min.8582b9feadf92a2a977ed303b97d7713cf2754ccf2b4eb60d8be7453a21042c2.js" integrity="sha256-hYK5/q35KiqXftMDuX13E88nVMzytOtg2L50U6IQQsI=" crossorigin="anonymous"></script>
+
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-2WWQ5G9DKL"></script>
+      <script>
+        var doNotTrack = false;
+        if ( true ) {
+          var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
+          var doNotTrack = (dnt == "1" || dnt == "yes");
+        }
+        if (!doNotTrack) {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-2WWQ5G9DKL');
+        }
+      </script>
+<script  data-ad-client="ca-pub-4644989745435991"  async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4644989745435991"
+     crossorigin="anonymous"></script></body>
+</html>
