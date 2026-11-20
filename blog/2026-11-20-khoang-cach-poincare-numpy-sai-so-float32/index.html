@@ -1,0 +1,693 @@
+<!doctype html><html lang="vi" data-palette="brown"
+   data-mode="light">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Khoảng cách Poincaré bằng NumPy: khi float32 trả 0 cho hai điểm khác nhau - Phạm Duy Tùng</title>
+    <meta name="a.validate.02" content="1QZXZ8oi7g57H-GxBrBPkTYBydwii-Ic9iJu" /><link rel="apple-touch-icon" href="https://www.phamduytung.com/images/icons/icon-180x180.png" sizes="180x180">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/icon-32x32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/icon-16x16.png" sizes="16x16" type="image/png">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/favicon.ico">
+<link rel="manifest" href="https://www.phamduytung.com/manifest.json">
+
+<meta name="description" content="Tính khoảng cách Poincaré bằng NumPy, so sánh arccosh với asinh và tách sai số công thức khỏi sai số tọa độ float32 bằng tham chiếu mpmath." /><meta name="robots" content="index, follow, max-image-preview:large"><meta property="og:title" content="Khoảng cách Poincaré bằng NumPy: khi float32 trả 0 cho hai điểm khác nhau">
+<meta property="og:description" content="Tính khoảng cách Poincaré bằng NumPy, so sánh arccosh với asinh và tách sai số công thức khỏi sai số tọa độ float32 bằng tham chiếu mpmath.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://www.phamduytung.com/blog/2026-11-20-khoang-cach-poincare-numpy-sai-so-float32/">
+<meta property="og:site_name" content="Phạm Duy Tùng Machine Learning Blog">
+<meta property="og:locale" content="vi_VN">
+<meta property="og:image" content="https://www.phamduytung.com/site-images/posts/2026-11-20-khoang-cach-poincare-numpy-sai-so-float32/cover-v2-1200_hu_f3dc35042ee1f747.webp" data-image-budget="100000"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="675"><meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Khoảng cách Poincaré bằng NumPy: khi float32 trả 0 cho hai điểm khác nhau">
+<meta name="twitter:description" content="Tính khoảng cách Poincaré bằng NumPy, so sánh arccosh với asinh và tách sai số công thức khỏi sai số tọa độ float32 bằng tham chiếu mpmath.">
+<meta name="twitter:image" content="https://www.phamduytung.com/site-images/posts/2026-11-20-khoang-cach-poincare-numpy-sai-so-float32/cover-v2-1200_hu_f3dc35042ee1f747.webp" data-image-budget="100000"><meta property="article:published_time" content="2026-11-20T08:00:00&#43;07:00"><meta property="article:modified_time" content="2026-11-20T08:00:00&#43;07:00"><meta property="article:section" content="blog"><meta property="article:tag" content="mathematics"><meta property="article:tag" content="python"><meta property="article:tag" content="machine learning"><link rel="stylesheet" href="https://www.phamduytung.com/css/main.min.0558a043598454ca5f6300bbe4bab466b3141cb8632ec005d8872a3a188ed894.css" integrity="sha256-BVigQ1mEVMpfYwC75Lq0ZrMUHLhjLsAF2IcqOhiO2JQ=" crossorigin="anonymous"><link rel="stylesheet" href="https://www.phamduytung.com/css/katex.min.4d6aa053ca8a5675016fa2c9c48ee5359bfaafb8295184458af9d64abce84c47.css" integrity="sha256-TWqgU8qKVnUBb6LJxI7lNZv6r7gpUYRFivnWSrzoTEc=" crossorigin="anonymous">
+<link rel="stylesheet" href="https://www.phamduytung.com/css/viewer.min.3d228794bcedbbfa0412beb8fbc1ec6973202945e42af7004f742a4d7bd620ab.css" integrity="sha256-PSKHlLztu/oEEr64&#43;8HsaXMgKUXkKvcAT3QqTXvWIKs=" crossorigin="anonymous"><link rel="canonical" href="https://www.phamduytung.com/blog/2026-11-20-khoang-cach-poincare-numpy-sai-so-float32/">
+<meta name="theme-color" content="#f7f5ff"><script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@id":"https://www.phamduytung.com/blog/2026-11-20-khoang-cach-poincare-numpy-sai-so-float32/#article","@type":"BlogPosting","author":[{"@type":"Person","name":"Phạm Duy Tùng","sameAs":["https://github.com/AlexBlack2202","https://www.linkedin.com/in/tung-pham-duy/"],"url":"https://www.phamduytung.com/about/"}],"dateModified":"2026-11-20T08:00:00+07:00","datePublished":"2026-11-20T08:00:00+07:00","description":"Tính khoảng cách Poincaré bằng NumPy, so sánh arccosh với asinh và tách sai số công thức khỏi sai số tọa độ float32 bằng tham chiếu mpmath.","headline":"Khoảng cách Poincaré bằng NumPy: khi float32 trả 0 cho hai điểm khác nhau","image":["https://www.phamduytung.com/site-images/posts/2026-11-20-khoang-cach-poincare-numpy-sai-so-float32/cover-v2-1200_hu_f3dc35042ee1f747.webp"],"inLanguage":"vi","keywords":"mathematics, python, machine learning","mainEntityOfPage":{"@id":"https://www.phamduytung.com/blog/2026-11-20-khoang-cach-poincare-numpy-sai-so-float32/","@type":"WebPage"},"publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://www.phamduytung.com/site-images/brand-mark-flaming-book-red_hu_45318b168da512af.webp"},"name":"Phạm Duy Tùng Machine Learning Blog","url":"https://www.phamduytung.com/"},"url":"https://www.phamduytung.com/blog/2026-11-20-khoang-cach-poincare-numpy-sai-so-float32/","wordCount":1886},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","item":"https://www.phamduytung.com/","name":"Trang chủ","position":1},{"@type":"ListItem","item":"https://www.phamduytung.com/blog/","name":"Blogs","position":2},{"@type":"ListItem","item":"https://www.phamduytung.com/blog/2026-11-20-khoang-cach-poincare-numpy-sai-so-float32/","name":"Khoảng cách Poincaré bằng NumPy: khi float32 trả 0 cho hai điểm khác nhau","position":3}]}]}</script></head>
+  <body><script>const items=["mode","palette"];items.forEach(function(e){const t=localStorage.getItem("hbs-"+e);t&&document.body.parentElement.setAttribute("data-"+e,t)})</script><header><nav class="navbar top-app-bar top-app-bar-expand-lg fixed-top">
+  <div class="container pearl-navbar__inner">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Mở menu">
+      <i class="fas fa-bars"></i>
+    </button>
+
+    <a class="navbar-brand pearl-brand flex-grow-1 flex-lg-grow-0" href="https://www.phamduytung.com/">
+      <span class="pearl-brand__mark" aria-hidden="true">
+        <img src="/site-images/brand-mark-flaming-book-red_hu_57a35d93ebdc8b9c.webp" alt="" data-image-budget="100000" srcset="/site-images/brand-mark-flaming-book-red_hu_bbc58893f5ad658b.webp 42w, /site-images/brand-mark-flaming-book-red_hu_57a35d93ebdc8b9c.webp 84w" sizes="42px" width="42" height="42"
+  loading="eager" decoding="async">
+
+      </span>
+      <span class="pearl-brand__copy">
+        <strong>Phạm Duy Tùng</strong>
+        <small>AI · DATA · SYSTEMS</small>
+      </span>
+    </a>
+
+    <div class="offcanvas offcanvas-bottom surface" tabindex="-1" id="offcanvasSocialShare" aria-labelledby="offcanvasSocialShare">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Share</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body">
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Twitter Share Button"
+      target="_blank" href="https://twitter.com/intent/tweet?title=Kho%e1%ba%a3ng%20c%c3%a1ch%20Poincar%c3%a9%20b%e1%ba%b1ng%20NumPy%3a%20khi%20float32%20tr%e1%ba%a3%200%20cho%20hai%20%c4%91i%e1%bb%83m%20kh%c3%a1c%20nhau&url=https%3a%2f%2fwww.phamduytung.com%2fblog%2f2026-11-20-khoang-cach-poincare-numpy-sai-so-float32%2f">
+      <i class="fab fa-fw fa-twitter"></i> Twitter
+    </a>
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Facebook Share Button"
+      target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.phamduytung.com%2fblog%2f2026-11-20-khoang-cach-poincare-numpy-sai-so-float32%2f">
+      <i class="fab fa-fw fa-facebook-f"></i> Facebook
+    </a>
+  </div>
+</div>
+    <button class="navbar-settings" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSettings"
+  aria-controls="offcanvasSettings" aria-label="Toggle settings">
+  <i class="fas fa-ellipsis-v"></i>
+</button>
+
+<div class="offcanvas offcanvas-end surface h-100" tabindex="-1" id="offcanvasSettings" aria-labelledby="offcanvasSettings">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Cài đặt</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body d-flex flex-column">
+
+
+
+<section class="setting">
+  <form class="font-size-switcher-form row">
+    <div class="col-auto">
+      <label for="fontSize" class="form-label"><i class="fas fa-fw fa-font"></i> Cỡ chữ</label>
+    </div>
+    <div class="col-auto ms-auto">
+      <input type="range" class="form-range" min="-2" max="2" id="fontSize">
+    </div>
+  </form>
+</section>
+
+
+
+<section class="setting actions d-flex justify-content-around mt-auto overflow-auto">
+  <a role="button" class="action action-go-back" href="javascript: window.history.back();">
+    <span class="action-icon"><i class="fas fa-2x fa-arrow-left"></i></span> Quay lại
+  </a>
+  <a role="button" class="action action-reload-page">
+    <span class="action-icon"><i class="fas fa-2x fa-redo-alt"></i></span> Tải lại
+  </a>
+  <a role="button" class="action action-copy-url">
+    <span class="action-icon"><i class="fas fa-2x fa-link"></i></span> Sao chép URL
+  </a><a class="action action-social-share" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSocialShare"
+    aria-controls="offcanvasSocialShare" aria-label="Toggle social share">
+    <span class="action-icon"><i class="fas fa-2x fa-share-alt"></i></span> Chia sẻ
+  </a></section>
+
+</div>
+</div>
+
+    <div class="collapse navbar-collapse" tabindex="-1" id="navbarSupportedContent" aria-labelledby="navbarSupportedContent">
+      <form class="search-bar my-1" action="https://www.phamduytung.com/search">
+  <div class="input-group input-group-sm">
+    <span class="btn btn-search disabled position-absolute left-0"><i class="fas fa-fw fa-search"></i></span>
+    <input class="form-control rounded-pill" name="q" type="search" aria-label="Search">
+  </div>
+</form>
+      <ul class="navbar-nav ms-auto"><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/chu-de/">
+            <i class="fas fa-fw fa-list-alt"></i>Chủ đề
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/series/">
+            <i class="fas fa-fw fa-columns"></i>Courses
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/tools/">
+            <i class="fas fa-fw fa-folder"></i>Tools
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/categories/">
+            <i class="fas fa-fw fa-folder"></i>Categories
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/archives/">
+            <i class="fas fa-fw fa-file-archive"></i>Archives
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/tags/">
+            <i class="fas fa-fw fa-tags"></i>Tags
+          </a>
+        </li><li class="nav-item dropdown">
+          <a class="nav-link" id="navbarDropdownSupport" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-fw fa-comments"></i>Community
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdownSupport"><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Facebook Group
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://github.com/AlexBlack2202/alexblack2202.github.io" target="_blank" rel="noopener noreferrer">
+                GitHub
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/contact/">
+                Contact
+              </a>
+            </li><li><hr class="dropdown-divider"></li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/faq/">
+                Câu hỏi thường gặp
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/about/">
+                Giới thiệu tác giả
+              </a>
+            </li></ul>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/xem-truyen/">
+            <i class="fas fa-fw fa-book-open"></i>Xem truyện
+          </a>
+        </li></ul>
+    </div>
+  </div>
+</nav>
+</header>
+<main role="main" class="container" style="line-height:1.7em">
+      <div class="row content">
+<div class="col-lg-9 col-md-8">
+  <div class="container"><nav class="row card component" aria-label="breadcrumb">
+  <div class="card-body">
+    <ol class="breadcrumb "><li class="breadcrumb-item"><a href="https://www.phamduytung.com/">Trang chủ</a></li><li class="breadcrumb-item"><a href="https://www.phamduytung.com/blog/">Blogs</a></li><li class="breadcrumb-item active">Khoảng cách Poincaré bằng NumPy: khi float32 trả 0 cho hai điểm khác nhau</li></ol>
+  </div>
+</nav>
+<div class="post-panel-wrapper">
+  <div class="d-flex flex-column component rounded post-panel">
+
+    <a class="action action-panel-toggler" role="button" title="Panel toggler">
+      <i class="fas fa-fw fa-chevron-circle-down"></i>
+    </a>
+    <a id="sidebarToggler" class="action d-none d-lg-block" role="button" title="Sidebar toggler">
+  <i class="fas fa-fw fa-expand-alt" data-fa-transform="rotate-45"></i>
+</a>
+
+
+
+
+
+    <a class="action" href="#post-comments" role="button" aria-label="Comments" title="Comments">
+  <i class="fas fa-fw fa-comments"></i>
+</a>
+    <a class="action" href="#postTOC" aria-controls="Table of contents" role="button" title="Table of contents">
+  <i class="fas fa-fw fa-list-alt"></i>
+</a>
+
+  </div>
+</div>
+<article class="row card component mb-4 post">
+  <div class="card-header"><div class="bgcover">
+      <img src="/site-images/posts/2026-11-20-khoang-cach-poincare-numpy-sai-so-float32/cover-v2-1200_hu_f3dc35042ee1f747.webp" alt="Khoảng cách Poincaré bằng NumPy: khi float32 trả 0 cho hai điểm khác nhau" data-image-budget="100000" class="pearl-cover-image" srcset="/site-images/posts/2026-11-20-khoang-cach-poincare-numpy-sai-so-float32/cover-v2-1200_hu_a8cb26a7769b6ea6.webp 480w, /site-images/posts/2026-11-20-khoang-cach-poincare-numpy-sai-so-float32/cover-v2-1200_hu_fa1a6d4c7d220502.webp 768w, /site-images/posts/2026-11-20-khoang-cach-poincare-numpy-sai-so-float32/cover-v2-1200_hu_f3dc35042ee1f747.webp 1200w" sizes="(min-width: 1200px) 960px, (min-width: 768px) 70vw, 100vw" width="1200" height="675"
+  loading="eager" decoding="async" fetchpriority="high">
+
+      <div class="bgtrans">
+        <h1>Khoảng cách Poincaré bằng NumPy: khi float32 trả 0 cho hai điểm khác nhau
+</h1>
+      </div>
+    </div>
+  </div>
+  <div class="card-body"><div class="post-byline">
+  <i class="fas fa-fw fa-user"></i>
+  <span>Tác giả:</span>
+  <a href="https://www.phamduytung.com/about/" rel="author">Phạm Duy Tùng</a>
+</div><div class="post-meta">
+  <span class="post-date" title="tạo ngày 2026-11-20 08:00:00 &#43;0700 &#43;07.">
+    20/11/2026
+  </span><span class="post-reading-time">
+    9 phút đọc
+  </span><span class="post-taxonomies"><a href="https://www.phamduytung.com/tags/mathematics/" class="badge post-taxonomy">mathematics</a><a href="https://www.phamduytung.com/tags/python/" class="badge post-taxonomy">python</a><a href="https://www.phamduytung.com/tags/machine-learning/" class="badge post-taxonomy">machine learning</a></span>
+</div>
+<div class="post-content mb-3"><p><strong>Hai điểm khác nhau vẫn có thể nhận khoảng cách Poincaré bằng 0 khi tính bằng float32.</strong> Với công thức <code>arccosh(1 + 2*s)</code>, phép cộng có thể làm tròn đối số thành đúng 1. Dạng tương đương <code>2*arcsinh(sqrt(s))</code> tránh bước cộng ấy và giữ được khoảng cách nhỏ trong các trường hợp thí nghiệm dưới đây.</p>
+<p>Độ chính xác còn phụ thuộc vào cách lưu tọa độ và cách tính <code>s</code>. Nếu hai tọa độ đã bị làm tròn thành cùng một điểm, thay công thức hoặc chuyển mảng đó sang float64 sau cùng đều không lấy lại được phần thông tin đã mất. Bài này đối chiếu tám cặp điểm trên float32 và float64, với hai tham chiếu mpmath riêng để phân biệt những nguồn sai số đó.</p>
+<h2 id="công-thức-trên-đĩa-poincaré">Công thức trên đĩa Poincaré<a class="anchor ms-1" href="#công-thức-trên-đĩa-poincaré"><i class="fas fa-link"></i></a></h2>
+<p>Trong mô hình có độ cong $-1$, hai điểm $u,v$ thuộc quả cầu đơn vị mở, tức $\lVert u\rVert<1$ và $\lVert v\rVert<1$. Đặt:</p>
+$$
+s = \frac{\lVert u-v\rVert^2}{(1-\lVert u\rVert^2)(1-\lVert v\rVert^2)}.
+$$<p>Khoảng cách là:</p>
+$$
+d(u,v)=\operatorname{arcosh}(1+2s).
+$$<p>Đây là công thức (1) trong bài <em>Poincaré Embeddings for Learning Hierarchical Representations</em> của Nickel và Kiela. Thí nghiệm ở đây dùng hai chiều, nên mỗi điểm có shape <code>(2,)</code>. <a href="https://papers.nips.cc/paper_files/paper/2017/file/59dfa2df42d9e3d41f5b02bfc32229dd-Paper.pdf" target="_blank" rel="noopener noreferrer">Bài báo Poincaré Embeddings, NeurIPS 2017</a></p>
+<p>Bài nền tảng về <a href="/blog/2026-08-21-hinh-hoc-hyperbolic/">hình học hyperbolic và khoảng cách trong Poincaré ball</a> giải thích vì sao khoảng cách tăng nhanh khi tiến sát biên. Ở đây, ta kiểm tra cách các phép toán số học thực hiện công thức đó.</p>
+<p>Vì $s\ge0$, đặt $a=\operatorname{asinh}(\sqrt{s})$. Từ $\cosh(2a)=1+2\sinh^2(a)$ suy ra $\cosh(2a)=1+2s$. Lấy nghịch đảo trên nhánh không âm, ta có:</p>
+$$
+\operatorname{arcosh}(1+2s)=2\operatorname{asinh}(\sqrt{s}).
+$$<p>NumPy cung cấp hai hàm <code>np.arccosh</code> và <code>np.arcsinh</code>. Đẳng thức trên đúng trong số học thực, còn hai chuỗi phép tính có thể cho kết quả dấu phẩy động khác nhau. <a href="https://numpy.org/doc/2.2/reference/generated/numpy.arccosh.html" target="_blank" rel="noopener noreferrer">Tài liệu arccosh</a>, <a href="https://numpy.org/doc/2.2/reference/generated/numpy.arcsinh.html" target="_blank" rel="noopener noreferrer">tài liệu arcsinh</a></p>
+<h2 id="bước-cộng-với-1-làm-mất-khoảng-cách-nhỏ">Bước cộng với 1 làm mất khoảng cách nhỏ<a class="anchor ms-1" href="#bước-cộng-với-1-làm-mất-khoảng-cách-nhỏ"><i class="fas fa-link"></i></a></h2>
+<p><code>np.finfo(dtype).eps</code> cho khoảng cách từ 1 tới số biểu diễn được tiếp theo lớn hơn 1 trong kiểu số đó. Lần chạy dùng NumPy 2.2.5 cho các giá trị sau. <a href="https://numpy.org/doc/2.2/reference/generated/numpy.finfo.html" target="_blank" rel="noopener noreferrer">Tài liệu finfo</a></p>
+<table>
+	<thead>
+			<tr>
+					<th>Kiểu số</th>
+					<th style="text-align: right"><code>eps</code></th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>float32</td>
+					<td style="text-align: right">$1.1920928955\times10^{-7}$</td>
+			</tr>
+			<tr>
+					<td>float64</td>
+					<td style="text-align: right">$2.2204460493\times10^{-16}$</td>
+			</tr>
+	</tbody>
+</table>
+<p>Với $u=(0,0)$ và $v=(10^{-6},0)$, ta có $s$ xấp xỉ $10^{-12}$. Trong float32, <code>1 + 2*s</code> được làm tròn thành đúng 1, nên <code>arccosh</code> trả 0. Dạng asinh bỏ qua bước cộng này và trả khoảng $2\times10^{-6}$.</p>
+<p>Đổi sang float64 làm ngưỡng mất thông tin nhỏ hơn. Tuy vậy, với $v=(10^{-10},0)$, phép cộng ở dạng arccosh vẫn làm tròn về 1 ngay cả trong float64. Mã ghi lại cả đối số <code>arccosh_argument</code> để kiểm tra trực tiếp điều này.</p>
+<h2 id="hai-tham-chiếu-để-xác-định-sai-số-đến-từ-đâu">Hai tham chiếu để xác định sai số đến từ đâu<a class="anchor ms-1" href="#hai-tham-chiếu-để-xác-định-sai-số-đến-từ-đâu"><i class="fas fa-link"></i></a></h2>
+<p>Mã lưu tọa độ ban đầu dưới dạng chuỗi thập phân, như <code>&quot;0.250001&quot;</code>, rồi tạo hai tham chiếu với mpmath ở độ chính xác làm việc 80 chữ số.</p>
+<p><strong>Tham chiếu đầu vào thập phân</strong> tính khoảng cách của các tọa độ mong muốn được đọc trực tiếp từ chuỗi. <strong>Tham chiếu đầu vào nhị phân đã làm tròn</strong> tính khoảng cách của đúng những giá trị đang nằm trong mảng float32 hoặc float64. Khi chuyển phần tử float32 thành Python float để đưa vào mpmath, giá trị float32 đó được giữ nguyên. <a href="https://mpmath.org/doc/1.3.0/basics.html" target="_blank" rel="noopener noreferrer">Hướng dẫn độ chính xác và tạo số trong mpmath</a></p>
+<p>Từ đó, mã báo riêng sai số do làm tròn đầu vào, sai số của từng công thức so với tham chiếu nhị phân, và sai số tổng so với tham chiếu thập phân. Các trường này được tính trước khi định dạng kết quả. JSON hiển thị tham chiếu và sai số với 14 chữ số có nghĩa.</p>
+<h2 id="kết-quả-trên-các-cặp-điểm-cố-định">Kết quả trên các cặp điểm cố định<a class="anchor ms-1" href="#kết-quả-trên-các-cặp-điểm-cố-định"><i class="fas fa-link"></i></a></h2>
+<p>Bảng trích sáu kết quả từ tám cặp điểm và hai kiểu số. Cột tham chiếu dùng <strong>đầu vào nhị phân đã làm tròn</strong>, để đối chiếu việc đánh giá công thức trên cùng tọa độ. Các số được rút gọn để dễ đọc.</p>
+<table>
+	<thead>
+			<tr>
+					<th>Cặp điểm</th>
+					<th>Kiểu số</th>
+					<th style="text-align: right">Tham chiếu</th>
+					<th style="text-align: right">Dạng arccosh</th>
+					<th style="text-align: right">Dạng asinh</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>Gốc tới $(10^{-6},0)$</td>
+					<td>float32</td>
+					<td style="text-align: right">$1.999999995\times10^{-6}$</td>
+					<td style="text-align: right">0</td>
+					<td style="text-align: right">$1.999999995\times10^{-6}$</td>
+			</tr>
+			<tr>
+					<td>Gốc tới $(10^{-6},0)$</td>
+					<td>float64</td>
+					<td style="text-align: right">$2.000000000\times10^{-6}$</td>
+					<td style="text-align: right">$1.999977878\times10^{-6}$</td>
+					<td style="text-align: right">$2.000000000\times10^{-6}$</td>
+			</tr>
+			<tr>
+					<td>Gốc tới $(10^{-10},0)$</td>
+					<td>float64</td>
+					<td style="text-align: right">$2.000000000\times10^{-10}$</td>
+					<td style="text-align: right">0</td>
+					<td style="text-align: right">$2.000000000\times10^{-10}$</td>
+			</tr>
+			<tr>
+					<td>Cặp gần tâm</td>
+					<td>float32</td>
+					<td style="text-align: right">$2.198300723\times10^{-6}$</td>
+					<td style="text-align: right">0</td>
+					<td style="text-align: right">$2.198300763\times10^{-6}$</td>
+			</tr>
+			<tr>
+					<td>Cặp thông thường</td>
+					<td>float32</td>
+					<td style="text-align: right">1,540340653</td>
+					<td style="text-align: right">1,540340662</td>
+					<td style="text-align: right">1,540340781</td>
+			</tr>
+			<tr>
+					<td>Cặp sát biên theo bán kính</td>
+					<td>float32</td>
+					<td style="text-align: right">0,692899145</td>
+					<td style="text-align: right">0,692898870</td>
+					<td style="text-align: right">0,692898810</td>
+			</tr>
+	</tbody>
+</table>
+<p>“Cặp gần tâm” là $(0.25,0.125)$ và $(0.250001,0.125)$. “Cặp thông thường” là $(0.2,-0.3)$ và $(-0.4,0.1)$. Cặp sát biên theo bán kính là $(0.9999,0)$ và $(0.9998,0)$.</p>
+<p>Ở cặp thông thường, sai số tuyệt đối so với tham chiếu nhị phân của arccosh khoảng $9.33\times10^{-9}$, còn asinh khoảng $1.29\times10^{-7}$. Với cặp sát biên theo bán kính, các sai số lần lượt khoảng $2.75\times10^{-7}$ và $3.35\times10^{-7}$. Dạng asinh có lợi rõ ở những hàng bị mất thông tin trong bước cộng với 1, nhưng không cho sai số nhỏ hơn trên mọi hàng.</p>
+<h2 id="công-thức-tốt-hơn-vẫn-chịu-sai-số-tọa-độ">Công thức tốt hơn vẫn chịu sai số tọa độ<a class="anchor ms-1" href="#công-thức-tốt-hơn-vẫn-chịu-sai-số-tọa-độ"><i class="fas fa-link"></i></a></h2>
+<p>Với cặp gần tâm, khoảng cách của tọa độ thập phân mong muốn là khoảng $2.169492114\times10^{-6}$. Sau khi lưu thành float32, khoảng cách tham chiếu của chính các tọa độ đã lưu tăng thành $2.198300723\times10^{-6}$.</p>
+<p>Sai số do làm tròn đầu vào khoảng $2.88\times10^{-8}$. Trong khi đó, sai số tính dạng asinh trên đầu vào đã làm tròn chỉ khoảng $3.95\times10^{-14}$. So với tọa độ mong muốn, phần sai số lớn hơn đã xuất hiện trước khi gọi hàm khoảng cách.</p>
+<p>Trường hợp $(0.9,0)$ và $(0.900000001,0)$ rõ hơn nữa. Cả hai tọa độ $x$ trở thành cùng giá trị float32 là <code>0.8999999761581421</code>. Tham chiếu nhị phân bằng 0 và cả hai công thức đều trả 0, trong khi khoảng cách thập phân mong muốn khoảng $1.05263\times10^{-8}$. Muốn giữ khác biệt ban đầu, cần chọn cách biểu diễn đủ chính xác từ lúc đọc hoặc tạo tọa độ.</p>
+<h2 id="kiểm-tra-miền-mở-khi-sát-biên">Kiểm tra miền mở khi sát biên<a class="anchor ms-1" href="#kiểm-tra-miền-mở-khi-sát-biên"><i class="fas fa-link"></i></a></h2>
+<p>Cặp $(0.99999999,0)$ và $(0.99999998,0)$ nằm trong đĩa theo các giá trị thập phân ban đầu. Khi chuyển sang float32, cả hai tọa độ $x$ thành 1. Chúng chạm biên, và mã trả <code>ValueError</code> cho cả hai cách tính.</p>
+<p>Hàm kiểm tra chuẩn bình phương được tính trong chính dtype đang thử và yêu cầu nó nhỏ hơn 1. Đây là kiểm tra miền trong số học hữu hạn. Khi rất sát biên, phép tính chuẩn cũng chịu sai số làm tròn, nên điều kiện này chưa phải chứng nhận chính xác bằng số học khoảng về chuẩn thực của điểm.</p>
+<p>Mã giữ nguyên tọa độ khi tính, không cắt chúng vào trong bằng <code>clip</code>. Nếu một ứng dụng chủ động chiếu tọa độ về miền hợp lệ, bước đó thay đổi điểm mà ta đang đo và cần được ghi nhận riêng. Độ ổn định của <code>s</code> vẫn phụ thuộc vào phép trừ tọa độ, bình phương khoảng cách và hai thừa số mẫu số sát biên.</p>
+<h2 id="mã-tái-lập-và-các-phép-kiểm-tra">Mã tái lập và các phép kiểm tra<a class="anchor ms-1" href="#mã-tái-lập-và-các-phép-kiểm-tra"><i class="fas fa-link"></i></a></h2>
+<p>Mã dùng Python 3.10.11, NumPy 2.2.5 và mpmath 1.3.0. Lưu thành <code>experiment.py</code> rồi chạy <code>python3 experiment.py</code>. Chương trình in JSON cho đủ tám cặp điểm trên cả hai dtype.</p>
+<p>Các kiểm tra xác nhận tính đối xứng và khoảng cách tự thân bằng 0 trên mọi trường hợp được chấp nhận. Một kiểm tra hình học độc lập đối chiếu $d((0,0),(0.5,0))$ với $\ln3$. Mã còn kiểm tra các trường hợp arccosh trả 0, hai đầu vào float32 trùng nhau và điểm làm tròn tới biên. Các phép thử này khảo sát tính đúng đắn số học trên các đầu vào đã chọn.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln">  1</span><span class="cl"><span class="kn">import</span> <span class="nn">json</span>
+</span></span><span class="line"><span class="ln">  2</span><span class="cl"><span class="kn">import</span> <span class="nn">platform</span>
+</span></span><span class="line"><span class="ln">  3</span><span class="cl">
+</span></span><span class="line"><span class="ln">  4</span><span class="cl"><span class="kn">import</span> <span class="nn">mpmath</span> <span class="k">as</span> <span class="nn">mp</span>
+</span></span><span class="line"><span class="ln">  5</span><span class="cl"><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+</span></span><span class="line"><span class="ln">  6</span><span class="cl">
+</span></span><span class="line"><span class="ln">  7</span><span class="cl"><span class="n">mp</span><span class="o">.</span><span class="n">mp</span><span class="o">.</span><span class="n">dps</span> <span class="o">=</span> <span class="mi">80</span>
+</span></span><span class="line"><span class="ln">  8</span><span class="cl">
+</span></span><span class="line"><span class="ln">  9</span><span class="cl"><span class="n">CASES</span> <span class="o">=</span> <span class="p">[</span>
+</span></span><span class="line"><span class="ln"> 10</span><span class="cl">    <span class="p">(</span><span class="s2">&#34;origin_1e-6&#34;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&#34;0&#34;</span><span class="p">,</span> <span class="s2">&#34;0&#34;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&#34;0.000001&#34;</span><span class="p">,</span> <span class="s2">&#34;0&#34;</span><span class="p">)),</span>
+</span></span><span class="line"><span class="ln"> 11</span><span class="cl">    <span class="p">(</span><span class="s2">&#34;origin_1e-10&#34;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&#34;0&#34;</span><span class="p">,</span> <span class="s2">&#34;0&#34;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&#34;0.0000000001&#34;</span><span class="p">,</span> <span class="s2">&#34;0&#34;</span><span class="p">)),</span>
+</span></span><span class="line"><span class="ln"> 12</span><span class="cl">    <span class="p">(</span><span class="s2">&#34;center_pair_1e-6&#34;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&#34;0.25&#34;</span><span class="p">,</span> <span class="s2">&#34;0.125&#34;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&#34;0.250001&#34;</span><span class="p">,</span> <span class="s2">&#34;0.125&#34;</span><span class="p">)),</span>
+</span></span><span class="line"><span class="ln"> 13</span><span class="cl">    <span class="p">(</span><span class="s2">&#34;same_float32_point&#34;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&#34;0.9&#34;</span><span class="p">,</span> <span class="s2">&#34;0&#34;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&#34;0.900000001&#34;</span><span class="p">,</span> <span class="s2">&#34;0&#34;</span><span class="p">)),</span>
+</span></span><span class="line"><span class="ln"> 14</span><span class="cl">    <span class="p">(</span><span class="s2">&#34;ordinary_pair&#34;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&#34;0.2&#34;</span><span class="p">,</span> <span class="s2">&#34;-0.3&#34;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&#34;-0.4&#34;</span><span class="p">,</span> <span class="s2">&#34;0.1&#34;</span><span class="p">)),</span>
+</span></span><span class="line"><span class="ln"> 15</span><span class="cl">    <span class="p">(</span><span class="s2">&#34;near_boundary_radial&#34;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&#34;0.9999&#34;</span><span class="p">,</span> <span class="s2">&#34;0&#34;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&#34;0.9998&#34;</span><span class="p">,</span> <span class="s2">&#34;0&#34;</span><span class="p">)),</span>
+</span></span><span class="line"><span class="ln"> 16</span><span class="cl">    <span class="p">(</span><span class="s2">&#34;near_boundary_directions&#34;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&#34;0.9999&#34;</span><span class="p">,</span> <span class="s2">&#34;0&#34;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&#34;0&#34;</span><span class="p">,</span> <span class="s2">&#34;0.9999&#34;</span><span class="p">)),</span>
+</span></span><span class="line"><span class="ln"> 17</span><span class="cl">    <span class="p">(</span><span class="s2">&#34;rounded_to_boundary&#34;</span><span class="p">,</span> <span class="p">(</span><span class="s2">&#34;0.99999999&#34;</span><span class="p">,</span> <span class="s2">&#34;0&#34;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&#34;0.99999998&#34;</span><span class="p">,</span> <span class="s2">&#34;0&#34;</span><span class="p">)),</span>
+</span></span><span class="line"><span class="ln"> 18</span><span class="cl"><span class="p">]</span>
+</span></span><span class="line"><span class="ln"> 19</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 20</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 21</span><span class="cl"><span class="k">def</span> <span class="nf">reference_distance</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln"> 22</span><span class="cl">    <span class="n">norm_u</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">x</span> <span class="o">*</span> <span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">u</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 23</span><span class="cl">    <span class="n">norm_v</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">x</span> <span class="o">*</span> <span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">v</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 24</span><span class="cl">    <span class="k">if</span> <span class="n">norm_u</span> <span class="o">&gt;=</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">norm_v</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln"> 25</span><span class="cl">        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&#34;reference point is outside the open unit ball&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 26</span><span class="cl">    <span class="n">squared_distance</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">((</span><span class="n">x</span> <span class="o">-</span> <span class="n">y</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span> <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span>
+</span></span><span class="line"><span class="ln"> 27</span><span class="cl">    <span class="k">return</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">mp</span><span class="o">.</span><span class="n">asinh</span><span class="p">(</span><span class="n">mp</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">squared_distance</span> <span class="o">/</span> <span class="p">((</span><span class="mi">1</span> <span class="o">-</span> <span class="n">norm_u</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">norm_v</span><span class="p">))))</span>
+</span></span><span class="line"><span class="ln"> 28</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 29</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 30</span><span class="cl"><span class="k">def</span> <span class="nf">binary_reference</span><span class="p">(</span><span class="n">point</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln"> 31</span><span class="cl">    <span class="c1"># Converting float32 to Python float preserves its value exactly.</span>
+</span></span><span class="line"><span class="ln"> 32</span><span class="cl">    <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">mp</span><span class="o">.</span><span class="n">mpf</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">))</span> <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">point</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 33</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 34</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 35</span><span class="cl"><span class="k">def</span> <span class="nf">short</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln"> 36</span><span class="cl">    <span class="k">return</span> <span class="n">mp</span><span class="o">.</span><span class="n">nstr</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="mi">14</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 37</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 38</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 39</span><span class="cl"><span class="k">def</span> <span class="nf">numpy_distances</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">dtype</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln"> 40</span><span class="cl">    <span class="n">u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 41</span><span class="cl">    <span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 42</span><span class="cl">    <span class="k">if</span> <span class="n">u</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="p">(</span><span class="mi">2</span><span class="p">,)</span> <span class="ow">or</span> <span class="n">v</span><span class="o">.</span><span class="n">shape</span> <span class="o">!=</span> <span class="p">(</span><span class="mi">2</span><span class="p">,):</span>
+</span></span><span class="line"><span class="ln"> 43</span><span class="cl">        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&#34;each point must have shape (2,)&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 44</span><span class="cl">    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">u</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">()</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+</span></span><span class="line"><span class="ln"> 45</span><span class="cl">        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&#34;coordinates must be finite&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 46</span><span class="cl">    <span class="n">one</span><span class="p">,</span> <span class="n">two</span> <span class="o">=</span> <span class="n">dtype</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">dtype</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 47</span><span class="cl">    <span class="n">norm_u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">u</span> <span class="o">*</span> <span class="n">u</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 48</span><span class="cl">    <span class="n">norm_v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">v</span> <span class="o">*</span> <span class="n">v</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 49</span><span class="cl">    <span class="k">if</span> <span class="n">norm_u</span> <span class="o">&gt;=</span> <span class="n">one</span> <span class="ow">or</span> <span class="n">norm_v</span> <span class="o">&gt;=</span> <span class="n">one</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln"> 50</span><span class="cl">        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&#34;computed squared norm must be strictly below 1&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 51</span><span class="cl">    <span class="n">squared_distance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">((</span><span class="n">u</span> <span class="o">-</span> <span class="n">v</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 52</span><span class="cl">    <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">over</span><span class="o">=</span><span class="s2">&#34;raise&#34;</span><span class="p">,</span> <span class="n">invalid</span><span class="o">=</span><span class="s2">&#34;raise&#34;</span><span class="p">,</span> <span class="n">divide</span><span class="o">=</span><span class="s2">&#34;raise&#34;</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln"> 53</span><span class="cl">        <span class="n">s</span> <span class="o">=</span> <span class="n">squared_distance</span> <span class="o">/</span> <span class="p">((</span><span class="n">one</span> <span class="o">-</span> <span class="n">norm_u</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">one</span> <span class="o">-</span> <span class="n">norm_v</span><span class="p">))</span>
+</span></span><span class="line"><span class="ln"> 54</span><span class="cl">        <span class="n">argument</span> <span class="o">=</span> <span class="n">one</span> <span class="o">+</span> <span class="n">two</span> <span class="o">*</span> <span class="n">s</span>
+</span></span><span class="line"><span class="ln"> 55</span><span class="cl">        <span class="n">naive</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arccosh</span><span class="p">(</span><span class="n">argument</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 56</span><span class="cl">        <span class="n">asinh</span> <span class="o">=</span> <span class="n">two</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">arcsinh</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">s</span><span class="p">))</span>
+</span></span><span class="line"><span class="ln"> 57</span><span class="cl">    <span class="k">return</span> <span class="p">{</span><span class="s2">&#34;naive&#34;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">naive</span><span class="p">),</span> <span class="s2">&#34;asinh&#34;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">asinh</span><span class="p">),</span>
+</span></span><span class="line"><span class="ln"> 58</span><span class="cl">            <span class="s2">&#34;arccosh_argument&#34;</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">argument</span><span class="p">)}</span>
+</span></span><span class="line"><span class="ln"> 59</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 60</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 61</span><span class="cl"><span class="k">def</span> <span class="nf">run_case</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">raw_u</span><span class="p">,</span> <span class="n">raw_v</span><span class="p">,</span> <span class="n">dtype</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln"> 62</span><span class="cl">    <span class="n">target</span> <span class="o">=</span> <span class="n">reference_distance</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">mp</span><span class="o">.</span><span class="n">mpf</span><span class="p">,</span> <span class="n">raw_u</span><span class="p">)),</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">mp</span><span class="o">.</span><span class="n">mpf</span><span class="p">,</span> <span class="n">raw_v</span><span class="p">)))</span>
+</span></span><span class="line"><span class="ln"> 63</span><span class="cl">    <span class="n">u</span><span class="p">,</span> <span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">raw_u</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">raw_v</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 64</span><span class="cl">    <span class="n">row</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&#34;case&#34;</span><span class="p">:</span> <span class="n">name</span><span class="p">,</span> <span class="s2">&#34;dtype&#34;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln"> 65</span><span class="cl">           <span class="s2">&#34;target_u&#34;</span><span class="p">:</span> <span class="n">raw_u</span><span class="p">,</span> <span class="s2">&#34;target_v&#34;</span><span class="p">:</span> <span class="n">raw_v</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln"> 66</span><span class="cl">           <span class="s2">&#34;rounded_u&#34;</span><span class="p">:</span> <span class="n">u</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="s2">&#34;rounded_v&#34;</span><span class="p">:</span> <span class="n">v</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+</span></span><span class="line"><span class="ln"> 67</span><span class="cl">           <span class="s2">&#34;reference_exact_decimal_input&#34;</span><span class="p">:</span> <span class="n">short</span><span class="p">(</span><span class="n">target</span><span class="p">)}</span>
+</span></span><span class="line"><span class="ln"> 68</span><span class="cl">    <span class="k">try</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln"> 69</span><span class="cl">        <span class="n">rounded</span> <span class="o">=</span> <span class="n">reference_distance</span><span class="p">(</span><span class="n">binary_reference</span><span class="p">(</span><span class="n">u</span><span class="p">),</span> <span class="n">binary_reference</span><span class="p">(</span><span class="n">v</span><span class="p">))</span>
+</span></span><span class="line"><span class="ln"> 70</span><span class="cl">    <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln"> 71</span><span class="cl">        <span class="n">row</span><span class="p">[</span><span class="s2">&#34;rounded_reference_error&#34;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 72</span><span class="cl">    <span class="k">else</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln"> 73</span><span class="cl">        <span class="n">row</span><span class="p">[</span><span class="s2">&#34;reference_rounded_binary_input&#34;</span><span class="p">]</span> <span class="o">=</span> <span class="n">short</span><span class="p">(</span><span class="n">rounded</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 74</span><span class="cl">        <span class="n">row</span><span class="p">[</span><span class="s2">&#34;input_rounding_abs_error&#34;</span><span class="p">]</span> <span class="o">=</span> <span class="n">short</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">rounded</span> <span class="o">-</span> <span class="n">target</span><span class="p">))</span>
+</span></span><span class="line"><span class="ln"> 75</span><span class="cl">    <span class="k">try</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln"> 76</span><span class="cl">        <span class="n">values</span> <span class="o">=</span> <span class="n">numpy_distances</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">dtype</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 77</span><span class="cl">    <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln"> 78</span><span class="cl">        <span class="n">row</span><span class="p">[</span><span class="s2">&#34;numpy_error&#34;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&#34;ValueError: &#34;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 79</span><span class="cl">        <span class="k">return</span> <span class="n">row</span>
+</span></span><span class="line"><span class="ln"> 80</span><span class="cl">    <span class="n">row</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 81</span><span class="cl">    <span class="n">row</span><span class="p">[</span><span class="s2">&#34;function_abs_error_vs_rounded&#34;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+</span></span><span class="line"><span class="ln"> 82</span><span class="cl">        <span class="n">method</span><span class="p">:</span> <span class="n">short</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">mp</span><span class="o">.</span><span class="n">mpf</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="n">method</span><span class="p">])</span> <span class="o">-</span> <span class="n">rounded</span><span class="p">))</span>
+</span></span><span class="line"><span class="ln"> 83</span><span class="cl">        <span class="k">for</span> <span class="n">method</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&#34;naive&#34;</span><span class="p">,</span> <span class="s2">&#34;asinh&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 84</span><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="ln"> 85</span><span class="cl">    <span class="n">row</span><span class="p">[</span><span class="s2">&#34;total_abs_error_vs_target&#34;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+</span></span><span class="line"><span class="ln"> 86</span><span class="cl">        <span class="n">method</span><span class="p">:</span> <span class="n">short</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">mp</span><span class="o">.</span><span class="n">mpf</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="n">method</span><span class="p">])</span> <span class="o">-</span> <span class="n">target</span><span class="p">))</span>
+</span></span><span class="line"><span class="ln"> 87</span><span class="cl">        <span class="k">for</span> <span class="n">method</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&#34;naive&#34;</span><span class="p">,</span> <span class="s2">&#34;asinh&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 88</span><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="ln"> 89</span><span class="cl">    <span class="n">reverse</span> <span class="o">=</span> <span class="n">numpy_distances</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">dtype</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 90</span><span class="cl">    <span class="n">self_distance</span> <span class="o">=</span> <span class="n">numpy_distances</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">dtype</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 91</span><span class="cl">    <span class="k">for</span> <span class="n">method</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&#34;naive&#34;</span><span class="p">,</span> <span class="s2">&#34;asinh&#34;</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln"> 92</span><span class="cl">        <span class="k">assert</span> <span class="n">values</span><span class="p">[</span><span class="n">method</span><span class="p">]</span> <span class="o">==</span> <span class="n">reverse</span><span class="p">[</span><span class="n">method</span><span class="p">]</span>
+</span></span><span class="line"><span class="ln"> 93</span><span class="cl">        <span class="k">assert</span> <span class="n">self_distance</span><span class="p">[</span><span class="n">method</span><span class="p">]</span> <span class="o">==</span> <span class="mf">0.0</span>
+</span></span><span class="line"><span class="ln"> 94</span><span class="cl">        <span class="k">assert</span> <span class="n">values</span><span class="p">[</span><span class="n">method</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mf">0.0</span>
+</span></span><span class="line"><span class="ln"> 95</span><span class="cl">    <span class="k">return</span> <span class="n">row</span>
+</span></span><span class="line"><span class="ln"> 96</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 97</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 98</span><span class="cl"><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+</span></span><span class="line"><span class="ln"> 99</span><span class="cl">    <span class="n">rows</span> <span class="o">=</span> <span class="p">[</span><span class="n">run_case</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">dtype</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">100</span><span class="cl">            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">CASES</span> <span class="k">for</span> <span class="n">dtype</span> <span class="ow">in</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)]</span>
+</span></span><span class="line"><span class="ln">101</span><span class="cl">    <span class="n">by_case</span> <span class="o">=</span> <span class="p">{(</span><span class="n">row</span><span class="p">[</span><span class="s2">&#34;case&#34;</span><span class="p">],</span> <span class="n">row</span><span class="p">[</span><span class="s2">&#34;dtype&#34;</span><span class="p">]):</span> <span class="n">row</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">}</span>
+</span></span><span class="line"><span class="ln">102</span><span class="cl">    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">dtype</span> <span class="ow">in</span> <span class="p">((</span><span class="s2">&#34;origin_1e-6&#34;</span><span class="p">,</span> <span class="s2">&#34;float32&#34;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&#34;origin_1e-10&#34;</span><span class="p">,</span> <span class="s2">&#34;float64&#34;</span><span class="p">)):</span>
+</span></span><span class="line"><span class="ln">103</span><span class="cl">        <span class="k">assert</span> <span class="n">by_case</span><span class="p">[</span><span class="n">name</span><span class="p">,</span> <span class="n">dtype</span><span class="p">][</span><span class="s2">&#34;naive&#34;</span><span class="p">]</span> <span class="o">==</span> <span class="mf">0.0</span>
+</span></span><span class="line"><span class="ln">104</span><span class="cl">        <span class="k">assert</span> <span class="n">by_case</span><span class="p">[</span><span class="n">name</span><span class="p">,</span> <span class="n">dtype</span><span class="p">][</span><span class="s2">&#34;asinh&#34;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">0.0</span>
+</span></span><span class="line"><span class="ln">105</span><span class="cl">    <span class="n">collapsed</span> <span class="o">=</span> <span class="n">by_case</span><span class="p">[</span><span class="s2">&#34;same_float32_point&#34;</span><span class="p">,</span> <span class="s2">&#34;float32&#34;</span><span class="p">]</span>
+</span></span><span class="line"><span class="ln">106</span><span class="cl">    <span class="k">assert</span> <span class="n">collapsed</span><span class="p">[</span><span class="s2">&#34;rounded_u&#34;</span><span class="p">]</span> <span class="o">==</span> <span class="n">collapsed</span><span class="p">[</span><span class="s2">&#34;rounded_v&#34;</span><span class="p">]</span>
+</span></span><span class="line"><span class="ln">107</span><span class="cl">    <span class="k">assert</span> <span class="n">collapsed</span><span class="p">[</span><span class="s2">&#34;asinh&#34;</span><span class="p">]</span> <span class="o">==</span> <span class="mf">0.0</span>
+</span></span><span class="line"><span class="ln">108</span><span class="cl">    <span class="k">assert</span> <span class="s2">&#34;numpy_error&#34;</span> <span class="ow">in</span> <span class="n">by_case</span><span class="p">[</span><span class="s2">&#34;rounded_to_boundary&#34;</span><span class="p">,</span> <span class="s2">&#34;float32&#34;</span><span class="p">]</span>
+</span></span><span class="line"><span class="ln">109</span><span class="cl">    <span class="n">origin_check</span> <span class="o">=</span> <span class="n">numpy_distances</span><span class="p">((</span><span class="s2">&#34;0&#34;</span><span class="p">,</span> <span class="s2">&#34;0&#34;</span><span class="p">),</span> <span class="p">(</span><span class="s2">&#34;0.5&#34;</span><span class="p">,</span> <span class="s2">&#34;0&#34;</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">110</span><span class="cl">    <span class="k">assert</span> <span class="nb">abs</span><span class="p">(</span><span class="n">origin_check</span><span class="p">[</span><span class="s2">&#34;asinh&#34;</span><span class="p">]</span> <span class="o">-</span> <span class="nb">float</span><span class="p">(</span><span class="n">mp</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">3</span><span class="p">)))</span> <span class="o">&lt;</span> <span class="mf">1e-14</span>
+</span></span><span class="line"><span class="ln">111</span><span class="cl">    <span class="n">report</span> <span class="o">=</span> <span class="p">{</span>
+</span></span><span class="line"><span class="ln">112</span><span class="cl">        <span class="s2">&#34;python&#34;</span><span class="p">:</span> <span class="n">platform</span><span class="o">.</span><span class="n">python_version</span><span class="p">(),</span> <span class="s2">&#34;numpy&#34;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">__version__</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">113</span><span class="cl">        <span class="s2">&#34;mpmath&#34;</span><span class="p">:</span> <span class="n">mp</span><span class="o">.</span><span class="n">__version__</span><span class="p">,</span> <span class="s2">&#34;reference_decimal_digits&#34;</span><span class="p">:</span> <span class="n">mp</span><span class="o">.</span><span class="n">mp</span><span class="o">.</span><span class="n">dps</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">114</span><span class="cl">        <span class="s2">&#34;curvature&#34;</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&#34;coordinate_shape&#34;</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">],</span>
+</span></span><span class="line"><span class="ln">115</span><span class="cl">        <span class="s2">&#34;epsilon&#34;</span><span class="p">:</span> <span class="p">{</span><span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">116</span><span class="cl">                    <span class="k">for</span> <span class="n">dtype</span> <span class="ow">in</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)},</span>
+</span></span><span class="line"><span class="ln">117</span><span class="cl">        <span class="s2">&#34;geometry_checks&#34;</span><span class="p">:</span> <span class="s2">&#34;symmetry and self-distance for all accepted cases; d(0,0.5)=log(3)&#34;</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">118</span><span class="cl">        <span class="s2">&#34;cases&#34;</span><span class="p">:</span> <span class="n">rows</span><span class="p">,</span>
+</span></span><span class="line"><span class="ln">119</span><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="ln">120</span><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">report</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">allow_nan</span><span class="o">=</span><span class="kc">False</span><span class="p">))</span>
+</span></span><span class="line"><span class="ln">121</span><span class="cl">
+</span></span><span class="line"><span class="ln">122</span><span class="cl">
+</span></span><span class="line"><span class="ln">123</span><span class="cl"><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&#34;__main__&#34;</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln">124</span><span class="cl">    <span class="n">main</span><span class="p">()</span>
+</span></span></code></pre></div><h2 id="đọc-thêm-trên-blog">Đọc thêm trên blog<a class="anchor ms-1" href="#đọc-thêm-trên-blog"><i class="fas fa-link"></i></a></h2>
+<p>Bài <a href="/blog/2026-08-21-hinh-hoc-phi-euclid/">hình học phi Euclid qua hình học cầu và hyperbolic</a> đặt mô hình Poincaré vào bức tranh hình học rộng hơn.</p>
+</div></div>
+  <div class="card-footer"><div class="post-navs d-flex justify-content-evenly"><div class="post-nav post-prev">
+    <i class="fas fa-fw fa-chevron-left"></i>
+    <a href="https://www.phamduytung.com/blog/2026-11-19-bloom-filter-sqlite-truy-van-hut-bo-loc-cu/">Bloom filter trước SQLite: giảm truy vấn hụt và phát hiện bộ lọc cũ
+</a>
+  </div></div></div>
+</article><section class="related-posts row card component">
+    <div class="card-header">
+      <h2 class="card-title">Bài liên quan</h2>
+    </div>
+    <div class="card-body">
+      <ul class="post-list"><li>
+          <a href="https://www.phamduytung.com/blog/2026-11-18-gradient-accumulation-pytorch-microbatch-cuoi-thieu-mau/">Gradient accumulation trong PyTorch: microbatch cuối thiếu mẫu làm sai gradient ra sao?
+</a>
+          <span class="float-end post-date">18/11/2026
+</span>
+        </li><li>
+          <a href="https://www.phamduytung.com/blog/2026-11-17-giai-phuong-trinh-bac-nam-python-nghiem-gan-boi-sai-so/">Giải phương trình bậc năm bằng Python: phần dư nhỏ, nghiệm vẫn sai
+</a>
+          <span class="float-end post-date">17/11/2026
+</span>
+        </li><li>
+          <a href="https://www.phamduytung.com/blog/2026-11-16-wasserstein-distance-data-drift-bootstrap-nguong-canh-bao/">Đặt ngưỡng cảnh báo data drift bằng Wasserstein Distance và bootstrap
+</a>
+          <span class="float-end post-date">16/11/2026
+</span>
+        </li><li>
+          <a href="https://www.phamduytung.com/blog/2026-11-13-monolith-collisionless-embedding-mo-phong-hash-python/">Collisionless embedding của Monolith qua mô phỏng va chạm ID bằng Python
+</a>
+          <span class="float-end post-date">13/11/2026
+</span>
+        </li><li>
+          <a href="https://www.phamduytung.com/blog/2019-02-08-getting-started-with-randomized-optimization-in-python/">Tối ưu hoá ngẫu nhiên
+</a>
+          <span class="float-end post-date">08/02/2019
+</span>
+        </li></ul>
+    </div>
+  </section><div class="card component row post-comments" id="post-comments">
+  <div class="card-header">
+    <h2 class="card-title">Bình luận</h2>
+  </div>
+  <div class="card-body"><script src="https://utteranc.es/client.js"
+  repo="AlexBlack2202/utterances"
+  issue-term="pathname"
+  label="comment"
+  theme="github-dark"
+  crossorigin="anonymous"
+  async>
+</script></div>
+</div></div>
+</div><aside class="col-lg-3 col-md-4 sidebar d-flex">
+  <div class="container d-flex flex-column">
+
+    <a href="https://www.buymeacoffee.com/alexblack28" rel="noopener"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=🍎&slug=alexblack28&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" alt="Buy me a coffee" loading="lazy" decoding="async" /></a>
+<div class="post-toc row mb-4 card component" id="postTOC">
+  <div class="card-header">
+    <h2 class="card-title">Mục lục</h2>
+  </div>
+  <div class="card-body">
+    <nav id="TableOfContents"><ul>
+        <li><a href="#công-thức-trên-đĩa-poincaré">Công thức trên đĩa Poincaré</a></li>
+        <li><a href="#bước-cộng-với-1-làm-mất-khoảng-cách-nhỏ">Bước cộng với 1 làm mất khoảng cách nhỏ</a></li>
+        <li><a href="#hai-tham-chiếu-để-xác-định-sai-số-đến-từ-đâu">Hai tham chiếu để xác định sai số đến từ đâu</a></li>
+        <li><a href="#kết-quả-trên-các-cặp-điểm-cố-định">Kết quả trên các cặp điểm cố định</a></li>
+        <li><a href="#công-thức-tốt-hơn-vẫn-chịu-sai-số-tọa-độ">Công thức tốt hơn vẫn chịu sai số tọa độ</a></li>
+        <li><a href="#kiểm-tra-miền-mở-khi-sát-biên">Kiểm tra miền mở khi sát biên</a></li>
+        <li><a href="#mã-tái-lập-và-các-phép-kiểm-tra">Mã tái lập và các phép kiểm tra</a></li>
+        <li><a href="#đọc-thêm-trên-blog">Đọc thêm trên blog</a></li>
+      </ul></nav>
+  </div>
+</div><section class="recent-posts row card component">
+  <div class="card-header">
+    <h2 class="card-title">Bài gần đây</h2>
+  </div>
+  <div class="card-body">
+    <ul class="post-list"><li>
+        <a href="https://www.phamduytung.com/blog/2026-11-20-khoang-cach-poincare-numpy-sai-so-float32/">Khoảng cách Poincaré bằng NumPy: khi float32 trả 0 cho hai điểm khác nhau
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-11-19-bloom-filter-sqlite-truy-van-hut-bo-loc-cu/">Bloom filter trước SQLite: giảm truy vấn hụt và phát hiện bộ lọc cũ
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-11-18-gradient-accumulation-pytorch-microbatch-cuoi-thieu-mau/">Gradient accumulation trong PyTorch: microbatch cuối thiếu mẫu làm sai gradient ra sao?
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-11-17-giai-phuong-trinh-bac-nam-python-nghiem-gan-boi-sai-so/">Giải phương trình bậc năm bằng Python: phần dư nhỏ, nghiệm vẫn sai
+</a>
+      </li><li>
+        <a href="https://www.phamduytung.com/blog/2026-11-16-wasserstein-distance-data-drift-bootstrap-nguong-canh-bao/">Đặt ngưỡng cảnh báo data drift bằng Wasserstein Distance và bootstrap
+</a>
+      </li></ul>
+  </div>
+</section><section class="series-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/series">series</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/series/ly-thuyet-tro-choi/" class="badge rounded post-taxonomy" title="Lý thuyết trò chơi">
+            Lý thuyết trò chơi<span class="badge badge-sm text-white bg-accent ms-1">35</span></a><a href="https://www.phamduytung.com/series/kh%C3%B3a-h%E1%BB%8Dc-python-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học Python Căn Bản">
+            Khóa Học Python Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="https://www.phamduytung.com/series/kh%C3%B3a-h%E1%BB%8Dc-c&#43;&#43;-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học C&#43;&#43; Căn Bản">
+            Khóa Học C&#43;&#43; Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="https://www.phamduytung.com/series/machine-learning-dataset/" class="badge rounded post-taxonomy" title="Machine Learning Dataset">
+            Machine Learning Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a><a href="https://www.phamduytung.com/series/ch%E1%BB%A9ng-kho%C3%A1n-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Chứng Khoán Căn Bản">
+            Chứng Khoán Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">1</span></a></div>
+      </div>
+    </section><section class="tools-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/tools">tools</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/tools/tool-random/" class="badge rounded post-taxonomy" title="Tool Random">
+            Tool Random<span class="badge badge-sm text-white bg-accent ms-1">3</span></a></div>
+      </div>
+    </section><section class="categories-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/categories">categories</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/categories/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="https://www.phamduytung.com/categories/c&#43;&#43;/" class="badge rounded post-taxonomy" title="C&#43;&#43;">
+            C&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="https://www.phamduytung.com/categories/dataset/" class="badge rounded post-taxonomy" title="Dataset">
+            Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a></div>
+      </div>
+    </section><section class="tags-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/tags">tags</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/tags/game-theory/" class="badge rounded post-taxonomy" title="Game Theory">
+            Game Theory<span class="badge badge-sm text-white bg-accent ms-1">39</span></a><a href="https://www.phamduytung.com/tags/machine-learning/" class="badge rounded post-taxonomy" title="Machine Learning">
+            Machine Learning<span class="badge badge-sm text-white bg-accent ms-1">35</span></a><a href="https://www.phamduytung.com/tags/deep-learning/" class="badge rounded post-taxonomy" title="Deep Learning">
+            Deep Learning<span class="badge badge-sm text-white bg-accent ms-1">29</span></a><a href="https://www.phamduytung.com/tags/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">28</span></a><a href="https://www.phamduytung.com/tags/computer-vision/" class="badge rounded post-taxonomy" title="Computer Vision">
+            Computer Vision<span class="badge badge-sm text-white bg-accent ms-1">18</span></a><a href="https://www.phamduytung.com/tags/llm/" class="badge rounded post-taxonomy" title="Llm">
+            Llm<span class="badge badge-sm text-white bg-accent ms-1">18</span></a><a href="https://www.phamduytung.com/tags/mathematics/" class="badge rounded post-taxonomy" title="Mathematics">
+            Mathematics<span class="badge badge-sm text-white bg-accent ms-1">14</span></a><a href="https://www.phamduytung.com/tags/ai-agent/" class="badge rounded post-taxonomy" title="Ai Agent">
+            Ai Agent<span class="badge badge-sm text-white bg-accent ms-1">10</span></a><a href="https://www.phamduytung.com/tags/pytorch/" class="badge rounded post-taxonomy" title="Pytorch">
+            Pytorch<span class="badge badge-sm text-white bg-accent ms-1">8</span></a><a href="https://www.phamduytung.com/tags/recommendation-system/" class="badge rounded post-taxonomy" title="Recommendation System">
+            Recommendation System<span class="badge badge-sm text-white bg-accent ms-1">8</span></a></div>
+      </div>
+    </section>
+
+  </div>
+</aside>
+</div>
+    </main><footer class="footer mt-auto py-3 text-center container"><ul class="nav justify-content-between footer-memu mb-3"><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Community
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-facebook"></i>Facebook Group
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://github.com/AlexBlack2202/alexblack2202.github.io" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-github"></i>GitHub
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/contact/"><i class="fas fa-fw fa-info-circle"></i>Contact Us
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/faq/"><i class="fas fa-fw fa-question-circle"></i>Câu hỏi thường gặp
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/about/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-user"></i>Giới thiệu tác giả
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Docs
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="/teamofservices/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-users"></i>Điều khoản sử dụng
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/privacy/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-lock"></i>Chính sách bảo mật
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Features
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="/utils/gen_paswords/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-key"></i>Tạo password ngẫu nhiên
+</a>
+        </li></ul></li></ul>
+<div class="copyright mb-2">
+  Copyright © 2016-2026 Phạm Duy Tùng. All Rights Reserved.
+</div>
+<div class="powered-by mb-2">
+  Website chia sẻ kiến thức của Phạm Duy Tùng và Đặng Thị Hằng. Vui lòng liên hệ email alexblack2202@gmail.com nếu bạn có thông tin cần trao đổi.
+</div></footer>
+<script src="https://www.phamduytung.com/js/main.e788bab0969e53541289578e23a0f66a2ec1102872a9d44b994c80d0601d588a.js" integrity="sha256-54i6sJaeU1QSiVeOI6D2ai7BEChyqdRLmUyA0GAdWIo=" crossorigin="anonymous" defer></script><script src="https://www.phamduytung.com/js/icons.min.cb4c9958dbc49e29ac644e168e82db2d0de9a741a15751cc5bf2b0af21eb2845.js" integrity="sha256-y0yZWNvEnimsZE4WjoLbLQ3pp0GhV1HMW/KwryHrKEU=" crossorigin="anonymous" defer></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('https:\/\/www.phamduytung.com\/service-worker.js').then(function(reg) {
+      console.log('Successfully registered service worker', reg);
+    }).catch(function(err) {
+      console.warn('Error whilst registering service worker', err);
+    });
+  });
+}
+</script><script src="https://www.phamduytung.com/js/viewer.min.28bcf5233e406dae6715f46c8b9e8ca7c6cbf347e8678f5a2bebe5369c3270bb.js" integrity="sha256-KLz1Iz5Aba5nFfRsi56Mp8bL80foZ49aK&#43;vlNpwycLs=" crossorigin="anonymous" defer></script><script defer src="https://www.phamduytung.com/js/katex.min.8582b9feadf92a2a977ed303b97d7713cf2754ccf2b4eb60d8be7453a21042c2.js" integrity="sha256-hYK5/q35KiqXftMDuX13E88nVMzytOtg2L50U6IQQsI=" crossorigin="anonymous"></script>
+
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-2WWQ5G9DKL"></script>
+      <script>
+        var doNotTrack = false;
+        if ( true ) {
+          var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
+          var doNotTrack = (dnt == "1" || dnt == "yes");
+        }
+        if (!doNotTrack) {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-2WWQ5G9DKL');
+        }
+      </script>
+<script  data-ad-client="ca-pub-4644989745435991"  async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4644989745435991"
+     crossorigin="anonymous"></script></body>
+</html>
