@@ -1,0 +1,590 @@
+<!doctype html><html lang="vi" data-palette="brown"
+   data-mode="light">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Recall@K trong hệ gợi ý: vì sao hai cách tính đảo thứ hạng mô hình? - Phạm Duy Tùng</title>
+    <meta name="a.validate.02" content="1QZXZ8oi7g57H-GxBrBPkTYBydwii-Ic9iJu" /><link rel="apple-touch-icon" href="https://www.phamduytung.com/images/icons/icon-180x180.png" sizes="180x180">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/icon-32x32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/icon-16x16.png" sizes="16x16" type="image/png">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/favicon.ico">
+<link rel="manifest" href="https://www.phamduytung.com/manifest.json">
+
+<meta name="description" content="Recall@K theo người dùng và Recall@K tính gộp có thể xếp hạng hai mô hình gợi ý theo thứ tự ngược nhau. Kiểm tra mẫu số bằng ví dụ Python với bốn người." /><meta name="robots" content="index, follow, max-image-preview:large"><meta property="og:title" content="Recall@K trong hệ gợi ý: vì sao hai cách tính đảo thứ hạng mô hình?">
+<meta property="og:description" content="Recall@K theo người dùng và Recall@K tính gộp có thể xếp hạng hai mô hình gợi ý theo thứ tự ngược nhau. Kiểm tra mẫu số bằng ví dụ Python với bốn người.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://www.phamduytung.com/blog/2026-11-24-recall-at-k-he-goi-y-theo-nguoi-dung-va-tinh-gop/">
+<meta property="og:site_name" content="Phạm Duy Tùng Machine Learning Blog">
+<meta property="og:locale" content="vi_VN">
+<meta property="og:image" content="https://www.phamduytung.com/site-images/posts/2026-11-24-recall-at-k-he-goi-y-theo-nguoi-dung-va-tinh-gop/cover-v1-1200_hu_6ba49c34e53b750.webp" data-image-budget="100000"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="675"><meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Recall@K trong hệ gợi ý: vì sao hai cách tính đảo thứ hạng mô hình?">
+<meta name="twitter:description" content="Recall@K theo người dùng và Recall@K tính gộp có thể xếp hạng hai mô hình gợi ý theo thứ tự ngược nhau. Kiểm tra mẫu số bằng ví dụ Python với bốn người.">
+<meta name="twitter:image" content="https://www.phamduytung.com/site-images/posts/2026-11-24-recall-at-k-he-goi-y-theo-nguoi-dung-va-tinh-gop/cover-v1-1200_hu_6ba49c34e53b750.webp" data-image-budget="100000"><meta property="article:published_time" content="2026-11-24T08:00:00&#43;07:00"><meta property="article:modified_time" content="2026-11-24T08:00:00&#43;07:00"><meta property="article:section" content="blog"><meta property="article:tag" content="python"><meta property="article:tag" content="machine learning"><link rel="stylesheet" href="https://www.phamduytung.com/css/main.min.8e10077cdf97cae4f81a438d25ecc616674e72107e0475f457ec92e7cd44d51f.css" integrity="sha256-jhAHfN&#43;XyuT4GkONJezGFmdOchB&#43;BHX0V&#43;yS581E1R8=" crossorigin="anonymous"><link rel="stylesheet" href="https://www.phamduytung.com/css/katex.min.4d6aa053ca8a5675016fa2c9c48ee5359bfaafb8295184458af9d64abce84c47.css" integrity="sha256-TWqgU8qKVnUBb6LJxI7lNZv6r7gpUYRFivnWSrzoTEc=" crossorigin="anonymous">
+<link rel="stylesheet" href="https://www.phamduytung.com/css/viewer.min.3d228794bcedbbfa0412beb8fbc1ec6973202945e42af7004f742a4d7bd620ab.css" integrity="sha256-PSKHlLztu/oEEr64&#43;8HsaXMgKUXkKvcAT3QqTXvWIKs=" crossorigin="anonymous"><link rel="canonical" href="https://www.phamduytung.com/blog/2026-11-24-recall-at-k-he-goi-y-theo-nguoi-dung-va-tinh-gop/">
+<meta name="theme-color" content="#f7f5ff"><script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@id":"https://www.phamduytung.com/blog/2026-11-24-recall-at-k-he-goi-y-theo-nguoi-dung-va-tinh-gop/#article","@type":"BlogPosting","author":[{"@type":"Person","name":"Phạm Duy Tùng","sameAs":["https://github.com/AlexBlack2202","https://www.linkedin.com/in/tung-pham-duy/"],"url":"https://www.phamduytung.com/about/"}],"dateModified":"2026-11-24T08:00:00+07:00","datePublished":"2026-11-24T08:00:00+07:00","description":"Recall@K theo người dùng và Recall@K tính gộp có thể xếp hạng hai mô hình gợi ý theo thứ tự ngược nhau. Kiểm tra mẫu số bằng ví dụ Python với bốn người.","headline":"Recall@K trong hệ gợi ý: vì sao hai cách tính đảo thứ hạng mô hình?","image":["https://www.phamduytung.com/site-images/posts/2026-11-24-recall-at-k-he-goi-y-theo-nguoi-dung-va-tinh-gop/cover-v1-1200_hu_6ba49c34e53b750.webp"],"inLanguage":"vi","keywords":"python, machine learning","mainEntityOfPage":{"@id":"https://www.phamduytung.com/blog/2026-11-24-recall-at-k-he-goi-y-theo-nguoi-dung-va-tinh-gop/","@type":"WebPage"},"publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://www.phamduytung.com/site-images/brand-mark-flaming-book-red_hu_45318b168da512af.webp"},"name":"Phạm Duy Tùng Machine Learning Blog","url":"https://www.phamduytung.com/"},"url":"https://www.phamduytung.com/blog/2026-11-24-recall-at-k-he-goi-y-theo-nguoi-dung-va-tinh-gop/","wordCount":1215},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","item":"https://www.phamduytung.com/","name":"Trang chủ","position":1},{"@type":"ListItem","item":"https://www.phamduytung.com/blog/","name":"Blogs","position":2},{"@type":"ListItem","item":"https://www.phamduytung.com/blog/2026-11-24-recall-at-k-he-goi-y-theo-nguoi-dung-va-tinh-gop/","name":"Recall@K trong hệ gợi ý: vì sao hai cách tính đảo thứ hạng mô hình?","position":3}]}]}</script></head>
+  <body><script>const items=["mode","palette"];items.forEach(function(e){const t=localStorage.getItem("hbs-"+e);t&&document.body.parentElement.setAttribute("data-"+e,t)});try{const t=new Map([["-2","xs"],["-1","sm"],["1","lg"],["2","xl"]]),e=t.get(localStorage.getItem("hbs-font-size"));e&&document.body.classList.add("font-size-"+e)}catch{}</script><header><nav class="navbar top-app-bar top-app-bar-expand-lg fixed-top">
+  <div class="container pearl-navbar__inner">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Mở menu">
+      <i class="fas fa-bars"></i>
+    </button>
+
+    <a class="navbar-brand pearl-brand flex-grow-1 flex-lg-grow-0" href="https://www.phamduytung.com/">
+      <span class="pearl-brand__mark" aria-hidden="true">
+        <img src="/site-images/brand-mark-flaming-book-red_hu_57a35d93ebdc8b9c.webp" alt="" data-image-budget="100000" srcset="/site-images/brand-mark-flaming-book-red_hu_bbc58893f5ad658b.webp 42w, /site-images/brand-mark-flaming-book-red_hu_57a35d93ebdc8b9c.webp 84w" sizes="42px" width="42" height="42"
+  loading="eager" decoding="async">
+
+      </span>
+      <span class="pearl-brand__copy">
+        <strong>Phạm Duy Tùng</strong>
+        <small>AI · DATA · SYSTEMS</small>
+      </span>
+    </a>
+
+    <div class="offcanvas offcanvas-bottom surface" tabindex="-1" id="offcanvasSocialShare" aria-labelledby="offcanvasSocialShare">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Share</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body">
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Twitter Share Button"
+      target="_blank" href="https://twitter.com/intent/tweet?title=Recall%40K%20trong%20h%e1%bb%87%20g%e1%bb%a3i%20%c3%bd%3a%20v%c3%ac%20sao%20hai%20c%c3%a1ch%20t%c3%adnh%20%c4%91%e1%ba%a3o%20th%e1%bb%a9%20h%e1%ba%a1ng%20m%c3%b4%20h%c3%acnh%3f&url=https%3a%2f%2fwww.phamduytung.com%2fblog%2f2026-11-24-recall-at-k-he-goi-y-theo-nguoi-dung-va-tinh-gop%2f">
+      <i class="fab fa-fw fa-twitter"></i> Twitter
+    </a>
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Facebook Share Button"
+      target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.phamduytung.com%2fblog%2f2026-11-24-recall-at-k-he-goi-y-theo-nguoi-dung-va-tinh-gop%2f">
+      <i class="fab fa-fw fa-facebook-f"></i> Facebook
+    </a>
+  </div>
+</div>
+    <button class="navbar-settings" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSettings"
+  aria-controls="offcanvasSettings" aria-label="Toggle settings">
+  <i class="fas fa-ellipsis-v"></i>
+</button>
+
+<div class="offcanvas offcanvas-end surface h-100" tabindex="-1" id="offcanvasSettings" aria-labelledby="offcanvasSettings">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Cài đặt</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body d-flex flex-column">
+
+
+
+<section class="setting">
+  <form class="font-size-switcher-form row">
+    <div class="col-auto">
+      <label for="fontSize" class="form-label"><i class="fas fa-fw fa-font"></i> Cỡ chữ</label>
+    </div>
+    <div class="col-auto ms-auto">
+      <input type="range" class="form-range" min="-2" max="2" id="fontSize">
+    </div>
+  </form>
+</section>
+
+
+
+<section class="setting actions d-flex justify-content-around mt-auto overflow-auto">
+  <a role="button" class="action action-go-back" href="javascript: window.history.back();">
+    <span class="action-icon"><i class="fas fa-2x fa-arrow-left"></i></span> Quay lại
+  </a>
+  <a role="button" class="action action-reload-page">
+    <span class="action-icon"><i class="fas fa-2x fa-redo-alt"></i></span> Tải lại
+  </a>
+  <a role="button" class="action action-copy-url">
+    <span class="action-icon"><i class="fas fa-2x fa-link"></i></span> Sao chép URL
+  </a><a class="action action-social-share" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSocialShare"
+    aria-controls="offcanvasSocialShare" aria-label="Toggle social share">
+    <span class="action-icon"><i class="fas fa-2x fa-share-alt"></i></span> Chia sẻ
+  </a></section>
+
+</div>
+</div>
+
+    <div class="collapse navbar-collapse" tabindex="-1" id="navbarSupportedContent" aria-labelledby="navbarSupportedContent">
+      <form class="search-bar my-1" action="https://www.phamduytung.com/search">
+  <div class="input-group input-group-sm">
+    <span class="btn btn-search disabled position-absolute left-0"><i class="fas fa-fw fa-search"></i></span>
+    <input class="form-control rounded-pill" name="q" type="search" aria-label="Search">
+  </div>
+</form>
+      <ul class="navbar-nav ms-auto"><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/chu-de/">
+            <i class="fas fa-fw fa-list-alt"></i>Chủ đề
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/series/">
+            <i class="fas fa-fw fa-columns"></i>Courses
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/tools/">
+            <i class="fas fa-fw fa-folder"></i>Tools
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/categories/">
+            <i class="fas fa-fw fa-folder"></i>Categories
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/archives/">
+            <i class="fas fa-fw fa-file-archive"></i>Archives
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/tags/">
+            <i class="fas fa-fw fa-tags"></i>Tags
+          </a>
+        </li><li class="nav-item dropdown">
+          <a class="nav-link" id="navbarDropdownSupport" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-fw fa-comments"></i>Community
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdownSupport"><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Facebook Group
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://github.com/AlexBlack2202/alexblack2202.github.io" target="_blank" rel="noopener noreferrer">
+                GitHub
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/contact/">
+                Contact
+              </a>
+            </li><li><hr class="dropdown-divider"></li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/faq/">
+                Câu hỏi thường gặp
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/about/">
+                Giới thiệu tác giả
+              </a>
+            </li></ul>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/xem-truyen/">
+            <i class="fas fa-fw fa-book-open"></i>Xem truyện
+          </a>
+        </li></ul>
+    </div>
+  </div>
+</nav>
+</header>
+<main role="main" class="container" style="line-height:1.7em">
+      <div class="row content">
+<div class="col-lg-9 col-md-8">
+  <div class="container"><nav class="row card component" aria-label="breadcrumb">
+  <div class="card-body">
+    <ol class="breadcrumb "><li class="breadcrumb-item"><a href="https://www.phamduytung.com/">Trang chủ</a></li><li class="breadcrumb-item"><a href="https://www.phamduytung.com/blog/">Blogs</a></li><li class="breadcrumb-item active">Recall@K trong hệ gợi ý: vì sao hai cách tính đảo thứ hạng mô hình?</li></ol>
+  </div>
+</nav>
+<div class="post-panel-wrapper">
+  <div class="d-flex flex-column component rounded post-panel">
+
+    <a class="action action-panel-toggler" role="button" title="Panel toggler">
+      <i class="fas fa-fw fa-chevron-circle-down"></i>
+    </a>
+    <a id="sidebarToggler" class="action d-none d-lg-block" role="button" title="Sidebar toggler">
+  <i class="fas fa-fw fa-expand-alt" data-fa-transform="rotate-45"></i>
+</a>
+
+
+
+
+
+    <a class="action" href="#post-comments" role="button" aria-label="Comments" title="Comments">
+  <i class="fas fa-fw fa-comments"></i>
+</a>
+    <a class="action" href="#postTOC" aria-controls="Table of contents" role="button" title="Table of contents">
+  <i class="fas fa-fw fa-list-alt"></i>
+</a>
+
+  </div>
+</div>
+<article class="row card component mb-4 post">
+  <div class="card-header"><div class="bgcover">
+      <img src="/site-images/posts/2026-11-24-recall-at-k-he-goi-y-theo-nguoi-dung-va-tinh-gop/cover-v1-1200_hu_6ba49c34e53b750.webp" alt="Recall@K trong hệ gợi ý: vì sao hai cách tính đảo thứ hạng mô hình?" data-image-budget="100000" class="pearl-cover-image" srcset="/site-images/posts/2026-11-24-recall-at-k-he-goi-y-theo-nguoi-dung-va-tinh-gop/cover-v1-1200_hu_5b46e79e3d4bbe94.webp 480w, /site-images/posts/2026-11-24-recall-at-k-he-goi-y-theo-nguoi-dung-va-tinh-gop/cover-v1-1200_hu_602c7acbd41048cf.webp 768w, /site-images/posts/2026-11-24-recall-at-k-he-goi-y-theo-nguoi-dung-va-tinh-gop/cover-v1-1200_hu_6ba49c34e53b750.webp 1200w" sizes="(min-width: 1200px) 960px, (min-width: 768px) 70vw, 100vw" width="1200" height="675"
+  loading="eager" decoding="async" fetchpriority="high">
+
+      <div class="bgtrans">
+        <h1>Recall@K trong hệ gợi ý: vì sao hai cách tính đảo thứ hạng mô hình?
+</h1>
+      </div>
+    </div>
+  </div>
+  <div class="card-body"><div class="post-byline">
+  <i class="fas fa-fw fa-user"></i>
+  <span>Tác giả:</span>
+  <a href="https://www.phamduytung.com/about/" rel="author">Phạm Duy Tùng</a>
+</div><div class="post-meta">
+  <span class="post-date" title="tạo ngày 2026-11-24 08:00:00 &#43;0700 &#43;07.">
+    24/11/2026
+  </span><span class="post-reading-time">
+    6 phút đọc
+  </span><span class="post-taxonomies"><a href="https://www.phamduytung.com/tags/python/" class="badge post-taxonomy">python</a><a href="https://www.phamduytung.com/tags/machine-learning/" class="badge post-taxonomy">machine learning</a></span>
+</div>
+<div class="post-content mb-3"><p>Trong bốn gợi ý đầu tiên, mô hình A tìm đúng sản phẩm cho ba người. Mô hình B chỉ tìm đúng cho một người, nhưng tìm được cả bốn sản phẩm người đó quan tâm. Mô hình nào có Recall@4 cao hơn? Nếu mỗi người dùng có trọng số bằng nhau, A thắng. Nếu mỗi cặp người dùng–sản phẩm có nhãn dương có trọng số bằng nhau, B thắng. Có thể kiểm tra cả hai kết quả trên cùng một bảng dữ liệu nhỏ.</p>
+<h2 id="mẫu-số-quyết-định-thứ-ta-đang-đo">Mẫu số quyết định thứ ta đang đo<a class="anchor ms-1" href="#mẫu-số-quyết-định-thứ-ta-đang-đo"><i class="fas fa-link"></i></a></h2>
+<p>Giả sử mỗi người dùng nhận một danh sách sản phẩm đã xếp hạng. Ta giữ riêng một tập sản phẩm có liên quan để đánh giá, chẳng hạn các sản phẩm họ đã mua trong tuần tiếp theo. Với từng người, Recall@K bằng <strong>số sản phẩm liên quan khác nhau xuất hiện trong K vị trí đầu chia cho tổng số sản phẩm liên quan của người đó</strong>. Nếu họ có mười sản phẩm liên quan và màn hình chỉ hiển thị bốn, recall tối đa của họ là 40%.</p>
+<p>Từ đó có hai phép tổng hợp:</p>
+<ul>
+<li><strong>Trung bình theo người dùng (macro).</strong> Tính recall riêng rồi lấy trung bình cộng. Chọn ngẫu nhiên một người trong tập đánh giá, con số này cho biết tỷ lệ sản phẩm liên quan mà danh sách của họ tìm lại được, tính trung bình.</li>
+<li><strong>Tính gộp (micro).</strong> Cộng số sản phẩm tìm đúng của tất cả người dùng rồi chia cho tổng số cặp người dùng–sản phẩm liên quan. Chọn ngẫu nhiên một cặp có nhãn dương, con số này là tỷ lệ cặp xuất hiện trong top K của đúng người.</li>
+</ul>
+<p>Nếu bộ kiểm thử chỉ giữ <strong>một sản phẩm dương cho mỗi người</strong>, hai phép tính trùng nhau và cũng bằng tỷ lệ người có ít nhất một kết quả đúng (Hit Rate@K). Một bài kiểm thử chỉ gồm trường hợp này sẽ bỏ sót sự khác biệt giữa hai cách triển khai.</p>
+<h2 id="bốn-danh-sách-làm-đảo-thứ-hạng">Bốn danh sách làm đảo thứ hạng<a class="anchor ms-1" href="#bốn-danh-sách-làm-đảo-thứ-hạng"><i class="fas fa-link"></i></a></h2>
+<p>Bảng dưới là dữ liệu minh họa tự tạo. Mỗi dòng là một người, mỗi nhãn dương là một mã sản phẩm riêng biệt của người đó. Cột A và B đếm số mã tìm đúng trong bốn vị trí đầu.</p>
+<table>
+	<thead>
+			<tr>
+					<th>Người dùng</th>
+					<th style="text-align: right">Số mã có nhãn dương</th>
+					<th style="text-align: right">A tìm đúng</th>
+					<th style="text-align: right">B tìm đúng</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>An</td>
+					<td style="text-align: right">1</td>
+					<td style="text-align: right">1</td>
+					<td style="text-align: right">0</td>
+			</tr>
+			<tr>
+					<td>Bình</td>
+					<td style="text-align: right">1</td>
+					<td style="text-align: right">1</td>
+					<td style="text-align: right">0</td>
+			</tr>
+			<tr>
+					<td>Chi</td>
+					<td style="text-align: right">1</td>
+					<td style="text-align: right">1</td>
+					<td style="text-align: right">0</td>
+			</tr>
+			<tr>
+					<td>Dung</td>
+					<td style="text-align: right">10</td>
+					<td style="text-align: right">0</td>
+					<td style="text-align: right">4</td>
+			</tr>
+			<tr>
+					<td>Hà</td>
+					<td style="text-align: right">0</td>
+					<td style="text-align: right">—</td>
+					<td style="text-align: right">—</td>
+			</tr>
+	</tbody>
+</table>
+<p>Với A, bốn recall cá nhân lần lượt là 1, 1, 1 và 0. Trung bình bằng <strong>75%</strong>. Với B, chỉ Dung có kết quả đúng, nên trung bình bằng (4/10)/4 = <strong>10%</strong>. Hà không có nhãn dương để làm mẫu số. Trong ví dụ này, cả hai mô hình đều được chấm trên cùng bốn người còn lại.</p>
+<p>Khi tính gộp, mẫu số là 13. A tìm được 3/13 cặp (<strong>23,08%</strong>), B tìm được 4/13 cặp (<strong>30,77%</strong>). Dung chiếm một phần tư trọng số ở phép tính đầu và mười phần mười ba ở phép tính sau. Đây cũng là cách kiểm tra một pipeline: trung bình các recall cá nhân với trọng số bằng số nhãn dương của từng người phải cho đúng kết quả tính gộp.</p>
+<h2 id="chạy-lại-bằng-python">Chạy lại bằng Python<a class="anchor ms-1" href="#chạy-lại-bằng-python"><i class="fas fa-link"></i></a></h2>
+<p>Đoạn mã dùng Python 3.12.13 và thư viện chuẩn. Danh sách đã có thứ tự, dữ liệu cố định. Vòng lặp đi từ bảng nhãn để người có sản phẩm liên quan nhưng thiếu danh sách gợi ý vẫn được tính với điểm 0. Một mã hiển thị trùng vẫn chiếm một vị trí, còn phép giao tập hợp chỉ tính mã đó đúng một lần.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="kn">from</span> <span class="nn">statistics</span> <span class="kn">import</span> <span class="n">mean</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl"><span class="n">truth</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&#34;An&#34;</span><span class="p">:</span> <span class="p">{</span><span class="mi">1</span><span class="p">},</span> <span class="s2">&#34;Bình&#34;</span><span class="p">:</span> <span class="p">{</span><span class="mi">2</span><span class="p">},</span> <span class="s2">&#34;Chi&#34;</span><span class="p">:</span> <span class="p">{</span><span class="mi">3</span><span class="p">},</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">         <span class="s2">&#34;Dung&#34;</span><span class="p">:</span> <span class="nb">set</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">)),</span> <span class="s2">&#34;Hà&#34;</span><span class="p">:</span> <span class="nb">set</span><span class="p">()}</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl"><span class="n">miss</span> <span class="o">=</span> <span class="p">[</span><span class="mi">90</span><span class="p">,</span> <span class="mi">91</span><span class="p">,</span> <span class="mi">92</span><span class="p">,</span> <span class="mi">93</span><span class="p">]</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl"><span class="n">rank_a</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&#34;An&#34;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">90</span><span class="p">,</span> <span class="mi">91</span><span class="p">,</span> <span class="mi">92</span><span class="p">],</span> <span class="s2">&#34;Bình&#34;</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">90</span><span class="p">,</span> <span class="mi">91</span><span class="p">,</span> <span class="mi">92</span><span class="p">],</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">          <span class="s2">&#34;Chi&#34;</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">90</span><span class="p">,</span> <span class="mi">91</span><span class="p">,</span> <span class="mi">92</span><span class="p">],</span> <span class="s2">&#34;Dung&#34;</span><span class="p">:</span> <span class="n">miss</span><span class="p">}</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl"><span class="n">rank_b</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&#34;An&#34;</span><span class="p">:</span> <span class="n">miss</span><span class="p">,</span> <span class="s2">&#34;Bình&#34;</span><span class="p">:</span> <span class="n">miss</span><span class="p">,</span> <span class="s2">&#34;Chi&#34;</span><span class="p">:</span> <span class="n">miss</span><span class="p">,</span> <span class="s2">&#34;Dung&#34;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">13</span><span class="p">]}</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">
+</span></span><span class="line"><span class="ln">10</span><span class="cl">
+</span></span><span class="line"><span class="ln">11</span><span class="cl"><span class="k">def</span> <span class="nf">recall_at_k</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">rankings</span><span class="p">,</span> <span class="n">k</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl">    <span class="k">if</span> <span class="n">k</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl">        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&#34;k must be positive&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">14</span><span class="cl">    <span class="n">per_user</span> <span class="o">=</span> <span class="p">[]</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl">    <span class="n">total_hits</span> <span class="o">=</span> <span class="n">total_labels</span> <span class="o">=</span> <span class="mi">0</span>
+</span></span><span class="line"><span class="ln">16</span><span class="cl">    <span class="k">for</span> <span class="n">user</span><span class="p">,</span> <span class="n">relevant</span> <span class="ow">in</span> <span class="n">labels</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+</span></span><span class="line"><span class="ln">17</span><span class="cl">        <span class="k">if</span> <span class="ow">not</span> <span class="n">relevant</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln">18</span><span class="cl">            <span class="k">continue</span>
+</span></span><span class="line"><span class="ln">19</span><span class="cl">        <span class="n">slots</span> <span class="o">=</span> <span class="n">rankings</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="p">[])[:</span><span class="n">k</span><span class="p">]</span>
+</span></span><span class="line"><span class="ln">20</span><span class="cl">        <span class="n">hits</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">relevant</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="n">slots</span><span class="p">))</span>
+</span></span><span class="line"><span class="ln">21</span><span class="cl">        <span class="n">per_user</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">hits</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">relevant</span><span class="p">))</span>
+</span></span><span class="line"><span class="ln">22</span><span class="cl">        <span class="n">total_hits</span> <span class="o">+=</span> <span class="n">hits</span>
+</span></span><span class="line"><span class="ln">23</span><span class="cl">        <span class="n">total_labels</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">relevant</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">24</span><span class="cl">    <span class="k">if</span> <span class="ow">not</span> <span class="n">per_user</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln">25</span><span class="cl">        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&#34;no users with positive labels&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">26</span><span class="cl">    <span class="k">return</span> <span class="n">mean</span><span class="p">(</span><span class="n">per_user</span><span class="p">),</span> <span class="n">total_hits</span> <span class="o">/</span> <span class="n">total_labels</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">per_user</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">27</span><span class="cl">
+</span></span><span class="line"><span class="ln">28</span><span class="cl">
+</span></span><span class="line"><span class="ln">29</span><span class="cl"><span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">30</span><span class="cl">    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">rankings</span> <span class="ow">in</span> <span class="p">((</span><span class="s2">&#34;A&#34;</span><span class="p">,</span> <span class="n">rank_a</span><span class="p">),</span> <span class="p">(</span><span class="s2">&#34;B&#34;</span><span class="p">,</span> <span class="n">rank_b</span><span class="p">)):</span>
+</span></span><span class="line"><span class="ln">31</span><span class="cl">        <span class="n">macro</span><span class="p">,</span> <span class="n">micro</span><span class="p">,</span> <span class="n">users</span> <span class="o">=</span> <span class="n">recall_at_k</span><span class="p">(</span><span class="n">truth</span><span class="p">,</span> <span class="n">rankings</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">32</span><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span><span class="n">macro</span><span class="si">:</span><span class="s2">.2%</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span><span class="n">micro</span><span class="si">:</span><span class="s2">.2%</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span><span class="n">users</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">truth</span><span class="p">)</span><span class="si">}</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">33</span><span class="cl">
+</span></span><span class="line"><span class="ln">34</span><span class="cl"><span class="k">assert</span> <span class="n">recall_at_k</span><span class="p">({</span><span class="s2">&#34;u&#34;</span><span class="p">:</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">}},</span> <span class="p">{</span><span class="s2">&#34;u&#34;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]},</span> <span class="mi">2</span><span class="p">)</span> <span class="o">==</span> <span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">35</span><span class="cl"><span class="k">assert</span> <span class="n">recall_at_k</span><span class="p">({</span><span class="s2">&#34;u&#34;</span><span class="p">:</span> <span class="p">{</span><span class="mi">1</span><span class="p">}},</span> <span class="p">{},</span> <span class="mi">4</span><span class="p">)</span> <span class="o">==</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+</span></span></code></pre></div><table>
+	<thead>
+			<tr>
+					<th style="text-align: right">K</th>
+					<th>Mô hình</th>
+					<th style="text-align: right">Recall trung bình theo người</th>
+					<th style="text-align: right">Recall gộp</th>
+					<th style="text-align: right">Số người được chấm</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td style="text-align: right">1</td>
+					<td>A</td>
+					<td style="text-align: right">75,00%</td>
+					<td style="text-align: right">23,08%</td>
+					<td style="text-align: right">4/5</td>
+			</tr>
+			<tr>
+					<td style="text-align: right">1</td>
+					<td>B</td>
+					<td style="text-align: right">2,50%</td>
+					<td style="text-align: right">7,69%</td>
+					<td style="text-align: right">4/5</td>
+			</tr>
+			<tr>
+					<td style="text-align: right">4</td>
+					<td>A</td>
+					<td style="text-align: right">75,00%</td>
+					<td style="text-align: right">23,08%</td>
+					<td style="text-align: right">4/5</td>
+			</tr>
+			<tr>
+					<td style="text-align: right">4</td>
+					<td>B</td>
+					<td style="text-align: right">10,00%</td>
+					<td style="text-align: right">30,77%</td>
+					<td style="text-align: right">4/5</td>
+			</tr>
+	</tbody>
+</table>
+<p>Kết quả chạy ở K = 1 cho thấy A dẫn theo cả hai cách tính. Ba vị trí tiếp theo không mang thêm sản phẩm đúng cho A. Với B, cả ba vị trí đều bổ sung sản phẩm đúng cho Dung, vừa đủ để vượt A về số cặp tìm lại được. Ngược lại, đổi chỗ các sản phẩm <strong>bên trong</strong> top 4 sẽ giữ nguyên Recall@4. Nếu vị trí đầu tiên là phần quan trọng nhất của giao diện, hãy giữ cả kết quả ở K = 1 khi đọc báo cáo.</p>
+<h2 id="đối-chiếu-với-thư-viện-và-dữ-liệu-thật">Đối chiếu với thư viện và dữ liệu thật<a class="anchor ms-1" href="#đối-chiếu-với-thư-viện-và-dữ-liệu-thật"><i class="fas fa-link"></i></a></h2>
+<p>Trong PySpark, <code>RankingMetrics.recallAt(k)</code> lấy trung bình recall theo truy vấn và gán 0 cho truy vấn có tập nhãn rỗng. Nếu mỗi người là một truy vấn và đưa cả Hà vào với danh sách nhãn rỗng, điểm A ở K = 4 theo quy ước đó là 3/5 = <strong>60%</strong>. TorchMetrics cho phép chọn <code>empty_target_action=&quot;skip&quot;</code> để loại truy vấn thiếu nhãn dương khỏi trung bình. Khi so với kết quả ở trên, cần thống nhất tập người được chấm và chuyển dữ liệu sang đúng định dạng của thư viện. <a href="https://spark.apache.org/docs/latest/api/python/reference/api/pyspark.mllib.evaluation.RankingMetrics.html" target="_blank" rel="noopener noreferrer">Tài liệu RankingMetrics của Apache Spark</a> · <a href="https://lightning.ai/docs/torchmetrics/stable/retrieval/recall" target="_blank" rel="noopener noreferrer">Tài liệu RetrievalRecall của TorchMetrics</a></p>
+<p>Khi chấm một hệ gợi ý từ log, hãy tạo một bảng nhãn chung cho hai mô hình và cố định cửa sổ thời gian. Nếu chỉ giữ các sản phẩm mà từng mô hình đã lấy làm ứng viên rồi mới đếm nhãn dương, một sản phẩm bị bỏ sót ngay ở bước lấy ứng viên cũng biến mất khỏi mẫu số. Khi đó điểm đo được chỉ phản ánh việc xếp hạng trên tập ứng viên còn lại. Một báo cáo dùng để chọn mô hình nên ghi rõ K, cách lấy trung bình, số người đủ nhãn và tổng số cặp dương. Các lượt mua quan sát được cũng chỉ phản ánh một phần sở thích, nên ví dụ này chưa cho biết mô hình nào sẽ làm tăng lượt mua thực tế.</p>
+<p>Để xem các danh sách gợi ý có thể được tạo ra thế nào, đọc <a href="/blog/2022-12-01-tiktok-recommendation/">cơ chế huấn luyện trực tuyến của Monolith</a> và <a href="/blog/2026-11-13-monolith-collisionless-embedding-mo-phong-hash-python/">thí nghiệm va chạm ID trong bảng embedding</a>.</p>
+</div></div>
+  <div class="card-footer"><div class="post-navs d-flex justify-content-evenly"><div class="post-nav post-prev">
+    <i class="fas fa-fw fa-chevron-left"></i>
+    <a href="/blog/2026-11-23-gop-mau-ngau-nhien-tu-nhieu-tep-log-python/">Gộp mẫu ngẫu nhiên từ nhiều tệp log bằng Python
+</a>
+  </div></div></div>
+</article><section class="related-posts row card component">
+    <div class="card-header">
+      <h2 class="card-title">Bài liên quan</h2>
+    </div>
+    <div class="card-body">
+      <ul class="post-list"><li>
+          <a href="https://www.phamduytung.com/blog/2026-11-20-khoang-cach-poincare-numpy-sai-so-float32/">Khoảng cách Poincaré bằng NumPy: khi float32 trả 0 cho hai điểm khác nhau
+</a>
+          <span class="float-end post-date">20/11/2026
+</span>
+        </li><li>
+          <a href="https://www.phamduytung.com/blog/2026-11-18-gradient-accumulation-pytorch-microbatch-cuoi-thieu-mau/">Gradient accumulation trong PyTorch: microbatch cuối thiếu mẫu làm sai gradient ra sao?
+</a>
+          <span class="float-end post-date">18/11/2026
+</span>
+        </li><li>
+          <a href="https://www.phamduytung.com/blog/2026-11-16-wasserstein-distance-data-drift-bootstrap-nguong-canh-bao/">Đặt ngưỡng cảnh báo data drift bằng Wasserstein Distance và bootstrap
+</a>
+          <span class="float-end post-date">16/11/2026
+</span>
+        </li><li>
+          <a href="https://www.phamduytung.com/blog/2026-11-13-monolith-collisionless-embedding-mo-phong-hash-python/">Collisionless embedding của Monolith qua mô phỏng va chạm ID bằng Python
+</a>
+          <span class="float-end post-date">13/11/2026
+</span>
+        </li><li>
+          <a href="https://www.phamduytung.com/blog/2019-02-08-getting-started-with-randomized-optimization-in-python/">Tối ưu hoá ngẫu nhiên
+</a>
+          <span class="float-end post-date">08/02/2019
+</span>
+        </li></ul>
+    </div>
+  </section><div class="card component row post-comments" id="post-comments">
+  <div class="card-header">
+    <h2 class="card-title">Bình luận</h2>
+  </div>
+  <div class="card-body"><script src="https://utteranc.es/client.js"
+  repo="AlexBlack2202/utterances"
+  issue-term="pathname"
+  label="comment"
+  theme="github-dark"
+  crossorigin="anonymous"
+  async>
+</script></div>
+</div></div>
+</div><aside class="col-lg-3 col-md-4 sidebar d-flex">
+  <div class="container d-flex flex-column">
+
+    <a href="https://www.buymeacoffee.com/alexblack28" rel="noopener"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=🍎&slug=alexblack28&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" alt="Buy me a coffee" width="235" height="50" loading="lazy" decoding="async" /></a>
+<div class="post-toc row mb-4 card component" id="postTOC">
+  <div class="card-header">
+    <h2 class="card-title">Mục lục</h2>
+  </div>
+  <div class="card-body">
+    <nav id="TableOfContents"><ul>
+        <li><a href="#mẫu-số-quyết-định-thứ-ta-đang-đo">Mẫu số quyết định thứ ta đang đo</a></li>
+        <li><a href="#bốn-danh-sách-làm-đảo-thứ-hạng">Bốn danh sách làm đảo thứ hạng</a></li>
+        <li><a href="#chạy-lại-bằng-python">Chạy lại bằng Python</a></li>
+        <li><a href="#đối-chiếu-với-thư-viện-và-dữ-liệu-thật">Đối chiếu với thư viện và dữ liệu thật</a></li>
+      </ul></nav>
+  </div>
+</div><section class="recent-posts row card component">
+  <div class="card-header">
+    <h2 class="card-title">Bài gần đây</h2>
+  </div>
+  <div class="card-body">
+    <ul class="post-list"><li>
+        <a href="/blog/2026-11-24-recall-at-k-he-goi-y-theo-nguoi-dung-va-tinh-gop/">Recall@K trong hệ gợi ý: vì sao hai cách tính đảo thứ hạng mô hình?
+</a>
+      </li><li>
+        <a href="/blog/2026-11-23-gop-mau-ngau-nhien-tu-nhieu-tep-log-python/">Gộp mẫu ngẫu nhiên từ nhiều tệp log bằng Python
+</a>
+      </li><li>
+        <a href="/blog/2026-11-21-alexnet-grouped-convolution-pytorch/">Grouped convolution trong AlexNet: kiểm tra groups=2 bằng PyTorch
+</a>
+      </li><li>
+        <a href="/blog/2026-11-20-khoang-cach-poincare-numpy-sai-so-float32/">Khoảng cách Poincaré bằng NumPy: khi float32 trả 0 cho hai điểm khác nhau
+</a>
+      </li><li>
+        <a href="/blog/2026-11-19-bloom-filter-sqlite-truy-van-hut-bo-loc-cu/">Bloom filter trước SQLite: giảm truy vấn hụt và phát hiện bộ lọc cũ
+</a>
+      </li></ul>
+  </div>
+</section><section class="series-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/series">series</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/series/ly-thuyet-tro-choi/" class="badge rounded post-taxonomy" title="Lý thuyết trò chơi">
+            Lý thuyết trò chơi<span class="badge badge-sm text-white bg-accent ms-1">35</span></a><a href="https://www.phamduytung.com/series/kh%C3%B3a-h%E1%BB%8Dc-python-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học Python Căn Bản">
+            Khóa Học Python Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="https://www.phamduytung.com/series/kh%C3%B3a-h%E1%BB%8Dc-c&#43;&#43;-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học C&#43;&#43; Căn Bản">
+            Khóa Học C&#43;&#43; Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="https://www.phamduytung.com/series/machine-learning-dataset/" class="badge rounded post-taxonomy" title="Machine Learning Dataset">
+            Machine Learning Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a><a href="https://www.phamduytung.com/series/ch%E1%BB%A9ng-kho%C3%A1n-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Chứng Khoán Căn Bản">
+            Chứng Khoán Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">1</span></a></div>
+      </div>
+    </section><section class="tools-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/tools">tools</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/tools/tool-random/" class="badge rounded post-taxonomy" title="Tool Random">
+            Tool Random<span class="badge badge-sm text-white bg-accent ms-1">3</span></a></div>
+      </div>
+    </section><section class="categories-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/categories">categories</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/categories/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="https://www.phamduytung.com/categories/c&#43;&#43;/" class="badge rounded post-taxonomy" title="C&#43;&#43;">
+            C&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="https://www.phamduytung.com/categories/dataset/" class="badge rounded post-taxonomy" title="Dataset">
+            Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a></div>
+      </div>
+    </section><section class="tags-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/tags">tags</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/tags/game-theory/" class="badge rounded post-taxonomy" title="Game Theory">
+            Game Theory<span class="badge badge-sm text-white bg-accent ms-1">39</span></a><a href="https://www.phamduytung.com/tags/machine-learning/" class="badge rounded post-taxonomy" title="Machine Learning">
+            Machine Learning<span class="badge badge-sm text-white bg-accent ms-1">35</span></a><a href="https://www.phamduytung.com/tags/deep-learning/" class="badge rounded post-taxonomy" title="Deep Learning">
+            Deep Learning<span class="badge badge-sm text-white bg-accent ms-1">29</span></a><a href="https://www.phamduytung.com/tags/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">28</span></a><a href="https://www.phamduytung.com/tags/computer-vision/" class="badge rounded post-taxonomy" title="Computer Vision">
+            Computer Vision<span class="badge badge-sm text-white bg-accent ms-1">18</span></a><a href="https://www.phamduytung.com/tags/llm/" class="badge rounded post-taxonomy" title="Llm">
+            Llm<span class="badge badge-sm text-white bg-accent ms-1">18</span></a><a href="https://www.phamduytung.com/tags/mathematics/" class="badge rounded post-taxonomy" title="Mathematics">
+            Mathematics<span class="badge badge-sm text-white bg-accent ms-1">14</span></a><a href="https://www.phamduytung.com/tags/ai-agent/" class="badge rounded post-taxonomy" title="Ai Agent">
+            Ai Agent<span class="badge badge-sm text-white bg-accent ms-1">10</span></a><a href="https://www.phamduytung.com/tags/pytorch/" class="badge rounded post-taxonomy" title="Pytorch">
+            Pytorch<span class="badge badge-sm text-white bg-accent ms-1">8</span></a><a href="https://www.phamduytung.com/tags/recommendation-system/" class="badge rounded post-taxonomy" title="Recommendation System">
+            Recommendation System<span class="badge badge-sm text-white bg-accent ms-1">8</span></a></div>
+      </div>
+    </section>
+
+  </div>
+</aside>
+</div>
+    </main><footer class="footer mt-auto py-3 text-center container"><ul class="nav justify-content-between footer-memu mb-3"><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Community
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-facebook"></i>Facebook Group
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://github.com/AlexBlack2202/alexblack2202.github.io" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-github"></i>GitHub
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/contact/"><i class="fas fa-fw fa-info-circle"></i>Contact Us
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/faq/"><i class="fas fa-fw fa-question-circle"></i>Câu hỏi thường gặp
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/about/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-user"></i>Giới thiệu tác giả
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Docs
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="/teamofservices/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-users"></i>Điều khoản sử dụng
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/privacy/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-lock"></i>Chính sách bảo mật
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Features
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="/utils/gen_paswords/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-key"></i>Tạo password ngẫu nhiên
+</a>
+        </li></ul></li></ul>
+<div class="copyright mb-2">
+  Copyright © 2016-2026 Phạm Duy Tùng. All Rights Reserved.
+</div>
+<div class="powered-by mb-2">
+  Website chia sẻ kiến thức của Phạm Duy Tùng và Đặng Thị Hằng. Vui lòng liên hệ email alexblack2202@gmail.com nếu bạn có thông tin cần trao đổi.
+</div></footer>
+<script src="https://www.phamduytung.com/js/main.e788bab0969e53541289578e23a0f66a2ec1102872a9d44b994c80d0601d588a.js" integrity="sha256-54i6sJaeU1QSiVeOI6D2ai7BEChyqdRLmUyA0GAdWIo=" crossorigin="anonymous" defer></script><script src="https://www.phamduytung.com/js/icons.min.cb4c9958dbc49e29ac644e168e82db2d0de9a741a15751cc5bf2b0af21eb2845.js" integrity="sha256-y0yZWNvEnimsZE4WjoLbLQ3pp0GhV1HMW/KwryHrKEU=" crossorigin="anonymous" defer></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('https:\/\/www.phamduytung.com\/service-worker.js').then(function(reg) {
+      console.log('Successfully registered service worker', reg);
+    }).catch(function(err) {
+      console.warn('Error whilst registering service worker', err);
+    });
+  });
+}
+</script><script src="https://www.phamduytung.com/js/viewer.min.28bcf5233e406dae6715f46c8b9e8ca7c6cbf347e8678f5a2bebe5369c3270bb.js" integrity="sha256-KLz1Iz5Aba5nFfRsi56Mp8bL80foZ49aK&#43;vlNpwycLs=" crossorigin="anonymous" defer></script><script defer src="https://www.phamduytung.com/js/katex.min.8582b9feadf92a2a977ed303b97d7713cf2754ccf2b4eb60d8be7453a21042c2.js" integrity="sha256-hYK5/q35KiqXftMDuX13E88nVMzytOtg2L50U6IQQsI=" crossorigin="anonymous"></script>
+
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-2WWQ5G9DKL"></script>
+      <script>
+        var doNotTrack = false;
+        if ( true ) {
+          var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
+          var doNotTrack = (dnt == "1" || dnt == "yes");
+        }
+        if (!doNotTrack) {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-2WWQ5G9DKL');
+        }
+      </script>
+<script  data-ad-client="ca-pub-4644989745435991"  async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4644989745435991"
+     crossorigin="anonymous"></script></body>
+</html>
