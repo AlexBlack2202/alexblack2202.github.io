@@ -1,0 +1,868 @@
+<!doctype html><html lang="vi" data-palette="brown"
+   data-mode="light">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Chọn ngưỡng phân loại theo chi phí bỏ sót và giới hạn kiểm tra - Phạm Duy Tùng</title>
+    <meta name="a.validate.02" content="1QZXZ8oi7g57H-GxBrBPkTYBydwii-Ic9iJu" /><link rel="apple-touch-icon" href="https://www.phamduytung.com/images/icons/icon-180x180.png" sizes="180x180">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/icon-32x32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/icon-16x16.png" sizes="16x16" type="image/png">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/favicon.ico">
+<link rel="manifest" href="https://www.phamduytung.com/manifest.json">
+
+<meta name="description" content="Chọn ngưỡng phân loại bằng Python khi bỏ sót lỗi tốn gấp tám lần báo nhầm. So sánh chi phí, số lượt kiểm và độ ổn định trên hai lô hàng mô phỏng." /><meta name="robots" content="index, follow, max-image-preview:large"><meta property="og:title" content="Chọn ngưỡng phân loại theo chi phí bỏ sót và giới hạn kiểm tra">
+<meta property="og:description" content="Chọn ngưỡng phân loại bằng Python khi bỏ sót lỗi tốn gấp tám lần báo nhầm. So sánh chi phí, số lượt kiểm và độ ổn định trên hai lô hàng mô phỏng.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://www.phamduytung.com/blog/2026-11-25-chon-nguong-phan-loai-theo-chi-phi-va-gioi-han-kiem-tra/">
+<meta property="og:site_name" content="Phạm Duy Tùng Machine Learning Blog">
+<meta property="og:locale" content="vi_VN">
+<meta property="og:image" content="https://www.phamduytung.com/site-images/posts/2026-11-25-chon-nguong-phan-loai-theo-chi-phi-va-gioi-han-kiem-tra/cover-v1-1200_hu_bbe6c62a9138c618.webp" data-image-budget="100000"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="675"><meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Chọn ngưỡng phân loại theo chi phí bỏ sót và giới hạn kiểm tra">
+<meta name="twitter:description" content="Chọn ngưỡng phân loại bằng Python khi bỏ sót lỗi tốn gấp tám lần báo nhầm. So sánh chi phí, số lượt kiểm và độ ổn định trên hai lô hàng mô phỏng.">
+<meta name="twitter:image" content="https://www.phamduytung.com/site-images/posts/2026-11-25-chon-nguong-phan-loai-theo-chi-phi-va-gioi-han-kiem-tra/cover-v1-1200_hu_bbe6c62a9138c618.webp" data-image-budget="100000"><meta property="article:published_time" content="2026-11-25T08:12:00&#43;07:00"><meta property="article:modified_time" content="2026-11-25T08:12:00&#43;07:00"><meta property="article:section" content="blog"><meta property="article:tag" content="python"><meta property="article:tag" content="machine learning"><link rel="stylesheet" href="https://www.phamduytung.com/css/main.min.8e10077cdf97cae4f81a438d25ecc616674e72107e0475f457ec92e7cd44d51f.css" integrity="sha256-jhAHfN&#43;XyuT4GkONJezGFmdOchB&#43;BHX0V&#43;yS581E1R8=" crossorigin="anonymous"><link rel="stylesheet" href="https://www.phamduytung.com/css/katex.min.4d6aa053ca8a5675016fa2c9c48ee5359bfaafb8295184458af9d64abce84c47.css" integrity="sha256-TWqgU8qKVnUBb6LJxI7lNZv6r7gpUYRFivnWSrzoTEc=" crossorigin="anonymous">
+<link rel="stylesheet" href="https://www.phamduytung.com/css/viewer.min.3d228794bcedbbfa0412beb8fbc1ec6973202945e42af7004f742a4d7bd620ab.css" integrity="sha256-PSKHlLztu/oEEr64&#43;8HsaXMgKUXkKvcAT3QqTXvWIKs=" crossorigin="anonymous"><link rel="canonical" href="https://www.phamduytung.com/blog/2026-11-25-chon-nguong-phan-loai-theo-chi-phi-va-gioi-han-kiem-tra/">
+<meta name="theme-color" content="#f7f5ff"><script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@id":"https://www.phamduytung.com/blog/2026-11-25-chon-nguong-phan-loai-theo-chi-phi-va-gioi-han-kiem-tra/#article","@type":"BlogPosting","author":[{"@type":"Person","name":"Phạm Duy Tùng","sameAs":["https://github.com/AlexBlack2202","https://www.linkedin.com/in/tung-pham-duy/"],"url":"https://www.phamduytung.com/about/"}],"dateModified":"2026-11-25T08:12:00+07:00","datePublished":"2026-11-25T08:12:00+07:00","description":"Chọn ngưỡng phân loại bằng Python khi bỏ sót lỗi tốn gấp tám lần báo nhầm. So sánh chi phí, số lượt kiểm và độ ổn định trên hai lô hàng mô phỏng.","headline":"Chọn ngưỡng phân loại theo chi phí bỏ sót và giới hạn kiểm tra","image":["https://www.phamduytung.com/site-images/posts/2026-11-25-chon-nguong-phan-loai-theo-chi-phi-va-gioi-han-kiem-tra/cover-v1-1200_hu_bbe6c62a9138c618.webp"],"inLanguage":"vi","keywords":"python, machine learning","mainEntityOfPage":{"@id":"https://www.phamduytung.com/blog/2026-11-25-chon-nguong-phan-loai-theo-chi-phi-va-gioi-han-kiem-tra/","@type":"WebPage"},"publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://www.phamduytung.com/site-images/brand-mark-flaming-book-red_hu_45318b168da512af.webp"},"name":"Phạm Duy Tùng Machine Learning Blog","url":"https://www.phamduytung.com/"},"url":"https://www.phamduytung.com/blog/2026-11-25-chon-nguong-phan-loai-theo-chi-phi-va-gioi-han-kiem-tra/","wordCount":4373},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","item":"https://www.phamduytung.com/","name":"Trang chủ","position":1},{"@type":"ListItem","item":"https://www.phamduytung.com/blog/","name":"Blogs","position":2},{"@type":"ListItem","item":"https://www.phamduytung.com/blog/2026-11-25-chon-nguong-phan-loai-theo-chi-phi-va-gioi-han-kiem-tra/","name":"Chọn ngưỡng phân loại theo chi phí bỏ sót và giới hạn kiểm tra","position":3}]}]}</script></head>
+  <body><script>const items=["mode","palette"];items.forEach(function(e){const t=localStorage.getItem("hbs-"+e);t&&document.body.parentElement.setAttribute("data-"+e,t)});try{const t=new Map([["-2","xs"],["-1","sm"],["1","lg"],["2","xl"]]),e=t.get(localStorage.getItem("hbs-font-size"));e&&document.body.classList.add("font-size-"+e)}catch{}</script><header><nav class="navbar top-app-bar top-app-bar-expand-lg fixed-top">
+  <div class="container pearl-navbar__inner">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Mở menu">
+      <i class="fas fa-bars"></i>
+    </button>
+
+    <a class="navbar-brand pearl-brand flex-grow-1 flex-lg-grow-0" href="https://www.phamduytung.com/">
+      <span class="pearl-brand__mark" aria-hidden="true">
+        <img src="/site-images/brand-mark-flaming-book-red_hu_57a35d93ebdc8b9c.webp" alt="" data-image-budget="100000" srcset="/site-images/brand-mark-flaming-book-red_hu_bbc58893f5ad658b.webp 42w, /site-images/brand-mark-flaming-book-red_hu_57a35d93ebdc8b9c.webp 84w" sizes="42px" width="42" height="42"
+  loading="eager" decoding="async">
+
+      </span>
+      <span class="pearl-brand__copy">
+        <strong>Phạm Duy Tùng</strong>
+        <small>AI · DATA · SYSTEMS</small>
+      </span>
+    </a>
+
+    <div class="offcanvas offcanvas-bottom surface" tabindex="-1" id="offcanvasSocialShare" aria-labelledby="offcanvasSocialShare">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Share</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body">
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Twitter Share Button"
+      target="_blank" href="https://twitter.com/intent/tweet?title=Ch%e1%bb%8dn%20ng%c6%b0%e1%bb%a1ng%20ph%c3%a2n%20lo%e1%ba%a1i%20theo%20chi%20ph%c3%ad%20b%e1%bb%8f%20s%c3%b3t%20v%c3%a0%20gi%e1%bb%9bi%20h%e1%ba%a1n%20ki%e1%bb%83m%20tra&url=https%3a%2f%2fwww.phamduytung.com%2fblog%2f2026-11-25-chon-nguong-phan-loai-theo-chi-phi-va-gioi-han-kiem-tra%2f">
+      <i class="fab fa-fw fa-twitter"></i> Twitter
+    </a>
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Facebook Share Button"
+      target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.phamduytung.com%2fblog%2f2026-11-25-chon-nguong-phan-loai-theo-chi-phi-va-gioi-han-kiem-tra%2f">
+      <i class="fab fa-fw fa-facebook-f"></i> Facebook
+    </a>
+  </div>
+</div>
+    <button class="navbar-settings" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSettings"
+  aria-controls="offcanvasSettings" aria-label="Toggle settings">
+  <i class="fas fa-ellipsis-v"></i>
+</button>
+
+<div class="offcanvas offcanvas-end surface h-100" tabindex="-1" id="offcanvasSettings" aria-labelledby="offcanvasSettings">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Cài đặt</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body d-flex flex-column">
+
+
+
+<section class="setting">
+  <form class="font-size-switcher-form row">
+    <div class="col-auto">
+      <label for="fontSize" class="form-label"><i class="fas fa-fw fa-font"></i> Cỡ chữ</label>
+    </div>
+    <div class="col-auto ms-auto">
+      <input type="range" class="form-range" min="-2" max="2" id="fontSize">
+    </div>
+  </form>
+</section>
+
+
+
+<section class="setting actions d-flex justify-content-around mt-auto overflow-auto">
+  <a role="button" class="action action-go-back" href="javascript: window.history.back();">
+    <span class="action-icon"><i class="fas fa-2x fa-arrow-left"></i></span> Quay lại
+  </a>
+  <a role="button" class="action action-reload-page">
+    <span class="action-icon"><i class="fas fa-2x fa-redo-alt"></i></span> Tải lại
+  </a>
+  <a role="button" class="action action-copy-url">
+    <span class="action-icon"><i class="fas fa-2x fa-link"></i></span> Sao chép URL
+  </a><a class="action action-social-share" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSocialShare"
+    aria-controls="offcanvasSocialShare" aria-label="Toggle social share">
+    <span class="action-icon"><i class="fas fa-2x fa-share-alt"></i></span> Chia sẻ
+  </a></section>
+
+</div>
+</div>
+
+    <div class="collapse navbar-collapse" tabindex="-1" id="navbarSupportedContent" aria-labelledby="navbarSupportedContent">
+      <form class="search-bar my-1" action="https://www.phamduytung.com/search">
+  <div class="input-group input-group-sm">
+    <span class="btn btn-search disabled position-absolute left-0"><i class="fas fa-fw fa-search"></i></span>
+    <input class="form-control rounded-pill" name="q" type="search" aria-label="Search">
+  </div>
+</form>
+      <ul class="navbar-nav ms-auto"><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/chu-de/">
+            <i class="fas fa-fw fa-list-alt"></i>Chủ đề
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/series/">
+            <i class="fas fa-fw fa-columns"></i>Courses
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/tools/">
+            <i class="fas fa-fw fa-folder"></i>Tools
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/categories/">
+            <i class="fas fa-fw fa-folder"></i>Categories
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/archives/">
+            <i class="fas fa-fw fa-file-archive"></i>Archives
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/tags/">
+            <i class="fas fa-fw fa-tags"></i>Tags
+          </a>
+        </li><li class="nav-item dropdown">
+          <a class="nav-link" id="navbarDropdownSupport" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-fw fa-comments"></i>Community
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdownSupport"><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Facebook Group
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://github.com/AlexBlack2202/alexblack2202.github.io" target="_blank" rel="noopener noreferrer">
+                GitHub
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/contact/">
+                Contact
+              </a>
+            </li><li><hr class="dropdown-divider"></li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/faq/">
+                Câu hỏi thường gặp
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/about/">
+                Giới thiệu tác giả
+              </a>
+            </li></ul>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/xem-truyen/">
+            <i class="fas fa-fw fa-book-open"></i>Xem truyện
+          </a>
+        </li></ul>
+    </div>
+  </div>
+</nav>
+</header>
+<main role="main" class="container" style="line-height:1.7em">
+      <div class="row content">
+<div class="col-lg-9 col-md-8">
+  <div class="container"><nav class="row card component" aria-label="breadcrumb">
+  <div class="card-body">
+    <ol class="breadcrumb "><li class="breadcrumb-item"><a href="https://www.phamduytung.com/">Trang chủ</a></li><li class="breadcrumb-item"><a href="https://www.phamduytung.com/blog/">Blogs</a></li><li class="breadcrumb-item active">Chọn ngưỡng phân loại theo chi phí bỏ sót và giới hạn kiểm tra</li></ol>
+  </div>
+</nav>
+<div class="post-panel-wrapper">
+  <div class="d-flex flex-column component rounded post-panel">
+
+    <a class="action action-panel-toggler" role="button" title="Panel toggler">
+      <i class="fas fa-fw fa-chevron-circle-down"></i>
+    </a>
+    <a id="sidebarToggler" class="action d-none d-lg-block" role="button" title="Sidebar toggler">
+  <i class="fas fa-fw fa-expand-alt" data-fa-transform="rotate-45"></i>
+</a>
+
+
+
+
+
+    <a class="action" href="#post-comments" role="button" aria-label="Comments" title="Comments">
+  <i class="fas fa-fw fa-comments"></i>
+</a>
+    <a class="action" href="#postTOC" aria-controls="Table of contents" role="button" title="Table of contents">
+  <i class="fas fa-fw fa-list-alt"></i>
+</a>
+
+  </div>
+</div>
+<article class="row card component mb-4 post">
+  <div class="card-header"><div class="bgcover">
+      <img src="/site-images/posts/2026-11-25-chon-nguong-phan-loai-theo-chi-phi-va-gioi-han-kiem-tra/cover-v1-1200_hu_bbe6c62a9138c618.webp" alt="Chọn ngưỡng phân loại theo chi phí bỏ sót và giới hạn kiểm tra" data-image-budget="100000" class="pearl-cover-image" srcset="/site-images/posts/2026-11-25-chon-nguong-phan-loai-theo-chi-phi-va-gioi-han-kiem-tra/cover-v1-1200_hu_394225997dc82de4.webp 480w, /site-images/posts/2026-11-25-chon-nguong-phan-loai-theo-chi-phi-va-gioi-han-kiem-tra/cover-v1-1200_hu_f291db1a85ed2f.webp 768w, /site-images/posts/2026-11-25-chon-nguong-phan-loai-theo-chi-phi-va-gioi-han-kiem-tra/cover-v1-1200_hu_bbe6c62a9138c618.webp 1200w" sizes="(min-width: 1200px) 960px, (min-width: 768px) 70vw, 100vw" width="1200" height="675"
+  loading="eager" decoding="async" fetchpriority="high">
+
+      <div class="bgtrans">
+        <h1>Chọn ngưỡng phân loại theo chi phí bỏ sót và giới hạn kiểm tra
+</h1>
+      </div>
+    </div>
+  </div>
+  <div class="card-body"><div class="post-byline">
+  <i class="fas fa-fw fa-user"></i>
+  <span>Tác giả:</span>
+  <a href="https://www.phamduytung.com/about/" rel="author">Phạm Duy Tùng</a>
+</div><div class="post-meta">
+  <span class="post-date" title="tạo ngày 2026-11-25 08:12:00 &#43;0700 &#43;07.">
+    25/11/2026
+  </span><span class="post-reading-time">
+    21 phút đọc
+  </span><span class="post-taxonomies"><a href="https://www.phamduytung.com/tags/python/" class="badge post-taxonomy">python</a><a href="https://www.phamduytung.com/tags/machine-learning/" class="badge post-taxonomy">machine learning</a></span>
+</div>
+<div class="post-content mb-3"><p>Một trạm kiểm hàng có thể giữ kiện lại để mở hộp, hoặc cho kiện đi tiếp. Mô hình chấm mỗi kiện từ 0 đến 100 điểm. Trong lô thử gồm 1.000 kiện ở bài này, giữ những kiện từ 50 điểm trở lên sẽ bắt được 36 kiện lỗi. Hạ ngưỡng xuống 35 bắt thêm 11 kiện lỗi, đồng thời giữ nhầm thêm 48 kiện đạt. Chỉ riêng cặp số <strong>11 và 48</strong> đã đủ để đặt câu hỏi cho người vận hành: tránh một lần bỏ sót đáng giá bao nhiêu lần báo nhầm?</p>
+<p>Nếu một lần bỏ sót tốn tám đơn vị và một lần báo nhầm tốn một đơn vị, 11 lỗi phát hiện thêm tiết kiệm 88 đơn vị, dư sức bù cho 48 lần báo nhầm. Nhưng nếu ca làm việc chỉ mở được 100 kiện, chính sách thứ hai gửi tới 120 kiện. Một ngưỡng có thể hợp lý về chi phí mà vẫn không dùng được trong ca đó. Ta sẽ tính cả hai phương án, chọn ngưỡng trên một lô riêng rồi mới chấm lô thử, và xem chuyện gì xảy ra khi hàng lỗi hiếm đi.</p>
+<h2 id="trước-khi-đụng-tới-ngưỡng-hãy-định-nghĩa-một-lần-sai">Trước khi đụng tới ngưỡng, hãy định nghĩa một lần sai<a class="anchor ms-1" href="#trước-khi-đụng-tới-ngưỡng-hãy-định-nghĩa-một-lần-sai"><i class="fas fa-link"></i></a></h2>
+<p>Trong dây chuyền giả định, máy ảnh chụp mỗi kiện một lần. Điểm càng cao thì mô hình càng nghi ngờ có lỗi đóng gói. Nhân viên có thể mở kiện trước lúc chuyển đi. Để ví dụ đủ nhỏ để kiểm bằng tay, ta giả sử việc kiểm tra xác nhận được mọi lỗi trong số kiện bị giữ. Đơn vị đánh giá ở đây là một kiện thực tế. Nếu hệ thống chụp ba ảnh cho mỗi kiện, cần gộp ba điểm thành quyết định cho một kiện trước khi đếm hàng chờ. Nếu không, cùng một lỗi có thể xuất hiện ba lần trong báo cáo dù chỉ mất một lượt mở hộp.</p>
+<p>Quy tắc dùng suốt bài là <strong>giữ kiện khi điểm lớn hơn hoặc bằng ngưỡng</strong>. Với quy tắc này có bốn kết quả, mỗi kết quả trả lời một câu hỏi cụ thể ở trạm kiểm:</p>
+<table>
+	<thead>
+			<tr>
+					<th>Kết quả</th>
+					<th>Chuyện xảy ra</th>
+					<th>Dùng để tính gì?</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>TP</td>
+					<td>Kiện lỗi được giữ</td>
+					<td>Lỗi bắt được và một chỗ trong hàng kiểm</td>
+			</tr>
+			<tr>
+					<td>FP</td>
+					<td>Kiện đạt bị giữ</td>
+					<td>Báo nhầm và một chỗ trong hàng kiểm</td>
+			</tr>
+			<tr>
+					<td>FN</td>
+					<td>Kiện lỗi được cho đi</td>
+					<td>Lỗi bỏ sót</td>
+			</tr>
+			<tr>
+					<td>TN</td>
+					<td>Kiện đạt được cho đi</td>
+					<td>Số kiện đi tiếp đúng quyết định</td>
+			</tr>
+	</tbody>
+</table>
+<p>Ta quy ước chi phí tăng thêm của FP bằng 1, của FN bằng 8, của hai quyết định đúng bằng 0. Tổng chi phí là <strong>FP + 8 × FN</strong>. Đây là tỷ lệ giả định để khảo sát cách ra quyết định. Nó không phải số tiền đo được từ một nhà kho. Nếu một kiện lỗi thoát ra gây tám phút làm lại, còn việc giữ nhầm tốn một phút, có thể đọc chi phí theo phút, với điều kiện các khoản khác đã được tính nhất quán. Nếu kế toán tính cả chi phí mở hộp cho kiện lỗi được giữ đúng, TP cũng phải có một khoản riêng. Công thức chi phí sẽ thay đổi dù bốn số đếm không đổi.</p>
+<p>Chi phí và năng lực xử lý cần hai cột riêng trong báo cáo. Một kiện lỗi bắt đúng không chịu phạt trong công thức trên nhưng vẫn chiếm một lượt kiểm. Do đó số cảnh báo luôn bằng <strong>TP + FP</strong>. Nếu lấy riêng FP để dự trù nhân sự, ca có nhiều kiện lỗi nhất lại có thể là ca thiếu người nhiều nhất. Hãy giữ cả hai cột từ đầu, kể cả khi mục tiêu hiện tại chỉ là giảm số kiện lỗi lọt qua.</p>
+<h2 id="hai-lô-hàng-để-chọn-và-kiểm-tra-quyết-định">Hai lô hàng để chọn và kiểm tra quyết định<a class="anchor ms-1" href="#hai-lô-hàng-để-chọn-và-kiểm-tra-quyết-định"><i class="fas fa-link"></i></a></h2>
+<p>Dữ liệu dưới đây do tôi dựng để người đọc có thể tính lại toàn bộ ví dụ. Hai lô đều có 1.000 kiện và 60 kiện lỗi. Lô validation đóng vai trò các kiện đã có nhãn trước khi chốt quy trình. Lô test đóng vai trò đợt nghiệm thu đến sau. Điểm mô hình đã cho sẵn. Bài thực hành bắt đầu từ lúc đã có điểm nên không cần huấn luyện hoặc tải trọng số của mô hình. Các con số không mô tả hiệu năng của một máy ảnh hay sản phẩm thương mại.</p>
+<table>
+	<thead>
+			<tr>
+					<th style="text-align: right">Điểm</th>
+					<th style="text-align: right">Validation lỗi</th>
+					<th style="text-align: right">Validation đạt</th>
+					<th style="text-align: right">Test lỗi</th>
+					<th style="text-align: right">Test đạt</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td style="text-align: right">90</td>
+					<td style="text-align: right">9</td>
+					<td style="text-align: right">1</td>
+					<td style="text-align: right">8</td>
+					<td style="text-align: right">2</td>
+			</tr>
+			<tr>
+					<td style="text-align: right">70</td>
+					<td style="text-align: right">14</td>
+					<td style="text-align: right">5</td>
+					<td style="text-align: right">13</td>
+					<td style="text-align: right">7</td>
+			</tr>
+			<tr>
+					<td style="text-align: right">50</td>
+					<td style="text-align: right">16</td>
+					<td style="text-align: right">14</td>
+					<td style="text-align: right">15</td>
+					<td style="text-align: right">16</td>
+			</tr>
+			<tr>
+					<td style="text-align: right">35</td>
+					<td style="text-align: right">13</td>
+					<td style="text-align: right">42</td>
+					<td style="text-align: right">11</td>
+					<td style="text-align: right">48</td>
+			</tr>
+			<tr>
+					<td style="text-align: right">20</td>
+					<td style="text-align: right">6</td>
+					<td style="text-align: right">60</td>
+					<td style="text-align: right">8</td>
+					<td style="text-align: right">65</td>
+			</tr>
+			<tr>
+					<td style="text-align: right">10</td>
+					<td style="text-align: right">2</td>
+					<td style="text-align: right">148</td>
+					<td style="text-align: right">4</td>
+					<td style="text-align: right">152</td>
+			</tr>
+			<tr>
+					<td style="text-align: right">5</td>
+					<td style="text-align: right">0</td>
+					<td style="text-align: right">670</td>
+					<td style="text-align: right">1</td>
+					<td style="text-align: right">650</td>
+			</tr>
+	</tbody>
+</table>
+<p>Có thể hình dung hệ thống ghi điểm với độ phân giải hữu hạn nên nhiều kiện cùng điểm. Các dòng là <strong>giá trị điểm chính xác</strong> trong ví dụ. Nếu một bảng thực tế gộp tất cả điểm từ 30 đến dưới 40 vào một dòng, bảng đó không cho biết ngưỡng 35 sẽ giữ bao nhiêu kiện. Khi ấy hãy dùng lại điểm gốc hoặc chỉ xét các ranh giới của khoảng đã lưu. Đây cũng là lý do để ghi rõ ngưỡng áp dụng lên điểm thô hay điểm đã làm tròn trên giao diện.</p>
+<p>Tách validation và test giúp tránh một sai lầm dễ mắc khi làm bảng tính. Sau khi xem cột kết quả, người phân tích thường muốn đổi tỷ lệ chi phí, bớt vài trường hợp ngoại lệ hoặc thử thêm một giá trị ngưỡng. Nếu quyết định cuối cùng dựa trên lô test thì số đo trên chính lô đó đã tham gia quá trình chọn. Trong thực tế, nên khóa lô nghiệm thu cho tới khi người vận hành chốt cách tính chi phí, quy tắc phá hòa và số lượt kiểm tối đa. Khi các kiện cùng lô sản xuất có lỗi giống nhau, hãy quyết định ranh giới chia lô trước cả bước này. <a href="/blog/2026-11-05-stratified-group-split-tranh-ro-ri-du-lieu/">Ví dụ chia dữ liệu theo nhóm để tránh rò rỉ</a></p>
+<h2 id="quét-ngưỡng-bằng-phép-cộng-kiểm-tra-bằng-tay">Quét ngưỡng bằng phép cộng, kiểm tra bằng tay<a class="anchor ms-1" href="#quét-ngưỡng-bằng-phép-cộng-kiểm-tra-bằng-tay"><i class="fas fa-link"></i></a></h2>
+<p>Bắt đầu ở ngưỡng 101. Vì điểm cao nhất chỉ là 100 theo thiết kế, tất cả kiện được cho đi. Trên validation có 60 lỗi bỏ sót, chi phí là 480. Hạ ngưỡng xuống 90 làm đúng mười kiện đổi quyết định. Chín kiện lỗi chuyển từ FN sang TP, một kiện đạt chuyển từ TN sang FP. Tổng chi phí giảm 9 × 8 rồi tăng 1, còn 409. Bất kỳ ngưỡng nào từ trên 70 tới 90 cũng tạo ra đúng mười cảnh báo đó trên lô này.</p>
+<p>Mỗi lần đi xuống một bậc, nếu bậc mới có <em>a</em> kiện lỗi và <em>b</em> kiện đạt, chi phí thay đổi một lượng <strong>b − 8a</strong>. Không cần tạo lại 1.000 nhãn dự đoán cho từng ngưỡng. Sau khi nhóm theo điểm và sắp giảm dần, ta chỉ cộng số lượng của dòng mới vào TP và FP, rồi lấy tổng từng lớp trừ đi để ra FN và TN. Chi phí có thể giảm rồi tăng rồi lại giảm trên một bộ dữ liệu khác. Vì vậy cần duyệt hết các bậc hợp lệ trước khi chọn giá trị nhỏ nhất.</p>
+<table>
+	<thead>
+			<tr>
+					<th style="text-align: right">Ngưỡng</th>
+					<th style="text-align: right">TP</th>
+					<th style="text-align: right">FP</th>
+					<th style="text-align: right">FN</th>
+					<th style="text-align: right">Lượt kiểm</th>
+					<th style="text-align: right">Chi phí</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td style="text-align: right">101</td>
+					<td style="text-align: right">0</td>
+					<td style="text-align: right">0</td>
+					<td style="text-align: right">60</td>
+					<td style="text-align: right">0</td>
+					<td style="text-align: right">480</td>
+			</tr>
+			<tr>
+					<td style="text-align: right">90</td>
+					<td style="text-align: right">9</td>
+					<td style="text-align: right">1</td>
+					<td style="text-align: right">51</td>
+					<td style="text-align: right">10</td>
+					<td style="text-align: right">409</td>
+			</tr>
+			<tr>
+					<td style="text-align: right">70</td>
+					<td style="text-align: right">23</td>
+					<td style="text-align: right">6</td>
+					<td style="text-align: right">37</td>
+					<td style="text-align: right">29</td>
+					<td style="text-align: right">302</td>
+			</tr>
+			<tr>
+					<td style="text-align: right">50</td>
+					<td style="text-align: right">39</td>
+					<td style="text-align: right">20</td>
+					<td style="text-align: right">21</td>
+					<td style="text-align: right">59</td>
+					<td style="text-align: right">188</td>
+			</tr>
+			<tr>
+					<td style="text-align: right"><strong>35</strong></td>
+					<td style="text-align: right"><strong>52</strong></td>
+					<td style="text-align: right"><strong>62</strong></td>
+					<td style="text-align: right"><strong>8</strong></td>
+					<td style="text-align: right"><strong>114</strong></td>
+					<td style="text-align: right"><strong>126</strong></td>
+			</tr>
+			<tr>
+					<td style="text-align: right">20</td>
+					<td style="text-align: right">58</td>
+					<td style="text-align: right">122</td>
+					<td style="text-align: right">2</td>
+					<td style="text-align: right">180</td>
+					<td style="text-align: right">138</td>
+			</tr>
+			<tr>
+					<td style="text-align: right">10</td>
+					<td style="text-align: right">60</td>
+					<td style="text-align: right">270</td>
+					<td style="text-align: right">0</td>
+					<td style="text-align: right">330</td>
+					<td style="text-align: right">270</td>
+			</tr>
+			<tr>
+					<td style="text-align: right">5</td>
+					<td style="text-align: right">60</td>
+					<td style="text-align: right">940</td>
+					<td style="text-align: right">0</td>
+					<td style="text-align: right">1.000</td>
+					<td style="text-align: right">940</td>
+			</tr>
+	</tbody>
+</table>
+<p>Bậc đáng cân nhắc nhất là từ 35 xuống 20. Thêm 66 lượt kiểm tìm ra sáu kiện lỗi còn ẩn. Sáu kiện này trị giá 48 đơn vị chi phí tránh được, nhưng phải trả 60 đơn vị cho số kiện đạt bị giữ thêm. Chênh lệch là 12. Vì thế ngưỡng 35 có lợi hơn 20 theo tỷ lệ đã chọn. Nếu bỏ sót một kiện thật sự gây thiệt hại trên mười lần báo nhầm, chính sáu kiện ấy lại là lý do đáng xem xét mở rộng kiểm tra. Ta có thể hỏi đội vận hành về hai con số cụ thể thay vì yêu cầu họ chọn một chỉ số học máy trừu tượng.</p>
+<p>Hai dòng đầu và cuối còn là phép kiểm tra dữ liệu rẻ nhất. Ở một đầu phải có 60 FN và 940 TN, ở đầu kia phải có 60 TP và 940 FP. Ở mọi dòng, TP + FN phải luôn bằng 60, FP + TN bằng 940. Nếu hạ ngưỡng mà số lượt kiểm giảm, hãy kiểm tra chiều điểm nghi ngờ, thứ tự sắp xếp và việc đếm bản ghi trùng. Sai ở đây khiến mọi phép tối ưu phía sau dù viết đúng vẫn giải nhầm bài toán.</p>
+<h2 id="mã-python-để-chạy-lại-phép-chọn-ngưỡng">Mã Python để chạy lại phép chọn ngưỡng<a class="anchor ms-1" href="#mã-python-để-chạy-lại-phép-chọn-ngưỡng"><i class="fas fa-link"></i></a></h2>
+<p>Lưu khối sau vào một tệp Python và chạy bằng Python 3.12.13. Chương trình chỉ dùng thư viện chuẩn. Mỗi điểm có một dòng đã gộp toàn bộ kiện trùng điểm. Ngưỡng 101 cho phép chọn phương án không phát cảnh báo, kể cả khi giới hạn nhân sự bằng 0. Nếu nhiều ngưỡng cho cùng tổng chi phí, hàm chọn phương án ít lượt kiểm hơn, sau đó ưu tiên ngưỡng cao hơn. Điều kiện cuối giúp kết quả có thể tái lập khi dữ liệu lấy mẫu lại làm một bậc điểm bị rỗng.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">Counter</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="kn">from</span> <span class="nn">random</span> <span class="kn">import</span> <span class="n">Random</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl"><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">NamedTuple</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl"><span class="c1"># score, số kiện lỗi, số kiện đạt</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl"><span class="n">validation</span> <span class="o">=</span> <span class="p">[(</span><span class="mi">90</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">70</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">14</span><span class="p">),</span> <span class="p">(</span><span class="mi">35</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span> <span class="mi">42</span><span class="p">),</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">              <span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">60</span><span class="p">),</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">148</span><span class="p">),</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">670</span><span class="p">)]</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl"><span class="n">test</span> <span class="o">=</span> <span class="p">[(</span><span class="mi">90</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">70</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span> <span class="mi">7</span><span class="p">),</span> <span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">16</span><span class="p">),</span> <span class="p">(</span><span class="mi">35</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">48</span><span class="p">),</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">        <span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">65</span><span class="p">),</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">152</span><span class="p">),</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">650</span><span class="p">)]</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">
+</span></span><span class="line"><span class="ln">11</span><span class="cl">
+</span></span><span class="line"><span class="ln">12</span><span class="cl"><span class="k">class</span> <span class="nc">Point</span><span class="p">(</span><span class="n">NamedTuple</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl">    <span class="n">threshold</span><span class="p">:</span> <span class="nb">int</span>
+</span></span><span class="line"><span class="ln">14</span><span class="cl">    <span class="n">tp</span><span class="p">:</span> <span class="nb">int</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl">    <span class="n">fp</span><span class="p">:</span> <span class="nb">int</span>
+</span></span><span class="line"><span class="ln">16</span><span class="cl">    <span class="n">fn</span><span class="p">:</span> <span class="nb">int</span>
+</span></span><span class="line"><span class="ln">17</span><span class="cl">    <span class="n">tn</span><span class="p">:</span> <span class="nb">int</span>
+</span></span><span class="line"><span class="ln">18</span><span class="cl">
+</span></span><span class="line"><span class="ln">19</span><span class="cl">    <span class="k">def</span> <span class="nf">cost</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">miss</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">20</span><span class="cl">        <span class="k">return</span> <span class="n">miss</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">fn</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">fp</span>
+</span></span><span class="line"><span class="ln">21</span><span class="cl">
+</span></span><span class="line"><span class="ln">22</span><span class="cl">    <span class="k">def</span> <span class="nf">alerts</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">23</span><span class="cl">        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">tp</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">fp</span>
+</span></span><span class="line"><span class="ln">24</span><span class="cl">
+</span></span><span class="line"><span class="ln">25</span><span class="cl">
+</span></span><span class="line"><span class="ln">26</span><span class="cl"><span class="k">def</span> <span class="nf">sweep</span><span class="p">(</span><span class="n">rows</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">27</span><span class="cl">    <span class="n">positives</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">pos</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">pos</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">28</span><span class="cl">    <span class="n">negatives</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">neg</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">neg</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">29</span><span class="cl">    <span class="n">tp</span> <span class="o">=</span> <span class="n">fp</span> <span class="o">=</span> <span class="mi">0</span>
+</span></span><span class="line"><span class="ln">30</span><span class="cl">    <span class="k">yield</span> <span class="n">Point</span><span class="p">(</span><span class="mi">101</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">positives</span><span class="p">,</span> <span class="n">negatives</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">31</span><span class="cl">    <span class="k">for</span> <span class="n">score</span><span class="p">,</span> <span class="n">pos</span><span class="p">,</span> <span class="n">neg</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">rows</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">32</span><span class="cl">        <span class="n">tp</span> <span class="o">+=</span> <span class="n">pos</span>
+</span></span><span class="line"><span class="ln">33</span><span class="cl">        <span class="n">fp</span> <span class="o">+=</span> <span class="n">neg</span>
+</span></span><span class="line"><span class="ln">34</span><span class="cl">        <span class="k">yield</span> <span class="n">Point</span><span class="p">(</span><span class="n">score</span><span class="p">,</span> <span class="n">tp</span><span class="p">,</span> <span class="n">fp</span><span class="p">,</span> <span class="n">positives</span> <span class="o">-</span> <span class="n">tp</span><span class="p">,</span> <span class="n">negatives</span> <span class="o">-</span> <span class="n">fp</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">35</span><span class="cl">
+</span></span><span class="line"><span class="ln">36</span><span class="cl">
+</span></span><span class="line"><span class="ln">37</span><span class="cl"><span class="k">def</span> <span class="nf">choose</span><span class="p">(</span><span class="n">points</span><span class="p">,</span> <span class="n">miss</span><span class="p">,</span> <span class="n">cap</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">38</span><span class="cl">    <span class="n">feasible</span> <span class="o">=</span> <span class="p">(</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">points</span> <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">alerts</span><span class="p">()</span> <span class="o">&lt;=</span> <span class="n">cap</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">39</span><span class="cl">    <span class="k">return</span> <span class="nb">min</span><span class="p">(</span><span class="n">feasible</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">p</span><span class="p">:</span> <span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">cost</span><span class="p">(</span><span class="n">miss</span><span class="p">),</span> <span class="n">p</span><span class="o">.</span><span class="n">alerts</span><span class="p">(),</span> <span class="o">-</span><span class="n">p</span><span class="o">.</span><span class="n">threshold</span><span class="p">))</span>
+</span></span><span class="line"><span class="ln">40</span><span class="cl">
+</span></span><span class="line"><span class="ln">41</span><span class="cl">
+</span></span><span class="line"><span class="ln">42</span><span class="cl"><span class="n">valid_points</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">sweep</span><span class="p">(</span><span class="n">validation</span><span class="p">))</span>
+</span></span><span class="line"><span class="ln">43</span><span class="cl"><span class="n">test_points</span> <span class="o">=</span> <span class="p">{</span><span class="n">p</span><span class="o">.</span><span class="n">threshold</span><span class="p">:</span> <span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">sweep</span><span class="p">(</span><span class="n">test</span><span class="p">)}</span>
+</span></span><span class="line"><span class="ln">44</span><span class="cl"><span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">valid_points</span><span class="p">:</span>
+</span></span><span class="line"><span class="ln">45</span><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;valid&#34;</span><span class="p">,</span> <span class="o">*</span><span class="n">p</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">alerts</span><span class="p">(),</span> <span class="n">p</span><span class="o">.</span><span class="n">cost</span><span class="p">(</span><span class="mi">8</span><span class="p">))</span>
+</span></span><span class="line"><span class="ln">46</span><span class="cl">
+</span></span><span class="line"><span class="ln">47</span><span class="cl"><span class="k">for</span> <span class="n">miss</span><span class="p">,</span> <span class="n">cap</span> <span class="ow">in</span> <span class="p">[(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1000</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1000</span><span class="p">),</span> <span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">1000</span><span class="p">),</span> <span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">1000</span><span class="p">),</span> <span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">100</span><span class="p">)]:</span>
+</span></span><span class="line"><span class="ln">48</span><span class="cl">    <span class="n">p</span> <span class="o">=</span> <span class="n">choose</span><span class="p">(</span><span class="n">valid_points</span><span class="p">,</span> <span class="n">miss</span><span class="p">,</span> <span class="n">cap</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">49</span><span class="cl">    <span class="n">q</span> <span class="o">=</span> <span class="n">test_points</span><span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">threshold</span><span class="p">]</span>
+</span></span><span class="line"><span class="ln">50</span><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;policy&#34;</span><span class="p">,</span> <span class="n">miss</span><span class="p">,</span> <span class="n">cap</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">threshold</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">cost</span><span class="p">(</span><span class="n">miss</span><span class="p">),</span>
+</span></span><span class="line"><span class="ln">51</span><span class="cl">          <span class="n">q</span><span class="o">.</span><span class="n">tp</span><span class="p">,</span> <span class="n">q</span><span class="o">.</span><span class="n">fp</span><span class="p">,</span> <span class="n">q</span><span class="o">.</span><span class="n">fn</span><span class="p">,</span> <span class="n">q</span><span class="o">.</span><span class="n">tn</span><span class="p">,</span> <span class="n">q</span><span class="o">.</span><span class="n">alerts</span><span class="p">(),</span> <span class="n">q</span><span class="o">.</span><span class="n">cost</span><span class="p">(</span><span class="n">miss</span><span class="p">))</span>
+</span></span></code></pre></div><p>Ở dữ liệu lớn, phép quét sau sắp xếp chỉ cần đi qua mỗi mức điểm một lần. Ta có thể thực hiện bước đếm theo cặp (điểm, nhãn) ngay trong cơ sở dữ liệu rồi đưa bảng đếm sang Python. Trong ví dụ này, giữ nguyên bảy mức điểm vẫn bảo toàn mọi quyết định khả dĩ của một ngưỡng duy nhất. Điều đó không còn đúng nếu tùy ý làm tròn điểm để giảm kích thước bảng. Chẳng hạn, hai kiện ở 34,96 và 35,04 nằm khác phía ngưỡng 35 nhưng có thể cùng hiển thị là 35,0. Bản xuất phục vụ kiểm thử cần giữ đúng độ chính xác mà dịch vụ dùng khi quyết định.</p>
+<h2 id="chốt-ngưỡng-rồi-mới-mở-lô-test">Chốt ngưỡng rồi mới mở lô test<a class="anchor ms-1" href="#chốt-ngưỡng-rồi-mới-mở-lô-test"><i class="fas fa-link"></i></a></h2>
+<p>Ở lượt chạy thực tế, bốn tỷ lệ chi phí và một phương án giới hạn năng lực cho kết quả dưới đây. Mỗi hàng chọn ngưỡng bằng validation. Các cột phía sau ngưỡng đều được tính trên lô test. Hai hàng có cùng ngưỡng dẫn tới cùng tập kiện bị giữ, cho dù số ghi ở cột chi phí khác nhau vì ta thay đơn giá. Hãy so các phương án trên cùng một đơn giá khi quyết định triển khai.</p>
+<table>
+	<thead>
+			<tr>
+					<th style="text-align: right">Chi phí một FN</th>
+					<th style="text-align: right">Trần lượt kiểm trên validation</th>
+					<th style="text-align: right">Ngưỡng chọn</th>
+					<th style="text-align: right">Test TP</th>
+					<th style="text-align: right">Test FP</th>
+					<th style="text-align: right">Test FN</th>
+					<th style="text-align: right">Lượt kiểm trên test</th>
+					<th style="text-align: right">Chi phí test</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td style="text-align: right">1</td>
+					<td style="text-align: right">1.000</td>
+					<td style="text-align: right">50</td>
+					<td style="text-align: right">36</td>
+					<td style="text-align: right">25</td>
+					<td style="text-align: right">24</td>
+					<td style="text-align: right">61</td>
+					<td style="text-align: right">49</td>
+			</tr>
+			<tr>
+					<td style="text-align: right">3</td>
+					<td style="text-align: right">1.000</td>
+					<td style="text-align: right">50</td>
+					<td style="text-align: right">36</td>
+					<td style="text-align: right">25</td>
+					<td style="text-align: right">24</td>
+					<td style="text-align: right">61</td>
+					<td style="text-align: right">97</td>
+			</tr>
+			<tr>
+					<td style="text-align: right">8</td>
+					<td style="text-align: right">1.000</td>
+					<td style="text-align: right">35</td>
+					<td style="text-align: right">47</td>
+					<td style="text-align: right">73</td>
+					<td style="text-align: right">13</td>
+					<td style="text-align: right">120</td>
+					<td style="text-align: right">177</td>
+			</tr>
+			<tr>
+					<td style="text-align: right">16</td>
+					<td style="text-align: right">1.000</td>
+					<td style="text-align: right">20</td>
+					<td style="text-align: right">55</td>
+					<td style="text-align: right">138</td>
+					<td style="text-align: right">5</td>
+					<td style="text-align: right">193</td>
+					<td style="text-align: right">218</td>
+			</tr>
+			<tr>
+					<td style="text-align: right">8</td>
+					<td style="text-align: right">100</td>
+					<td style="text-align: right">50</td>
+					<td style="text-align: right">36</td>
+					<td style="text-align: right">25</td>
+					<td style="text-align: right">24</td>
+					<td style="text-align: right">61</td>
+					<td style="text-align: right">217</td>
+			</tr>
+	</tbody>
+</table>
+<p>Ở đơn giá 8, có thể kiểm tra lại kết quả theo cách độc lập với vòng quét. Ngưỡng 35 có 13 FN và 73 FP nên chi phí bằng 13 × 8 + 73 = 177. Ngưỡng 50 có 24 FN và 25 FP nên chi phí bằng 217. Cả hai con số đều lớn hơn kết quả validation ở cùng chính sách. Ngưỡng được chọn có thể chuyển sang ca sau, nhưng số lỗi và số cảnh báo vẫn là đại lượng phải đo lại.</p>
+<p>Nếu chỉ đọc accuracy, người quản lý sẽ thấy một câu chuyện khác. Ngưỡng 50 cho đúng 36 + 915 = 951 kiện, accuracy 95,1%. Ngưỡng 35 cho đúng 47 + 867 = 914 kiện, accuracy 91,4%. Tăng accuracy ở đây đi kèm với bỏ sót thêm 11 lỗi. Ngược lại, nếu báo cáo chỉ lấy recall, chặn tất cả 1.000 kiện cho recall 100% mà đội kiểm phải mở cả những kiện hoàn toàn bình thường. Bốn ô của bảng nhầm lẫn cho phép người đọc tự chuyển sang đơn vị họ chịu trách nhiệm, thay vì buộc mọi bộ phận chấp nhận cùng một tỷ lệ tổng hợp.</p>
+<h2 id="khi-ca-chỉ-mở-được-100-kiện">Khi ca chỉ mở được 100 kiện<a class="anchor ms-1" href="#khi-ca-chỉ-mở-được-100-kiện"><i class="fas fa-link"></i></a></h2>
+<p>Trên validation, ngưỡng 50 dùng 59 chỗ, trong khi 35 cần 114 chỗ. Vì thế phương án tối ưu chi phí trong số các ngưỡng đáp ứng trần 100 là 50. Có 41 chỗ còn trống. Tất cả 55 kiện ở bậc kế tiếp đều có điểm 35 nên <strong>một ngưỡng trên điểm này</strong> không thể chọn đúng 41 trong số đó. Lấy 41 dòng đầu theo thứ tự vốn có của tệp có thể vô tình ưu tiên một dây chuyền, một nhà cung cấp hay đơn giản là những kiện được nhập sớm.</p>
+<p>Giả sử mục tiêu là dùng hết công suất trong lô này và ta bốc ngẫu nhiên 41 trong 55 kiện đồng điểm. Trong nhóm đó có 13 lỗi nên số lỗi bắt thêm kỳ vọng là 41 × 13/55, gần 9,69. Số báo nhầm thêm kỳ vọng là 41 × 42/55, gần 31,31. Từ chi phí 188 ở ngưỡng 50, chính sách bốc thăm có chi phí <strong>kỳ vọng</strong> khoảng 141,78 trên chính lô validation. Đây là phép tính từ thành phần nhóm đã biết. Một lần bốc thăm chỉ bắt được số nguyên kiện lỗi; con số kỳ vọng không phải kết quả chạy thực địa. Nếu sử dụng, cần lưu quy tắc chọn trong nhóm hòa cùng ngưỡng để hai đội có thể tái tạo cùng một quyết định.</p>
+<p>Điểm khác nhau giữa trần khi chọn ngưỡng và trần trong vận hành nằm ở thời điểm biết kích thước hàng chờ. Ngưỡng 50 thỏa trần trên cả hai lô ở đây, nhưng không có gì ngăn ca tới có 160 kiện vượt mức 50. Nếu trần là cứng và biết toàn bộ lô từ đầu, có thể xếp thứ tự rồi lấy tối đa 100 kiện theo quy tắc phá hòa đã chốt. Nếu hàng đến liên tục và kiện phải đi ngay, đợi hết lô để lấy top 100 là không khả thi. Lúc ấy phải nêu rõ chuyện gì xảy ra khi hết chỗ giữa ca, và đánh giá lại cả quy tắc dừng theo thứ tự thời gian đến. Một histogram đã gộp như ví dụ không còn đủ để làm việc đó.</p>
+<h2 id="vì-sao-tỷ-lệ-lỗi-làm-đổi-giá-trị-của-cùng-một-ngưỡng">Vì sao tỷ lệ lỗi làm đổi giá trị của cùng một ngưỡng?<a class="anchor ms-1" href="#vì-sao-tỷ-lệ-lỗi-làm-đổi-giá-trị-của-cùng-một-ngưỡng"><i class="fas fa-link"></i></a></h2>
+<p>Trên test ở ngưỡng 35, xác suất bị giữ trong nhóm kiện lỗi ước lượng bằng 47/60. Trong nhóm kiện đạt, tỷ lệ này là 73/940. Hãy thử giữ nguyên hai tỷ lệ điều kiện đó nhưng thay tỷ lệ lỗi chung của lô. Đây là giả định để phân tích độ nhạy: điểm của mô hình có cùng phân bố <strong>bên trong từng lớp</strong>, chỉ tỷ trọng hai lớp trong dòng hàng thay đổi. Một loại bao bì mới khiến mô hình đọc sai ngay cả với hàng đạt sẽ phá vỡ giả định này.</p>
+<p>Trong 1.000 kiện với tỷ lệ lỗi 1%, ta kỳ vọng có mười kiện lỗi. Giữ được 47/60 của mười kiện cho khoảng 7,83 lỗi bắt đúng. Trong 990 kiện đạt, tỷ lệ giữ nhầm 73/940 tạo ra khoảng 76,88 báo nhầm. Phần lớn cảnh báo sẽ đến từ kiện đạt dù tỷ lệ báo nhầm trong nhóm đạt chưa tới 8%. Precision bây giờ chỉ khoảng 9,25%. Đây là hai mẫu số khác nhau: đội mô hình nhìn vào số kiện đạt, còn nhân viên mở hộp nhìn vào số cảnh báo đã tới bàn.</p>
+<table>
+	<thead>
+			<tr>
+					<th style="text-align: right">Tỷ lệ lỗi giả định</th>
+					<th style="text-align: right">Ngưỡng</th>
+					<th style="text-align: right">Lượt kiểm kỳ vọng / 1.000</th>
+					<th style="text-align: right">Precision dự kiến</th>
+					<th style="text-align: right">Chi phí kỳ vọng / 1.000</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td style="text-align: right">1%</td>
+					<td style="text-align: right">50</td>
+					<td style="text-align: right">32,33</td>
+					<td style="text-align: right">18,56%</td>
+					<td style="text-align: right">58,33</td>
+			</tr>
+			<tr>
+					<td style="text-align: right">1%</td>
+					<td style="text-align: right">35</td>
+					<td style="text-align: right">84,72</td>
+					<td style="text-align: right">9,25%</td>
+					<td style="text-align: right">94,22</td>
+			</tr>
+			<tr>
+					<td style="text-align: right">6%</td>
+					<td style="text-align: right">50</td>
+					<td style="text-align: right">61,00</td>
+					<td style="text-align: right">59,02%</td>
+					<td style="text-align: right">217,00</td>
+			</tr>
+			<tr>
+					<td style="text-align: right">6%</td>
+					<td style="text-align: right">35</td>
+					<td style="text-align: right">120,00</td>
+					<td style="text-align: right">39,17%</td>
+					<td style="text-align: right">177,00</td>
+			</tr>
+			<tr>
+					<td style="text-align: right">12%</td>
+					<td style="text-align: right">50</td>
+					<td style="text-align: right">95,40</td>
+					<td style="text-align: right">75,47%</td>
+					<td style="text-align: right">407,40</td>
+			</tr>
+			<tr>
+					<td style="text-align: right">12%</td>
+					<td style="text-align: right">35</td>
+					<td style="text-align: right">162,34</td>
+					<td style="text-align: right">57,90%</td>
+					<td style="text-align: right">276,34</td>
+			</tr>
+	</tbody>
+</table>
+<p>Ở tỷ lệ lỗi 1%, so giữa hai ngưỡng đang xét, 50 có chi phí kỳ vọng thấp hơn. Ở 6% hoặc 12%, lợi thế thuộc về 35 nếu năng lực kiểm tra đủ lớn. Các số 6% khớp lại lô test vì chính lô này cung cấp hai tỷ lệ điều kiện. Các số 1% và 12% là kết quả đổi trọng số, chưa có lô độc lập nào xác nhận. Không nên lấy bảng này để tuyên bố đã tìm ra ngưỡng tối ưu cho một nhà kho khác. Bảng cho biết nên thu thêm nhãn ở đâu trước khi vận chuyển một chính sách sang nơi có cơ cấu hàng khác.</p>
+<h2 id="ngưỡng-35-có-ổn-định-khi-thay-vài-kiện">Ngưỡng 35 có ổn định khi thay vài kiện?<a class="anchor ms-1" href="#ngưỡng-35-có-ổn-định-khi-thay-vài-kiện"><i class="fas fa-link"></i></a></h2>
+<p>Chênh lệch chi phí giữa hai ngưỡng 35 và 20 trên validation chỉ là 12. Có cách xem quyết định nhạy tới đâu với thành phần mẫu: lấy lại 1.000 kiện có hoàn lại từ phân bố thực nghiệm của validation, rồi chạy lại đúng quy trình chọn ngưỡng. Những kiện rút trùng vẫn tính mỗi lần xuất hiện. Mỗi lần ta giữ nguyên đơn giá 8, bỏ giới hạn công suất và không sử dụng nhãn test. Vì quy tắc chỉ đọc điểm và nhãn nên lấy mẫu từ 14 ô với trọng số là số kiện từng ô tương đương với rút từng mã kiện trong ví dụ này.</p>
+<p>Nối đoạn dưới vào cùng tệp Python để tái lập cả bảng đổi tỷ lệ lỗi lẫn thí nghiệm lấy mẫu. Seed chỉ ảnh hưởng đến phần bootstrap. Không cần dùng số ngẫu nhiên để tính kỳ vọng trong bảng phía trên.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="c1"># Ước tính trên 1.000 kiện nếu chỉ tỷ lệ kiện lỗi thay đổi.</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl"><span class="k">for</span> <span class="n">prior</span> <span class="ow">in</span> <span class="p">(</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.06</span><span class="p">,</span> <span class="mf">0.12</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl">    <span class="k">for</span> <span class="n">threshold</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">35</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl">        <span class="n">p</span> <span class="o">=</span> <span class="n">test_points</span><span class="p">[</span><span class="n">threshold</span><span class="p">]</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl">        <span class="n">tpr</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">tp</span> <span class="o">/</span> <span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">tp</span> <span class="o">+</span> <span class="n">p</span><span class="o">.</span><span class="n">fn</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl">        <span class="n">fpr</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">fp</span> <span class="o">/</span> <span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">fp</span> <span class="o">+</span> <span class="n">p</span><span class="o">.</span><span class="n">tn</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">        <span class="n">tp</span> <span class="o">=</span> <span class="mi">1000</span> <span class="o">*</span> <span class="n">prior</span> <span class="o">*</span> <span class="n">tpr</span>
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl">        <span class="n">fp</span> <span class="o">=</span> <span class="mi">1000</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">prior</span><span class="p">)</span> <span class="o">*</span> <span class="n">fpr</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl">        <span class="n">fn</span> <span class="o">=</span> <span class="mi">1000</span> <span class="o">*</span> <span class="n">prior</span> <span class="o">-</span> <span class="n">tp</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl">        <span class="nb">print</span><span class="p">(</span><span class="s2">&#34;mix&#34;</span><span class="p">,</span> <span class="n">prior</span><span class="p">,</span> <span class="n">threshold</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">tp</span> <span class="o">+</span> <span class="n">fp</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl">              <span class="nb">round</span><span class="p">(</span><span class="n">tp</span> <span class="o">/</span> <span class="p">(</span><span class="n">tp</span> <span class="o">+</span> <span class="n">fp</span><span class="p">),</span> <span class="mi">4</span><span class="p">),</span> <span class="nb">round</span><span class="p">(</span><span class="mi">8</span> <span class="o">*</span> <span class="n">fn</span> <span class="o">+</span> <span class="n">fp</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl">
+</span></span><span class="line"><span class="ln">13</span><span class="cl"><span class="c1"># Bootstrap theo kiện, chỉ dùng nhãn validation.</span>
+</span></span><span class="line"><span class="ln">14</span><span class="cl"><span class="n">rng</span> <span class="o">=</span> <span class="n">Random</span><span class="p">(</span><span class="mi">20261125</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl"><span class="n">cells</span> <span class="o">=</span> <span class="p">[(</span><span class="n">score</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span> <span class="k">for</span> <span class="n">score</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">validation</span> <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)]</span>
+</span></span><span class="line"><span class="ln">16</span><span class="cl"><span class="n">weights</span> <span class="o">=</span> <span class="p">[</span><span class="n">n</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">pos</span><span class="p">,</span> <span class="n">neg</span> <span class="ow">in</span> <span class="n">validation</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="p">(</span><span class="n">pos</span><span class="p">,</span> <span class="n">neg</span><span class="p">)]</span>
+</span></span><span class="line"><span class="ln">17</span><span class="cl"><span class="n">selected</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">18</span><span class="cl"><span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1000</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">19</span><span class="cl">    <span class="n">counts</span> <span class="o">=</span> <span class="n">Counter</span><span class="p">(</span><span class="n">rng</span><span class="o">.</span><span class="n">choices</span><span class="p">(</span><span class="n">cells</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="n">weights</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="nb">sum</span><span class="p">(</span><span class="n">weights</span><span class="p">)))</span>
+</span></span><span class="line"><span class="ln">20</span><span class="cl">    <span class="n">rows</span> <span class="o">=</span> <span class="p">[(</span><span class="n">s</span><span class="p">,</span> <span class="n">counts</span><span class="p">[</span><span class="n">s</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">counts</span><span class="p">[</span><span class="n">s</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span> <span class="k">for</span> <span class="n">s</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">validation</span><span class="p">]</span>
+</span></span><span class="line"><span class="ln">21</span><span class="cl">    <span class="n">selected</span><span class="p">[</span><span class="n">choose</span><span class="p">(</span><span class="n">sweep</span><span class="p">(</span><span class="n">rows</span><span class="p">),</span> <span class="n">miss</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">cap</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span><span class="o">.</span><span class="n">threshold</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+</span></span><span class="line"><span class="ln">22</span><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="s2">&#34;bootstrap&#34;</span><span class="p">,</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">selected</span><span class="o">.</span><span class="n">items</span><span class="p">()))</span>
+</span></span></code></pre></div><p>Với seed 20261125, <strong>741 trong 1.000 lần</strong> chọn ngưỡng 35, <strong>252 lần</strong> chọn 20 và <strong>7 lần</strong> chọn 50. Tần suất 74,1% cho biết hàm chọn thường trả lại 35 khi rút từ lô thực nghiệm này. Nó không cho xác suất 74,1% rằng ngưỡng 35 là tốt nhất trên mọi lô tương lai. Đặc biệt, nếu một lỗi cơ khí tạo ra cả chục kiện hỏng liền nhau, bootstrap từng kiện giả định nhiều lần quan sát độc lập hơn thực tế. Khi giữ được mã lô và giờ sản xuất, có thể lấy mẫu lại theo cụm lô hoặc theo khối thời gian rồi so phân bố lựa chọn.</p>
+<p>Một hệ quả thực dụng là yêu cầu bổ sung nhãn cho vùng điểm gần ranh giới. So sánh ngưỡng 35 với 20 chỉ phụ thuộc các kiện có điểm 20 trong bảng này. Tăng số nhãn cho những kiện điểm 90 có thể giúp đánh giá chất lượng toàn hệ thống, nhưng không trực tiếp trả lời chuyện có nên mở thêm nhóm điểm 20. Nếu chủ động lấy nhiều kiện quanh ranh giới để gán nhãn, cần ghi lại cách lấy mẫu. Khi ước lượng tổng số báo nhầm và công suất cho ca thật, phải trả các nhóm về đúng tỷ trọng xuất hiện thực tế của chúng.</p>
+<h2 id="khi-nào-có-thể-suy-ra-ngưỡng-từ-xác-suất">Khi nào có thể suy ra ngưỡng từ xác suất?<a class="anchor ms-1" href="#khi-nào-có-thể-suy-ra-ngưỡng-từ-xác-suất"><i class="fas fa-link"></i></a></h2>
+<p>Giả sử thay vì điểm tùy ý ta có xác suất lỗi đã hiệu chuẩn, ký hiệu là <em>p</em>. Nếu giữ kiện, theo bảng chi phí ban đầu ta chỉ chịu một đơn vị khi kiện đạt. Chi phí kỳ vọng của hành động giữ là 1 − p. Nếu cho kiện đi, ta chịu tám đơn vị khi kiện lỗi nên chi phí kỳ vọng bằng 8p. Giữ kiện có lợi khi 1 − p nhỏ hơn 8p, tức p lớn hơn 1/9, xấp xỉ 11,11%. Ở đúng điểm hòa, hai hành động có cùng chi phí kỳ vọng. Có thể dùng quy ước giữ kiện ở điểm hòa để thống nhất phép so sánh.</p>
+<p>Ngưỡng xác suất này và ngưỡng điểm 35 trong thí nghiệm dùng hai thang đo khác nhau. Tại bậc điểm 35 của validation có 13 lỗi trong 55 kiện, khoảng 23,64%. Tại bậc 20 có 6 lỗi trong 66 kiện, khoảng 9,09%. Đường ranh 11,11% nằm giữa hai tỷ lệ thực nghiệm. Điều đó giúp giải thích vì sao việc giữ cả nhóm 35 có lợi và giữ thêm nhóm 20 làm chi phí tăng. Nó chưa chứng minh giá trị 35 do mô hình trả ra là xác suất 35%, cũng chưa đủ để xây dựng một bộ hiệu chuẩn đáng tin từ từng bậc thưa dữ liệu. <a href="https://scikit-learn.org/stable/modules/calibration.html" target="_blank" rel="noopener noreferrer">Hướng dẫn hiệu chuẩn xác suất của scikit-learn</a></p>
+<p>Công thức 1/9 dựa trên các giả định cụ thể: xác suất phù hợp với dòng hàng lúc quyết định, chi phí chỉ phụ thuộc vào loại kết quả, và chưa có ràng buộc dùng chung một số hữu hạn lượt kiểm. Nếu bỏ sót một kiện dễ vỡ tốn gấp nhiều lần bỏ sót một kiện thường, hai kiện cùng xác suất lỗi có thể đáng ưu tiên khác nhau. Khi đó, giá trị cần so là chi phí kỳ vọng tránh được từ từng hành động. Ví dụ chính thức của scikit-learn minh họa cả việc chọn ngưỡng sau huấn luyện và trường hợp giá trị quyết định phụ thuộc vào từng quan sát. <a href="https://scikit-learn.org/stable/auto_examples/model_selection/plot_cost_sensitive_learning.html" target="_blank" rel="noopener noreferrer">Ví dụ đánh giá quyết định theo chi phí</a></p>
+<h2 id="đem-ngưỡng-đã-chọn-sang-ca-vận-hành">Đem ngưỡng đã chọn sang ca vận hành<a class="anchor ms-1" href="#đem-ngưỡng-đã-chọn-sang-ca-vận-hành"><i class="fas fa-link"></i></a></h2>
+<p>Một lần bàn giao cần đủ thông tin để hai người ở hai đầu hệ thống đánh dấu đúng cùng một danh sách kiện. Bên mô hình cung cấp phiên bản mô hình, cột điểm và chiều điểm ứng với lỗi. Bên vận hành chốt phép so sánh, đơn giá, giới hạn lượt kiểm và cách xử lý kiện hòa điểm. Trong kiểm thử tích hợp, hãy gửi ba kiện ngay dưới, đúng bằng và ngay trên ranh giới. Đối với điểm nguyên và ngưỡng 35, kết quả mong đợi cho 34, 35 và 36 lần lượt là cho đi, giữ, giữ. Quy ước rất nhỏ này quyết định số phận của cả 55 kiện cùng điểm trong lô validation.</p>
+<p>Sau triển khai, việc dễ nhất là đếm số cảnh báo, vì ta biết ngay một kiện đi tiếp hay bị giữ. Việc khó hơn là biết bao nhiêu lỗi đã lọt qua. Nếu chỉ mở hộp với kiện được giữ, ta có nhãn xác nhận cho TP và FP nhưng thiếu nhãn cho các kiện đi tiếp. Một báo cáo lấy những kiện chưa được kiểm làm TN sẽ ghi nhận recall cao một cách giả tạo. Có thể tổ chức kiểm tra ngẫu nhiên một phần kiện đi tiếp và ghi xác suất kiểm để ước lượng sai sót, hoặc đối soát nhãn đến trễ với đúng lô ban đầu. Cả hai cách đều cần mô tả phần dữ liệu nào còn thiếu trước khi điều chỉnh ngưỡng lần nữa.</p>
+<p>Cuối cùng, hãy giữ một ví dụ định lượng cạnh cấu hình triển khai. Với hai lô minh họa ở đây, cấu hình không giới hạn chọn 35 và giảm được 40 đơn vị chi phí trên test so với 50, đổi lại cần thêm 59 lượt kiểm. Khi trần là 100, chính 59 lượt đó khiến phương án 35 không vừa ca. Bảng điểm của mô hình giống hệt trong cả hai quyết định. Điều thay đổi là câu hỏi mà trạm kiểm cần trả lời. <a href="https://scikit-learn.org/stable/modules/classification_threshold.html" target="_blank" rel="noopener noreferrer">Hướng dẫn chọn ngưỡng quyết định của scikit-learn</a></p>
+<p>Nếu hệ thống còn phải giới hạn số kết quả theo từng người thay vì áp một ngưỡng cho cả lô, bài <a href="/blog/2026-11-24-recall-at-k-he-goi-y-theo-nguoi-dung-va-tinh-gop/">tính Recall@K theo người dùng và tính gộp</a> có ví dụ về việc thay mẫu số làm thay đổi kết luận khi đánh giá.</p>
+</div></div>
+  <div class="card-footer"><div class="post-navs d-flex justify-content-evenly"><div class="post-nav post-prev">
+    <i class="fas fa-fw fa-chevron-left"></i>
+    <a href="/blog/2026-11-24-recall-at-k-he-goi-y-theo-nguoi-dung-va-tinh-gop/">Recall@K trong hệ gợi ý: vì sao hai cách tính đảo thứ hạng mô hình?
+</a>
+  </div></div></div>
+</article><section class="related-posts row card component">
+    <div class="card-header">
+      <h2 class="card-title">Bài liên quan</h2>
+    </div>
+    <div class="card-body">
+      <ul class="post-list"><li>
+          <a href="https://www.phamduytung.com/blog/2026-11-24-recall-at-k-he-goi-y-theo-nguoi-dung-va-tinh-gop/">Recall@K trong hệ gợi ý: vì sao hai cách tính đảo thứ hạng mô hình?
+</a>
+          <span class="float-end post-date">24/11/2026
+</span>
+        </li><li>
+          <a href="https://www.phamduytung.com/blog/2026-11-20-khoang-cach-poincare-numpy-sai-so-float32/">Khoảng cách Poincaré bằng NumPy: khi float32 trả 0 cho hai điểm khác nhau
+</a>
+          <span class="float-end post-date">20/11/2026
+</span>
+        </li><li>
+          <a href="https://www.phamduytung.com/blog/2026-11-18-gradient-accumulation-pytorch-microbatch-cuoi-thieu-mau/">Gradient accumulation trong PyTorch: microbatch cuối thiếu mẫu làm sai gradient ra sao?
+</a>
+          <span class="float-end post-date">18/11/2026
+</span>
+        </li><li>
+          <a href="https://www.phamduytung.com/blog/2026-11-16-wasserstein-distance-data-drift-bootstrap-nguong-canh-bao/">Đặt ngưỡng cảnh báo data drift bằng Wasserstein Distance và bootstrap
+</a>
+          <span class="float-end post-date">16/11/2026
+</span>
+        </li><li>
+          <a href="https://www.phamduytung.com/blog/2026-11-13-monolith-collisionless-embedding-mo-phong-hash-python/">Collisionless embedding của Monolith qua mô phỏng va chạm ID bằng Python
+</a>
+          <span class="float-end post-date">13/11/2026
+</span>
+        </li></ul>
+    </div>
+  </section><div class="card component row post-comments" id="post-comments">
+  <div class="card-header">
+    <h2 class="card-title">Bình luận</h2>
+  </div>
+  <div class="card-body"><script src="https://utteranc.es/client.js"
+  repo="AlexBlack2202/utterances"
+  issue-term="pathname"
+  label="comment"
+  theme="github-dark"
+  crossorigin="anonymous"
+  async>
+</script></div>
+</div></div>
+</div><aside class="col-lg-3 col-md-4 sidebar d-flex">
+  <div class="container d-flex flex-column">
+
+    <a href="https://www.buymeacoffee.com/alexblack28" rel="noopener"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=🍎&slug=alexblack28&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" alt="Buy me a coffee" width="235" height="50" loading="lazy" decoding="async" /></a>
+<div class="post-toc row mb-4 card component" id="postTOC">
+  <div class="card-header">
+    <h2 class="card-title">Mục lục</h2>
+  </div>
+  <div class="card-body">
+    <nav id="TableOfContents"><ul>
+        <li><a href="#trước-khi-đụng-tới-ngưỡng-hãy-định-nghĩa-một-lần-sai">Trước khi đụng tới ngưỡng, hãy định nghĩa một lần sai</a></li>
+        <li><a href="#hai-lô-hàng-để-chọn-và-kiểm-tra-quyết-định">Hai lô hàng để chọn và kiểm tra quyết định</a></li>
+        <li><a href="#quét-ngưỡng-bằng-phép-cộng-kiểm-tra-bằng-tay">Quét ngưỡng bằng phép cộng, kiểm tra bằng tay</a></li>
+        <li><a href="#mã-python-để-chạy-lại-phép-chọn-ngưỡng">Mã Python để chạy lại phép chọn ngưỡng</a></li>
+        <li><a href="#chốt-ngưỡng-rồi-mới-mở-lô-test">Chốt ngưỡng rồi mới mở lô test</a></li>
+        <li><a href="#khi-ca-chỉ-mở-được-100-kiện">Khi ca chỉ mở được 100 kiện</a></li>
+        <li><a href="#vì-sao-tỷ-lệ-lỗi-làm-đổi-giá-trị-của-cùng-một-ngưỡng">Vì sao tỷ lệ lỗi làm đổi giá trị của cùng một ngưỡng?</a></li>
+        <li><a href="#ngưỡng-35-có-ổn-định-khi-thay-vài-kiện">Ngưỡng 35 có ổn định khi thay vài kiện?</a></li>
+        <li><a href="#khi-nào-có-thể-suy-ra-ngưỡng-từ-xác-suất">Khi nào có thể suy ra ngưỡng từ xác suất?</a></li>
+        <li><a href="#đem-ngưỡng-đã-chọn-sang-ca-vận-hành">Đem ngưỡng đã chọn sang ca vận hành</a></li>
+      </ul></nav>
+  </div>
+</div><section class="recent-posts row card component">
+  <div class="card-header">
+    <h2 class="card-title">Bài gần đây</h2>
+  </div>
+  <div class="card-body">
+    <ul class="post-list"><li>
+        <a href="/blog/2026-11-25-chon-nguong-phan-loai-theo-chi-phi-va-gioi-han-kiem-tra/">Chọn ngưỡng phân loại theo chi phí bỏ sót và giới hạn kiểm tra
+</a>
+      </li><li>
+        <a href="/blog/2026-11-24-recall-at-k-he-goi-y-theo-nguoi-dung-va-tinh-gop/">Recall@K trong hệ gợi ý: vì sao hai cách tính đảo thứ hạng mô hình?
+</a>
+      </li><li>
+        <a href="/blog/2026-11-23-gop-mau-ngau-nhien-tu-nhieu-tep-log-python/">Gộp mẫu ngẫu nhiên từ nhiều tệp log bằng Python
+</a>
+      </li><li>
+        <a href="/blog/2026-11-21-alexnet-grouped-convolution-pytorch/">Grouped convolution trong AlexNet: kiểm tra groups=2 bằng PyTorch
+</a>
+      </li><li>
+        <a href="/blog/2026-11-20-khoang-cach-poincare-numpy-sai-so-float32/">Khoảng cách Poincaré bằng NumPy: khi float32 trả 0 cho hai điểm khác nhau
+</a>
+      </li></ul>
+  </div>
+</section><section class="series-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/series">series</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/series/ly-thuyet-tro-choi/" class="badge rounded post-taxonomy" title="Lý thuyết trò chơi">
+            Lý thuyết trò chơi<span class="badge badge-sm text-white bg-accent ms-1">35</span></a><a href="https://www.phamduytung.com/series/kh%C3%B3a-h%E1%BB%8Dc-python-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học Python Căn Bản">
+            Khóa Học Python Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="https://www.phamduytung.com/series/kh%C3%B3a-h%E1%BB%8Dc-c&#43;&#43;-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học C&#43;&#43; Căn Bản">
+            Khóa Học C&#43;&#43; Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="https://www.phamduytung.com/series/machine-learning-dataset/" class="badge rounded post-taxonomy" title="Machine Learning Dataset">
+            Machine Learning Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a><a href="https://www.phamduytung.com/series/ch%E1%BB%A9ng-kho%C3%A1n-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Chứng Khoán Căn Bản">
+            Chứng Khoán Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">1</span></a></div>
+      </div>
+    </section><section class="tools-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/tools">tools</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/tools/tool-random/" class="badge rounded post-taxonomy" title="Tool Random">
+            Tool Random<span class="badge badge-sm text-white bg-accent ms-1">3</span></a></div>
+      </div>
+    </section><section class="categories-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/categories">categories</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/categories/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="https://www.phamduytung.com/categories/c&#43;&#43;/" class="badge rounded post-taxonomy" title="C&#43;&#43;">
+            C&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="https://www.phamduytung.com/categories/dataset/" class="badge rounded post-taxonomy" title="Dataset">
+            Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a></div>
+      </div>
+    </section><section class="tags-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/tags">tags</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/tags/game-theory/" class="badge rounded post-taxonomy" title="Game Theory">
+            Game Theory<span class="badge badge-sm text-white bg-accent ms-1">39</span></a><a href="https://www.phamduytung.com/tags/machine-learning/" class="badge rounded post-taxonomy" title="Machine Learning">
+            Machine Learning<span class="badge badge-sm text-white bg-accent ms-1">35</span></a><a href="https://www.phamduytung.com/tags/deep-learning/" class="badge rounded post-taxonomy" title="Deep Learning">
+            Deep Learning<span class="badge badge-sm text-white bg-accent ms-1">29</span></a><a href="https://www.phamduytung.com/tags/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">28</span></a><a href="https://www.phamduytung.com/tags/computer-vision/" class="badge rounded post-taxonomy" title="Computer Vision">
+            Computer Vision<span class="badge badge-sm text-white bg-accent ms-1">18</span></a><a href="https://www.phamduytung.com/tags/llm/" class="badge rounded post-taxonomy" title="Llm">
+            Llm<span class="badge badge-sm text-white bg-accent ms-1">18</span></a><a href="https://www.phamduytung.com/tags/mathematics/" class="badge rounded post-taxonomy" title="Mathematics">
+            Mathematics<span class="badge badge-sm text-white bg-accent ms-1">14</span></a><a href="https://www.phamduytung.com/tags/ai-agent/" class="badge rounded post-taxonomy" title="Ai Agent">
+            Ai Agent<span class="badge badge-sm text-white bg-accent ms-1">10</span></a><a href="https://www.phamduytung.com/tags/pytorch/" class="badge rounded post-taxonomy" title="Pytorch">
+            Pytorch<span class="badge badge-sm text-white bg-accent ms-1">8</span></a><a href="https://www.phamduytung.com/tags/recommendation-system/" class="badge rounded post-taxonomy" title="Recommendation System">
+            Recommendation System<span class="badge badge-sm text-white bg-accent ms-1">8</span></a></div>
+      </div>
+    </section>
+
+  </div>
+</aside>
+</div>
+    </main><footer class="footer mt-auto py-3 text-center container"><ul class="nav justify-content-between footer-memu mb-3"><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Community
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-facebook"></i>Facebook Group
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://github.com/AlexBlack2202/alexblack2202.github.io" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-github"></i>GitHub
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/contact/"><i class="fas fa-fw fa-info-circle"></i>Contact Us
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/faq/"><i class="fas fa-fw fa-question-circle"></i>Câu hỏi thường gặp
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/about/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-user"></i>Giới thiệu tác giả
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Docs
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="/teamofservices/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-users"></i>Điều khoản sử dụng
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/privacy/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-lock"></i>Chính sách bảo mật
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Features
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="/utils/gen_paswords/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-key"></i>Tạo password ngẫu nhiên
+</a>
+        </li></ul></li></ul>
+<div class="copyright mb-2">
+  Copyright © 2016-2026 Phạm Duy Tùng. All Rights Reserved.
+</div>
+<div class="powered-by mb-2">
+  Website chia sẻ kiến thức của Phạm Duy Tùng và Đặng Thị Hằng. Vui lòng liên hệ email alexblack2202@gmail.com nếu bạn có thông tin cần trao đổi.
+</div></footer>
+<script src="https://www.phamduytung.com/js/main.e788bab0969e53541289578e23a0f66a2ec1102872a9d44b994c80d0601d588a.js" integrity="sha256-54i6sJaeU1QSiVeOI6D2ai7BEChyqdRLmUyA0GAdWIo=" crossorigin="anonymous" defer></script><script src="https://www.phamduytung.com/js/icons.min.cb4c9958dbc49e29ac644e168e82db2d0de9a741a15751cc5bf2b0af21eb2845.js" integrity="sha256-y0yZWNvEnimsZE4WjoLbLQ3pp0GhV1HMW/KwryHrKEU=" crossorigin="anonymous" defer></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('https:\/\/www.phamduytung.com\/service-worker.js').then(function(reg) {
+      console.log('Successfully registered service worker', reg);
+    }).catch(function(err) {
+      console.warn('Error whilst registering service worker', err);
+    });
+  });
+}
+</script><script src="https://www.phamduytung.com/js/viewer.min.28bcf5233e406dae6715f46c8b9e8ca7c6cbf347e8678f5a2bebe5369c3270bb.js" integrity="sha256-KLz1Iz5Aba5nFfRsi56Mp8bL80foZ49aK&#43;vlNpwycLs=" crossorigin="anonymous" defer></script><script defer src="https://www.phamduytung.com/js/katex.min.8582b9feadf92a2a977ed303b97d7713cf2754ccf2b4eb60d8be7453a21042c2.js" integrity="sha256-hYK5/q35KiqXftMDuX13E88nVMzytOtg2L50U6IQQsI=" crossorigin="anonymous"></script>
+
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-2WWQ5G9DKL"></script>
+      <script>
+        var doNotTrack = false;
+        if ( true ) {
+          var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
+          var doNotTrack = (dnt == "1" || dnt == "yes");
+        }
+        if (!doNotTrack) {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-2WWQ5G9DKL');
+        }
+      </script>
+<script  data-ad-client="ca-pub-4644989745435991"  async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4644989745435991"
+     crossorigin="anonymous"></script></body>
+</html>
