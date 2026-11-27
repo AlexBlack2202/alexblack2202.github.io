@@ -1,0 +1,758 @@
+<!doctype html><html lang="vi" data-palette="brown"
+   data-mode="light">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Tính đặc trưng 60 phút bằng SQLite khi log đến muộn - Phạm Duy Tùng</title>
+    <meta name="a.validate.02" content="1QZXZ8oi7g57H-GxBrBPkTYBydwii-Ic9iJu" /><link rel="apple-touch-icon" href="https://www.phamduytung.com/images/icons/icon-180x180.png" sizes="180x180">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/icon-32x32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/icon-16x16.png" sizes="16x16" type="image/png">
+<link rel="icon" href="https://www.phamduytung.com/images/icons/favicon.ico">
+<link rel="manifest" href="https://www.phamduytung.com/manifest.json">
+
+<meta name="description" content="Dùng SQLite và Python để đếm sự kiện trong 60 phút trước khi dự báo. Kiểm tra biên cửa sổ, bản ghi trùng thời điểm và log đến muộn trên dữ liệu mô phỏng." /><meta name="robots" content="index, follow, max-image-preview:large"><meta property="og:title" content="Tính đặc trưng 60 phút bằng SQLite khi log đến muộn">
+<meta property="og:description" content="Dùng SQLite và Python để đếm sự kiện trong 60 phút trước khi dự báo. Kiểm tra biên cửa sổ, bản ghi trùng thời điểm và log đến muộn trên dữ liệu mô phỏng.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://www.phamduytung.com/blog/2026-11-27-cua-so-thoi-gian-sqlite-dac-trung-hoc-may-log-den-muon/">
+<meta property="og:site_name" content="Phạm Duy Tùng Machine Learning Blog">
+<meta property="og:locale" content="vi_VN">
+<meta property="og:image" content="https://www.phamduytung.com/site-images/posts/2026-11-27-cua-so-thoi-gian-sqlite-dac-trung-hoc-may-log-den-muon/cover-v1-1200_hu_66ace6e170f5aee3.webp" data-image-budget="100000"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="675"><meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Tính đặc trưng 60 phút bằng SQLite khi log đến muộn">
+<meta name="twitter:description" content="Dùng SQLite và Python để đếm sự kiện trong 60 phút trước khi dự báo. Kiểm tra biên cửa sổ, bản ghi trùng thời điểm và log đến muộn trên dữ liệu mô phỏng.">
+<meta name="twitter:image" content="https://www.phamduytung.com/site-images/posts/2026-11-27-cua-so-thoi-gian-sqlite-dac-trung-hoc-may-log-den-muon/cover-v1-1200_hu_66ace6e170f5aee3.webp" data-image-budget="100000"><meta property="article:published_time" content="2026-11-27T08:12:00&#43;07:00"><meta property="article:modified_time" content="2026-11-27T08:12:00&#43;07:00"><meta property="article:section" content="blog"><meta property="article:tag" content="python"><meta property="article:tag" content="data engineering"><link rel="stylesheet" href="https://www.phamduytung.com/css/main.min.8e10077cdf97cae4f81a438d25ecc616674e72107e0475f457ec92e7cd44d51f.css" integrity="sha256-jhAHfN&#43;XyuT4GkONJezGFmdOchB&#43;BHX0V&#43;yS581E1R8=" crossorigin="anonymous"><link rel="stylesheet" href="https://www.phamduytung.com/css/katex.min.4d6aa053ca8a5675016fa2c9c48ee5359bfaafb8295184458af9d64abce84c47.css" integrity="sha256-TWqgU8qKVnUBb6LJxI7lNZv6r7gpUYRFivnWSrzoTEc=" crossorigin="anonymous">
+<link rel="stylesheet" href="https://www.phamduytung.com/css/viewer.min.3d228794bcedbbfa0412beb8fbc1ec6973202945e42af7004f742a4d7bd620ab.css" integrity="sha256-PSKHlLztu/oEEr64&#43;8HsaXMgKUXkKvcAT3QqTXvWIKs=" crossorigin="anonymous"><link rel="canonical" href="https://www.phamduytung.com/blog/2026-11-27-cua-so-thoi-gian-sqlite-dac-trung-hoc-may-log-den-muon/">
+<meta name="theme-color" content="#f7f5ff"><script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@id":"https://www.phamduytung.com/blog/2026-11-27-cua-so-thoi-gian-sqlite-dac-trung-hoc-may-log-den-muon/#article","@type":"BlogPosting","author":[{"@type":"Person","name":"Phạm Duy Tùng","sameAs":["https://github.com/AlexBlack2202","https://www.linkedin.com/in/tung-pham-duy/"],"url":"https://www.phamduytung.com/about/"}],"dateModified":"2026-11-27T08:12:00+07:00","datePublished":"2026-11-27T08:12:00+07:00","description":"Dùng SQLite và Python để đếm sự kiện trong 60 phút trước khi dự báo. Kiểm tra biên cửa sổ, bản ghi trùng thời điểm và log đến muộn trên dữ liệu mô phỏng.","headline":"Tính đặc trưng 60 phút bằng SQLite khi log đến muộn","image":["https://www.phamduytung.com/site-images/posts/2026-11-27-cua-so-thoi-gian-sqlite-dac-trung-hoc-may-log-den-muon/cover-v1-1200_hu_66ace6e170f5aee3.webp"],"inLanguage":"vi","keywords":"python, data engineering","mainEntityOfPage":{"@id":"https://www.phamduytung.com/blog/2026-11-27-cua-so-thoi-gian-sqlite-dac-trung-hoc-may-log-den-muon/","@type":"WebPage"},"publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://www.phamduytung.com/site-images/brand-mark-flaming-book-red_hu_45318b168da512af.webp"},"name":"Phạm Duy Tùng Machine Learning Blog","url":"https://www.phamduytung.com/"},"url":"https://www.phamduytung.com/blog/2026-11-27-cua-so-thoi-gian-sqlite-dac-trung-hoc-may-log-den-muon/","wordCount":4560},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","item":"https://www.phamduytung.com/","name":"Trang chủ","position":1},{"@type":"ListItem","item":"https://www.phamduytung.com/blog/","name":"Blogs","position":2},{"@type":"ListItem","item":"https://www.phamduytung.com/blog/2026-11-27-cua-so-thoi-gian-sqlite-dac-trung-hoc-may-log-den-muon/","name":"Tính đặc trưng 60 phút bằng SQLite khi log đến muộn","position":3}]}]}</script></head>
+  <body><script>const items=["mode","palette"];items.forEach(function(e){const t=localStorage.getItem("hbs-"+e);t&&document.body.parentElement.setAttribute("data-"+e,t)});try{const t=new Map([["-2","xs"],["-1","sm"],["1","lg"],["2","xl"]]),e=t.get(localStorage.getItem("hbs-font-size"));e&&document.body.classList.add("font-size-"+e)}catch{}</script><header><nav class="navbar top-app-bar top-app-bar-expand-lg fixed-top">
+  <div class="container pearl-navbar__inner">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Mở menu">
+      <i class="fas fa-bars"></i>
+    </button>
+
+    <a class="navbar-brand pearl-brand flex-grow-1 flex-lg-grow-0" href="https://www.phamduytung.com/">
+      <span class="pearl-brand__mark" aria-hidden="true">
+        <img src="/site-images/brand-mark-flaming-book-red_hu_57a35d93ebdc8b9c.webp" alt="" data-image-budget="100000" srcset="/site-images/brand-mark-flaming-book-red_hu_bbc58893f5ad658b.webp 42w, /site-images/brand-mark-flaming-book-red_hu_57a35d93ebdc8b9c.webp 84w" sizes="42px" width="42" height="42"
+  loading="eager" decoding="async">
+
+      </span>
+      <span class="pearl-brand__copy">
+        <strong>Phạm Duy Tùng</strong>
+        <small>AI · DATA · SYSTEMS</small>
+      </span>
+    </a>
+
+    <div class="offcanvas offcanvas-bottom surface" tabindex="-1" id="offcanvasSocialShare" aria-labelledby="offcanvasSocialShare">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Share</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body">
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Twitter Share Button"
+      target="_blank" href="https://twitter.com/intent/tweet?title=T%c3%adnh%20%c4%91%e1%ba%b7c%20tr%c6%b0ng%2060%20ph%c3%bat%20b%e1%ba%b1ng%20SQLite%20khi%20log%20%c4%91%e1%ba%bfn%20mu%e1%bb%99n&url=https%3a%2f%2fwww.phamduytung.com%2fblog%2f2026-11-27-cua-so-thoi-gian-sqlite-dac-trung-hoc-may-log-den-muon%2f">
+      <i class="fab fa-fw fa-twitter"></i> Twitter
+    </a>
+    <a class="btn btn-sm btn-outline-primary social-share-button" rel="noopener noreferrer" aria-label="Facebook Share Button"
+      target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https%3a%2f%2fwww.phamduytung.com%2fblog%2f2026-11-27-cua-so-thoi-gian-sqlite-dac-trung-hoc-may-log-den-muon%2f">
+      <i class="fab fa-fw fa-facebook-f"></i> Facebook
+    </a>
+  </div>
+</div>
+    <button class="navbar-settings" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSettings"
+  aria-controls="offcanvasSettings" aria-label="Toggle settings">
+  <i class="fas fa-ellipsis-v"></i>
+</button>
+
+<div class="offcanvas offcanvas-end surface h-100" tabindex="-1" id="offcanvasSettings" aria-labelledby="offcanvasSettings">
+  <div class="offcanvas-header">
+    <h3 class="offcanvas-title">Cài đặt</h3>
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-dismiss="offcanvas" aria-label="Close">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
+  <div class="offcanvas-body d-flex flex-column">
+
+
+
+<section class="setting">
+  <form class="font-size-switcher-form row">
+    <div class="col-auto">
+      <label for="fontSize" class="form-label"><i class="fas fa-fw fa-font"></i> Cỡ chữ</label>
+    </div>
+    <div class="col-auto ms-auto">
+      <input type="range" class="form-range" min="-2" max="2" id="fontSize">
+    </div>
+  </form>
+</section>
+
+
+
+<section class="setting actions d-flex justify-content-around mt-auto overflow-auto">
+  <a role="button" class="action action-go-back" href="javascript: window.history.back();">
+    <span class="action-icon"><i class="fas fa-2x fa-arrow-left"></i></span> Quay lại
+  </a>
+  <a role="button" class="action action-reload-page">
+    <span class="action-icon"><i class="fas fa-2x fa-redo-alt"></i></span> Tải lại
+  </a>
+  <a role="button" class="action action-copy-url">
+    <span class="action-icon"><i class="fas fa-2x fa-link"></i></span> Sao chép URL
+  </a><a class="action action-social-share" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasSocialShare"
+    aria-controls="offcanvasSocialShare" aria-label="Toggle social share">
+    <span class="action-icon"><i class="fas fa-2x fa-share-alt"></i></span> Chia sẻ
+  </a></section>
+
+</div>
+</div>
+
+    <div class="collapse navbar-collapse" tabindex="-1" id="navbarSupportedContent" aria-labelledby="navbarSupportedContent">
+      <form class="search-bar my-1" action="https://www.phamduytung.com/search">
+  <div class="input-group input-group-sm">
+    <span class="btn btn-search disabled position-absolute left-0"><i class="fas fa-fw fa-search"></i></span>
+    <input class="form-control rounded-pill" name="q" type="search" aria-label="Search">
+  </div>
+</form>
+      <ul class="navbar-nav ms-auto"><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/chu-de/">
+            <i class="fas fa-fw fa-list-alt"></i>Chủ đề
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/series/">
+            <i class="fas fa-fw fa-columns"></i>Courses
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/tools/">
+            <i class="fas fa-fw fa-folder"></i>Tools
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/categories/">
+            <i class="fas fa-fw fa-folder"></i>Categories
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/archives/">
+            <i class="fas fa-fw fa-file-archive"></i>Archives
+          </a>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/tags/">
+            <i class="fas fa-fw fa-tags"></i>Tags
+          </a>
+        </li><li class="nav-item dropdown">
+          <a class="nav-link" id="navbarDropdownSupport" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-fw fa-comments"></i>Community
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdownSupport"><li>
+              <a class="dropdown-item"
+                href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer">
+                Facebook Group
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://github.com/AlexBlack2202/alexblack2202.github.io" target="_blank" rel="noopener noreferrer">
+                GitHub
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/contact/">
+                Contact
+              </a>
+            </li><li><hr class="dropdown-divider"></li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/faq/">
+                Câu hỏi thường gặp
+              </a>
+            </li><li>
+              <a class="dropdown-item"
+                href="https://www.phamduytung.com/about/">
+                Giới thiệu tác giả
+              </a>
+            </li></ul>
+        </li><li class="nav-item">
+          <a class="nav-link" href="https://www.phamduytung.com/xem-truyen/">
+            <i class="fas fa-fw fa-book-open"></i>Xem truyện
+          </a>
+        </li></ul>
+    </div>
+  </div>
+</nav>
+</header>
+<main role="main" class="container" style="line-height:1.7em">
+      <div class="row content">
+<div class="col-lg-9 col-md-8">
+  <div class="container"><nav class="row card component" aria-label="breadcrumb">
+  <div class="card-body">
+    <ol class="breadcrumb "><li class="breadcrumb-item"><a href="https://www.phamduytung.com/">Trang chủ</a></li><li class="breadcrumb-item"><a href="https://www.phamduytung.com/blog/">Blogs</a></li><li class="breadcrumb-item active">Tính đặc trưng 60 phút bằng SQLite khi log đến muộn</li></ol>
+  </div>
+</nav>
+<div class="post-panel-wrapper">
+  <div class="d-flex flex-column component rounded post-panel">
+
+    <a class="action action-panel-toggler" role="button" title="Panel toggler">
+      <i class="fas fa-fw fa-chevron-circle-down"></i>
+    </a>
+    <a id="sidebarToggler" class="action d-none d-lg-block" role="button" title="Sidebar toggler">
+  <i class="fas fa-fw fa-expand-alt" data-fa-transform="rotate-45"></i>
+</a>
+
+
+
+
+
+    <a class="action" href="#post-comments" role="button" aria-label="Comments" title="Comments">
+  <i class="fas fa-fw fa-comments"></i>
+</a>
+    <a class="action" href="#postTOC" aria-controls="Table of contents" role="button" title="Table of contents">
+  <i class="fas fa-fw fa-list-alt"></i>
+</a>
+
+  </div>
+</div>
+<article class="row card component mb-4 post">
+  <div class="card-header"><div class="bgcover">
+      <img src="/site-images/posts/2026-11-27-cua-so-thoi-gian-sqlite-dac-trung-hoc-may-log-den-muon/cover-v1-1200_hu_66ace6e170f5aee3.webp" alt="Tính đặc trưng 60 phút bằng SQLite khi log đến muộn" data-image-budget="100000" class="pearl-cover-image" srcset="/site-images/posts/2026-11-27-cua-so-thoi-gian-sqlite-dac-trung-hoc-may-log-den-muon/cover-v1-1200_hu_5f263a51c54c60b0.webp 480w, /site-images/posts/2026-11-27-cua-so-thoi-gian-sqlite-dac-trung-hoc-may-log-den-muon/cover-v1-1200_hu_fdb787f70db87af9.webp 768w, /site-images/posts/2026-11-27-cua-so-thoi-gian-sqlite-dac-trung-hoc-may-log-den-muon/cover-v1-1200_hu_66ace6e170f5aee3.webp 1200w" sizes="(min-width: 1200px) 960px, (min-width: 768px) 70vw, 100vw" width="1200" height="675"
+  loading="eager" decoding="async" fetchpriority="high">
+
+      <div class="bgtrans">
+        <h1>Tính đặc trưng 60 phút bằng SQLite khi log đến muộn
+</h1>
+      </div>
+    </div>
+  </div>
+  <div class="card-body"><div class="post-byline">
+  <i class="fas fa-fw fa-user"></i>
+  <span>Tác giả:</span>
+  <a href="https://www.phamduytung.com/about/" rel="author">Phạm Duy Tùng</a>
+</div><div class="post-meta">
+  <span class="post-date" title="tạo ngày 2026-11-27 08:12:00 &#43;0700 &#43;07.">
+    27/11/2026
+  </span><span class="post-reading-time">
+    22 phút đọc
+  </span><span class="post-taxonomies"><a href="https://www.phamduytung.com/tags/python/" class="badge post-taxonomy">python</a><a href="https://www.phamduytung.com/tags/data-engineering/" class="badge post-taxonomy">data-engineering</a></span>
+</div>
+<div class="post-content mb-3"><p>Lúc 09:00, hệ thống bảo trì cần trả lời một câu hỏi: trong 60 phút vừa qua, máy A đã gửi bao nhiêu tín hiệu bất thường mà hệ thống <strong>đã nhìn thấy</strong>? Chạy SQL trên kho log cuối ngày có thể cho kết quả 4, 3 hoặc 2, tùy cách viết. Cả ba truy vấn đều chạy thành công. Trong ví dụ dưới đây, số mà dịch vụ lúc 09:00 có thể dùng là <strong>2</strong>.</p>
+<p>Sai khác xuất phát từ hai chi tiết rất đời thường. Hai cảm biến có thể ghi cùng một phút, và một tín hiệu đo lúc 08:40 có thể nằm trong bộ đệm cho tới 09:25. Ta sẽ dựng lại lịch sử của một máy bằng mười bản ghi, tính từng trường hợp bằng tay rồi đối chiếu với SQLite. Phần sau mở rộng sang 2.000 sự kiện sinh bằng Python để xem lỗi xuất hiện ở bao nhiêu thời điểm, kể cả những lúc máy không phát tín hiệu nào.</p>
+<h2 id="viết-ra-câu-hỏi-mà-mỗi-dòng-dữ-liệu-phải-trả-lời">Viết ra câu hỏi mà mỗi dòng dữ liệu phải trả lời<a class="anchor ms-1" href="#viết-ra-câu-hỏi-mà-mỗi-dòng-dữ-liệu-phải-trả-lời"><i class="fas fa-link"></i></a></h2>
+<p>Giả sử dịch vụ chấm điểm nguy cơ hỏng máy theo lịch. Mỗi lần chấm, một đầu vào của mô hình là số tín hiệu bất thường gần đây của chính máy đó. Số đếm giống một mục trong sổ trực: người trực đứng tại thời điểm ra quyết định, nhìn lùi lại một giờ và ghi con số mình biết lúc ấy. Sau này đội dữ liệu có thể nhận thêm log để điều tra nguyên nhân. Phần thông tin bổ sung rất có giá trị cho việc điều tra, nhưng người trực trước đó chưa có nó trong tay.</p>
+<p>Ta cần ba mốc. <strong>Thời điểm sự kiện</strong> là lúc thiết bị ghi nhận tín hiệu. <strong>Thời điểm khả dụng</strong> là lúc phiên bản tín hiệu đó đã đến nơi mà dịch vụ đọc được. <strong>Thời điểm quyết định</strong> là lúc ta muốn dựng lại đầu vào cho mô hình. Một hệ thống đơn giản có thể ghi cả ba thành mili giây UTC. Để nhìn được từng điểm biên bằng mắt, bài này dùng số phút nguyên kể từ 08:00. Phút 0 là 08:00, phút 60 là 09:00, và phút 85 là 09:25.</p>
+<p>Với một quyết định ở phút <em>t</em>, quy ước của bài là đếm sự kiện của đúng máy có thời điểm xảy ra thuộc <strong>[t − 60, t)</strong> và thời điểm khả dụng <strong>nhỏ hơn hoặc bằng t</strong>. Dấu ngoặc vuông bên trái giữ lại sự kiện cách đúng 60 phút. Ngoặc tròn bên phải loại mọi sự kiện xảy ra ngay phút quyết định. Một gói cũ vừa đến đúng hạn được phép dùng nếu đã sẵn sàng khi tính. Hai phép so sánh khác nhau biểu diễn hai câu hỏi khác nhau: tín hiệu thuộc giai đoạn nào, và người ra quyết định có thể đọc nó hay chưa?</p>
+<p>Việc chọn cạnh đóng, cạnh mở là quyết định nghiệp vụ. Nếu máy gửi yêu cầu chấm điểm ngay sau khi cảm biến mới báo lỗi và sản phẩm muốn dùng cả tín hiệu kích hoạt, cần một quy tắc khác cho cạnh phải. Nếu các hệ thống đều làm tròn đến phút, hai bản ghi cùng mang nhãn 09:00 có thể cách nhau gần một phút. Dữ liệu với độ phân giải ấy chỉ đủ để tái lập quy ước theo phút. Muốn tái lập thứ tự chính xác trong phút phải lưu thêm dấu thời gian chi tiết hoặc số thứ tự đã có tại lúc xử lý.</p>
+<h2 id="mười-bản-ghi-đủ-để-phân-biệt-bốn-phép-đếm">Mười bản ghi đủ để phân biệt bốn phép đếm<a class="anchor ms-1" href="#mười-bản-ghi-đủ-để-phân-biệt-bốn-phép-đếm"><i class="fas fa-link"></i></a></h2>
+<p>Sáu dòng đầu của bảng dưới được chọn để lần lượt đặt một sự kiện lên cạnh trái, tạo một sự kiện đến muộn và tạo hai sự kiện cùng thời điểm. Dòng của máy B giúp phát hiện lỗi quên điều kiện nối theo máy. Mã ID là định danh sự kiện. Hai sự kiện 4 và 5 thực sự là hai tín hiệu riêng. Tình huống cùng một sự kiện được gửi lại cần quy tắc khử trùng theo ID ở đầu vào.</p>
+<table>
+	<thead>
+			<tr>
+					<th style="text-align: right">ID</th>
+					<th>Máy</th>
+					<th style="text-align: right">Phút xảy ra</th>
+					<th style="text-align: right">Phút khả dụng</th>
+					<th>Chi tiết cần để ý</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td style="text-align: right">1</td>
+					<td>A</td>
+					<td style="text-align: right">0</td>
+					<td style="text-align: right">0</td>
+					<td>Đúng cạnh trái khi t = 60</td>
+			</tr>
+			<tr>
+					<td style="text-align: right">2</td>
+					<td>A</td>
+					<td style="text-align: right">15</td>
+					<td style="text-align: right">15</td>
+					<td>Có mặt từ đầu</td>
+			</tr>
+			<tr>
+					<td style="text-align: right">3</td>
+					<td>A</td>
+					<td style="text-align: right">40</td>
+					<td style="text-align: right">85</td>
+					<td>Đến muộn 45 phút</td>
+			</tr>
+			<tr>
+					<td style="text-align: right">4</td>
+					<td>A</td>
+					<td style="text-align: right">60</td>
+					<td style="text-align: right">60</td>
+					<td>Cùng phút với ID 5</td>
+			</tr>
+			<tr>
+					<td style="text-align: right">5</td>
+					<td>A</td>
+					<td style="text-align: right">60</td>
+					<td style="text-align: right">60</td>
+					<td>Cùng phút với ID 4</td>
+			</tr>
+			<tr>
+					<td style="text-align: right">6</td>
+					<td>A</td>
+					<td style="text-align: right">61</td>
+					<td style="text-align: right">61</td>
+					<td>Một phút sau nhóm đồng thời</td>
+			</tr>
+			<tr>
+					<td style="text-align: right">7</td>
+					<td>A</td>
+					<td style="text-align: right">85</td>
+					<td style="text-align: right">85</td>
+					<td>Trùng lúc ID 3 trở nên khả dụng</td>
+			</tr>
+			<tr>
+					<td style="text-align: right">8</td>
+					<td>A</td>
+					<td style="text-align: right">121</td>
+					<td style="text-align: right">121</td>
+					<td>Kiểm tra lại cạnh trái ở phút 61</td>
+			</tr>
+			<tr>
+					<td style="text-align: right">9</td>
+					<td>B</td>
+					<td style="text-align: right">55</td>
+					<td style="text-align: right">55</td>
+					<td>Cùng khoảng thời gian, khác máy</td>
+			</tr>
+			<tr>
+					<td style="text-align: right">10</td>
+					<td>B</td>
+					<td style="text-align: right">60</td>
+					<td style="text-align: right">60</td>
+					<td>Quyết định cho máy B</td>
+			</tr>
+	</tbody>
+</table>
+<p>Dừng ở phút 60 và tạm che hai cột thời gian của các dòng phía sau. Theo thời điểm xảy ra, trong đoạn từ phút 0 đến trước phút 60 có ba tín hiệu của A: 1, 2, 3. Nhưng dịch vụ chỉ đọc được 1 và 2. Cả 4 và 5 nằm ngay cạnh phải nên đều bị loại. ID 9 là tín hiệu thật đã đến trước giờ nhưng thuộc máy B. Nếu viết được tập ID bằng tay trước khi viết SQL, ta có thể giải thích từng đơn vị chênh lệch khi kiểm thử.</p>
+<p>Chuyển sang phút 61. ID 1 vừa rời cửa sổ vì cạnh trái đã chuyển tới phút 1. Hai tín hiệu ở phút 60 cùng đi vào cửa sổ và đều đã đến. ID 3 vẫn chưa đến. Tập chính xác bây giờ là <strong>2, 4, 5</strong>. Trong một phút, số đếm tăng từ 2 lên 3 dù có hai tín hiệu mới đủ điều kiện, vì đồng thời một tín hiệu cũ hết hạn. Chỉ theo dõi số tăng ròng trên dashboard sẽ không cho biết hai thay đổi bù trừ này.</p>
+<p>Tới phút 85, đoạn lịch sử là [25, 85). ID 3 đã trở nên khả dụng và vẫn nằm trong khoảng thời gian cần tính. Dịch vụ được dùng các ID <strong>3, 4, 5, 6</strong>. Sự kiện 7 dù đã ghi nhận ở phút 85 vẫn nằm ngoài cạnh phải. Đến phút 121, đoạn cần dùng là [61, 121), chỉ còn 6 và 7. Sự kiện 6 ở đúng cạnh trái được giữ lại. Bốn lần di chuyển chiếc đồng hồ kiểm thử lần lượt được biên trái, nhóm đồng thời và thời điểm gói đến muộn bắt đầu có hiệu lực.</p>
+<h2 id="rows-range-và-dòng-nào-bị-loại">ROWS, RANGE và dòng nào bị loại<a class="anchor ms-1" href="#rows-range-và-dòng-nào-bị-loại"><i class="fas fa-link"></i></a></h2>
+<p>Trong SQL, phần <code>PARTITION BY machine</code> đặt mỗi máy vào một nhóm phân tích độc lập. <code>ORDER BY</code> bên trong <code>OVER</code> đặt các dòng vào thứ tự để xét cửa sổ. Phần khai báo <em>frame</em> chọn những dòng trong nhóm được đưa cho hàm tổng hợp tại dòng hiện tại. Với <code>count(*)</code>, mỗi dòng được chọn đóng góp đúng một đơn vị. Thứ tự hiển thị kết quả cuối cùng do <code>ORDER BY</code> bên ngoài quyết định. Sắp bảng đầu ra cho dễ đọc không làm thay đổi lịch sử mà hàm cửa sổ đã dùng. <a href="https://sqlite.org/windowfunctions.html" target="_blank" rel="noopener noreferrer">Tài liệu hàm cửa sổ của SQLite</a></p>
+<p><strong>ROWS đếm theo vị trí.</strong> Cụm <code>ROWS BETWEEN 2 PRECEDING AND 1 PRECEDING</code> lấy tối đa hai dòng đứng ngay trước dòng đang xét. Cách viết này hợp với yêu cầu “hai lần đo trước”, kể cả khi chúng cách nhau cả ngày. Ví dụ dùng thứ tự <code>occurred, id</code> để trường hợp đồng thời có kết quả tái lập được. Với ID 5, hai dòng đứng trước là 3 và 4. Kết quả bằng 2 tình cờ trùng số đếm đúng ở phút 60, nhưng một dòng còn chưa đến và một dòng nằm ở cạnh phải. Đối chiếu riêng giá trị tổng có thể bỏ qua lỗi này.</p>
+<p><strong>RANGE đếm theo khoảng giá trị khóa sắp xếp.</strong> Với khóa là phút nguyên, <code>RANGE BETWEEN 60 PRECEDING AND CURRENT ROW</code> gom tất cả dòng trong 60 đơn vị trước đến giá trị hiện tại, bao gồm những dòng bằng giá trị hiện tại. Mỗi bậc điểm thời gian có thể chứa bao nhiêu dòng tùy ý. Trong SQLite, dạng RANGE có khoảng lệch số này cần đúng một biểu thức sắp xếp. Đừng thêm ID vào <code>ORDER BY</code> của cửa sổ RANGE để xử lý hòa. Điều cần xác định ở đây là xử lý <strong>cả nhóm cùng thời gian</strong> thế nào.</p>
+<p><strong>EXCLUDE CURRENT ROW</strong> chỉ loại dòng mà hàm đang tính. Khi tính tại ID 4, ID 5 ở cùng phút vẫn nằm trong cửa sổ. Cộng thêm các ID 1, 2, 3 trong lịch sử thì được 4. Tình huống này dễ lọt qua bộ kiểm thử mà mỗi máy chỉ có một dòng ở mỗi dấu thời gian. Nếu ứng dụng xử lý đồng thời theo lô, loại riêng dòng hiện tại còn khiến các quyết định trong cùng lô nhìn thấy tín hiệu của nhau dù giao diện ra quyết định chưa hề nhận lô đó.</p>
+<p><strong>EXCLUDE GROUP</strong> loại cả nhóm ngang hàng với dòng hiện tại theo khóa sắp xếp của cửa sổ. Với đúng một khóa là <code>occurred</code>, hai dòng 4 và 5 cùng bị loại. Khi đó ba dòng còn lại là 1, 2, 3. Ta đã biểu diễn đúng đoạn thời gian [0, 60) trên kho log đầy đủ. Số 3 trả lời chính xác câu hỏi “cuối ngày biết có bao nhiêu tín hiệu đã xảy ra trong giờ đó?”. Để tái lập lần chấm điểm lúc 09:00 còn phải xét khả năng đọc được ID 3.</p>
+<p>Một cách viết ngắn khác cho thời gian <strong>nguyên theo phút</strong> là để cạnh phải ở <code>1 PRECEDING</code> trong khung RANGE. Khi đó nhóm có thời điểm xảy ra lớn nhất được nhận là phút t − 1. Nếu sau này đổi cột thành giây hay số thực nhưng vẫn dùng hằng số cũ, cả chiều dài khoảng lẫn phần bị trừ ở cạnh phải có thể thay đổi. Cách diễn đạt “trước t” bằng phép so sánh nhỏ hơn hoặc bằng cách loại nhóm đồng thời giúp ý định dễ đọc khi xem lại truy vấn.</p>
+<h2 id="tách-bảng-quyết-định-khỏi-bảng-sự-kiện">Tách bảng quyết định khỏi bảng sự kiện<a class="anchor ms-1" href="#tách-bảng-quyết-định-khỏi-bảng-sự-kiện"><i class="fas fa-link"></i></a></h2>
+<p>Tại phút 62, máy A không gửi sự kiện mới. Dịch vụ vẫn có thể chấm điểm theo lịch. Hàm cửa sổ chạy trên riêng bảng sự kiện sẽ không sinh dòng nào cho quyết định ở phút 62. Chọn giá trị gần nhất từ một bảng đã tổng hợp cũng có thể sai khi một sự kiện hết hạn giữa hai lần ghi mà máy chưa gửi thêm gì. Một ví dụ nhỏ là máy chỉ gửi đúng một tín hiệu ở phút 0. Nó còn thuộc cửa sổ ở phút 60, rời cửa sổ ở phút 61, dù toàn bộ khoảng đó bảng log không thay đổi.</p>
+<p>Tách bảng <code>decision</code> giúp lấy đúng tập dòng cần trả lời. Mỗi dòng cho biết máy nào được chấm, ở phút nào, và một ID để ghép kết quả trở lại. Với mỗi dòng quyết định, truy vấn con đếm các dòng lịch sử thỏa cả ba điều kiện: cùng máy, ở trong khoảng sự kiện, đã sẵn sàng trước hạn đọc. Dùng <code>count(*)</code> trên tập rỗng ở đây cho 0. Vì vậy máy mới chưa có lịch sử vẫn giữ được dòng quyết định, điều quan trọng khi bộ huấn luyện cần phân biệt đầu vào có số đếm bằng 0 với một bản ghi đã mất trong lúc nối.</p>
+<p>Nếu dùng <code>LEFT JOIN</code> rồi <code>GROUP BY</code> để tính cùng đại lượng, hãy đặt điều kiện thời gian của bảng lịch sử vào điều kiện nối và đếm một khóa lịch sử có giá trị như <code>count(h.id)</code>. Với một quyết định không có lịch sử, phép nối trái vẫn tạo một dòng có toàn bộ cột phía phải là NULL. <code>count(*)</code> lúc ấy sẽ đếm cả dòng đệm. Chuyển điều kiện thời gian của phía phải xuống WHERE lại có thể làm biến mất luôn quyết định thiếu lịch sử. Hai kết quả 1 và thiếu dòng đều khác hợp đồng mong đợi là 0.</p>
+<h2 id="chạy-lại-bằng-sqlite-từ-python">Chạy lại bằng SQLite từ Python<a class="anchor ms-1" href="#chạy-lại-bằng-sqlite-từ-python"><i class="fas fa-link"></i></a></h2>
+<p>Khối sau dùng cơ sở dữ liệu trong bộ nhớ. Có thể lưu thành tệp và chạy bằng Python 3.12.13. Lần chạy cho bài viết sử dụng SQLite 3.53.1, phiên bản được in từ thư viện thực sự liên kết với Python. Đoạn đầu tạo một quyết định tại thời điểm xảy ra của từng sự kiện để có thể đặt bốn phép đếm cạnh nhau. ID quyết định được gán giống ID sự kiện chỉ nhằm tiện đối chiếu ở ví dụ đầu. Ở phần mở rộng, quyết định có danh tính và lịch hoàn toàn riêng.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="kn">import</span> <span class="nn">sqlite3</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl"><span class="n">db</span> <span class="o">=</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s2">&#34;:memory:&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl"><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&#34;&#34;&#34;
+</span></span></span><span class="line"><span class="ln"> 5</span><span class="cl"><span class="s2">    CREATE TABLE event (
+</span></span></span><span class="line"><span class="ln"> 6</span><span class="cl"><span class="s2">        id INTEGER PRIMARY KEY, machine TEXT NOT NULL,
+</span></span></span><span class="line"><span class="ln"> 7</span><span class="cl"><span class="s2">        occurred INTEGER NOT NULL, available INTEGER NOT NULL,
+</span></span></span><span class="line"><span class="ln"> 8</span><span class="cl"><span class="s2">        CHECK (available &gt;= occurred)
+</span></span></span><span class="line"><span class="ln"> 9</span><span class="cl"><span class="s2">    )
+</span></span></span><span class="line"><span class="ln">10</span><span class="cl"><span class="s2">&#34;&#34;&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl"><span class="n">events</span> <span class="o">=</span> <span class="p">[</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl">    <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&#34;A&#34;</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>    <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="s2">&#34;A&#34;</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">15</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="s2">&#34;A&#34;</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="mi">85</span><span class="p">),</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl">    <span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="s2">&#34;A&#34;</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="mi">60</span><span class="p">),</span>  <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="s2">&#34;A&#34;</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="mi">60</span><span class="p">),</span> <span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="s2">&#34;A&#34;</span><span class="p">,</span> <span class="mi">61</span><span class="p">,</span> <span class="mi">61</span><span class="p">),</span>
+</span></span><span class="line"><span class="ln">14</span><span class="cl">    <span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="s2">&#34;A&#34;</span><span class="p">,</span> <span class="mi">85</span><span class="p">,</span> <span class="mi">85</span><span class="p">),</span>  <span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="s2">&#34;A&#34;</span><span class="p">,</span> <span class="mi">121</span><span class="p">,</span> <span class="mi">121</span><span class="p">),</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl">    <span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="s2">&#34;B&#34;</span><span class="p">,</span> <span class="mi">55</span><span class="p">,</span> <span class="mi">55</span><span class="p">),</span>  <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="s2">&#34;B&#34;</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="mi">60</span><span class="p">),</span>
+</span></span><span class="line"><span class="ln">16</span><span class="cl"><span class="p">]</span>
+</span></span><span class="line"><span class="ln">17</span><span class="cl"><span class="n">db</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span><span class="s2">&#34;INSERT INTO event VALUES (?, ?, ?, ?)&#34;</span><span class="p">,</span> <span class="n">events</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">18</span><span class="cl">
+</span></span><span class="line"><span class="ln">19</span><span class="cl"><span class="n">windows</span> <span class="o">=</span> <span class="s2">&#34;&#34;&#34;
+</span></span></span><span class="line"><span class="ln">20</span><span class="cl"><span class="s2">SELECT id, machine, occurred,
+</span></span></span><span class="line"><span class="ln">21</span><span class="cl"><span class="s2">       count(*) OVER (
+</span></span></span><span class="line"><span class="ln">22</span><span class="cl"><span class="s2">           PARTITION BY machine ORDER BY occurred, id
+</span></span></span><span class="line"><span class="ln">23</span><span class="cl"><span class="s2">           ROWS BETWEEN 2 PRECEDING AND 1 PRECEDING
+</span></span></span><span class="line"><span class="ln">24</span><span class="cl"><span class="s2">       ) AS previous_two,
+</span></span></span><span class="line"><span class="ln">25</span><span class="cl"><span class="s2">       count(*) OVER (
+</span></span></span><span class="line"><span class="ln">26</span><span class="cl"><span class="s2">           PARTITION BY machine ORDER BY occurred
+</span></span></span><span class="line"><span class="ln">27</span><span class="cl"><span class="s2">           RANGE BETWEEN 60 PRECEDING AND CURRENT ROW EXCLUDE CURRENT ROW
+</span></span></span><span class="line"><span class="ln">28</span><span class="cl"><span class="s2">       ) AS except_self,
+</span></span></span><span class="line"><span class="ln">29</span><span class="cl"><span class="s2">       count(*) OVER (
+</span></span></span><span class="line"><span class="ln">30</span><span class="cl"><span class="s2">           PARTITION BY machine ORDER BY occurred
+</span></span></span><span class="line"><span class="ln">31</span><span class="cl"><span class="s2">           RANGE BETWEEN 60 PRECEDING AND CURRENT ROW EXCLUDE GROUP
+</span></span></span><span class="line"><span class="ln">32</span><span class="cl"><span class="s2">       ) AS by_event_time
+</span></span></span><span class="line"><span class="ln">33</span><span class="cl"><span class="s2">FROM event
+</span></span></span><span class="line"><span class="ln">34</span><span class="cl"><span class="s2">&#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="ln">35</span><span class="cl">
+</span></span><span class="line"><span class="ln">36</span><span class="cl"><span class="n">asof</span> <span class="o">=</span> <span class="s2">&#34;&#34;&#34;
+</span></span></span><span class="line"><span class="ln">37</span><span class="cl"><span class="s2">SELECT (SELECT count(*) FROM event AS h
+</span></span></span><span class="line"><span class="ln">38</span><span class="cl"><span class="s2">        WHERE h.machine = d.machine
+</span></span></span><span class="line"><span class="ln">39</span><span class="cl"><span class="s2">          AND h.occurred &gt;= d.t - 60 AND h.occurred &lt; d.t
+</span></span></span><span class="line"><span class="ln">40</span><span class="cl"><span class="s2">          AND h.available &lt;= d.t)
+</span></span></span><span class="line"><span class="ln">41</span><span class="cl"><span class="s2">FROM decision AS d ORDER BY d.id
+</span></span></span><span class="line"><span class="ln">42</span><span class="cl"><span class="s2">&#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="ln">43</span><span class="cl"><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&#34;CREATE TABLE decision(id INTEGER PRIMARY KEY, machine TEXT, t INTEGER)&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">44</span><span class="cl"><span class="n">decisions</span> <span class="o">=</span> <span class="p">[(</span><span class="n">i</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">events</span><span class="p">]</span>
+</span></span><span class="line"><span class="ln">45</span><span class="cl"><span class="n">db</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span><span class="s2">&#34;INSERT INTO decision VALUES (?, ?, ?)&#34;</span><span class="p">,</span> <span class="n">decisions</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">46</span><span class="cl">
+</span></span><span class="line"><span class="ln">47</span><span class="cl">
+</span></span><span class="line"><span class="ln">48</span><span class="cl"><span class="k">def</span> <span class="nf">reference</span><span class="p">(</span><span class="n">machine</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">49</span><span class="cl">    <span class="k">return</span> <span class="p">{</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">event_time</span><span class="p">,</span> <span class="n">ready</span> <span class="ow">in</span> <span class="n">events</span>
+</span></span><span class="line"><span class="ln">50</span><span class="cl">            <span class="k">if</span> <span class="n">m</span> <span class="o">==</span> <span class="n">machine</span> <span class="ow">and</span> <span class="n">t</span> <span class="o">-</span> <span class="mi">60</span> <span class="o">&lt;=</span> <span class="n">event_time</span> <span class="o">&lt;</span> <span class="n">t</span> <span class="ow">and</span> <span class="n">ready</span> <span class="o">&lt;=</span> <span class="n">t</span><span class="p">}</span>
+</span></span><span class="line"><span class="ln">51</span><span class="cl">
+</span></span><span class="line"><span class="ln">52</span><span class="cl">
+</span></span><span class="line"><span class="ln">53</span><span class="cl"><span class="k">def</span> <span class="nf">check</span><span class="p">():</span>
+</span></span><span class="line"><span class="ln">54</span><span class="cl">    <span class="n">actual</span> <span class="o">=</span> <span class="p">[</span><span class="n">n</span> <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="ow">in</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">asof</span><span class="p">)]</span>
+</span></span><span class="line"><span class="ln">55</span><span class="cl">    <span class="n">expected</span> <span class="o">=</span> <span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">reference</span><span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">t</span><span class="p">))</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">decisions</span><span class="p">)]</span>
+</span></span><span class="line"><span class="ln">56</span><span class="cl">    <span class="k">assert</span> <span class="n">actual</span> <span class="o">==</span> <span class="n">expected</span>
+</span></span><span class="line"><span class="ln">57</span><span class="cl">    <span class="k">return</span> <span class="n">actual</span>
+</span></span><span class="line"><span class="ln">58</span><span class="cl">
+</span></span><span class="line"><span class="ln">59</span><span class="cl">
+</span></span><span class="line"><span class="ln">60</span><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="s2">&#34;SQLite&#34;</span><span class="p">,</span> <span class="n">sqlite3</span><span class="o">.</span><span class="n">sqlite_version</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">61</span><span class="cl"><span class="k">for</span> <span class="n">row</span><span class="p">,</span> <span class="n">visible</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">windows</span> <span class="o">+</span> <span class="s2">&#34; ORDER BY id&#34;</span><span class="p">),</span> <span class="n">check</span><span class="p">(),</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">62</span><span class="cl">    <span class="nb">print</span><span class="p">(</span><span class="o">*</span><span class="n">row</span><span class="p">,</span> <span class="n">visible</span><span class="p">)</span>
+</span></span></code></pre></div><p>Hàm <code>reference</code> duyệt tất cả bản ghi bằng Python và trả về tập ID chứ chưa cộng dồn theo thời gian. Khi nghi ngờ một kết quả, có thể in <code>sorted(reference(&quot;A&quot;, 60))</code> để thấy [1, 2] và xác định dòng đầu tiên bị tính sai. Phép đối chiếu này dùng cùng đặc tả thời gian nhưng không dùng lại toán tử cửa sổ hay câu SQL, nên hữu ích để kiểm tra phát sinh lỗi khi tối ưu truy vấn. Khóa chính của bảng bảo đảm mỗi ID đại diện một sự kiện duy nhất, đúng với phép lấy tập hợp phía Python.</p>
+<table>
+	<thead>
+			<tr>
+					<th>Quyết định</th>
+					<th style="text-align: right">Hai dòng trước</th>
+					<th style="text-align: right">RANGE bỏ dòng hiện tại</th>
+					<th style="text-align: right">RANGE bỏ nhóm đồng thời</th>
+					<th style="text-align: right">Đã khả dụng đúng hạn</th>
+			</tr>
+	</thead>
+	<tbody>
+			<tr>
+					<td>A phút 0</td>
+					<td style="text-align: right">0</td>
+					<td style="text-align: right">0</td>
+					<td style="text-align: right">0</td>
+					<td style="text-align: right">0</td>
+			</tr>
+			<tr>
+					<td>A phút 15</td>
+					<td style="text-align: right">1</td>
+					<td style="text-align: right">1</td>
+					<td style="text-align: right">1</td>
+					<td style="text-align: right">1</td>
+			</tr>
+			<tr>
+					<td>A phút 40</td>
+					<td style="text-align: right">2</td>
+					<td style="text-align: right">2</td>
+					<td style="text-align: right">2</td>
+					<td style="text-align: right">2</td>
+			</tr>
+			<tr>
+					<td>A phút 60, ID 4</td>
+					<td style="text-align: right">2</td>
+					<td style="text-align: right">4</td>
+					<td style="text-align: right">3</td>
+					<td style="text-align: right"><strong>2</strong></td>
+			</tr>
+			<tr>
+					<td>A phút 60, ID 5</td>
+					<td style="text-align: right">2</td>
+					<td style="text-align: right">4</td>
+					<td style="text-align: right">3</td>
+					<td style="text-align: right"><strong>2</strong></td>
+			</tr>
+			<tr>
+					<td>A phút 61</td>
+					<td style="text-align: right">2</td>
+					<td style="text-align: right">4</td>
+					<td style="text-align: right">4</td>
+					<td style="text-align: right"><strong>3</strong></td>
+			</tr>
+			<tr>
+					<td>A phút 85</td>
+					<td style="text-align: right">2</td>
+					<td style="text-align: right">4</td>
+					<td style="text-align: right">4</td>
+					<td style="text-align: right"><strong>4</strong></td>
+			</tr>
+			<tr>
+					<td>A phút 121</td>
+					<td style="text-align: right">2</td>
+					<td style="text-align: right">2</td>
+					<td style="text-align: right">2</td>
+					<td style="text-align: right"><strong>2</strong></td>
+			</tr>
+			<tr>
+					<td>B phút 55</td>
+					<td style="text-align: right">0</td>
+					<td style="text-align: right">0</td>
+					<td style="text-align: right">0</td>
+					<td style="text-align: right">0</td>
+			</tr>
+			<tr>
+					<td>B phút 60</td>
+					<td style="text-align: right">1</td>
+					<td style="text-align: right">1</td>
+					<td style="text-align: right">1</td>
+					<td style="text-align: right">1</td>
+			</tr>
+	</tbody>
+</table>
+<p>Có thể nhận ra hai dạng sai khác từ bảng. Hai cột RANGE khác nhau ngay tại phút 60 cho cả hai dòng, chứng tỏ cách xử lý đồng thời có ảnh hưởng. Tại phút 61 chúng đã bằng nhau, nhưng vẫn cao hơn số khả dụng đúng hạn một đơn vị. Bỏ nhóm đồng thời chỉ giải quyết vấn đề ở cạnh phải. So sánh thêm cột cuối mới phát hiện được gói đến muộn nằm sâu bên trong khoảng.</p>
+<h2 id="thử-với-một-lịch-chấm-điểm-độc-lập">Thử với một lịch chấm điểm độc lập<a class="anchor ms-1" href="#thử-với-một-lịch-chấm-điểm-độc-lập"><i class="fas fa-link"></i></a></h2>
+<p>Nối đoạn dưới vào tệp vừa chạy. Trước tiên thêm quyết định của A và của một máy C mới ở phút 62. A phải có bốn sự kiện 2, 4, 5, 6; C phải có 0. Sau đó sinh thêm 2.000 sự kiện trên ba máy, mỗi sự kiện có thời điểm nguyên trong sáu giờ và độ trễ được chọn từ một danh sách cố định. Ba phần tử 0 trong danh sách làm một nửa xác suất rơi vào trường hợp đến ngay. Độ trễ 70 phút còn tạo ra tín hiệu tới nơi sau khi nó đã hết hạn cho cửa sổ 60 phút. Trật tự chèn được xáo trộn để truy vấn không dựa vào tình cờ đọc đúng thứ tự.</p>
+<div class="highlight"><pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="ln"> 1</span><span class="cl"><span class="kn">from</span> <span class="nn">random</span> <span class="kn">import</span> <span class="n">Random</span>
+</span></span><span class="line"><span class="ln"> 2</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 3</span><span class="cl"><span class="c1"># Quyết định độc lập với việc máy có gửi log hay không.</span>
+</span></span><span class="line"><span class="ln"> 4</span><span class="cl"><span class="n">decisions</span> <span class="o">+=</span> <span class="p">[(</span><span class="mi">11</span><span class="p">,</span> <span class="s2">&#34;A&#34;</span><span class="p">,</span> <span class="mi">62</span><span class="p">),</span> <span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="s2">&#34;C&#34;</span><span class="p">,</span> <span class="mi">62</span><span class="p">)]</span>
+</span></span><span class="line"><span class="ln"> 5</span><span class="cl"><span class="n">db</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span><span class="s2">&#34;INSERT INTO decision VALUES (?, ?, ?)&#34;</span><span class="p">,</span> <span class="n">decisions</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:])</span>
+</span></span><span class="line"><span class="ln"> 6</span><span class="cl"><span class="k">assert</span> <span class="n">check</span><span class="p">()[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span> <span class="o">==</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+</span></span><span class="line"><span class="ln"> 7</span><span class="cl">
+</span></span><span class="line"><span class="ln"> 8</span><span class="cl"><span class="n">rng</span> <span class="o">=</span> <span class="n">Random</span><span class="p">(</span><span class="mi">20261127</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln"> 9</span><span class="cl"><span class="n">extra</span> <span class="o">=</span> <span class="p">[]</span>
+</span></span><span class="line"><span class="ln">10</span><span class="cl"><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">11</span><span class="p">,</span> <span class="mi">2011</span><span class="p">):</span>
+</span></span><span class="line"><span class="ln">11</span><span class="cl">    <span class="n">machine</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="s2">&#34;A&#34;</span><span class="p">,</span> <span class="s2">&#34;B&#34;</span><span class="p">,</span> <span class="s2">&#34;C&#34;</span><span class="p">])</span>
+</span></span><span class="line"><span class="ln">12</span><span class="cl">    <span class="n">t</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">randrange</span><span class="p">(</span><span class="mi">360</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">13</span><span class="cl">    <span class="n">delay</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">choice</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">70</span><span class="p">])</span>
+</span></span><span class="line"><span class="ln">14</span><span class="cl">    <span class="n">extra</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">i</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">t</span> <span class="o">+</span> <span class="n">delay</span><span class="p">))</span>
+</span></span><span class="line"><span class="ln">15</span><span class="cl"><span class="n">events</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">extra</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">16</span><span class="cl"><span class="n">rng</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">extra</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">17</span><span class="cl"><span class="n">db</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span><span class="s2">&#34;INSERT INTO event VALUES (?, ?, ?, ?)&#34;</span><span class="p">,</span> <span class="n">extra</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">18</span><span class="cl">
+</span></span><span class="line"><span class="ln">19</span><span class="cl"><span class="n">grid</span> <span class="o">=</span> <span class="p">[(</span><span class="mi">13</span> <span class="o">+</span> <span class="mi">36</span> <span class="o">*</span> <span class="n">j</span> <span class="o">+</span> <span class="n">k</span><span class="p">,</span> <span class="n">m</span><span class="p">,</span> <span class="mi">10</span> <span class="o">*</span> <span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">m</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="s2">&#34;ABC&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">20</span><span class="cl">        <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">36</span><span class="p">)]</span>
+</span></span><span class="line"><span class="ln">21</span><span class="cl"><span class="n">decisions</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">grid</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">22</span><span class="cl"><span class="n">db</span><span class="o">.</span><span class="n">executemany</span><span class="p">(</span><span class="s2">&#34;INSERT INTO decision VALUES (?, ?, ?)&#34;</span><span class="p">,</span> <span class="n">grid</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">23</span><span class="cl"><span class="n">before</span> <span class="o">=</span> <span class="n">check</span><span class="p">()</span>
+</span></span><span class="line"><span class="ln">24</span><span class="cl"><span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&#34;CREATE INDEX history ON event(machine, occurred, available)&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">25</span><span class="cl"><span class="k">assert</span> <span class="n">check</span><span class="p">()</span> <span class="o">==</span> <span class="n">before</span>
+</span></span><span class="line"><span class="ln">26</span><span class="cl"><span class="n">offline_sql</span> <span class="o">=</span> <span class="n">asof</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&#34;AND h.available &lt;= d.t&#34;</span><span class="p">,</span> <span class="s2">&#34;&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="ln">27</span><span class="cl"><span class="n">offline</span> <span class="o">=</span> <span class="p">[</span><span class="n">n</span> <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="ow">in</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">offline_sql</span><span class="p">)]</span>
+</span></span><span class="line"><span class="ln">28</span><span class="cl"><span class="n">gap</span> <span class="o">=</span> <span class="p">[</span><span class="n">a</span> <span class="o">-</span> <span class="n">b</span> <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">offline</span><span class="p">,</span> <span class="n">before</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">True</span><span class="p">)]</span>
+</span></span><span class="line"><span class="ln">29</span><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="s2">&#34;grid&#34;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">grid</span><span class="p">),</span> <span class="nb">sum</span><span class="p">(</span><span class="n">g</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">g</span> <span class="ow">in</span> <span class="n">gap</span><span class="p">[</span><span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="n">grid</span><span class="p">):]),</span>
+</span></span><span class="line"><span class="ln">30</span><span class="cl">      <span class="nb">max</span><span class="p">(</span><span class="n">gap</span><span class="p">[</span><span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="n">grid</span><span class="p">):]))</span>
+</span></span><span class="line"><span class="ln">31</span><span class="cl"><span class="nb">print</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="n">row</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">db</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s2">&#34;EXPLAIN QUERY PLAN &#34;</span> <span class="o">+</span> <span class="n">asof</span><span class="p">)],</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&#34;</span><span class="se">\n</span><span class="s2">&#34;</span><span class="p">)</span>
+</span></span></code></pre></div><p>Lần chạy với seed 20261127 có <strong>105 trong 108</strong> quyết định theo lịch cho số đếm hồi cứu cao hơn số mà dịch vụ có thể biết. Chênh lệch lớn nhất là <strong>35 sự kiện cho một quyết định</strong>. Ba dòng bằng nhau chính là quyết định ở phút 0 của mỗi máy vì chưa có lịch sử trước phút 0. Với giả định không sửa hoặc xóa dữ liệu và cùng điều kiện biên, bỏ một điều kiện lọc chỉ có thể giữ nguyên hoặc làm tăng số đếm. Nếu kết quả hồi cứu lại nhỏ hơn, cần kiểm tra xem truy vấn có đồng thời thay đổi cách khử trùng, cách nối hoặc tập quyết định hay không.</p>
+<p>Các con số 105 và 35 thuộc bộ dữ liệu tổng hợp trên. Chúng cho thấy lỗi có thể lặp lại trong cả một dải thời gian, nhưng chưa đo được kho sản xuất của bạn có bao nhiêu gói đến muộn. Để chuyển phép thử sang kho thật, có thể giữ nguyên lịch quyết định của một ca, chạy cả hai truy vấn rồi phân nhóm độ chênh theo máy và giờ. Một con số trung bình toàn ngày có thể che mất khoảng mất kết nối ở một máy, trong khi chính khoảng đó lại là nơi dịch vụ cần dự báo đáng tin nhất.</p>
+<p>Ta cũng có một phép kiểm tra hướng thời gian khá dễ thực hiện. Lấy một quyết định cũ đã biết tập ID đúng, thêm vào kho một sự kiện xảy ra trước quyết định nhưng có thời điểm khả dụng ở ngày hôm sau. Tính lại đầu vào cũ. Dòng vừa thêm có thể làm báo cáo điều tra thay đổi, còn tập ID dùng cho quyết định cũ phải giữ nguyên. Di chuyển thời điểm khả dụng của cùng tín hiệu đúng tới hạn đọc sẽ làm nó xuất hiện nếu thời điểm sự kiện vẫn nằm trong cửa sổ. Cặp thử đối xứng này phát hiện lỗi dùng sai đồng hồ ngay cả khi số lượng dòng thử rất nhỏ.</p>
+<h2 id="đọc-kế-hoạch-truy-vấn-sau-khi-có-chỉ-mục">Đọc kế hoạch truy vấn sau khi có chỉ mục<a class="anchor ms-1" href="#đọc-kế-hoạch-truy-vấn-sau-khi-có-chỉ-mục"><i class="fas fa-link"></i></a></h2>
+<p>Khi số quyết định và số sự kiện đều tăng, quét lại toàn bộ bảng lịch sử cho từng quyết định sẽ trở thành vấn đề. Chỉ mục trong ví dụ bắt đầu bằng <code>machine</code>, tiếp theo là <code>occurred</code>, cuối cùng là <code>available</code>. Lần chạy in ra một bước <code>SCAN d</code>, một truy vấn con tương quan và một bước <code>SEARCH h USING COVERING INDEX history (machine=? AND occurred&gt;? AND occurred&lt;?)</code>. Tên cột và điều kiện được trình tối ưu dùng để tìm đoạn chỉ mục quan trọng hơn số thứ tự bước. Văn bản do EXPLAIN trả về có thể thay đổi giữa các phiên bản SQLite. <a href="https://sqlite.org/eqp.html" target="_blank" rel="noopener noreferrer">Cách đọc EXPLAIN QUERY PLAN của SQLite</a></p>
+<p>Điều kiện bằng ở cột máy thu hẹp phạm vi trước. Trong phạm vi đó, hai cận thời điểm xảy ra xác định đoạn cần đọc. Cột khả dụng nằm sẵn trong chỉ mục nên SQLite có thể xét điều kiện còn lại từ các mục đã tìm thấy. Từ “covering” ở đây liên quan đến các cột cần cho truy vấn. Nó không hàm ý rằng cả hai chiều thời gian đều được dùng làm ranh giới tìm kiếm độc lập. Chẳng hạn, nếu một máy có hàng triệu tín hiệu trong một giờ nhưng đa số chưa khả dụng, bước truy cập theo thời điểm xảy ra vẫn có thể đọc nhiều mục trước khi loại chúng.</p>
+<p>Ký hiệu cận do kế hoạch truy vấn hiển thị cũng không thay thế hợp đồng toán học của truy vấn gốc. Hãy giữ phép thử ở đúng t − 60 để xác nhận tính bao hàm của cạnh trái, và ở đúng t để xác nhận cạnh phải bị loại. Đoạn mã so kết quả trước và sau khi tạo chỉ mục trên tất cả các quyết định. Bài thử nghiệm này kiểm tra tính đúng và đường truy cập thực sự được chọn. Để báo một mức cải thiện thời gian, còn cần tải tương ứng với kho của mình, kích thước cache, phân bố sự kiện giữa các máy và một quy trình đo lặp.</p>
+<p>Một phương án khác là tạo bảng tổng hợp theo máy và theo phút. Nếu dữ liệu luôn đến đúng hạn và dịch vụ chỉ chấm ở đầu phút, tổng 60 ô thời gian có thể trả lời nhiều quyết định cùng lúc. Khi có dữ liệu đến muộn, một ô phút 40 có thể lần lượt mang giá trị 0, 1 rồi 2 khi các gói tới. Nếu lưu đè mỗi lần và chỉ giữ giá trị cuối, một truy vấn chạy lại vào cuối ngày sẽ đọc được phiên bản mới nhất cho cả quyết định lúc 09:00. Muốn bảo toàn lịch sử phải giữ các thay đổi kèm thời điểm khả dụng, các ảnh chụp phiên bản đủ dày, hoặc chính đầu vào đã phục vụ từng quyết định. Lựa chọn nào phù hợp phụ thuộc tần suất phải tính lại và chi phí lưu trữ.</p>
+<h2 id="từ-nhật-ký-thiết-bị-sang-bộ-đặc-trưng-huấn-luyện">Từ nhật ký thiết bị sang bộ đặc trưng huấn luyện<a class="anchor ms-1" href="#từ-nhật-ký-thiết-bị-sang-bộ-đặc-trưng-huấn-luyện"><i class="fas fa-link"></i></a></h2>
+<p>Với bài toán dự báo, ta thường tạo nhãn từ kết quả quan sát được sau thời điểm quyết định: ví dụ đợi thêm một giờ để biết máy có dừng hay không. Đầu vào thì nhìn lùi từ lúc quyết định. Khi xây bảng huấn luyện sau khi ca đã kết thúc, cả nhãn tương lai lẫn log đến muộn đều đã nằm trong cùng một kho. Chia dữ liệu train và test đúng theo ngày vẫn có thể để lọt thông tin vào cả hai tập nếu giá trị đặc trưng ở từng dòng đã tính từ bản log cuối ngày. Vì vậy cần kiểm tra ranh giới ở hai cấp: giữa các tập đánh giá và bên trong mỗi quyết định. <a href="/blog/2026-11-05-stratified-group-split-tranh-ro-ri-du-lieu/">Ví dụ về rò rỉ dữ liệu khi chia tập đánh giá</a></p>
+<p>Nếu lưu thời điểm nhận tại cổng mạng, hãy xem giữa cổng đó và dịch vụ đọc còn các bước nào. Một tín hiệu đi vào hàng đợi lúc 09:01 có thể chỉ xuất hiện trong bảng đặc trưng sau khi tác vụ làm sạch hoàn tất lúc 09:06. Quyết định chấm lúc 09:03 chưa đọc được giá trị ấy. Chọn mốc khả dụng ở đâu phải xuất phát từ đường đọc thực tế. Ý tưởng truy xuất đặc trưng lịch sử tại thời điểm của từng dòng cũng là nền tảng của point-in-time join trong các kho đặc trưng. Khi dữ liệu có gói đến muộn, cần kiểm tra cụ thể timestamp và phiên bản nào mà đường truy xuất của mình thực sự bảo toàn. <a href="https://docs.feast.dev/getting-started/concepts/point-in-time-joins" target="_blank" rel="noopener noreferrer">Mô tả point-in-time join của Feast</a></p>
+<p>Có hai tình huống mà bảng minh họa cố ý đơn giản hóa. Thứ nhất, một sự kiện có thể được sửa lại hoặc thu hồi. Một cột khả dụng duy nhất cho phiên bản cuối không cho biết máy đã nhìn thấy nội dung nào trước lúc sửa. Khi ấy cần lưu các phiên bản và mốc có hiệu lực tương ứng; ở mỗi quyết định chỉ lấy phiên bản đã công bố đúng hạn của mỗi ID. Thứ hai, đồng hồ thiết bị có thể chạy nhanh hơn đồng hồ nhận. Ràng buộc <code>available &gt;= occurred</code> trong mã giúp bộ dữ liệu mẫu tự kiểm, nhưng trước khi áp dụng cho thiết bị thật cần biết cách đồng bộ và xử lý bản ghi có đồng hồ lệch. Ép giá trị bằng nhau cho đủ điều kiện có thể làm mất dấu một sự cố vận hành.</p>
+<p>Để nghiệm thu một lượt dựng dữ liệu, hãy chọn một quyết định mà kỹ sư trực ca có thể giải thích và giữ lại cả danh sách ID nguồn. So khớp ID thường nhanh hơn dò hai chuỗi số đếm dài. Nếu ID đúng nhưng số tính sai thì xem lại phép tổng hợp. Nếu sai ID thì lần lượt kiểm tra máy, biên 60 phút, các dòng cùng thời điểm và mốc khả dụng. Với một kho log lớn, có thể bắt đầu trên một phân vùng hẹp trước khi chuyển qua toàn bộ lịch sử. <a href="/blog/2026-11-08-duckdb-phan-tich-csv-vuot-ngan-sach-bo-nho/">Thực hành phân tích tệp log và CSV trong giới hạn bộ nhớ</a></p>
+<p>Quay về ca trực lúc 09:00, con số <strong>2</strong> có thể truy ngược về ID 1 và 2. Báo cáo điều tra sau ca có lý do để ghi <strong>3</strong> vì lúc đó đã nhận ID 3. Một bảng dữ liệu phục vụ được cả hai nhóm người đọc khi lưu đủ thông tin để giải thích sự chênh lệch ấy. Đó cũng là phép thử đáng giữ nhất khi chuyển truy vấn từ SQLite trên máy cá nhân sang hệ thống phục vụ mô hình.</p>
+</div></div>
+  <div class="card-footer"><div class="post-navs d-flex justify-content-evenly"><div class="post-nav post-prev">
+    <i class="fas fa-fw fa-chevron-left"></i>
+    <a href="/blog/2026-11-25-chon-nguong-phan-loai-theo-chi-phi-va-gioi-han-kiem-tra/">Chọn ngưỡng phân loại theo chi phí bỏ sót và giới hạn kiểm tra
+</a>
+  </div></div></div>
+</article><section class="related-posts row card component">
+    <div class="card-header">
+      <h2 class="card-title">Bài liên quan</h2>
+    </div>
+    <div class="card-body">
+      <ul class="post-list"><li>
+          <a href="https://www.phamduytung.com/blog/2026-11-23-gop-mau-ngau-nhien-tu-nhieu-tep-log-python/">Gộp mẫu ngẫu nhiên từ nhiều tệp log bằng Python
+</a>
+          <span class="float-end post-date">23/11/2026
+</span>
+        </li><li>
+          <a href="https://www.phamduytung.com/blog/2026-11-19-bloom-filter-sqlite-truy-van-hut-bo-loc-cu/">Bloom filter trước SQLite: giảm truy vấn hụt và phát hiện bộ lọc cũ
+</a>
+          <span class="float-end post-date">19/11/2026
+</span>
+        </li><li>
+          <a href="https://www.phamduytung.com/blog/2026-11-11-apache-iceberg-pyiceberg-schema-evolution-time-travel/">Đổi schema và đọc snapshot cũ của Apache Iceberg bằng PyIceberg
+</a>
+          <span class="float-end post-date">11/11/2026
+</span>
+        </li><li>
+          <a href="https://www.phamduytung.com/blog/2026-11-08-duckdb-phan-tich-csv-vuot-ngan-sach-bo-nho/">Phân tích CSV vượt ngân sách bộ nhớ với DuckDB: đo thời gian và dữ liệu ghi tạm
+</a>
+          <span class="float-end post-date">08/11/2026
+</span>
+        </li><li>
+          <a href="https://www.phamduytung.com/blog/2026-11-25-chon-nguong-phan-loai-theo-chi-phi-va-gioi-han-kiem-tra/">Chọn ngưỡng phân loại theo chi phí bỏ sót và giới hạn kiểm tra
+</a>
+          <span class="float-end post-date">25/11/2026
+</span>
+        </li></ul>
+    </div>
+  </section><div class="card component row post-comments" id="post-comments">
+  <div class="card-header">
+    <h2 class="card-title">Bình luận</h2>
+  </div>
+  <div class="card-body"><script src="https://utteranc.es/client.js"
+  repo="AlexBlack2202/utterances"
+  issue-term="pathname"
+  label="comment"
+  theme="github-dark"
+  crossorigin="anonymous"
+  async>
+</script></div>
+</div></div>
+</div><aside class="col-lg-3 col-md-4 sidebar d-flex">
+  <div class="container d-flex flex-column">
+
+    <a href="https://www.buymeacoffee.com/alexblack28" rel="noopener"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=🍎&slug=alexblack28&button_colour=FFDD00&font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff" alt="Buy me a coffee" width="235" height="50" loading="lazy" decoding="async" /></a>
+<div class="post-toc row mb-4 card component" id="postTOC">
+  <div class="card-header">
+    <h2 class="card-title">Mục lục</h2>
+  </div>
+  <div class="card-body">
+    <nav id="TableOfContents"><ul>
+        <li><a href="#viết-ra-câu-hỏi-mà-mỗi-dòng-dữ-liệu-phải-trả-lời">Viết ra câu hỏi mà mỗi dòng dữ liệu phải trả lời</a></li>
+        <li><a href="#mười-bản-ghi-đủ-để-phân-biệt-bốn-phép-đếm">Mười bản ghi đủ để phân biệt bốn phép đếm</a></li>
+        <li><a href="#rows-range-và-dòng-nào-bị-loại">ROWS, RANGE và dòng nào bị loại</a></li>
+        <li><a href="#tách-bảng-quyết-định-khỏi-bảng-sự-kiện">Tách bảng quyết định khỏi bảng sự kiện</a></li>
+        <li><a href="#chạy-lại-bằng-sqlite-từ-python">Chạy lại bằng SQLite từ Python</a></li>
+        <li><a href="#thử-với-một-lịch-chấm-điểm-độc-lập">Thử với một lịch chấm điểm độc lập</a></li>
+        <li><a href="#đọc-kế-hoạch-truy-vấn-sau-khi-có-chỉ-mục">Đọc kế hoạch truy vấn sau khi có chỉ mục</a></li>
+        <li><a href="#từ-nhật-ký-thiết-bị-sang-bộ-đặc-trưng-huấn-luyện">Từ nhật ký thiết bị sang bộ đặc trưng huấn luyện</a></li>
+      </ul></nav>
+  </div>
+</div><section class="recent-posts row card component">
+  <div class="card-header">
+    <h2 class="card-title">Bài gần đây</h2>
+  </div>
+  <div class="card-body">
+    <ul class="post-list"><li>
+        <a href="/blog/2026-11-27-cua-so-thoi-gian-sqlite-dac-trung-hoc-may-log-den-muon/">Tính đặc trưng 60 phút bằng SQLite khi log đến muộn
+</a>
+      </li><li>
+        <a href="/blog/2026-11-25-chon-nguong-phan-loai-theo-chi-phi-va-gioi-han-kiem-tra/">Chọn ngưỡng phân loại theo chi phí bỏ sót và giới hạn kiểm tra
+</a>
+      </li><li>
+        <a href="/blog/2026-11-24-recall-at-k-he-goi-y-theo-nguoi-dung-va-tinh-gop/">Recall@K trong hệ gợi ý: vì sao hai cách tính đảo thứ hạng mô hình?
+</a>
+      </li><li>
+        <a href="/blog/2026-11-23-gop-mau-ngau-nhien-tu-nhieu-tep-log-python/">Gộp mẫu ngẫu nhiên từ nhiều tệp log bằng Python
+</a>
+      </li><li>
+        <a href="/blog/2026-11-21-alexnet-grouped-convolution-pytorch/">Grouped convolution trong AlexNet: kiểm tra groups=2 bằng PyTorch
+</a>
+      </li></ul>
+  </div>
+</section><section class="series-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/series">series</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/series/ly-thuyet-tro-choi/" class="badge rounded post-taxonomy" title="Lý thuyết trò chơi">
+            Lý thuyết trò chơi<span class="badge badge-sm text-white bg-accent ms-1">35</span></a><a href="https://www.phamduytung.com/series/kh%C3%B3a-h%E1%BB%8Dc-python-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học Python Căn Bản">
+            Khóa Học Python Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="https://www.phamduytung.com/series/kh%C3%B3a-h%E1%BB%8Dc-c&#43;&#43;-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Khóa Học C&#43;&#43; Căn Bản">
+            Khóa Học C&#43;&#43; Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="https://www.phamduytung.com/series/machine-learning-dataset/" class="badge rounded post-taxonomy" title="Machine Learning Dataset">
+            Machine Learning Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a><a href="https://www.phamduytung.com/series/ch%E1%BB%A9ng-kho%C3%A1n-c%C4%83n-b%E1%BA%A3n/" class="badge rounded post-taxonomy" title="Chứng Khoán Căn Bản">
+            Chứng Khoán Căn Bản<span class="badge badge-sm text-white bg-accent ms-1">1</span></a></div>
+      </div>
+    </section><section class="tools-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/tools">tools</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/tools/tool-random/" class="badge rounded post-taxonomy" title="Tool Random">
+            Tool Random<span class="badge badge-sm text-white bg-accent ms-1">3</span></a></div>
+      </div>
+    </section><section class="categories-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/categories">categories</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/categories/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">5</span></a><a href="https://www.phamduytung.com/categories/c&#43;&#43;/" class="badge rounded post-taxonomy" title="C&#43;&#43;">
+            C&#43;&#43;<span class="badge badge-sm text-white bg-accent ms-1">3</span></a><a href="https://www.phamduytung.com/categories/dataset/" class="badge rounded post-taxonomy" title="Dataset">
+            Dataset<span class="badge badge-sm text-white bg-accent ms-1">2</span></a></div>
+      </div>
+    </section><section class="tags-taxonomies row card component">
+      <div class="card-header">
+        <h2 class="card-title">
+          <a href="https://www.phamduytung.com/tags">tags</a>
+        </h2>
+      </div>
+      <div class="card-body">
+        <div class="py-2"><a href="https://www.phamduytung.com/tags/game-theory/" class="badge rounded post-taxonomy" title="Game Theory">
+            Game Theory<span class="badge badge-sm text-white bg-accent ms-1">39</span></a><a href="https://www.phamduytung.com/tags/machine-learning/" class="badge rounded post-taxonomy" title="Machine Learning">
+            Machine Learning<span class="badge badge-sm text-white bg-accent ms-1">35</span></a><a href="https://www.phamduytung.com/tags/deep-learning/" class="badge rounded post-taxonomy" title="Deep Learning">
+            Deep Learning<span class="badge badge-sm text-white bg-accent ms-1">29</span></a><a href="https://www.phamduytung.com/tags/python/" class="badge rounded post-taxonomy" title="Python">
+            Python<span class="badge badge-sm text-white bg-accent ms-1">28</span></a><a href="https://www.phamduytung.com/tags/computer-vision/" class="badge rounded post-taxonomy" title="Computer Vision">
+            Computer Vision<span class="badge badge-sm text-white bg-accent ms-1">18</span></a><a href="https://www.phamduytung.com/tags/llm/" class="badge rounded post-taxonomy" title="Llm">
+            Llm<span class="badge badge-sm text-white bg-accent ms-1">18</span></a><a href="https://www.phamduytung.com/tags/mathematics/" class="badge rounded post-taxonomy" title="Mathematics">
+            Mathematics<span class="badge badge-sm text-white bg-accent ms-1">14</span></a><a href="https://www.phamduytung.com/tags/ai-agent/" class="badge rounded post-taxonomy" title="Ai Agent">
+            Ai Agent<span class="badge badge-sm text-white bg-accent ms-1">10</span></a><a href="https://www.phamduytung.com/tags/pytorch/" class="badge rounded post-taxonomy" title="Pytorch">
+            Pytorch<span class="badge badge-sm text-white bg-accent ms-1">8</span></a><a href="https://www.phamduytung.com/tags/recommendation-system/" class="badge rounded post-taxonomy" title="Recommendation System">
+            Recommendation System<span class="badge badge-sm text-white bg-accent ms-1">8</span></a></div>
+      </div>
+    </section>
+
+  </div>
+</aside>
+</div>
+    </main><footer class="footer mt-auto py-3 text-center container"><ul class="nav justify-content-between footer-memu mb-3"><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Community
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="https://www.facebook.com/groups/1354425091720104" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-facebook"></i>Facebook Group
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="https://github.com/AlexBlack2202/alexblack2202.github.io" target="_blank" rel="noopener noreferrer"><i class="fab fa-fw fa-github"></i>GitHub
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/contact/"><i class="fas fa-fw fa-info-circle"></i>Contact Us
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/faq/"><i class="fas fa-fw fa-question-circle"></i>Câu hỏi thường gặp
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/about/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-user"></i>Giới thiệu tác giả
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Docs
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="/teamofservices/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-users"></i>Điều khoản sử dụng
+</a>
+        </li><li class="nav-item">
+            <a class="nav-link" href="/privacy/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-lock"></i>Chính sách bảo mật
+</a>
+        </li></ul></li><li class="nav-item"><ul class="nav flex-column align-items-start">
+      <li class="nav-item">
+        <a class="nav-link fw-bold" target="_blank" rel="noopener noreferrer">Features
+</a>
+      </li><li class="nav-item">
+            <a class="nav-link" href="/utils/gen_paswords/" target="_blank" rel="noopener noreferrer"><i class="fas fa-fw fa-key"></i>Tạo password ngẫu nhiên
+</a>
+        </li></ul></li></ul>
+<div class="copyright mb-2">
+  Copyright © 2016-2026 Phạm Duy Tùng. All Rights Reserved.
+</div>
+<div class="powered-by mb-2">
+  Website chia sẻ kiến thức của Phạm Duy Tùng và Đặng Thị Hằng. Vui lòng liên hệ email alexblack2202@gmail.com nếu bạn có thông tin cần trao đổi.
+</div></footer>
+<script src="https://www.phamduytung.com/js/main.e788bab0969e53541289578e23a0f66a2ec1102872a9d44b994c80d0601d588a.js" integrity="sha256-54i6sJaeU1QSiVeOI6D2ai7BEChyqdRLmUyA0GAdWIo=" crossorigin="anonymous" defer></script><script src="https://www.phamduytung.com/js/icons.min.cb4c9958dbc49e29ac644e168e82db2d0de9a741a15751cc5bf2b0af21eb2845.js" integrity="sha256-y0yZWNvEnimsZE4WjoLbLQ3pp0GhV1HMW/KwryHrKEU=" crossorigin="anonymous" defer></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('https:\/\/www.phamduytung.com\/service-worker.js').then(function(reg) {
+      console.log('Successfully registered service worker', reg);
+    }).catch(function(err) {
+      console.warn('Error whilst registering service worker', err);
+    });
+  });
+}
+</script><script src="https://www.phamduytung.com/js/viewer.min.28bcf5233e406dae6715f46c8b9e8ca7c6cbf347e8678f5a2bebe5369c3270bb.js" integrity="sha256-KLz1Iz5Aba5nFfRsi56Mp8bL80foZ49aK&#43;vlNpwycLs=" crossorigin="anonymous" defer></script><script defer src="https://www.phamduytung.com/js/katex.min.8582b9feadf92a2a977ed303b97d7713cf2754ccf2b4eb60d8be7453a21042c2.js" integrity="sha256-hYK5/q35KiqXftMDuX13E88nVMzytOtg2L50U6IQQsI=" crossorigin="anonymous"></script>
+
+      <script async src="https://www.googletagmanager.com/gtag/js?id=G-2WWQ5G9DKL"></script>
+      <script>
+        var doNotTrack = false;
+        if ( true ) {
+          var dnt = (navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack);
+          var doNotTrack = (dnt == "1" || dnt == "yes");
+        }
+        if (!doNotTrack) {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'G-2WWQ5G9DKL');
+        }
+      </script>
+<script  data-ad-client="ca-pub-4644989745435991"  async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4644989745435991"
+     crossorigin="anonymous"></script></body>
+</html>
